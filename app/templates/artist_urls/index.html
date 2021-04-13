@@ -1,0 +1,29 @@
+{% extends 'artist_urls/_base.html' %}
+{% from 'layouts/_macros.html' import page_navigation %}
+
+{% block title %}Artist URLs{% endblock %}
+
+{% block content %}
+    <table id="artist-urls-table" class="striped" width="80%">
+        <thead>
+            <tr>
+                <th width="10%">ID</th>
+                <th width="10%">Artist</th>
+                <th width="75%">URL</th>
+                <th width="5%">Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for artist_url in artist_urls.items %}
+                <tr id="artist-url-{{ artist_url.id }}">
+                    <td>{{ artist_url.show_link }}</td>
+                    <td>{{ helpers.base.ShowLink('artist', artist_url.artist_id) }}</td>
+                    <td>{{ artist_url.url }}</td>
+                    <td>{{ artist_url.active | tojson }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(artist_urls) }}{% endblock %}

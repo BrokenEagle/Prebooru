@@ -1,0 +1,7 @@
+<menu id="secondary-menu">
+    {{ helpers.base.SubnavLinkTo("Listing", 'error.index_html') }}
+    {% if error.id != None %}
+        |
+        {{ helpers.base.SubnavLinkTo("Show", 'error.show_html', id=error.id) }}
+    {% endif %}
+</menu>

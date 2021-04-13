@@ -1,0 +1,30 @@
+{% from 'layouts/_macros.html' import items_list, items_block %}
+
+<div id="post-site-content">
+    <section id="post-info">
+        <h4>Info</h4>
+        <ul>
+            <li><strong>Created:</strong> {{ helpers.base.FormatTimestamp(post.created) }}</li>
+            <li><strong>Type/Size:</strong> {{ post.file_ext.upper() }} @ {{ post.size }} bytes</li>
+            <li><strong>Dimensions:</strong> ({{ post.width }} x {{ post.height }})</li>
+            <li><strong>MD5:</strong> {{ post.md5 }}</li>
+            <li><strong>Sources:</strong>
+                {% call(illust_url) items_list(post.illust_urls) %}
+                    {{ helpers.illust.OriginalUrl(illust_url) }}
+                {% endcall %}
+            </li>
+        </ul>
+    </section>
+    <section id="post-commentaries">
+        <h4><u>Commentaries</u></h4>
+        {% for illust in post.illusts %}
+            <div class="post-commentaries-container"><strong>{{ illust.header }}:</strong>
+                {% call(commentary) items_block(illust.commentaries, 'commentaries', '<hr>') %}
+                    <div class="post-commentaries-block">
+                        {{ helpers.base.ConvertStrToHTML(commentary.body) }}
+                    </div>
+                {% endcall %}
+            </div>
+        {% endfor %}
+    </section>
+</div>

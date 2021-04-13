@@ -1,0 +1,34 @@
+{% extends 'illusts/_base.html' %}
+{% from 'illust_urls/_macros.html' import image_urls_section, video_urls_section %}
+
+{% block title %}{{ illust.header }}{% endblock %}
+
+{% block content %}
+    <div id="illust-heading" class="heading">{{ illust.header }}</div>
+    <div id="illust-content">
+        {% include "illusts/_sidebar.html" %}
+        {% include "illusts/_site_content.html" %}
+    </div>
+    <div id="illust-posts">
+        {% if illust.type == 'image' %}
+            {{ image_urls_section(illust.ordered_urls) }}
+        {% elif illust.type == 'video' %}
+            {{ video_urls_section(illust.video_illust_url, illust.thumb_illust_url) }}
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block pagescript %}
+<script>
+function IllustCreatePool(obj) {
+    let illust_id = obj.dataset.illustId;
+    console.log(illust_id);
+    let pool_id = prompt("Enter pool # to add to:");
+    if (pool_id !== null) {
+        console.log(pool_id);
+        Prebooru.postRequest(obj.href, {'pool_element[pool_id]': pool_id, 'pool_element[illust_id]': illust_id});
+    }
+    return false;
+}
+</script>
+{% endblock %}

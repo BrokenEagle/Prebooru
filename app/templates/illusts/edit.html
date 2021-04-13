@@ -1,0 +1,27 @@
+{% extends 'illusts/_base.html' %}
+{% from 'layouts/_macros.html' import render_form %}
+
+{% block title %}Edit - {{ illust.header }}{% endblock %}
+
+{% block content %}
+    <div id="illust-form-heading" class="heading">
+        Edit {{ illust.header }}
+    </div>
+    <div id="illust-form-info">
+        For {{ illust.artist.show_link }}:
+    </div>
+    {% call(field_name, field_input) render_form(form, 'PUT', illust.update_url, class=helpers.illust.FormClass(form)) %}
+        {% set classlist = [] %}
+        {% if field_name in ['retweets', 'replies', 'quotes'] %}
+            {% do classlist.append('twitter-data') %}
+        {% endif %}
+        {% if field_name in ['title', 'bookmarks', 'site_updated', 'site_uploaded', 'replies', 'views'] %}
+            {% do classlist.append('pixiv-data') %}
+        {% endif %}
+        {% if field_name == 'commentary' %}
+            {{ field_input(description="Text here will be appended to existing artist profiles.") }}
+        {% else %}
+            {{ field_input(classlist=classlist) }}
+        {% endif %}
+    {% endcall%}
+{% endblock %}

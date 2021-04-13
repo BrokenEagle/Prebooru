@@ -1,0 +1,61 @@
+{% from 'posts/_macros.html' import post_preview %}
+
+{% macro image_urls_section(illust_urls) -%}
+    <section id="image-posts">
+        <h3>Image URLs</h3>
+        <div id="image-posts-container">
+             {% for illust_url in illust_urls %}
+                <div class="image-post">
+                    <div class="image-post-info">
+                        <ul>
+                            <li><strong>Edit( {{ helpers.base.GeneralLink('image', illust_url.edit_url) }} )</strong></li>
+                            <li><strong>Order: {{ illust_url.order }}</strong></li>
+                            <li><strong>URL:</strong> {{ helpers.base.UrlLink(illust_url.full_url) }}</li>
+                            <li><strong>Dimensions:</strong> {{ illust_url.width }} x {{ illust_url.height }}</li>
+                            <li><strong>Active:</strong> {{ illust_url.active | tojson }}</li>
+                            {% if illust_url.post is none %}
+                                <li><strong>Upload( <a href="{{ url_for('upload.new_html', illust_url_id=illust_url.id) }}">image</a> )</strong></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% if illust_url.post is not none %}
+                        <div class="image-post-preview">
+                            {{ post_preview(illust_url.post) }}
+                        </div>
+                    {% else %}
+                        <div class="no-post-preview">
+                            <span class="explanation">No post.</span>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{%- endmacro %}
+
+{% macro video_urls_section(video_illust_url, sample_illust_url) -%}
+    <section id="video-posts">
+        <h3>Video URLs</h3>
+        <div class="video-post-info">
+            <ul>
+                <li><strong>Edit( 
+                    {{ helpers.base.GeneralLink('video', video_illust_url.edit_url) }} |
+                    {{ helpers.base.GeneralLink('sample', sample_illust_url.edit_url) }}
+                    )
+                </strong></li>
+                <li><strong>Video URL:</strong> {{ helpers.base.UrlLink(video_illust_url.full_url) }}</li>
+                <li><strong>Thumb URL:</strong> {{ helpers.base.UrlLink(sample_illust_url.full_url) }}</li>
+                <li><strong>Dimensions:</strong> {{ video_illust_url.width }} x {{ video_illust_url.height }}</li>
+                <li><strong>Active:</strong> {{ video_illust_url.active | tojson }}</li>
+            </ul>
+        </div>
+        <div class="video-post-preview">
+            {% if video_illust_url.post is not none %}
+                {{ post_preview(video_illust_url.post) }}
+            {% else %}
+                <em>No post.</em><br><br>
+                ( <a href="{{ url_for('upload.new_html', illust_url_id=video_illust_url.id) }}">upload</a> )
+            {% endif %}
+        </div>
+    </section>
+{%- endmacro %}

@@ -1,0 +1,26 @@
+{% from "layouts/_macros.html" import timestamps_section %}
+{% from "pools/_macros.html" import pools_section %}
+{% from "artists/_macros.html" import artists_section %}
+{% from "illusts/_macros.html" import illusts_section %}
+
+<aside id="notation-sidebar">
+    {% if helpers.notation.HasAppendItem(notation) %}
+        {% with append_key, append_item = helpers.notation.AppendKey(notation) %}
+            {% if append_key == 'pool' %}
+                {{ pools_section(append_item, 'notation-pool') }}
+            {% elif append_key == 'artist' %}
+                {{ artists_section(append_item, 'notation-artist') }}
+            {% elif append_key == 'illust' %}
+                {{ illusts_section(append_item, 'notation-illust') }}
+            {% else %}
+                <section id="notation-{{ append_key }}">
+                    <h4>{{ append_key.title() }}</h4>
+                    <ul>
+                        <li>{{ helpers.notation.ItemLink(append_item) }}</li>
+                    </ul>
+                </section>
+            {% endif %}
+        {% endwith %}
+    {% endif %}
+    {{ timestamps_section(notation, 'notation-timestamps') }}
+</aside>

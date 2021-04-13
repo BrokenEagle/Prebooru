@@ -1,0 +1,18 @@
+{% extends 'notations/_base.html' %}
+{% from 'layouts/_macros.html' import render_form %}
+
+{% block title %}Edit - {{ notation.header }}{% endblock %}
+
+{% block content %}
+    <div id="notation-form-heading" class="heading">
+        Edit {{ notation.header }}
+    </div>
+    {% if notation.append_item is not none %}
+        <div id="notation-form-info">
+            For {{ notation.append_item.show_link }}:
+        </div>
+    {% endif %}
+    {% call(field_name, field_input) render_form(form, 'PUT', notation.update_url) %}
+        {{ field_input() }}
+    {% endcall %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'artists/_base.html' %}
+{% from 'layouts/_macros.html' import render_form %}
+
+{% block title %}New Artist{% endblock %}
+
+{% block content %}
+    <div class="form-heading heading">New Artist</div>
+    {% call(field_name, field_input) render_form(form, 'POST', artist.create_url) %}
+        {{ field_input() }}
+    {% endcall %}
+{% endblock %}

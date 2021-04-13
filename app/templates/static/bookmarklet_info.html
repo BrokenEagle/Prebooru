@@ -1,0 +1,30 @@
+{% extends 'layouts/base.html' %}
+
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/static.css') }}">{% endblock %}
+
+{% block title %}Bookmarklet Info{% endblock %}
+
+{% block content %}
+    <div id="bookmarklet-info">
+        {% set all_bookmarklet = "javascript:window.open('http://127.0.0.1:5000/uploads/all?upload[request_url]='+encodeURIComponent(location.href),'_blank');false;" %}
+        {% set select_bookmarklet = "javascript:window.open('http://127.0.0.1:5000/uploads/select?upload[request_url]='+encodeURIComponent(location.href),'_blank');false;" %}
+        <h4>Links</h4>
+        <div id="bookmarklet-links">
+            <a href="{{ all_bookmarklet }}">All to Prebooru</a> |
+            <a href="{{ select_bookmarklet }}">Select to Danbooru</a>
+        </div>
+        <p>Bookmark the above links by dragging them to the bookmark toolbar.</p>
+        <h4>{{ helpers.base.GeneralLink("All", url_for('upload.upload_all_html', show_form='true')) }}</h4>
+        <p>The all bookmarklet will open a new tab from a site post and upload all images available on that site post. The following is the code for this, and can be copied and modified instead.<p>
+        <code>{{ all_bookmarklet }}</code>
+        <h4>{{ helpers.base.GeneralLink("Select", url_for('upload.upload_select_html', show_form='true')) }}</h4>
+        <p>The select bookmarklet will open a new tab from a site post present all available images from that post, allowing one to select which images from the site post to upload. The following is the code for this, and can be copied and modified instead.<p>
+        <code>{{ select_bookmarklet }}</code>
+        <h4>Supported Sites</h4>
+        <p>The following are the supported sites, along with examples of the proper request URL format.
+        <ul>
+            <li><b>Pixiv:</b> https://www.pixiv.net/artworks/1234</li>
+            <li><b>Twitter:</b> https://twitter.com/nobody/status/1234</li>
+        </ul>
+    </div>
+{% endblock %}

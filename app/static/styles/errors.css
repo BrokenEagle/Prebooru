@@ -1,0 +1,9 @@
+/****SHOW Page****/
+div#error-heading {
+    font-size: 28px;
+    margin-top: 1em;
+}
+div#error-content {
+    font-size: 16px;
+    margin-top: 1em;
+}

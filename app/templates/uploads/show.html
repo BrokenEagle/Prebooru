@@ -1,0 +1,25 @@
+{% extends 'uploads/_base.html' %}
+{% from "posts/_macros.html" import recent_posts %}
+
+{% block title %}{{ upload.header }}{% endblock %}
+
+{% block content %}
+    <div id="upload-heading" class="heading">{{ upload.header }}</div>
+    <div id="upload-content">
+        {% include "uploads/_sidebar.html" %}
+        {% include "uploads/_site_content.html" %}
+    </div>
+    <div id="upload-posts">
+        {{ recent_posts(upload.posts) }}
+    </div>
+{% endblock %}
+
+{% block pagescript %}
+    {% if upload.status == 'pending' or upload.status == 'processing' %}
+        <script>
+            setTimeout(function () {
+                window.location.reload();
+            }, 5000)
+        </script>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,54 @@
+/****NEW/EDIT Page****/
+div.booru-form-heading {
+    font-size: 28px;
+    margin-top: 1em;
+}
+textarea#booru-name-string {
+    width: 20em;
+    height: 5em;
+}
+/****SHOW Page****/
+div#booru-heading {
+    font-size: 32px;
+}
+div#booru-content {
+    margin-top: 2em;
+    display: flex;
+}
+div#booru-sidebar {
+    width: 20%;
+    border: 2px solid #DDD;
+    background: #F8F8F8;
+    padding: 0.5em;
+}
+div#booru-sidebar > section {
+    margin-bottom: 1em;
+}
+section#booru-illusts {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+div#booru-site-content {
+    width: 70%;
+}
+div#booru-site-content h4 {
+    text-decoration: underline;
+}
+div#booru-site-content-1 {
+    display: flex;
+}
+div#booru-site-content-1 > section {
+    margin-left: 1em;
+}
+div#booru-site-content-1 span.heading {
+    font-size: 1.33em;
+}
+section#booru-site-info {
+    width: 25%;
+}
+section#booru-names {
+    width: 25%;
+}
+div#booru-posts {
+    margin-top: 2em;
+}

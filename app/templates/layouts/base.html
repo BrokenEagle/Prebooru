@@ -1,0 +1,46 @@
+<!doctype html>
+<head>
+    <title>{% block title %}{% endblock %} - Prebooru</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/base.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    {% block css %}{% endblock %}
+    <script src="{{ url_for('static', filename='javascript/base.js') }}"></script>
+    {% block linkscript %}{% endblock %}
+</head>
+<body>
+    <header id="top">
+        <a id="app-name-header" class="heading" href="/">Prebooru</a>
+        <nav>
+            {{ helpers.base.render_template("layouts/_main_links.html") | safe }}
+            {% block secondary_links %}{% endblock %}
+        </nav>
+    </header>
+    <section id="content" class="{{ helpers.base.EndpointClasses(request) }}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div id="notice">
+                    {% for category, message in messages %}
+                        {% if category == 'error' %}
+                            <div class="notice-error">{{ message }}</div>
+                        {% else %}
+                            <div class="notice-{{ category }}">{{ message }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% if not helpers.base.HasErrorMessages(messages) %}
+                    <script>
+                        setTimeout(()=>{
+                            document.getElementById('notice').style.setProperty('display', 'none');
+                        }, 5000);
+                    </script>
+                {% endif %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+        {% block pages %}{% endblock %}
+        {% block pagescript %}{% endblock %}
+    </section>
+    <footer>
+        <div>Prebooru / <a href="https://github.com/BrokenEagle/prebooru">Github</a></div>
+    </footer>
+</body>

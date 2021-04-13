@@ -1,0 +1,27 @@
+{% macro artists_section(artists, section_id) -%}
+    {% if artists is not none %}
+        {% if artists is not iterable %}
+            {% set artists = [artists] %}
+            {% set singular = True %}
+        {% else %}
+            {% set singular = False %}
+        {% endif %}
+        {% if artists | length > 0 %}
+            <section id="{{ section_id }}">
+                <h4>{{ "Artist" if singular else "Artists" }}</h4>
+                <ul>
+                    {% for artist in artists %}
+                        <li><span class="item-heading">{{ artist.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.artist.PostSearch(artist)) }}</span>
+                            <ul>
+                                <li><strong>{{ helpers.artist.SiteArtistLink(artist) }}</strong></li>
+                                <li><strong>Site ID:</strong> {{ artist.site_artist_id }}</li>
+                                <li><strong>Account:</strong> {{ helpers.base.StrOrNone(artist.current_site_account) }}</li>
+                                <li><strong>Links:</strong> {{ helpers.artist.ArtistLinks(artist) }}</li>
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    {% endif %}
+{%- endmacro %}

@@ -1,0 +1,52 @@
+{% from 'tags/_macros.html' import tag_list %}
+
+{% macro illusts_display(illust_search_url, illust_count, section_id, section=True) -%}
+    {% if section %}
+        {% set container_tag = 'section' %}
+    {% else %}
+        {% set container_tag = 'div' %}
+    {% endif %}
+    <{{ container_tag }} id="{{ section_id }}">
+        <span class="heading">Illusts</span> (&thinsp;{{ illust_count }}&thinsp;) {{ helpers.base.GeneralLink('&raquo;', illust_search_url) }}
+    </{{ container_tag }}>
+{%- endmacro %}
+
+{% macro illusts_section(illusts, section_id) -%}
+    {% if illusts is not none %}
+        {% if illusts is not iterable %}
+            {% set illusts = [illusts] %}
+            {% set singular = True %}
+        {% else %}
+            {% set singular = False %}
+        {% endif %}
+        {% if illusts | length > 0 %}
+            <section id="{{ section_id }}">
+                <h4>{{"Illust" if singular else "Illusts"}}</h4>
+                <ul>
+                    {% for illust in illusts %}
+                        <li><span class="item-heading"><a href="{{ illust.show_url }}">{{ illust.shortlink }}</a></span>
+                            <ul>
+                                <li><strong>{{ helpers.illust.SiteIllustLink(illust) }} {{ helpers.illust.PostIllustLink(illust) }}</strong></li>
+                                <li><strong>Site ID:</strong> {{ illust.site_illust_id }}</li>
+                                <li><strong>Domain:</strong> {{ illust.site_domain }}</li>
+                                <li><strong>Tags:</strong>
+                                    {% for tag in illust.tags %}
+                                        {% if loop.first %}
+                                            <ul>
+                                        {% endif %}
+                                        <li>{{ helpers.base.GeneralLink(tag.name, tag.show_url) }}&emsp;<a href="{{ helpers.illust.PostTagSearch(tag) }}">&raquo;</a></li>
+                                        {% if loop.last %}
+                                            </ul>
+                                        {% endif %}
+                                    {% else %}
+                                        <em>none</em>
+                                    {% endfor %}
+                                </li>
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    {% endif %}
+{%- endmacro %}

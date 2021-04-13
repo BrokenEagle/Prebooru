@@ -1,0 +1,15 @@
+{% extends 'posts/_base.html' %}
+{% from 'layouts/_macros.html' import page_navigation %}
+{% from 'posts/_macros.html' import post_preview %}
+
+{% block title %}Posts{% endblock %}
+
+{% block content %}
+    <div id="posts-container">
+        {% for post in posts.items %}
+            {{ post_preview(post) }}
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(posts) }}{% endblock %}

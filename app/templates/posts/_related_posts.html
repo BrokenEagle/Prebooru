@@ -1,0 +1,19 @@
+{% if posts | length > 0 %}
+    <div id="related-posts">
+        <div id="related-posts-heading" class="heading">
+            Related posts
+            {% if post_search_link is not none %}
+                {{ helpers.base.GeneralLink("&raquo;", post_search_link) }}
+            {% endif %}
+        </div>
+        <div id="related-posts-container">
+             {% for post in posts %}
+                <div class="related-post-block">
+                    {{ post_preview(post) }}
+                </div>
+            {% else %}
+                <span class="explanation">There are no posts.</span>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

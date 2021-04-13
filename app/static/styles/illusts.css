@@ -1,0 +1,160 @@
+/***FORMS****/
+div#illust-form-heading {
+    font-size: 28px;
+    margin-top: 1em;
+}
+div#illust-form-info {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 1em;
+}
+textarea#illust-tag-string {
+    width: 20em;
+    height: 5em;
+}
+input#illust-title {
+    width: 50em;
+}
+textarea#illust-commentary {
+    width: 50em;
+    height: 10em;
+}
+form > div.twitter-data,
+form > div.pixiv-data {
+    display: none;
+}
+form.twitter-data > div.twitter-data {
+    display: block;
+}
+form.pixiv-data > div.pixiv-data {
+    display: block;
+}
+/****SHOW Page****/
+div#illust-heading {
+    font-size: 32px;
+    margin-top: 1em;
+}
+div#illust-content {
+    display: flex;
+    margin-top: 2em;
+}
+div#illust-sidebar {
+    width: 20%;
+    border: 2px solid #DDD;
+    background: #F8F8F8;
+    padding: 0.5em;
+}
+div#illust-sidebar > section {
+    margin-bottom: 1em;
+}
+div#illust-notations-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+div#illust-site-content {
+    width: 70%;
+}
+div#illust-site-content h4,
+div#illust-posts h4 {
+    text-decoration: underline;
+}
+div#illust-site-content-1 {
+    display: flex;
+}
+div#illust-site-content-1 > section {
+    margin-left: 1em;
+}
+section#illust-site-info {
+    width: 25%;
+}
+section#illust-metrics {
+    width: 25%;
+}
+section#illust-tags {
+    width: 40%;
+}
+div#illust-site-content-2 {
+    margin-top: 2em;
+}
+section#illust-title,
+section#illust-commentaries {
+    margin-left: 1em;
+    width: 90%;
+}
+div#illust-title-block {
+    padding: 0.5em;
+    font-weight: bold;
+}
+div#illust-commentaries-container {
+    border: 1px solid #EEE;
+    padding: 0.5em;
+    max-height: 200px;
+    overflow-y: auto;
+}
+div.illust-commentaries-block {
+    margin: 0.5em;
+    padding-right: 5em;
+    position: relative;
+}
+span.illust-commentary-delete {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+div#illust-posts {
+    margin-top: 2em;
+}
+div#image-posts-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+div.image-post {
+    width: 25%;
+    margin-top: 1em;
+}
+div.image-post-info {
+    height: 100px;
+}
+div.image-post-preview,
+div.video-post-preview {
+    margin-top: 1em;
+}
+div.no-post-preview {
+    font-size: 20px;
+    width: 300px;
+    height: 300px;
+    background-color: #EEE;
+    border: 1px solid #CCC;
+    text-align: center;
+    padding-top: 1em;
+    margin-top: 1em;
+}
+/****INDEX Page****/
+div.simple-tags-container {
+    max-width: 25vw;
+}
+div.illust-preview {
+    display: grid;
+    grid-template-columns: repeat(2, 0fr);
+}
+div.illust-preview > article {
+    width: 150px;
+    height: 150px;
+    padding: 2px;
+}
+div.illust-preview > article.overflow { 
+    background-color: grey;
+    padding: 5px;
+}
+div.illust-preview > article.overflow > span {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+div.illust-preview > span.explanation {
+    width: 150px;
+}
+div.illust-preview img {
+    max-width: 150px;
+    max-height: 150px;
+}

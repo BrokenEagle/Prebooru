@@ -1,0 +1,25 @@
+{% extends 'tags/_base.html' %}
+{% from 'layouts/_macros.html' import page_navigation %}
+
+{% block title %}Tags{% endblock %}
+
+{% block content %}
+    <table id="tags-table" class="striped" width="80%">
+        <thead>
+            <tr>
+                <th width="10%">ID</th>
+                <th width="70%">Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tag in tags.items %}
+                <tr id="tag-{{ tag.id }}">
+                    <td>{{ tag.show_link }}</td>
+                    <td>{{ tag.name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(tags) }}{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'notations/_base.html' %}
+{% from 'layouts/_macros.html' import page_navigation %}
+
+{% block title %}Notations{% endblock %}
+
+{% block content %}
+    <table id="notations-table" class="striped" width="100%">
+        <thead>
+            <tr>
+                <th width="10%">ID</th>
+                <th>Excerpt</th>
+                <th width="10%">Created</th>
+                <th width="10%">Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for notation in notations.items %}
+                <tr id="notation-{{ notation.id }}">
+                    <td>{{ notation.show_link }}</td>
+                    <td>{{ helpers.notation.Excerpt(notation) }}</td>
+                    <td>{{ helpers.base.FormatTimestamp(notation.created) }}</td>
+                    <td>{{ helpers.base.FormatTimestamp(notation.updated) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(notations)}}{% endblock %}

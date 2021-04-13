@@ -1,0 +1,62 @@
+{% extends 'illusts/_base.html' %}
+{% from 'layouts/_macros.html' import page_navigation %}
+{% from 'posts/_macros.html' import multi_post_preview %}
+{% from 'tags/_macros.html' import simple_tag_list %}
+
+{% block title %}Illusts{% endblock %}
+
+{% block content %}
+    <table id="illusts-table" class="striped" width="100%">
+        <thead>
+            <tr>
+                <th width="1%">Preview</th>
+                <th width="10%">Info</th>
+                <th width="25%">Tags</th>
+                <th width="25%">Illust urls</th>
+                <th width="12%">Timestamps</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for illust in illusts.items %}
+                {% set outer_loop = loop %}
+                <tr id="illust-{{ illust.id }}">
+                    <td>
+                        {{ multi_post_preview(illust, 'illust') }}
+                    </td>
+                    <td>
+                        <span><strong>{{ illust.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.illust.PostIllustSearch(illust)) }}</strong></span><br>
+                        <span><strong>Domain:</strong> {{ illust.site_domain }}</span><br>
+                        <span><strong>Site ID:</strong> {{ illust.site_illust_id }}</span><br>
+                    </td>
+                    <td>
+                        <div class="simple-tags-container">
+                            {{ simple_tag_list(illust.tags) }}
+                        </div>
+                    </td>
+                    <td>
+                         {% for illust_url in illust.urls %}
+                            {% if loop.index == 8 %}
+                                ......<br>
+                            {% elif loop.index < 8 %}
+                                {{ helpers.base.UrlLink(illust_url.full_url) }}<br>
+                            {% endif %}
+                            {% if loop.last %}
+                                <br>
+                                <strong>{{ helpers.base.GeneralLink("&laquo;Search&raquo;", helpers.base.SearchUrlFor('illust_url.index_html', illust_id=illust.id)) }}</strong>
+                            {% endif %}
+                        {% else %}
+                            <em>none</em>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <strong>Requery:</strong> {{ helpers.base.FormatTimestamp(illust.requery) }}<br>
+                        <strong>Created:</strong> {{ helpers.base.FormatTimestamp(illust.created) }}<br>
+                        <strong>Updated:</strong> {{ helpers.base.FormatTimestamp(illust.updated) }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(illusts) }}{% endblock %}

@@ -1,0 +1,92 @@
+/****NEW/EDIT Page****/
+/****SHOW Page****/
+div#pool-heading {
+    font-size: 32px;
+}
+div#pool-name {
+    font-size: 28px;
+}
+div.pool-block {
+    display: inline-block;
+    height: 480px;
+    vertical-align: top;
+    margin: 0.25em;
+    padding: 0.5em;
+    border: 1px solid #EEE;
+    min-width: 300px;
+}
+div.pool-block-heading {
+    font-size: 24px;
+}
+div.pool-display-block {
+    display: block;
+    height: 320px;
+    margin-left: 1em;
+}
+div.pool-display-block {
+    display: block;
+    height: 320px;
+    margin-left: 1em;
+}
+div.pool-display-notation {
+    word-break: break-word;
+    width: 315px;
+    max-height: 425px;
+    overflow-y: auto;
+}
+div.pool-info-block {
+    display: flex;
+    vertical-align: top;
+    max-height: 125px;
+    overflow-y: auto;
+    background-color: #F8F8F8;
+    border: 1px solid #DDD;
+    padding: 5px;
+    width: 310px;
+    font-size: 14px;
+}
+div.pool-info-block > div {
+    min-height: 120px;
+    display: inline-block;
+    vertical-align: top;
+}
+div.pool-relation-block {
+    width: 120px;
+}
+div.pool-relation-block > div {
+    margin-bottom: 0.5em;
+}
+div.pool-notation-block {
+    width: 180px;
+    border-left: 1px solid #EEE;
+    padding-left: 5px;
+}
+span.thin-list {
+    position: relative;
+    left: -8px;
+}
+div.illust-preview {
+    display: grid;
+    grid-template-columns: repeat(2, 0fr);
+}
+div.illust-preview > article {
+    width: 150px;
+    height: 150px;
+    padding: 2px;
+}
+div.illust-preview > article.overflow { 
+    background-color: grey;
+    padding: 5px;
+}
+div.illust-preview > article.overflow > span {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+div.illust-preview > span.explanation {
+    width: 150px;
+}
+div.illust-preview img {
+    max-width: 150px;
+    max-height: 150px;
+}

@@ -1,0 +1,126 @@
+{% macro render_form(form, method, url, class=None, manual=False) -%}
+    {% set submethod = method.lower() if method not in ['GET', 'POST'] else None %}
+    {% set method = method if method.upper() in ['GET', 'POST'] else 'POST' %}
+    {% set class_string = 'class="%s"'|format(class) if class is not none else "" %}
+    <form id="form" {{ class_string | safe }} method="{{ method }}" action="{{ url }}">
+        {% if submethod is not none %}
+            <input type="hidden" name="_method" value="{{ submethod }}">
+        {% endif %}
+        {{ form.csrf_token }}
+        {% if not manual %}
+            {% for field_name, field_input in helpers.base.FormIterator(form) %}
+                {{ caller(field_name, field_input) }}
+            {% endfor %}
+        {% else %}
+            {{ caller() }}
+        {% endif %}
+        <input type="submit" value="Submit">
+    </form>
+{%- endmacro %}
+
+{% macro simple_list(items, key) -%}
+    {% for item in items %}
+        {% if caller is undefined %}
+            {{ item[key] }}
+        {% else %}
+            {{ caller(item) }}
+        {% endif %}
+        {% if not loop.last %}
+            <br>
+        {% endif %}
+    {% else %}
+        <em>none</em>
+    {% endfor %}
+{%- endmacro %}
+
+{% macro items_list(items, key) -%}
+    {% if items | length == 1 %}
+        {% if caller is undefined %}
+            {{ items[0][key] }}
+        {% else %}
+            {{ caller(items[0]) }}
+        {% endif %}
+    {% else %}
+        {% for item in items %}
+            {% if loop.first %}
+                <ul>
+            {% endif %}
+            {% if caller is undefined %}
+                <li>{{ item[key] }}</li>
+            {% else %}
+                <li>{{ caller(item) }}</li>
+            {% endif %}
+            {% if loop.last %}
+                </ul>
+            {% endif %}
+        {% else %}
+            <em>none</em>
+        {% endfor %}
+    {% endif %}
+{%- endmacro %}
+
+{% macro items_block(items, item_plural, separator='<hr>') -%}
+    {% for item in items %}
+        {{ caller(item) }}
+        {% if not loop.last %}
+            {{ separator | safe }}
+        {% endif %}
+    {% else %}
+        <span class="explanation">There are no {{ item_plural }}.</span>
+    {% endfor %}
+{%- endmacro %}
+
+{% macro timestamps_section(item, section_id) -%}
+    <section id="{{ section_id }}">
+        <h4>Timestamps</h4>
+        <ul>
+            {% for attr in ['requery', 'created', 'updated'] %}
+                {% if item[attr] is defined %}
+                    <li><strong>{{ attr | title }}:</strong> {{ helpers.base.FormatTimestamp(item[attr]) }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </section>
+{%- endmacro %}
+
+{% macro image_select_controls(classname) -%}
+    <div id="image-select-controls">
+        <strong>Controls:</strong>
+        (
+        <a href="javascript:Prebooru.selectAll('{{ classname }}')">All</a> |
+        <a href="javascript:Prebooru.selectNone('{{ classname }}')">None</a> | 
+        <a href="javascript:Prebooru.selectInvert('{{ classname }}')">Invert</a>
+        )
+        {% if caller is defined %}
+            {{ caller() }}
+        {% endif %}
+    </div>
+{%- endmacro %}
+
+{% macro page_navigation(pagination) -%}
+    {% with previous_page, current_page, next_page, pages = helpers.base.PageNavigation(pagination) %}
+        <div class="paginator numbered-paginator">
+            {% if previous_page is none %}
+                <span>&lt;</span>
+            {% else %}
+                <a href="{{ helpers.base.UrlForWithArgs(request.endpoint, page=previous_page) }}">&lt;</a>
+            {% endif %}
+
+            {% for page in pages %}
+                {% if page == "..." %}
+                    <span>...</span>
+                {% elif page == current_page %}
+                    <span>{{ current_page }}</span>
+                {% else %}
+                    <a href="{{ helpers.base.UrlForWithArgs(request.endpoint, page=page) }}">{{ page }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if next_page is none %}
+                <span>&gt;</span>
+            {% else %}
+                <a href="{{ helpers.base.UrlForWithArgs(request.endpoint, page=next_page) }}">&gt;</a>
+            {% endif %}
+        </div>
+    {% endwith %}
+{%- endmacro %}

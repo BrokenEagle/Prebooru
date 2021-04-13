@@ -1,0 +1,55 @@
+{% from 'layouts/_macros.html' import items_block %}
+{% from 'tags/_macros.html' import tag_list %}
+
+<div id="illust-site-content">
+    <div id="illust-site-content-1">
+        <section id="illust-site-info">
+            <h4>Site</h4>
+            <ul>
+                <li><strong>{{ helpers.illust.SiteIllustLink(illust) }} {{ helpers.illust.PostIllustLink(illust) }}</strong></li>
+                <li><strong>Domain:</strong> {{ illust.site_domain }}</li>
+                <li><strong>Illust ID:</strong> {{ illust.site_illust_id }}</li>
+                <li><strong>Created:</strong> {{ helpers.base.FormatTimestamp(illust.site_created) }}</li>
+                 {% for key,val in helpers.illust.SiteDateIterator(illust) %}
+                    <li><strong>{{ key }}:</strong> {{ val }}</li>
+                {% endfor %}
+                <li><strong>Pages:</strong> {{ illust.pages }}</li>
+                <li><strong>Active:</strong> {{ illust.active | tojson }}</li>
+            </ul>
+        </section>
+        <section id="illust-metrics">
+            <h4>Metrics</h4>
+            <ul>
+                <li><strong>Score:</strong> {{ illust.score }}</li>
+                 {% for key,val in helpers.illust.SiteMetricIterator(illust) %}
+                    <li><strong>{{ key.title() }}:</strong> {{ val }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        <section id="illust-tags">
+            <h4>Tags</h4>
+            {{ tag_list(illust.tags) }}
+        </section>
+    </div>
+    <div id="illust-site-content-2">
+        {% if illust.title is not none %}
+            <section id ="illust-title">
+                <h4>Title</h4>
+                <div id="illust-title-block">{{ illust.title }}</div>
+            </section>
+        {% endif %}
+        <section id ="illust-commentaries">
+            <h4>Commentaries</h4>
+            <div id="illust-commentaries-container">
+                {% call(commentary) items_block(illust.commentaries, 'commentaries') %}
+                    <div class="illust-commentaries-block">
+                        <span class="illust-commentary-delete">
+                            (&thinsp;<a class="warning-link" href="{{ url_for('illust.delete_commentary_html', id=illust.id, description_id=commentary.id) }}" onclick="return Prebooru.deleteConfirm(this)">remove</a>&thinsp;)
+                        </span>
+                        {{ helpers.base.ConvertStrToHTML(commentary.body) }}
+                    </div>
+                {% endcall %}
+            </div>
+        </section>
+    </div>
+</div>

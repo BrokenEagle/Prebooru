@@ -1,0 +1,14 @@
+{% extends 'errors/_base.html' %}
+
+{% block title %}{{ error.shortlink.title() }}{% endblock %}
+
+{% block content %}
+    <div id="error-heading" class="heading">{{ error.shortlink.title() }}</div>
+    <div id="error-content">
+        <ul>
+            <li><strong>Module:</strong> {{ error.module }}</li>
+            <li><strong>Message:</strong> {{ helpers.error.FormatMessage(error) }}</li>
+            <li><strong>Created:</strong> {{ helpers.base.FormatTimestamp(error.created) }}</li>
+        </ul>
+    </div>
+{% endblock %}

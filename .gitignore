@@ -129,4 +129,17 @@ dmypy.json
 .pyre/
 
 notes.txt
-app/config.py
+app/local_config.py
+*.db
+ideas.txt
+notes.txt
+similarity_notes.txt
+old/
+db/
+migrations.old/
+junk/
+pythonsave.bat
+projectsave.bat
+ffprobe.exe
+prebooru-install/
+

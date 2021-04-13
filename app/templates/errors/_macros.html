@@ -1,0 +1,14 @@
+{% macro errors_section(errors, section_id) -%}
+    {% if errors | length > 0 %}
+        <section id="{{ section_id }}">
+            <h4>Errors</h4>
+            <ul>
+            {% for error in errors %}
+                <li><strong>Module:</strong> {{ error.module }}</li>
+                <li><strong>Message:</strong> {{ error.message }}</li>
+                <li><strong>Created:</strong> {{ helpers.base.FormatTimestamp(error.created) }}</li>
+            {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+{%- endmacro %}

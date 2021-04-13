@@ -1,0 +1,11 @@
+<menu id="secondary-menu">
+    {{ helpers.base.SubnavLinkTo("Listing", 'artist.index_html') }}
+    {{ helpers.base.SubnavLinkTo("New", 'artist.new_html') }}
+    {{ helpers.base.SubnavLinkTo("URLs", 'artist_url.index_html') }}
+    |
+    {{ helpers.base.SubnavLinkTo("Create", 'artist.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return CreateArtistFromUrl(this)'}) }}
+    {% if artist.id is not none %}
+        {{ helpers.base.SubnavLinkTo("Show", 'artist.show_html', id=artist.id) }}
+        {{ helpers.base.SubnavLinkTo("Edit", 'artist.edit_html', id=artist.id) }}
+    {% endif %}
+</menu>

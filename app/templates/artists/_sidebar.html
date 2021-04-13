@@ -1,0 +1,20 @@
+{% from "boorus/_macros.html" import boorus_section %}
+{% from "illusts/_macros.html" import illusts_display %}
+{% from "layouts/_macros.html" import timestamps_section %}
+{% from "notations/_macros.html" import notations_section %}
+
+<div id="artist-sidebar">
+    {{ boorus_section(artist.boorus, 'artist-boorus') }}
+    {{ illusts_display(helpers.artist.IllustSearch(artist), artist.illust_count, 'artist-illusts') }}
+    {{ timestamps_section(artist, 'artist-timestamps') }}
+    {{ notations_section(artist.notations, 'artist-notations') }}
+    <section id="artist-options">
+        <h4>Options</h4>
+        <ul>
+            <li><a href="{{ url_for('artist.query_update_html', id=artist.id) }}" onclick="return Prebooru.linkPost(this)">Update from source</a></li>
+            <li><a href="{{ url_for('artist.query_booru_html', id=artist.id) }}" onclick="return Prebooru.linkPost(this)">Query for booru</a></li>
+            <li><a href="{{ url_for('illust.new_html', artist_id=artist.id) }}">Add illust</a></li>
+            <li><a href="{{ url_for('notation.new_html', artist_id=artist.id) }}">Add notation</a></li>
+        </ul>
+    </section>
+</div>

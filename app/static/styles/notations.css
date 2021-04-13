@@ -1,0 +1,44 @@
+/****NEW/EDIT Page****/
+div#notation-form-heading {
+    font-size: 28px;
+    margin-top: 1em;
+}
+div#notation-form-info {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 1em;
+}
+textarea#notation-body {
+    width: 50em;
+    height: 10em;
+}
+/****SHOW Page****/
+div#notation-heading {
+    font-size: 32px;
+}
+div#notation-content {
+    margin-top: 2em;
+    display: flex;
+}
+div#notation-content > section {
+    margin-bottom: 2em;
+}
+aside#notation-sidebar {
+    width: 20%;
+    border: 2px solid #DDD;
+    background: #F8F8F8;
+    padding: 0.5em;
+}
+aside#notation-sidebar > section {
+    margin-bottom: 1em;
+}
+div#notation-site-content {
+    margin-left: 1em;
+    width: 70%;
+}
+div#notation-site-content h4 {
+    text-decoration: underline;
+}
+section#notation-body {
+    width: 75%;
+}

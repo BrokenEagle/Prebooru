@@ -1,0 +1,17 @@
+{% macro boorus_section(boorus, section_id) -%}
+    <section id="{{ section_id }}">
+        <h4>Boorus</h4>
+        <ul>
+            {% for booru in boorus %}
+                <li><span class="item-heading">{{ booru.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.booru.PostSearch(booru)) }}</span>
+                    <ul>
+                        <li><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</li>
+                        <li><strong>Name: {{ helpers.booru.SiteBooruLink(booru) }} {{ helpers.booru.SiteSearchLink(booru) }}</strong></li>
+                    </ul>
+                </li>
+            {% else %}
+                <li><em>none</em></li>
+            {% endfor %}
+        </ul>
+    </section>
+{%- endmacro %}

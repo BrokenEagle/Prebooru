@@ -1,0 +1,17 @@
+/****SHOW Page****/
+div#similarity-pool-heading {
+    font-size: 32px;
+}
+div#similarity-pool-content {
+    margin-top: 1em;
+}
+div.similar-post-block div.input label {
+    padding: 0.5em;
+    margin-top: 0;
+}
+div.similar-post-block article.post {
+    text-align: left;
+}
+div.similar-post-controls {
+    margin-bottom: 0.5em;
+}

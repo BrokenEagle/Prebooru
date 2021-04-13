@@ -2,181 +2,141 @@
 
 # ## PYTHON IMPORTS
 import os
-import time
 import atexit
-import threading
-from flask import Flask, request, jsonify, abort
-from apscheduler.schedulers.background import BackgroundScheduler
+import colorama
+from flask_migrate import Migrate
+from argparse import ArgumentParser
 
 # ## LOCAL IMPORTS
-try:
-    from app.config import workingdirectory
-except ImportError:
-    print("Must set the config file first before running. Refer to the readme file.")
-    exit(-1)
-
-from app.logical.file import TouchFile
-import app.database as DB
-from app.sources import SOURCES
+from app import PREBOORU_APP, DB
+from app import controllers
+from app import helpers
+from app.logical.file import LoadDefault, PutGetJSON
+from app.config import WORKING_DIRECTORY, DATA_FILEPATH, PREBOORU_PORT, DEBUG_MODE, VERSION
 
 # ## GLOBAL VARIABLES
 
-LOCK_FILE = workingdirectory + 'prebooru-lock.txt'
-sched = None
+SERVER_PID_FILE = WORKING_DIRECTORY + DATA_FILEPATH + 'prebooru-server-pid.json'
+SERVER_PID = next(iter(LoadDefault(SERVER_PID_FILE, [])), None)
 
-# ### INITIALIZATION
+# Registering this with the Prebooru app so that DB commands can be executed with flask
+# The environment variables need to be set for this to work, which can be done by executing
+# the setup.bat script, then running "flask db" will show all of the available commands.
+migrate = Migrate(PREBOORU_APP, DB, render_as_batch=True)  # noqa: F841
 
-app = Flask(__name__)  # See if I can rename this
-SUBSCRIPTION_SEMAPHORE = threading.Semaphore()
-
-DB.local.LoadDatabase()
-DB.pixiv.LoadDatabase()
 
 # ## FUNCTIONS
 
-#    Auxiliary
-
-
-def CheckParams(request):
-    if 'user_id' not in request.args or not request.args['user_id'].isdigit():
-        return "No user ID present!"
-    if 'url' not in request.args:
-        return "No URL present!"
-    return int(request.args['user_id'])
-
-
-def UploadCheck(request_url):
-    for source in SOURCES:
-        type, illust_id = source.UploadCheck(request_url)
-        if type is not None:
-            return source, type, illust_id
-    return "Not a valid URL!", None, None
-
-
-def SubscriptionCheck(request_url):
-    for source in SOURCES:
-        artist_id = source.SubscriptionCheck(request_url)
-        if artist_id is not None:
-            return source, artist_id
-    return "Not a valid URL!", None
-
-
-def ShowIDCheck(database, table, id):
-    item = database.FindByID(table, id)
-    if item is None:
-        abort(404)
-    return item
-
-
-#   Routes
-
-
-@app.route('/uploads', methods=['GET'])
-def uploads():
-    return jsonify(DB.local.DATABASE['uploads'][::-1])
-
-
-@app.route('/uploads/<int:id>')
-def upload(id):
-    return ShowIDCheck(DB.local, 'uploads', id)
-
-
-@app.route('/posts', methods=['GET'])
-def posts():
-    return jsonify(DB.local.DATABASE['posts'][::-1])
-
-
-@app.route('/posts/<int:id>')
-def post(id):
-    return ShowIDCheck(DB.local, 'posts', id)
-
-
-@app.route('/subscriptions', methods=['GET'])
-def subscriptions():
-    return jsonify(DB.local.DATABASE['subscriptions'][::-1])
-
-
-@app.route('/subscription/<int:id>')
-def subscription(id):
-    return ShowIDCheck(DB.local, 'subscriptions', id)
-
-
-@app.route('/illusts', methods=['GET'])
-def illusts():
-    return jsonify(DB.pixiv.DATABASE['illusts'][::-1])
-
-
-@app.route('/illusts/<int:id>')
-def illust(id):
-    return ShowIDCheck(DB.pixiv, 'illusts', id)
-
-
-@app.route('/artists', methods=['GET'])
-def artists():
-    return jsonify(DB.pixiv.DATABASE['artists'][::-1])
-
-
-@app.route('/artists/<int:id>')
-def artist(id):
-    return ShowIDCheck(DB.pixiv, 'artists', id)
-
-
-@app.route('/create_upload', methods=['POST', 'GET'])
-def create_upload():
-    user_id = CheckParams(request)
-    if isinstance(user_id, str):
-        return user_id
-    upload_source, type, illust_id = UploadCheck(request.args['url'])
-    if type is None:
-        return upload_source
-    upload = DB.local.CreateUpload(type, user_id, request_url=request.args['url'])
-    threading.Thread(target=upload_source.DownloadIllust, args=(illust_id, upload, type, upload_source)).start()
-    return upload
-
-
-@app.route('/create_subscription', methods=['POST', 'GET'])
-def create_subscription():
-    user_id = CheckParams(request)
-    if isinstance(user_id, str):
-        return user_id
-    subscription_source, artist_id = SubscriptionCheck(request.args['url'])
-    if artist_id is None:
-        return subscription_source
-    if artist_id in DB.local.SUBSCRIPTION_ARTIST_ID_INDEX:
-        subscription = DB.local.SUBSCRIPTION_ARTIST_ID_INDEX[artist_id]
-    else:
-        subscription = DB.local.CreateSubscription(artist_id, subscription_source.SITE_ID, user_id)
-    threading.Thread(target=subscription_source.DownloadArtist, args=(subscription, SUBSCRIPTION_SEMAPHORE, subscription_source)).start()
-    return subscription
-
-
-#   MISC
-
-
-def CheckSubscriptions():
-    pending_subscription = next(filter(lambda x: x['expires'] != 0 and x['expires'] < time.time(), DB.local.DATABASE['subscriptions']), None)
-    if pending_subscription is not None:
-        subscription_source = SOURCES[pending_subscription['site_id']]
-        threading.Thread(target=subscription_source.DownloadArtist, args=(pending_subscription, SUBSCRIPTION_SEMAPHORE)).start()
-    else:
-        print("No subscriptions to handle...")
-
-
 @atexit.register
 def Cleanup():
-    if sched is not None:
-        sched.shutdown()
-    if os.path.exists(LOCK_FILE):
-        os.remove(LOCK_FILE)
+    if SERVER_PID is not None:
+        PutGetJSON(SERVER_PID_FILE, 'w', [])
 
+
+def StartServer(args):
+    global SERVER_PID
+    if SERVER_PID is not None:
+        print("Server process already running: %d" % SERVER_PID)
+        input()
+        exit(-1)
+    if args.extension:
+        try:
+            from flask_flaskwork import Flaskwork
+        except ImportError:
+            print("Install flaskwork module: pip install flask-flaskwork --upgrade")
+        else:
+            Flaskwork(PREBOORU_APP)
+    if args.title:
+        os.system('title Prebooru Server')
+    if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        print("\n========== Starting server - Prebooru-%s ==========" % VERSION)
+        SERVER_PID = os.getpid()
+        PutGetJSON(SERVER_PID_FILE, 'w', [SERVER_PID])
+    PREBOORU_APP.name = 'prebooru'
+    if args.public:
+        PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT, host="0.0.0.0")
+    else:
+        PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT)
+
+
+def InitDB(args):
+    check = input("This will destroy any existing information. Proceed (y/n)? ")
+    if check.lower() != 'y':
+        return
+    from app.logical.file import CreateDirectory
+    from app.config import DB_PATH, CACHE_PATH, SIMILARITY_PATH
+    if args.new:
+        if os.path.exists(DB_PATH):
+            print("Deleting prebooru database!")
+            os.remove(DB_PATH)
+        if os.path.exists(CACHE_PATH):
+            print("Deleting cache database!")
+            os.remove(CACHE_PATH)
+        if os.path.exists(SIMILARITY_PATH):
+            print("Deleting similarity database!")
+            os.remove(SIMILARITY_PATH)
+
+    print("Creating tables")
+    from app.models import NONCE  # noqa: F401, F811
+    from app.cache import NONCE  # noqa: F401, F811
+    from app.similarity import NONCE  # noqa: F401, F811
+    CreateDirectory(DB_PATH)
+    CreateDirectory(CACHE_PATH)
+    CreateDirectory(SIMILARITY_PATH)
+    DB.drop_all()
+    DB.create_all()
+
+    print("Setting current migration to HEAD")
+    from flask_migrate import stamp
+    migrate.init_app(PREBOORU_APP)
+    with PREBOORU_APP.app_context():
+        stamp()
+
+
+def Main(args):
+    switcher = {
+        'server': StartServer,
+        'init': InitDB,
+    }
+    switcher[args.type](args)
+
+
+# ### INITIALIZATION
+
+os.environ['FLASK_ENV'] = 'development' if DEBUG_MODE else 'production'
+
+colorama.init(autoreset=True)
+
+PREBOORU_APP.register_blueprint(controllers.illust.bp)
+PREBOORU_APP.register_blueprint(controllers.illust_url.bp)
+PREBOORU_APP.register_blueprint(controllers.artist.bp)
+PREBOORU_APP.register_blueprint(controllers.artist_url.bp)
+PREBOORU_APP.register_blueprint(controllers.booru.bp)
+PREBOORU_APP.register_blueprint(controllers.upload.bp)
+PREBOORU_APP.register_blueprint(controllers.post.bp)
+PREBOORU_APP.register_blueprint(controllers.pool.bp)
+PREBOORU_APP.register_blueprint(controllers.pool_element.bp)
+PREBOORU_APP.register_blueprint(controllers.tag.bp)
+PREBOORU_APP.register_blueprint(controllers.notation.bp)
+PREBOORU_APP.register_blueprint(controllers.error.bp)
+PREBOORU_APP.register_blueprint(controllers.proxy.bp)
+PREBOORU_APP.register_blueprint(controllers.static.bp)
+PREBOORU_APP.register_blueprint(controllers.similarity.bp)
+PREBOORU_APP.register_blueprint(controllers.similarity_pool.bp)
+PREBOORU_APP.register_blueprint(controllers.similarity_pool_element.bp)
+
+PREBOORU_APP.jinja_env.globals.update(helpers=helpers)
+PREBOORU_APP.jinja_env.add_extension('jinja2.ext.do')
+PREBOORU_APP.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 # ##EXECUTION START
 
-if __name__ == 'prebooru' and not os.path.exists(LOCK_FILE):
-    sched = BackgroundScheduler(daemon=True)
-    sched.add_job(CheckSubscriptions, 'interval', seconds=15)
-    sched.start()
-    TouchFile(LOCK_FILE)
-
 if __name__ == '__main__':
-    app.run(threaded=True)
+    parser = ArgumentParser(description="Server to process network requests.")
+    parser.add_argument('type', choices=['init', 'server'])
+    parser.add_argument('--new', required=False, default=False, action="store_true", help="Start with a new database file.")
+    parser.add_argument('--extension', required=False, default=False, action="store_true", help="Enable Chrome extension.")
+    parser.add_argument('--title', required=False, default=False, action="store_true", help="Adds server title to console window.")
+    parser.add_argument('--public', required=False, default=False, action="store_true", help="Makes the server visible to other computers.")
+    args = parser.parse_args()
+    Main(args)

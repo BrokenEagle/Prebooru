@@ -1,0 +1,35 @@
+{% extends 'boorus/_base.html' %}
+{% from 'layouts/_macros.html' import simple_list, page_navigation %}
+
+{% block title %}Boorus{% endblock %}
+
+{% block content %}
+    <table id="boorus-table" class="striped" width="70%">
+        <thead>
+            <tr>
+                <th width="10%">ID</th>
+                <th width="35%">Info</th>
+                <th width="35%">Names</th>
+                <th width="20%">Timestamps</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booru in boorus.items %}
+                <tr id="booru-{{ booru.id }}">
+                    <td class="booru-id">{{ booru.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.booru.PostSearch(booru)) }}</td>
+                    <td class="booru-info">
+                        <span><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</span><br>
+                        <span><strong>Current name:</strong> {{ helpers.booru.SiteBooruLink(booru) }} {{ helpers.booru.SiteSearchLink(booru) }}</span>
+                    </td>
+                    <td class="booru-names">{{ simple_list(booru.names, 'name') }}</td>
+                    <td class="booru-timestamps">
+                        <strong>Created:</strong> {{ helpers.base.FormatTimestamp(booru.created) }}<br>
+                        <strong>Updated:</strong> {{ helpers.base.FormatTimestamp(booru.updated) }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(boorus) }}{% endblock %}

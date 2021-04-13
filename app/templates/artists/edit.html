@@ -1,0 +1,17 @@
+{% extends 'artists/_base.html' %}
+{% from 'layouts/_macros.html' import render_form %}
+
+{% block title %}Edit - {{ artist.shortlink.title() }}{% endblock %}
+
+{% block content %}
+    <div class="form-heading heading">
+        Edit: {{ artist.show_link }}</a>
+    </div>
+    {% call(field_name, field_input) render_form(form, 'PUT', artist.update_url) %}
+        {% if field_name == 'profile' %}
+            {{ field_input(description="Text here will be appended to existing artist profiles.") }}
+        {% else %}
+            {{ field_input() }}
+        {% endif %}
+    {% endcall %}
+{% endblock %}

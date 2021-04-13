@@ -1,0 +1,11 @@
+{% extends 'notations/_base.html' %}
+
+{% block title %}{{ notation.header }}{% endblock %}
+
+{% block content %}
+        <div id="notation-heading" class="heading">{{ notation.header }}</div>
+        <div id="notation-content">
+            {% include "notations/_sidebar.html" %}
+            {% include "notations/_site_content.html" %}
+        </div>
+{% endblock %}

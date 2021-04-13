@@ -1,0 +1,24 @@
+{% from 'layouts/_macros.html' import render_form, image_select_controls %}
+
+{{ image_select_controls('select-image-input') }}
+{% call render_form(form, 'POST', upload.create_url, manual=True) %}
+    {% for url_data in illust_urls %}
+        <div class="select-image-block">
+            <div class="input">
+                <label for="select-post-{{ loop.index }}">
+                    <input type="checkbox" class="select-image-input" id="select-post-{{ loop.index }}" name="upload[image_urls][]" value="{{ url_data['full_url'] }}">
+                </label>
+            </div>
+            <article class="post select-post">
+                {% if url_data['media_url'] is not none %}
+                    <img src="{{ url_data['media_url'] }}">
+                {% else %}
+                    <div class="missing-image">Missing image.</div>
+                    <div class="full-url">{{ url_data['full_url'] }}</div>
+                {% endif %}
+            </article>
+        </div>
+    {% endfor %}
+    {{ form.request_url(type='hidden') }}
+    <input type="hidden" name="image_urls_only" value="true">
+{% endcall %}

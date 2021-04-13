@@ -1,0 +1,31 @@
+{% extends 'pools/_base.html' %}
+{% from 'layouts/_macros.html' import page_navigation %}
+
+{% block title %}Pools{% endblock %}
+
+{% block content %}
+    <table id="pools-table" class="striped" width="100%">
+        <thead>
+            <tr>
+                <th width="10%">ID</th>
+                <th>Name</th>
+                <th width="10%">Count</th>
+                <th width="10%">Created</th>
+                <th width="10%">Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pool in pools.items %}
+                <tr id="pool-{{ pool.id }}">
+                    <td>{{ pool.show_link }}</td>
+                    <td>{{ pool.name }}</td>
+                    <td>{{ pool.element_count }}</td>
+                    <td>{{ helpers.base.FormatTimestamp(pool.created) }}</td>
+                    <td>{{ helpers.base.FormatTimestamp(pool.updated) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(pools) }}{% endblock %}

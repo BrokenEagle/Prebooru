@@ -1,0 +1,32 @@
+{% macro notations_block(notation) -%}
+    <strong>{{ notation.show_link }}</strong>
+    <div class="notation-block">
+        {{ helpers.notation.ConvertToHTML(notation) }}<br><br>
+        <span class="muted-timestamp">{{ helpers.base.FormatTimestamps(notation) }}</span>
+    </div>
+{%- endmacro %}
+
+{% macro notationlist(notations) -%}
+    <ul>
+        {% for notation in notations %}
+            <li>
+                <span class="notation-list-item thin-list">{{ helpers.notation.ConvertToHTML(notation) }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+{%- endmacro %}
+
+{% macro notations_section(notations, section_id) -%}
+    {% if notations | length > 0 %}
+        <section id="{{ section_id }}">
+            <h4>Notations</h4>
+            <div id="artist-notations-container">
+                <ul>
+                    {% for notation in notations %}
+                        <li>{{ notations_block(notation) }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    {% endif %}
+{%- endmacro %}

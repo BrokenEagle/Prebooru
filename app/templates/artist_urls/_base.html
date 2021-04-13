@@ -1,0 +1,5 @@
+{% extends 'layouts/base.html' %}
+
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/artist_urls.css') }}">{% endblock %}
+
+{% block secondary_links %}{% include "artist_urls/_secondary_links.html" %}{% endblock %}

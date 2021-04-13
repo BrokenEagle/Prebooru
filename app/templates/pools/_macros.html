@@ -1,0 +1,92 @@
+{% from 'posts/_macros.html' import post_preview, multi_post_preview %}
+{% from 'notations/_macros.html' import notationlist %}
+
+{% macro itemlist(item_ids, item_type) -%}
+    <ul>
+        {% for item_id in item_ids  %}
+            <li>
+                <span class="thin-list">
+                    {{ helpers.base.GeneralLink("%s #%d"|format(item_type, item_id), url_for( item_type + '.show_html', id=item_id)) }}
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+{%- endmacro %}
+
+{% macro pool_display_block(item) -%}
+    <div class="pool-display-block">
+        {% if helpers.pool.ItemIsOfType(item, 'post') %}
+            {{ post_preview(item) }}
+        {% elif helpers.pool.ItemIsOfType(item, 'illust') %}
+            {% if item.type == 'image' %}
+                {{ multi_post_preview(item, 'illust') }}
+            {% elif item.type == 'video' %}
+                {{ post_preview(item.video_illust_url.post) }}
+            {% endif %}
+        {% elif helpers.pool.ItemIsOfType(item, 'notation') %}
+            <div class="pool-display-notation">{{ helpers.notation.ConvertToHTML(item) }}</div>
+        {% endif %}
+    </div>
+{%- endmacro %}
+
+{% macro pool_info_block(item) -%}
+    <div class="pool-info-block">
+        <div class="pool-relation-block">
+            <div class="pool-artist-block">
+                <strong>Artists:</strong><br>
+                {% if helpers.pool.ItemIsOfType(item, 'post') %}
+                    {{ itemlist(item.artist_ids, 'artist') }}
+                {% elif helpers.pool.ItemIsOfType(item, 'illust') %}
+                    {{ itemlist([item.artist_id], 'artist') }}
+                {% endif %}
+            </div>
+            {% if helpers.pool.ItemIsOfType(item, 'post') %}
+                <div class="pool-illust-block">
+                    <strong>Illusts:</strong>
+                    {{ itemlist(item.illust_ids, 'illust') }}
+                </div>
+            {% endif %}
+        </div>
+        {% if item.notations | length > 0 %}
+            <div class="pool-notation-block">
+                <strong>Notations:</strong><br>
+                {{ notationlist(item.notations) }}
+            </div>
+        {% endif %}
+    </div>
+{%- endmacro %}
+
+{% macro pools_section(pool_elements, section_id) -%}
+    {% if pool_elements is not none %}
+        {% if pool_elements is not iterable %}
+            {% set pool_elements = [pool_elements] %}
+            {% set singular = True %}
+        {% else %}
+            {% set singular = False %}
+        {% endif %}
+        {% if pool_elements | length > 0 %}
+            <section id="{{ section_id }}">
+                <h4>{{ "Pool" if singular else "Pools" }}</h4>
+                <ul>
+                    {% for pool_element in pool_elements %}
+                        <li class="{{ 'listless-item' if pool_element.pool.series else '' }}">
+                            <strong>
+                                {% if pool_element.pool.series %}
+                                    {{ helpers.base.GeneralLink('&laquo;', url_for('pool_element.previous_html', id=pool_element.id)) }}
+                                {% endif %}
+                                {{ helpers.base.GeneralLink(pool_element.pool.name, pool_element.pool.show_url) }}
+                                {% if pool_element.pool.series %}
+                                    {{ helpers.base.GeneralLink('&raquo;', url_for('pool_element.next_html', id=pool_element.id)) }}
+                                {% endif %}
+                                [{{ helpers.base.GeneralLink("%d/%d"|format(pool_element.position1, pool_element.pool.element_count), pool_element.page_url) }}]
+                            </strong>
+                            <span class="delete-control">
+                                ( <a href="{{ pool_element.delete_url }}" onclick="return Prebooru.deletePool(this)">remove</a> )
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    {% endif %}
+{%- endmacro %}

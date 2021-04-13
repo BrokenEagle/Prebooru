@@ -1,0 +1,64 @@
+{% extends 'layouts/base.html' %}
+{% from 'layouts/_macros.html' import render_form %}
+{% from 'posts/_macros.html' import post_preview %}
+
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/similarity.css') }}">{% endblock %}
+
+{% block title %}Similarity results{% endblock %}
+
+{% block content %}
+    <div id="similarity-content">
+        <div id="similarity-heading" class="heading">Similarity results</div>
+        <div id="similarity-form" class="{{ helpers}}">
+            {% call(field_name, field_input) render_form(form, 'GET', url_for('similarity.check_html'), class=helpers.similarity.FormClass(similar_results)) %}
+                {{ field_input() }}
+            {% endcall %}
+            {% if similar_results is not none %}
+                <div id="display-form">
+                    <a href="#" onclick="return ShowForm(this)">&laquo;Show form&raquo;</a>
+                </div>
+            {% endif %}
+        </div>
+        {% if similar_results is not none %}
+            <div id="similarity-results-content">
+                {% for similar_result in similar_results %}
+                    <div class="similarity-result-container">
+                        <div class="similarity-result-heading heading">Image #{{ loop.index }}</div>
+                        <div class="similarity-proxy-block">
+                            <article class="proxy-post">
+                                <img src="{{ similar_result.cache }}">
+                            </article>
+                            <div class="proxy-image-details">
+                                <strong>Image url:</strong> {{ similar_result.image_url }}
+                            </div>
+                        </div>
+                        <div class="similarity-result-block">
+                            {% for post_result in similar_result.post_results %}
+                                <div class="similarity-post">
+                                    {{ post_preview(post_result.post) }}
+                                    <div class="similarity-post-info">
+                                        <strong>Score:</strong> {{ post_result.score }}<br>
+                                        <strong>Type/Size:</strong> {{ post_result.post.file_ext.upper() }} @ {{ post_result.post.size }}<br>
+                                        <strong>Dimensions:</strong> ( {{ post_result.post.width }} x {{ post_result.post.height }} )
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="no-results">No results.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block pagescript %}
+<script>
+function ShowForm(obj) {
+    document.getElementById('form').classList.remove('hidden');
+    obj.parentElement.style.display = 'none';
+    return false;
+}
+</script>
+{% endblock %}

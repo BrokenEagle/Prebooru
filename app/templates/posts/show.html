@@ -1,0 +1,37 @@
+{% extends 'posts/_base.html' %}
+{% from 'posts/_macros.html' import post_preview %}
+
+{% block linkscript %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='javascript/similarity_posts.js') }}"></script>
+{% endblock %}
+
+{% block title %}Post # {{ post.id }}{% endblock %}
+
+{% block content %}
+    <div id="sidebar-container">
+        {% include "posts/_sidebar.html" %}
+        <div id="post-content">
+            <section id="image-container" onclick="ResizeImage(this)" class="fullsize">
+                <picture>
+                    <img src="{{ post.sample_url }}">
+                </picture>
+            </section>
+            {% include "posts/_site_content.html" %}
+        </div>
+    </div>
+    {% with posts=post.related_posts, post_search_link=helpers.post.RelatedPostsSearch(post) %}
+        {% include "posts/_related_posts.html" %}
+    {% endwith %}
+    {% if post.similar_pool_id is not none %}
+        {% include "posts/_similar_posts.html" %}
+    {% endif %}
+{% endblock %}
+
+{% block pagescript %}
+<script>
+function ResizeImage(obj) {
+    obj.classList.toggle('fullsize');
+}
+</script>
+{% endblock %}

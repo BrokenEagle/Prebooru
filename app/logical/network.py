@@ -4,8 +4,8 @@
 import time
 import requests
 
-# ##FUNCTIONS
 
+# ##FUNCTIONS
 
 def NetworkQuery(request_url, headers, timeout):
     try:
@@ -25,11 +25,12 @@ def CheckHTTPResponse(response):
     if response.status_code >= 500 and response.status_code < 600:
         print("Server Error! Sleeping 5 seconds...")
         time.sleep(5)
-    print("HTTP %d - %s" % response.status_code, response.reason)
+    print("HTTP %d - %s" % (response.status_code, response.reason))
     return False
 
 
-def GetHTTPFile(serverfilepath, headers={}, timeout=10):
+def GetHTTPFile(serverfilepath, headers=None, timeout=10):
+    headers = headers if headers is not None else {}
     for i in range(3):
         response = NetworkQuery(serverfilepath, headers, timeout)
         if response is False:
@@ -38,7 +39,4 @@ def GetHTTPFile(serverfilepath, headers={}, timeout=10):
             return response
         if CheckHTTPResponse(response):
             return response.content
-    return response
-
-    print("Unable to download file:", serverfilepath)
     return response

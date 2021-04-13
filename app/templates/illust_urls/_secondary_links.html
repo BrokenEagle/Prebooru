@@ -1,0 +1,10 @@
+<menu id="secondary-menu">
+    {{ helpers.base.SubnavLinkTo("Listing", 'illust_url.index_html') }}
+    {{ helpers.base.SubnavLinkTo("New", 'illust_url.new_html') }}
+    {{ helpers.base.SubnavLinkTo("Illusts", 'illust.index_html') }}
+    {% if illust_url.id != None %}
+        |
+        {{ helpers.base.SubnavLinkTo("Show", 'illust_url.show_html', illust_url.id) }}
+        {{ helpers.base.SubnavLinkTo("Edit", 'illust_url.edit_html', illust_url.id) }}
+    {% endif %}
+</menu>

@@ -1,0 +1,9 @@
+<menu id="secondary-menu">
+    {{ helpers.base.SubnavLinkTo("Listing", 'upload.index_html') }}
+    {{ helpers.base.SubnavLinkTo("New", 'upload.new_html') }}
+    {{ helpers.base.SubnavLinkTo("Bookmarklet", 'static.bookmarklet_info_html') }}
+    {% if upload.id != None %}
+        |
+        {{ helpers.base.SubnavLinkTo("Show", 'upload.show_html', upload.id) }}
+    {% endif %}
+</menu>

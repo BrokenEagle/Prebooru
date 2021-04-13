@@ -1,2 +1,1 @@
-from . import local
-from . import pixiv
+# APP/DATABASE/__INIT__.PY

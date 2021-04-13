@@ -1,0 +1,23 @@
+{% extends 'tags/_base.html' %}
+{% from "illusts/_macros.html" import illusts_display %}
+{% from "posts/_macros.html" import recent_posts %}
+
+{% block title %}
+    {{ tag.header }}
+{% endblock %}
+
+{% block content %}
+    <div id="tag-heading" class="heading">
+        {{ tag.header }}
+    </div>
+    <div id="tag-content">
+        <ul>
+            <li><strong>Name:</strong>&emsp;{{ tag.name }}</li>
+            <li><strong>Links:</strong>&emsp;{{ helpers.tag.TagSearchLinks(tag) }}</li>
+        </ul>
+    </div>
+    {{ illusts_display(helpers.tag.IllustSearch(tag), tag.illust_count, 'tag-illusts', False) }}
+    <div id="tag-posts">
+        {{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.PostSearch(tag)) }}
+    </div>
+{% endblock %}

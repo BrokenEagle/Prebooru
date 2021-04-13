@@ -1,0 +1,7 @@
+<li id="subnav-{{ html_text }}">
+    <a id="subnav-{{ html_text }}-link"
+    {% for key in attrs %}
+        {{ key }}="{{ attrs[key] | safe }}"
+    {% endfor %}
+    href="{{ url_for(endpoint, id=id, **kwargs) }}">{{ text }}</a>
+</li>

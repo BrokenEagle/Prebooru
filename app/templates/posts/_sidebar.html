@@ -1,0 +1,41 @@
+{% from "boorus/_macros.html" import boorus_section %}
+{% from "artists/_macros.html" import artists_section %}
+{% from "illusts/_macros.html" import illusts_section %}
+{% from "pools/_macros.html" import pools_section %}
+{% from "notations/_macros.html" import notations_section %}
+{% from "errors/_macros.html" import errors_section %}
+
+<aside id="post-sidebar">
+    <section id="tag-list" style="display: none;"><!-- placeholder for user tags --></section>
+    {{ boorus_section(post.boorus, 'booru-info') }}
+    {{ artists_section(post.artists, 'artist-info') }}
+    {{ illusts_section(post.illusts, 'illust-info') }}
+    {{ pools_section(post._pools, 'pool-list') }}
+    {{ notations_section(post.notations, 'notation-list') }}
+    {{ errors_section(post.errors, 'error-list') }}
+    <section id="post-image-search">
+        <h4>Image search</h4>
+        <ul>
+            <li><strong>Danbooru:</strong> {{ helpers.post.DanbooruSearchLinks(post) }}</li>
+            <li><strong>Sauce:</strong> {{ helpers.post.SauceNAOSearchLinks(post) }}</li>
+            <li><strong>Ascii2D:</strong> {{ helpers.post.Ascii2DSearchLinks(post) }}</li>
+            <li><strong>IQDB.org:</strong> {{ helpers.post.IQDBOrgSearchLinks(post) }}</li>
+        </ul>
+    </section>
+    <section id="post-image-search">
+        <h4>Upload</h4>
+        <ul>
+            <li><strong>Danbooru:</strong> {{ helpers.post.DanbooruPostBookmarkletLinks(post) }}</li>
+        </ul>
+    </section>
+    <section id="post-options">
+        <h4>Options</h4>
+        <ul>
+            <li>{{ helpers.base.GeneralLink("Original file", post.file_url) }}</li>
+            <li>{{ helpers.post.FileLink(post) }}</li>
+            <li>{{ helpers.post.AddToPoolLink(post) }}</li>
+            <li>{{ helpers.post.AddNotationLink(post) }}</li>
+            <li>{{ helpers.post.RegenerateSimilarityLink(post) }}</li>
+        </ul>
+    </section>
+</aside>

@@ -1,0 +1,43 @@
+{% extends 'artists/_base.html' %}
+{% from 'layouts/_macros.html' import simple_list, page_navigation %}
+
+{% block title %}Artists{% endblock %}
+
+{% block content %}
+    <table id="artists-table" class="striped" width="100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Site</th>
+                <th>Names</th>
+                <th>Accounts</th>
+                <th>Webpages</th>
+                <th>Timestamps</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for artist in artists.items %}
+                <tr id="artist-{{ artist.id }}">
+                    <td>{{ artist.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.artist.PostSearch(artist)) }}</td>
+                    <td>
+                        <span><strong>Domain:</strong> {{ artist.site_domain }}</span><br>
+                        <span><strong>Artist ID:</strong> {{ artist.site_artist_id }}</span>
+                    </td>
+                    <td>{{ simple_list(artist.names, 'name') }}</td>
+                    <td>{{ simple_list(artist.site_accounts, 'name') }}</td>
+                    <td>{% call(webpage) simple_list(artist.webpages, 'url') %}
+                            <code>[{{ 'Active' if webpage.active else 'Inactive' }}]</code> {{ helpers.artist.WebpageLink(webpage.url) }}
+                        {% endcall %}
+                    </td>
+                    <td>
+                        <strong>Requery:</strong> {{ helpers.base.FormatTimestamp(artist.requery) }}<br>
+                        <strong>Created:</strong> {{ helpers.base.FormatTimestamp(artist.created) }}<br>
+                        <strong>Updated:</strong> {{ helpers.base.FormatTimestamp(artist.updated) }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(artists) }}{% endblock %}

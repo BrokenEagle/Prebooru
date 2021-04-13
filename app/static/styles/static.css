@@ -1,0 +1,21 @@
+/****SITE MAP Page****/
+div#site-map {
+    display: flex;
+}
+div#site-map > div {
+    margin: 1em 6em;
+}
+div#site-map > div > h3 {
+    text-decoration: underline;
+    margin-bottom: 1em;
+}
+div#site-map > div > section {
+    margin-bottom: 2em;
+}
+/****BOOKMARKLET INFO PAGE****/
+div#bookmarklet-info > h4 {
+    margin-top: 1em;
+}
+div#bookmarklet-info p {
+    margin-bottom: 1em;
+}

@@ -1,0 +1,22 @@
+{% extends 'illust_urls/_base.html' %}
+{% from 'posts/_macros.html'  import post_preview %}
+
+{% block title %}
+    {{ illust_url.header }}
+ {% endblock %}
+
+{% block content %}
+    <div id="illust-url-heading" class="heading">
+        {{ illust_url.header }}
+    </div>
+    <div id="illust-url-content">
+        {{ post_preview(illust_url.post) }}
+        <ul>
+            <li><strong>{{ helpers.illust_url.IllustLink(illust_url) }}</strong></li>
+            <li><strong>Domain:</strong> {{ illust_url.site_domain }}</li>
+            <li><strong>URL:</strong> {{ helpers.base.UrlLink(illust_url.full_url) }}</li>
+            <li><strong>Dimensions:</strong> ({{ illust_url.width }} x {{ illust_url.height }})</li>
+            <li><strong>Active:</strong> {{ illust_url.active | tojson }}</li>
+        </ul>
+    </div>
+{% endblock %}

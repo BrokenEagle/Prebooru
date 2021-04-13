@@ -7,6 +7,7 @@ import json
 # ###LOCAL IMPORTS
 from .utility import GetDirectory, DecodeUnicode, DecodeJSON
 
+
 # ##FUNCTIONS
 
 
@@ -15,11 +16,6 @@ def CreateDirectory(filepath):
     directory = GetDirectory(filepath)
     if not os.path.exists(directory):
         os.makedirs(directory)
-
-
-def TouchFile(fname, times=None):
-    with open(fname, 'a'):
-        os.utime(fname, times)
 
 
 def PutGetRaw(filepath, optype, data=None, unicode=False):
@@ -59,3 +55,10 @@ def PutGetJSON(filepath, optype, data=None, unicode=False):
         load = PutGetRaw(filepath, optype, None, unicode)
         if load is not None:
             return DecodeJSON(load)
+
+
+def LoadDefault(filepath, defaultvalue, binary=False, unicode=False):
+    optype = 'rb' if binary else 'r'
+    if os.path.exists(filepath):
+        return PutGetJSON(filepath, optype, unicode=unicode)
+    return defaultvalue

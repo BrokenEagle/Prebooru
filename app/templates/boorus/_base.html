@@ -1,0 +1,7 @@
+{% extends 'layouts/base.html' %}
+
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/boorus.css') }}">{% endblock %}
+
+{% block linkscript %}<script src="{{ url_for('static', filename='javascript/boorus.js') }}"></script>{% endblock %}
+
+{% block secondary_links %}{% include "boorus/_secondary_links.html" %}{% endblock %}

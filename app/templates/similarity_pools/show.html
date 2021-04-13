@@ -1,0 +1,56 @@
+{% extends 'layouts/base.html' %}
+{% from 'layouts/_macros.html' import image_select_controls, page_navigation %}
+{% from 'posts/_macros.html' import post_preview %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/similar_pools.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/similar_posts.css') }}">
+{% endblock %}
+
+{% block linkscript %}<script src="{{ url_for('static', filename='javascript/similarity_posts.js') }}"></script>{% endblock %}
+
+{% block title %}Similarity Pool for {{ similarity_pool.post_id }}{% endblock %}
+
+{% block content %}
+    <div id="similarity-pool-content">
+        <div id="similarity-pool-heading" class="heading">
+            Similarity Pool: {{ post.show_link }}
+        </div>
+        <div class="similarity-pool-content">
+            {{ post_preview(post) }}
+            {% call image_select_controls('similar-post-input') %}
+                <strong>[ <a class="warning-link" href="javascript:SubmitForm()">DELETE</a> ]</strong>
+            {% endcall %}
+        </div>
+        <form id="form" method="POST" action="{{ url_for('similarity_pool_element.batch_delete_html') }}">
+            <div id="similar-posts-container">
+                {% for post_data in elements.items %}
+                    <div class="similar-post-block">
+                        <div class="input">
+                            <label for="similar-post-{{ post_data.post.id }}">
+                                <input type="checkbox" class="similar-post-input" id="similar-post-{{ post_data.post.id }}" name="similarity_pool_element[id][]" value="{{ post_data.element.id }}">
+                            </label>
+                        </div>
+                        <div class="similar-post-controls">
+                            <strong>{{ helpers.similarity_pool.SiblingPoolLink(post_data.element, post_data.post) }}</strong>&nbsp;
+                            (&thinsp;{{ helpers.post.DeleteSimilarityElementLink(post_data.element) }}&thinsp;)
+                        </div>
+                        {{ post_preview(post_data.post) }}
+                        <div><strong>Score:</strong> {{ post_data.element.score }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+{% endblock %}
+{% block pages %}{{ page_navigation(elements) }}{% endblock %}
+
+{% block pagescript %}
+<script>
+    function SubmitForm() {
+        if (confirm("Remove posts from similarity pool?")) {
+            document.getElementById('form').submit();
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% from 'layouts/_macros.html' import items_list, items_block %}
+
+<div id="artist-site-content">
+    <div id="artist-site-content-1">
+        <section id="artist-site-info">
+            <h4>Site</h4>
+            <ul>
+                <li><strong><a href="{{ helpers.artist.HrefUrl(artist) }}">{{ helpers.artist.ShortLink(artist) }}</a></strong></li>
+                <li><strong>Domain:</strong> {{ artist.site_domain }}</li>
+                <li><strong>Site ID:</strong> {{ artist.site_artist_id }}</li>
+                <li><strong>Account:</strong> {{ helpers.base.StrOrNone(artist.current_site_account) }}</li>
+                <li><strong>Links:</strong> {{ helpers.artist.ArtistLinks(artist) | safe }}</li>
+                <li><strong>Created:</strong> {{ helpers.base.FormatTimestamp(artist.site_created) }}</li>
+                <li><strong>Active:</strong> {{ artist.active }}</li>
+            </ul>
+        </section>
+        <section id="artist-labels">
+            <h4>Labels</h4>
+            <ul>
+                <li><strong>Names:</strong> {{ items_list(artist.names, 'name') }}</li>
+                <li><strong>Accounts:</strong> {{ items_list(artist.site_accounts, 'name') }}</li>
+            </ul>
+        </section>
+        <section id="artist-webpages">
+            <h4>Webpages</h4>
+            <div id="artist-webpages-container">
+                {% call(webpage) items_block(artist.webpages, 'webpages', '<br>') %}
+                    <div class="artist-webpage-block">
+                        <ul>
+                            <li><strong>URL:</strong> {{ helpers.base.ExternalLink(webpage.url, webpage.url) }}</li>
+                            <li><strong>Active:</strong> {{ webpage.active | tojson }}</li>
+                        </ul>
+                    </div>
+                {% endcall %}
+            </div>
+        </section>
+    </div>
+    <div id="artist-site-content-2">
+        <section id="artist-profiles">
+            <h4>Profiles</h4>
+            <div id="artist-profiles-container">
+                {% call(profile) items_block(artist.profiles, 'profiles') %}
+                    <div class="artist-profiles-block">
+                        <span class="artist-profile-delete">
+                            (&thinsp;<a class="warning-link" href="{{ url_for('artist.delete_profile_html', id=artist.id, description_id=profile.id) }}" onclick="return Prebooru.deleteConfirm(this)">remove</a>&thinsp;)
+                        </span>
+                        {{ helpers.base.ConvertStrToHTML(profile.body) }}
+                    </div>
+                {% endcall %}
+            </div>
+        </div>
+    </div>
+</div>

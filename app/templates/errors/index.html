@@ -1,0 +1,29 @@
+{% extends 'errors/_base.html' %}
+{% from 'layouts/_macros.html' import page_navigation %}
+
+{% block title %}Errors{% endblock %}
+
+{% block content %}
+    <table id="errors-table" class="striped" width="100%">
+        <thead>
+            <tr>
+                <th width="5%">ID</th>
+                <th width="20%">Module</th>
+                <th width="65%">Message</th>
+                <th width="10%">Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for error in errors.items %}
+                <tr id="error-{{ errors.id }}">
+                    <td>{{ error.show_link }}</a></td>
+                    <td><code>{{ error.module }}</code></td>
+                    <td>{{ helpers.error.FormatMessage(error) }}</td>
+                    <td>{{ helpers.base.FormatTimestamp(error.created) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(errors) }}{% endblock %}

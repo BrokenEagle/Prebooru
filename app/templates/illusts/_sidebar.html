@@ -1,0 +1,28 @@
+{% from "boorus/_macros.html" import boorus_section %}
+{% from "artists/_macros.html" import artists_section %}
+{% from "pools/_macros.html" import pools_section %}
+{% from "layouts/_macros.html" import timestamps_section %}
+{% from "notations/_macros.html" import notations_section %}
+
+<div id="illust-sidebar">
+    {{ boorus_section(illust.boorus, 'illust-boorus') }}
+    {{ artists_section(illust.artist, 'illust-artists') }}
+    {{ pools_section(illust._pools, 'illust-pools') }}
+    {{ timestamps_section(illust, 'illust-timestamps') }}
+    {{ notations_section(illust.notations, 'illust-notations') }}
+    <section id="illust-upload">
+        <h4>Upload</h4>
+        <ul>
+            <li>{{ helpers.illust.DanbooruUploadLink(illust) }}</li>
+        </ul>
+    </section>
+    <section id="illust-options">
+        <h4>Options</h4>
+        <ul>
+            <li>{{ helpers.illust.UpdateFromSourceLink(illust) }}</li>
+            <li>{{ helpers.illust.AddMediaUrlLink(illust) }}</li>
+            <li>{{ helpers.illust.AddPoolLink(illust) }}</li>
+            <li>{{ helpers.illust.AddNotationLink(illust) }}</li>
+        </ul>
+    </section>
+</div>

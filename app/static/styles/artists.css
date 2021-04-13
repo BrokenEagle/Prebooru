@@ -1,0 +1,100 @@
+/****NEW/EDIT Page****/
+textarea#artist-site-account-string,
+textarea#artist-name-string {
+    width: 20em;
+    height: 5em;
+}
+textarea#artist-webpage-string {
+    width: 80em;
+    height: 10em;
+}
+textarea#artist-profile {
+    width: 50em;
+    height: 10em;
+}
+/****SHOW Page****/
+div#artist-heading {
+    font-size: 32px;
+}
+div#artist-content {
+    margin-top: 2em;
+    display: flex;
+}
+div#artist-sidebar {
+    width: 20%;
+    border: 2px solid #DDD;
+    background: #F8F8F8;
+    padding: 0.5em;
+}
+div#artist-sidebar > section {
+    margin-bottom: 1em;
+}
+section#artist-illusts {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+div#artist-notations-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+div.artist-notation-block {
+    border: 1px solid #EEE;
+}
+div#artist-site-content {
+    width: 70%;
+}
+div#artist-site-content h4 {
+    text-decoration: underline;
+}
+div#artist-site-content-1 {
+    display: flex;
+}
+div#artist-site-content-1 > section {
+    margin-left: 1em;
+}
+section#artist-site-info {
+    width: 25%;
+}
+section#artist-labels {
+    width: 25%;
+}
+section#artist-webpages {
+    width: 50%;
+    margin-left: 1em;
+    line-height: 90%;
+    word-break: break-word;
+}
+div#artist-webpages-container {
+    margin-top: 0.5em;
+    max-height: 200px;
+    overflow-y: auto;
+}
+div.artist-webpage-block > ul {
+    padding-right: 0.5em;
+}
+div#artist-site-content-2 {
+    margin-top: 2em;
+}
+section#artist-profiles {
+    margin-left: 1em;
+    width: 90%;
+}
+div#artist-profiles-container {
+    border: 1px solid #EEE;
+    padding: 0.5em;
+    max-height: 200px;
+    overflow-y: auto;
+}
+div.artist-profiles-block {
+    margin: 0.5em;
+    padding-right: 5em;
+    position: relative;
+}
+span.artist-profile-delete {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+div#artist-posts {
+    margin-top: 2em;
+}
