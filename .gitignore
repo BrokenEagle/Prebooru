@@ -3,20 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-notes.txt
 app/local_config.py
-*.db
-ideas.txt
-notes.txt
-similarity_notes.txt
 old/
 db/
-migrations.old/
+temp/
 junk/
-pythonsave.bat
-projectsave.bat
 ffprobe.exe
 prebooru-install/
-databasesave.bat
-datasave.bat
-datasave.log
+/pythonsave.bat
+/projectsave.bat
+/databasesave.bat
+/datasave.bat
+/datasave.log
