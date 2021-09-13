@@ -7,7 +7,6 @@ from flask import jsonify
 from sqlalchemy import not_
 from sqlalchemy.orm import Session
 import atexit
-import random
 import threading
 import itertools
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -234,7 +233,6 @@ def CheckForNewArtistBoorus():
 
 
 def ExpireUploads():
-    time.sleep(random.random() * 5)
     print("\nExpireUploads")
     expired_uploads = Upload.query.filter(Upload.created < MinutesAgo(5)).filter_by(status="processing").all()
     if len(expired_uploads):
@@ -294,10 +292,10 @@ def Main(args):
         SERVER_PID = os.getpid()
         PutGetJSON(SERVER_PID_FILE, 'w', [SERVER_PID])
         SCHED = BackgroundScheduler(daemon=True)
-        SCHED.add_job(ExpungeCacheRecords, 'interval', hours=1, next_run_time=SecondsFromNowLocal(5))
-        SCHED.add_job(CheckPendingUploads, 'interval', minutes=5, next_run_time=SecondsFromNowLocal(15))
-        SCHED.add_job(CheckForNewArtistBoorus, 'interval', minutes=5)
-        SCHED.add_job(ExpireUploads, 'interval', minutes=1)
+        SCHED.add_job(ExpungeCacheRecords, 'interval', hours=1, next_run_time=SecondsFromNowLocal(5), jitter=300)
+        SCHED.add_job(CheckPendingUploads, 'interval', minutes=5, next_run_time=SecondsFromNowLocal(15), jitter=60)
+        SCHED.add_job(CheckForNewArtistBoorus, 'interval', minutes=5, jitter=60)
+        SCHED.add_job(ExpireUploads, 'interval', minutes=1, jitter=5)
         SCHED.start()
     PREBOORU_APP.name = 'worker'
     PREBOORU_APP.run(threaded=True, port=WORKER_PORT)
