@@ -205,7 +205,7 @@ def ContactSimilarityServer():
 
 def CheckForNewArtistBoorus():
     BOORU_SEM.acquire()
-    print("<\nbooru semaphore acquire>\n")
+    print("\n<booru semaphore acquire>\n")
     try:
         LoadBooruArtistData()
         page = Artist.query.filter(Artist.id > BOORU_ARTISTS_DATA['last_checked_artist_id'], not_(Artist.boorus.any())).paginate(per_page=100)
@@ -233,17 +233,14 @@ def CheckForNewArtistBoorus():
 
 
 def ExpireUploads():
-    print("\nExpireUploads")
     expired_uploads = Upload.query.filter(Upload.created < MinutesAgo(5)).filter_by(status="processing").all()
-    if len(expired_uploads):
-        print("Found %d uploads to expire!" % len(expired_uploads))
+    print("Uploads to expire:", len(expired_uploads))
     for upload in expired_uploads:
         SetUploadStatus(upload, 'complete')
         database.local.CreateAndAppendError('worker.ExpireUploads', "Upload has expired.", upload)
 
 
 def ExpungeCacheRecords():
-    print("\nExpungeCacheRecords")
     api_delete_count = ApiData.query.filter(ApiData.expires < GetCurrentTime()).count()
     print("Records to delete:", api_delete_count)
     if api_delete_count > 0:
