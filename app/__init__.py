@@ -85,7 +85,7 @@ class MethodRewriteMiddleware(object):
 
 # ## INITIALIZATION
 
-PREBOORU_APP = Flask("", template_folder='app\\templates', static_folder='app\\static')
+PREBOORU_APP = Flask("", template_folder=os.path.join('app', 'templates'), static_folder=os.path.join('app', 'static'))
 PREBOORU_APP.config.from_mapping(
     SQLALCHEMY_DATABASE_URI=PREBOORU_DB_URL,
     SQLALCHEMY_BINDS={

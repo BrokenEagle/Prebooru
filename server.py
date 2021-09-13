@@ -2,8 +2,11 @@
 
 # ## PYTHON IMPORTS
 import os
+import subprocess
+
 import psutil
 from argparse import ArgumentParser
+from sys import platform
 
 # ## LOCAL IMPORTS
 from app.logical.file import LoadDefault, PutGetJSON
@@ -31,10 +34,16 @@ def StartServer(name, keepopen):
     if name == 'images' and HAS_EXTERNAL_IMAGE_SERVER:
         return
     print("Starting %s" % name)
-    if keepopen:
-        os.system('start cmd.exe /K "python %s.py --title %s"' % (name, SERVER_ARGS[name]))
+    if platform == "win32":
+        if keepopen:
+            os.system('start cmd.exe /K "python %s.py --title %s"' % (name, SERVER_ARGS[name]))
+        else:
+            os.system('start python %s.py --title %s' % (name, SERVER_ARGS[name]))
     else:
-        os.system('start python %s.py --title %s' % (name, SERVER_ARGS[name]))
+        try:
+            subprocess.call(['gnome-terminal', f'--title="{name}"', '-e',  f'bash -c "python {name}.py {SERVER_ARGS[name]}; bash"'])
+        except Exception:
+            subprocess.call(['xterm', '-e', f'bash -c "python {name}.py; bash"'])
 
 
 def StopServer(name, *args):
