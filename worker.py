@@ -194,7 +194,8 @@ def CheckPendingUploads():
         if len(posts) > 0:
             SCHED.add_job(ContactSimilarityServer)
             SCHED.add_job(CheckForNewArtistBoorus)
-            SCHED.add_job(CheckPostsForDanbooruID, args=(posts,))
+            post_ids = [post.id for post in posts]
+            SCHED.add_job(CheckForMatchingDanbooruPosts, args=(post_ids,))
         UPLOAD_SEM.release()
         print("\n<upload semaphore release>\n")
 
@@ -232,6 +233,11 @@ def CheckForNewArtistBoorus():
     finally:
         BOORU_SEM.release()
         print("\n<booru semaphore release>\n")
+
+
+def CheckForMatchingDanbooruPosts(post_ids):
+    posts = Post.query.filter(Post.id.in_(post_ids)).all()
+    CheckPostsForDanbooruID(posts)
 
 
 def ExpireUploads():
