@@ -11,10 +11,16 @@ from ..logical.utility import AddDictEntry
 
 # ##FUNCTIONS
 
-def DanbooruRequest(url, params=None):
+def DanbooruRequest(url, params=None, long=False):
+    send_method = requests.post if long else requests.get
+    send_data = params if long else None
+    params = None if long else params
+    if long:
+        send_data = send_data or {}
+        send_data['_method'] = 'get'
     for i in range(3):
         try:
-            response = requests.get(DANBOORU_HOSTNAME + url, params=params, timeout=10)
+            response = send_method(DANBOORU_HOSTNAME + url, params=params, data=send_data, timeout=10)
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
             print("Pausing for network timeout...")
             time.sleep(5)
