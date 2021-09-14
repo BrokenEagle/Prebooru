@@ -98,4 +98,4 @@ class Pool(JsonModel):
 
     # ## Class properties
 
-    searchable_attributes = ['id', 'name', 'created', 'updated']
+    searchable_attributes = ['id', 'name', 'series', 'created', 'updated']
