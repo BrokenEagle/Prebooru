@@ -9,6 +9,7 @@ from ..sites import GetSiteDomain, GetSiteKey
 from ..sources import SOURCEDICT
 from ..sources.base_source import GetSourceById
 from .base_helper import SearchUrlFor, ExternalLink, UrlLink, GeneralLink
+from ..config import DANBOORU_HOSTNAME
 
 
 # ##GLOBAL VARIABLES
@@ -99,7 +100,7 @@ def DanbooruBatchUrl(illust):
     source = GetSourceById(illust.site_id)
     post_url = source.GetPostUrl(illust)
     query_string = urllib.parse.urlencode({'url': post_url})
-    return 'https://danbooru.donmai.us/uploads/batch?' + query_string
+    return DANBOORU_HOSTNAME + '/uploads/batch?' + query_string
 
 
 # #### Link functions

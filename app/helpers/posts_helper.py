@@ -10,15 +10,11 @@ from .base_helper import SearchUrlFor, GeneralLink, ExternalLink
 from ..config import DANBOORU_HOSTNAME
 
 
-# ## GLOBAL VARIABLES
-
-DANBOORU_UPLOAD_LINK = 'https://danbooru.donmai.us/uploads/new?prebooru_post_id='
-
-
 # ## FUNCTIONS
 
 def DanbooruPostLink(post):
     return ExternalLink('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id) if post.danbooru_id is not None else Markup('<em>N/A</em>')
+
 
 def SimilarSearchLinks(post, format_url, proxy_url=None):
     image_links = []
@@ -46,7 +42,7 @@ def SimilarSearchLinks(post, format_url, proxy_url=None):
 
 
 def DanbooruSearchLinks(post):
-    return SimilarSearchLinks(post, 'https://danbooru.donmai.us/iqdb_queries?url=', '/proxy/danbooru_iqdb')
+    return SimilarSearchLinks(post, DANBOORU_HOSTNAME + '/iqdb_queries?url=', '/proxy/danbooru_iqdb')
 
 
 def SauceNAOSearchLinks(post):
@@ -72,10 +68,10 @@ def DanbooruPostBookmarkletLinks(post):
         media_url = source.GetMediaUrl(illust_url)
         post_url = source.GetPostUrl(illust)
         query_string = urllib.parse.urlencode({'url': media_url, 'ref': post_url})
-        href_url = 'https://danbooru.donmai.us/uploads/new?' + query_string
+        href_url = DANBOORU_HOSTNAME + '/uploads/new?' + query_string
         image_links.append(ExternalLink(illust.shortlink, href_url))
     if len(image_links) == 0:
-        image_links.append(ExternalLink('file', DANBOORU_UPLOAD_LINK + str(post.id)))
+        image_links.append(ExternalLink('file', DANBOORU_HOSTNAME + '/uploads/new?prebooru_post_id=%d' % post.id))
     return Markup(' | ').join(image_links)
 
 

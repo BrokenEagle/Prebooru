@@ -9,7 +9,7 @@ from flask import Blueprint, request, Markup, jsonify
 from ..models import Post
 from ..logical.file import PutGetRaw
 from ..sources.base_source import GetSourceById
-from ..config import DANBOORU_USERNAME, DANBOORU_APIKEY
+from ..config import DANBOORU_USERNAME, DANBOORU_APIKEY, DANBOORU_HOSTNAME
 
 
 # ## GLOBAL VARIABLES
@@ -45,7 +45,7 @@ def CheckPreprocess(post):
         'search[uploader_name]': DANBOORU_USERNAME,
         'search[md5]': post.md5,
     }
-    danbooru_resp = requests.get('https://danbooru.donmai.us/uploads.json', params=params, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY))
+    danbooru_resp = requests.get(DANBOORU_HOSTNAME + '/uploads.json', params=params, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY))
     if danbooru_resp.status_code != 200:
         return "HTTP %d: %s; Unable to query Danbooru for existing upload: %s - %s" % (danbooru_resp.status_code, danbooru_resp.reason, DANBOORU_USERNAME, post.md5)
     data = danbooru_resp.json()
@@ -60,7 +60,7 @@ def PreprocessPost(post):
         'upload[file]': (filename, buffer, mimetype)
     }
     try:
-        danbooru_resp = requests.post('https://danbooru.donmai.us/uploads/preprocess', files=files, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY), timeout=30)
+        danbooru_resp = requests.post(DANBOORU_HOSTNAME + '/uploads/preprocess', files=files, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY), timeout=30)
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
         return "Connection error: %s" % e
     if danbooru_resp.status_code != 200:
@@ -132,12 +132,12 @@ def danbooru_iqdb():
     files = {
         'search[file]': buffer,
     }
-    resp = requests.post('https://danbooru.donmai.us/iqdb_queries', files=files, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY))
+    resp = requests.post(DANBOORU_HOSTNAME + '/iqdb_queries', files=files, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY))
     if resp.status_code != 200:
         return "HTTP Error %d: %s" % (resp.status_code, resp.reason)
     soup = BeautifulSoup(resp.text, 'lxml')
     base = soup.new_tag("base")
-    base['href'] = 'https://danbooru.donmai.us'
+    base['href'] = DANBOORU_HOSTNAME
     soup.head.insert(0, base)
     return Markup(soup.prettify())
 
