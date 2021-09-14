@@ -71,3 +71,15 @@ def GetArtistsByMultipleUrls(url_list):
     for artist_url in data['json']:
         AddDictEntry(retdata, artist_url['normalized_url'], artist_url['artist'])
     return {'error': False, 'data': retdata}
+
+
+def GetPostsByMD5s(md5_list):
+    request_url = '/posts.json'
+    params = {
+        'tags': 'md5:' + ','.join(md5_list),
+        'limit': 100,
+    }
+    data = DanbooruRequest(request_url, params)
+    if data['error']:
+        return data
+    return {'error': False, 'posts': [post for post in data['json'] if 'md5' in post]}
