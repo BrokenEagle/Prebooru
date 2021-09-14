@@ -27,3 +27,4 @@ from . import similarity_pool_elements_controller as similarity_pool_element  # 
 # #### Misc
 from . import proxy_controller as proxy  # noqa: F401
 from . import static_controller as static  # noqa: F401
+from . import images_controller as images  # noqa: F401

@@ -4,7 +4,7 @@
 import os
 
 from . import SERVER_INFO
-from .config import WORKING_DIRECTORY, IMAGE_FILEPATH, IMAGE_PORT
+from .config import WORKING_DIRECTORY, IMAGE_FILEPATH, PREBOORU_PORT
 
 # ### GLOBAL VARIABLES
 
@@ -41,4 +41,4 @@ def HasPreview(width, height):
 # #### Private functions
 
 def _ImageServerUrl():
-    return 'http://' + SERVER_INFO.addr + ':' + str(IMAGE_PORT)
+    return 'http://' + SERVER_INFO.addr + ':' + str(PREBOORU_PORT) + '/images'
