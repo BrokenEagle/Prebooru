@@ -7,6 +7,7 @@ import urllib.parse
 # ##LOCAL IMPORTS
 from ..sources.base_source import GetSourceById
 from .base_helper import SearchUrlFor, GeneralLink, ExternalLink
+from ..config import DANBOORU_HOSTNAME
 
 
 # ## GLOBAL VARIABLES
@@ -15,6 +16,9 @@ DANBOORU_UPLOAD_LINK = 'https://danbooru.donmai.us/uploads/new?prebooru_post_id=
 
 
 # ## FUNCTIONS
+
+def DanbooruPostLink(post):
+    return ExternalLink('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id) if post.danbooru_id is not None else Markup('<em>N/A</em>')
 
 def SimilarSearchLinks(post, format_url, proxy_url=None):
     image_links = []

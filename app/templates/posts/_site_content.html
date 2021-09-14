@@ -4,6 +4,7 @@
     <section id="post-info">
         <h4>Info</h4>
         <ul>
+            <li><strong>Danbooru:</strong> {{ helpers.post.DanbooruPostLink(post) }}</li>
             <li><strong>Created:</strong> {{ helpers.base.FormatTimestamp(post.created) }}</li>
             <li><strong>Type/Size:</strong> {{ post.file_ext.upper() }} @ {{ post.size }} bytes</li>
             <li><strong>Dimensions:</strong> ({{ post.width }} x {{ post.height }})</li>
