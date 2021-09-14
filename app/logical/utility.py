@@ -1,12 +1,12 @@
 # APP/LOGICAL/UTILITY.PY
 
 # ##PYTHON IMPORTS
+import logging
 import re
 import json
-import iso8601
 import hashlib
 import datetime
-
+import pathlib
 
 # ##FUNCTIONS
 
@@ -23,9 +23,9 @@ def SafePrint(*args, **kwargs):
 
 def ProcessUTCTimestring(timestring):
     try:
-        return iso8601.parse_date(timestring).replace(tzinfo=None)
+        return datetime.datetime.fromisoformat(timestring.replace('Z', '+00:00')).replace(tzinfo=None)
     except Exception:
-        pass
+        logging.error('Failed parse datetime string')
 
 
 def GetBufferChecksum(buffer):
@@ -46,7 +46,7 @@ def GetFileExtension(filepath):
 
 
 def GetDirectory(filepath):
-    return filepath[:filepath.rfind('\\') + 1]
+    return str(pathlib.Path(filepath).parent.resolve())
 
 
 def DecodeUnicode(byte_string):

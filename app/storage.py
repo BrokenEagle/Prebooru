@@ -1,23 +1,25 @@
 # APP/STORAGE.PY
 
 # ## LOCAL IMPORTS
+import os
+
 from . import SERVER_INFO
 from .config import WORKING_DIRECTORY, IMAGE_FILEPATH, IMAGE_PORT
 
 # ### GLOBAL VARIABLES
 
-IMAGE_DIRECTORY = WORKING_DIRECTORY + IMAGE_FILEPATH + 'prebooru\\'
+IMAGE_DIRECTORY = os.path.join(WORKING_DIRECTORY, IMAGE_FILEPATH, 'prebooru')
 
 PREVIEW_DIMENSIONS = (300, 300)
 SAMPLE_DIMENSIONS = (1280, 1920)
 
-CACHE_DATA_DIRECTORY = IMAGE_DIRECTORY + 'cache\\'
+CACHE_DATA_DIRECTORY = os.path.join(IMAGE_DIRECTORY, 'cache')
 
 
 # ## FUNCTIONS
 
 def DataDirectory(type, md5):
-    return IMAGE_DIRECTORY + '%s\\%s\\%s\\' % (type, md5[0:2], md5[2:4])
+    return os.path.join(IMAGE_DIRECTORY, type, md5[0:2], md5[2:4]) + os.path.sep
 
 
 def NetworkDirectory(type, md5):
