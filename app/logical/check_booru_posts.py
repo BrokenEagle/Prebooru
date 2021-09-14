@@ -19,7 +19,8 @@ def CheckAllPostsForDanbooruID():
         if len(posts) == 0:
             return
         print("\n%d/%d" % (page, page_count))
-        CheckPostsForDanbooruID(posts)
+        if not CheckPostsForDanbooruID(posts):
+            return
         max_id = max(post.id for post in posts)
         page += 1
 
@@ -29,7 +30,7 @@ def CheckPostsForDanbooruID(posts):
     results = GetPostsByMD5s(post_md5s)
     if results['error']:
         print(results['message'])
-        exit(-1)
+        return False
     if len(results['posts']) > 0:
         dirty = False
         for post in posts:
@@ -41,3 +42,4 @@ def CheckPostsForDanbooruID(posts):
             print(".", end="", flush=True)
         if dirty:
             SESSION.commit()
+    return True
