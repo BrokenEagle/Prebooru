@@ -25,6 +25,7 @@ from app.database.error_db import AppendError, CreateAndAppendError
 from app.sources.base_source import GetPostSource, GetSourceById
 from app.sources.local_source import SimilarityCheckPosts
 from app.sources.danbooru_source import GetArtistsByMultipleUrls
+from app.logical.check_booru_posts import CheckAllPostsForDanbooruID, CheckPostsForDanbooruID
 from app.logical.utility import MinutesAgo, GetCurrentTime, SecondsFromNowLocal
 from app.logical.file import LoadDefault, PutGetJSON
 from app.logical.logger import LogError
@@ -172,7 +173,7 @@ def AddDanbooruArtists(url, danbooru_artists, db_boorus, db_artists):
 def CheckPendingUploads():
     UPLOAD_SEM.acquire()
     print("\n<upload semaphore acquire>\n")
-    post_ids = []
+    posts = []
     try:
         while True:
             print("Current upload count:", SESSION.query(Upload).count())
@@ -184,15 +185,16 @@ def CheckPendingUploads():
                     raise Exception("\aUnable to find upload with upload id: %d" % upload_id)
                 if not ProcessUploadWrap(upload):
                     return
-                post_ids.extend(upload.post_ids)
+                posts.extend(upload.posts)
             else:
                 print("No pending uploads.")
                 break
             time.sleep(5)
     finally:
-        if len(post_ids) > 0:
+        if len(posts) > 0:
             SCHED.add_job(ContactSimilarityServer)
             SCHED.add_job(CheckForNewArtistBoorus)
+            SCHED.add_job(CheckPostsForDanbooruID, args=(posts,))
         UPLOAD_SEM.release()
         print("\n<upload semaphore release>\n")
 
@@ -292,6 +294,7 @@ def Main(args):
         SCHED.add_job(ExpungeCacheRecords, 'interval', hours=1, next_run_time=SecondsFromNowLocal(5), jitter=300)
         SCHED.add_job(CheckPendingUploads, 'interval', minutes=5, next_run_time=SecondsFromNowLocal(15), jitter=60)
         SCHED.add_job(CheckForNewArtistBoorus, 'interval', minutes=5, jitter=60)
+        SCHED.add_job(CheckAllPostsForDanbooruID, 'interval', days=1, jitter=3600)
         SCHED.add_job(ExpireUploads, 'interval', minutes=1, jitter=5)
         SCHED.start()
     PREBOORU_APP.name = 'worker'
