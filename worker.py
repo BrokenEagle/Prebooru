@@ -189,8 +189,10 @@ def ContactSimilarityServer():
 
 
 def CheckForMatchingDanbooruPosts(post_ids):
+    print("Posts to check:", len(post_ids))
     posts = Post.query.filter(Post.id.in_(post_ids)).all()
     CheckPostsForDanbooruID(posts)
+    print('\n')
 
 
 def CheckForNewArtistBoorus(post_ids):
@@ -212,7 +214,7 @@ def ExpireUploads():
 
 def ExpungeCacheRecords():
     api_delete_count = ApiData.query.filter(ApiData.expires < GetCurrentTime()).count()
-    print("Records to delete:", api_delete_count)
+    print("\nRecords to delete:", api_delete_count)
     if api_delete_count > 0:
         ApiData.query.filter(ApiData.expires < GetCurrentTime()).delete()
         SESSION.commit()
