@@ -4,7 +4,6 @@
 import os
 import time
 from flask import jsonify
-from sqlalchemy import not_
 from sqlalchemy.orm import Session
 import atexit
 import threading
@@ -16,7 +15,7 @@ from argparse import ArgumentParser
 from app import database
 from app import DB, SESSION, PREBOORU_APP
 from app.cache import ApiData, MediaFile
-from app.models import Upload, Illust, Artist, Booru
+from app.models import Upload, Illust, Post
 from app.database.artist_db import UpdateArtistFromSource
 from app.database.booru_db import CreateBooruFromParameters, BooruAppendArtist
 from app.database.illust_db import CreateIllustFromSource, UpdateIllustFromSource
@@ -24,9 +23,9 @@ from app.database.upload_db import IsDuplicate, SetUploadStatus
 from app.database.error_db import AppendError, CreateAndAppendError
 from app.sources.base_source import GetPostSource, GetSourceById
 from app.sources.local_source import SimilarityCheckPosts
-from app.sources.danbooru_source import GetArtistsByMultipleUrls
 from app.logical.check_booru_posts import CheckAllPostsForDanbooruID, CheckPostsForDanbooruID
-from app.logical.utility import MinutesAgo, GetCurrentTime, SecondsFromNowLocal
+from app.logical.check_booru_artists import CheckAllArtistsForBoorus, CheckArtistsForBoorus
+from app.logical.utility import MinutesAgo, GetCurrentTime, SecondsFromNowLocal, UniqueObjects
 from app.logical.file import LoadDefault, PutGetJSON
 from app.logical.logger import LogError
 from app.downloader.network_downloader import ConvertNetworkUpload
@@ -41,10 +40,6 @@ SERVER_PID = next(iter(LoadDefault(SERVER_PID_FILE, [])), None)
 
 SCHED = None
 UPLOAD_SEM = threading.Semaphore()
-BOORU_SEM = threading.Semaphore()
-
-BOORU_ARTISTS_DATA = None
-BOORU_ARTISTS_FILE = WORKING_DIRECTORY + DATA_FILEPATH + 'booru_artists_file.json'
 
 READ_ENGINE = DB.engine.execution_options(isolation_level="READ UNCOMMITTED")
 
@@ -78,19 +73,6 @@ def GetUploadWait(upload_id):
         if upload is not None:
             return upload
         time.sleep(0.5)
-
-
-def SaveLastCheckArtistId(max_artist_id):
-    BOORU_ARTISTS_DATA['last_checked_artist_id'] = max_artist_id
-    PutGetJSON(BOORU_ARTISTS_FILE, 'w', BOORU_ARTISTS_DATA)
-
-
-def LoadBooruArtistData():
-    global BOORU_ARTISTS_DATA
-    if BOORU_ARTISTS_DATA is None:
-        BOORU_ARTISTS_DATA = PutGetJSON(BOORU_ARTISTS_FILE, 'r')
-        BOORU_ARTISTS_DATA = BOORU_ARTISTS_DATA if type(BOORU_ARTISTS_DATA) is dict else {}
-        BOORU_ARTISTS_DATA['last_checked_artist_id'] = BOORU_ARTISTS_DATA['last_checked_artist_id'] if ('last_checked_artist_id' in BOORU_ARTISTS_DATA) and (type(BOORU_ARTISTS_DATA['last_checked_artist_id']) is int) else 0
 
 
 # #### Upload functions
@@ -193,9 +175,9 @@ def CheckPendingUploads():
     finally:
         if len(posts) > 0:
             SCHED.add_job(ContactSimilarityServer)
-            SCHED.add_job(CheckForNewArtistBoorus)
             post_ids = [post.id for post in posts]
             SCHED.add_job(CheckForMatchingDanbooruPosts, args=(post_ids,))
+            SCHED.add_job(CheckForNewArtistBoorus, args=(post_ids,))
         UPLOAD_SEM.release()
         print("\n<upload semaphore release>\n")
 
@@ -206,38 +188,18 @@ def ContactSimilarityServer():
         print("Similarity error:", results['message'])
 
 
-def CheckForNewArtistBoorus():
-    BOORU_SEM.acquire()
-    print("\n<booru semaphore acquire>\n")
-    try:
-        LoadBooruArtistData()
-        page = Artist.query.filter(Artist.id > BOORU_ARTISTS_DATA['last_checked_artist_id'], not_(Artist.boorus.any())).paginate(per_page=100)
-        max_artist_id = 0
-        while True:
-            if len(page.items) == 0:
-                break
-            query_urls = [artist.booru_search_url for artist in page.items]
-            results = GetArtistsByMultipleUrls(query_urls)
-            if results['error']:
-                print("Danbooru error:", results)
-                break
-            booru_artist_ids = set(artist['id'] for artist in itertools.chain(*[results['data'][url] for url in results['data']]))
-            boorus = Booru.query.filter(Booru.danbooru_id.in_(booru_artist_ids)).all()
-            for url in results['data']:
-                AddDanbooruArtists(url, results['data'][url], boorus, page.items)
-            max_artist_id = max(max_artist_id, *[artist.id for artist in page.items])
-            SaveLastCheckArtistId(max_artist_id)
-            if not page.has_next:
-                break
-            page = page.next()
-    finally:
-        BOORU_SEM.release()
-        print("\n<booru semaphore release>\n")
-
-
 def CheckForMatchingDanbooruPosts(post_ids):
     posts = Post.query.filter(Post.id.in_(post_ids)).all()
     CheckPostsForDanbooruID(posts)
+
+
+def CheckForNewArtistBoorus(post_ids):
+    posts = Post.query.filter(Post.id.in_(post_ids)).all()
+    all_artists = UniqueObjects([*itertools.chain(*[post.artists for post in posts])])
+    check_artists = [artist for artist in all_artists if artist.created > MinutesAgo(1)]
+    if len(check_artists):
+        print("Artists to check:", len(check_artists))
+        CheckArtistsForBoorus(check_artists)
 
 
 def ExpireUploads():
@@ -300,7 +262,7 @@ def Main(args):
         SCHED = BackgroundScheduler(daemon=True)
         SCHED.add_job(ExpungeCacheRecords, 'interval', hours=1, next_run_time=SecondsFromNowLocal(5), jitter=300)
         SCHED.add_job(CheckPendingUploads, 'interval', minutes=5, next_run_time=SecondsFromNowLocal(15), jitter=60)
-        SCHED.add_job(CheckForNewArtistBoorus, 'interval', minutes=5, jitter=60)
+        SCHED.add_job(CheckAllArtistsForBoorus, 'interval', days=1, jitter=3600)
         SCHED.add_job(CheckAllPostsForDanbooruID, 'interval', days=1, jitter=3600)
         SCHED.add_job(ExpireUploads, 'interval', minutes=1, jitter=5)
         SCHED.start()
