@@ -264,6 +264,7 @@ def ExpungeCacheRecords():
 
 os.environ['FLASK_ENV'] = 'development' if DEBUG_MODE else 'production'
 
+
 @atexit.register
 def Cleanup():
     if SERVER_PID is not None:
