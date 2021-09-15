@@ -1,8 +1,5 @@
 # APP/DOWNLOADER/NETWORK_DOWNLOADER.PY
 
-# ##PYTHON IMPORTS
-import requests
-
 # ##LOCAL IMPORTS
 from ..logical.network import GetHTTPFile
 from ..database.post_db import CreatePostAndAddIllustUrl
@@ -36,10 +33,8 @@ def DownloadMedia(illust_url, source):
         return CreateError('downloader.network_downloader.DownloadMedia', "Unsupported file format: %s" % file_ext), None
     print("Downloading", download_url)
     buffer = GetHTTPFile(download_url, headers=source.IMAGE_HEADERS)
-    if isinstance(buffer, Exception):
-        return CreateError('downloader.network_downloader.DownloadMedia', str(buffer)), None
-    if isinstance(buffer, requests.Response):
-        return CreateError('downloader.network_downloader.DownloadMedia', "HTTP %d - %s" % (buffer.status_code, buffer.reason)), None
+    if type(buffer) is str:
+        return CreateError('downloader.network_downloader.DownloadMedia', buffer), None
     return buffer, file_ext
 
 

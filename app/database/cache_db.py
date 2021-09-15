@@ -1,8 +1,5 @@
 # APP/DATABASE/CACHE_DB.PY
 
-# ##PYTHON IMPORTS
-import requests
-
 # ##LOCAL IMPORTS
 from .. import SESSION
 from ..logical.utility import GetCurrentTime, DaysFromNow, GetBufferChecksum
@@ -76,10 +73,8 @@ def _GetApiData(data_ids, site_id, type):
 
 def _CreateNewMedia(download_url, source):
     buffer = GetHTTPFile(download_url, headers=source.IMAGE_HEADERS)
-    if isinstance(buffer, Exception):
-        return "Exception processing download: %s" % repr(buffer)
-    if isinstance(buffer, requests.Response):
-        return "HTTP %d - %s" % (buffer.status_code, buffer.reason)
+    if type(buffer) is str:
+        return buffer
     md5 = GetBufferChecksum(buffer)
     extension = source.GetMediaExtension(download_url)
     media = MediaFile(md5=md5, file_ext=extension, media_url=download_url, expires=DaysFromNow(1))

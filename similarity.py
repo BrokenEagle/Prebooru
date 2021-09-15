@@ -9,7 +9,6 @@ import threading
 from PIL import Image
 import imagehash
 import distance
-import requests
 from io import BytesIO
 from sqlalchemy import func
 from sqlalchemy.orm import selectinload
@@ -192,10 +191,8 @@ def GetSimilarMatches(image_hash, ratio):
 
 def CreateNewMedia(download_url, source):
     buffer = GetHTTPFile(download_url, headers=source.IMAGE_HEADERS)
-    if isinstance(buffer, Exception):
-        return None, "Exception processing download: %s" % repr(buffer)
-    if isinstance(buffer, requests.Response):
-        return None, "HTTP %d - %s" % (buffer.status_code, buffer.reason)
+    if type(buffer) is str:
+        return None, buffer
     image = LoadImage(buffer)
     if type(image) is str:
         return None, image
