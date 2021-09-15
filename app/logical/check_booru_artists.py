@@ -5,7 +5,6 @@ import itertools
 from sqlalchemy import not_
 
 # ## LOCAL IMPORTS
-from .. import SESSION
 from ..models import Artist, Booru
 from ..database.booru_db import CreateBooruFromParameters, BooruAppendArtist
 from ..sources.danbooru_source import GetArtistsByMultipleUrls

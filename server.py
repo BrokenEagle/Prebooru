@@ -38,7 +38,7 @@ def StartServer(name, keepopen):
             os.system('start python %s.py --title %s' % (name, SERVER_ARGS[name]))
     else:
         try:
-            subprocess.call(['gnome-terminal', f'--title="{name}"', '-e',  f'bash -c "python {name}.py {SERVER_ARGS[name]}; bash"'])
+            subprocess.call(['gnome-terminal', f'--title="{name}"', '-e', f'bash -c "python {name}.py {SERVER_ARGS[name]}; bash"'])
         except Exception:
             subprocess.call(['xterm', '-e', f'bash -c "python {name}.py; bash"'])
 
