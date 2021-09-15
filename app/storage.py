@@ -4,7 +4,7 @@
 import os
 
 from . import SERVER_INFO
-from .config import WORKING_DIRECTORY, IMAGE_FILEPATH, PREBOORU_PORT, IMAGE_PORT, HAS_EXTERNAL_IMAGE_SERVER
+from .config import WORKING_DIRECTORY, IMAGE_FILEPATH, IMAGE_PORT, HAS_EXTERNAL_IMAGE_SERVER
 
 # ### GLOBAL VARIABLES
 
@@ -14,8 +14,6 @@ PREVIEW_DIMENSIONS = (300, 300)
 SAMPLE_DIMENSIONS = (1280, 1920)
 
 CACHE_DATA_DIRECTORY = os.path.join(IMAGE_DIRECTORY, 'cache')
-
-IMAGES_PORT = IMAGE_PORT if HAS_EXTERNAL_IMAGE_SERVER else PREBOORU_PORT
 
 
 # ## FUNCTIONS
@@ -43,4 +41,4 @@ def HasPreview(width, height):
 # #### Private functions
 
 def _ImageServerUrl():
-    return 'http://' + SERVER_INFO.addr + ':' + str(IMAGES_PORT) + '/images'
+    return ('http://' + SERVER_INFO.addr + ':' + str(IMAGE_PORT) + '/images') if HAS_EXTERNAL_IMAGE_SERVER else '/images'
