@@ -12,7 +12,7 @@ from app import PREBOORU_APP, DB
 from app import controllers
 from app import helpers
 from app.logical.file import LoadDefault, PutGetJSON
-from app.config import WORKING_DIRECTORY, DATA_FILEPATH, PREBOORU_PORT, DEBUG_MODE, VERSION
+from app.config import WORKING_DIRECTORY, DATA_FILEPATH, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
 
 # ## GLOBAL VARIABLES
 
@@ -124,7 +124,8 @@ PREBOORU_APP.register_blueprint(controllers.static.bp)
 PREBOORU_APP.register_blueprint(controllers.similarity.bp)
 PREBOORU_APP.register_blueprint(controllers.similarity_pool.bp)
 PREBOORU_APP.register_blueprint(controllers.similarity_pool_element.bp)
-PREBOORU_APP.register_blueprint(controllers.images.bp)
+if not HAS_EXTERNAL_IMAGE_SERVER:
+    PREBOORU_APP.register_blueprint(controllers.images.bp)
 
 PREBOORU_APP.jinja_env.globals.update(helpers=helpers)
 PREBOORU_APP.jinja_env.add_extension('jinja2.ext.do')
