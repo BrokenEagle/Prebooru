@@ -12,7 +12,7 @@ from wtforms.meta import DefaultMeta
 from wtforms.widgets import HiddenInput
 
 # ## LOCAL IMPORTS
-from ..logical.utility import EvalBoolString
+from ..logical.utility import EvalBoolString, MergeDicts
 from ..logical.searchable import SearchAttributes
 
 
@@ -129,20 +129,40 @@ def GetLimit(request):
 
 
 def ProcessRequestValues(values_dict):
+    """
+    Parse incomming URL parameters into a hash based upon a standard tokenizing scheme.
+
+    Example:    firsttoken[secondtoken][thirdtoken][nthtoken]=value
+    Equates to: {"firsttoken": {"secondtoken": {"thirdtoken": { "nthtoken": value}}}}
+
+    Array values are indicated when the end of the token key is []
+
+    Example:    firsttoken[]=value1&firsttoken[]=value2
+    Equates to: {"firsttoken": [value1, value2]}
+    """
     params = {}
     for key in values_dict:
-        match = re.match(r'^([^[]+)(.*)', key)
-        if not match:
+        firstpos = key.find('[')
+        if firstpos < 0:
+            params[key] = values_dict.get(key)
             continue
-        primary_key, sub_groups = match.groups()
-        is_subhash = _AssignParams(values_dict, key, params, primary_key, sub_groups)
-        if is_subhash is None:
+        firsttoken = key[:firstpos]
+        subsequenthashes = key[firstpos:]
+        subsequenttokens = re.findall(r'\[([^]]*)\]', subsequenthashes)
+        if any(token.find('[') >= 0 for token in subsequenttokens):  # Tokens cannot contain '['
             continue
-        if not is_subhash:
+        if any(token == '' for token in subsequenttokens[:-1]):  # Only the last token can be ""
             continue
-        is_valid = _ProcessRequestValuesRecurse(values_dict, key, sub_groups, params[primary_key])
-        if not is_valid:
-            del params[primary_key]
+        value = values_dict.getlist(key) if subsequenttokens[-1] == "" else values_dict.get(key)
+        alltokens = [firsttoken] + (subsequenttokens[:-1] if subsequenttokens[-1] == "" else subsequenttokens)
+        currenthash = addhash = {}
+        for i in range(0, len(alltokens) - 1):
+            token = alltokens[i]
+            currenthash[token] = {}
+            currenthash = currenthash[token]
+        finaltoken = alltokens[-1]
+        currenthash[finaltoken] = value
+        MergeDicts(params, addhash)
     return params
 
 
@@ -245,27 +265,3 @@ def _CustomOrder(ids, entity):
 
 def _QueryModel(query):
     return query.column_descriptions[0]['entity']
-
-
-def _AssignParams(values_dict, key, params, primary_key, sub_groups):
-    if sub_groups == '':
-        params[primary_key] = values_dict.get(key)
-        return False
-    elif sub_groups == '[]':
-        params[primary_key] = values_dict.getlist(key)
-        return False
-    elif re.match(r'^\[.*\]$', sub_groups):
-        params[primary_key] = params[primary_key] if primary_key in params else {}
-        params[primary_key] = params[primary_key] if type(params[primary_key]) is dict else {}
-        return True
-    return None
-
-
-def _ProcessRequestValuesRecurse(values_dict, key, sub_keys, params):
-    secondary_key, sub_groups = re.match(r'^\[([^[]+)\](.*)', sub_keys).groups()
-    result = _AssignParams(values_dict, key, params, secondary_key, sub_groups)
-    if result is None:
-        return False
-    if result:
-        return _ProcessRequestValuesRecurse(values_dict, key, sub_groups, params[secondary_key])
-    return True

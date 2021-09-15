@@ -172,6 +172,15 @@ def AddDictEntry(indict, key, entry):
     indict[key] = indict[key] + [entry] if key in indict else [entry]
 
 
+def MergeDicts(a, b):
+    for key in b:
+        if key in a and isinstance(a[key], dict) and isinstance(b[key], dict):
+            MergeDicts(a[key], b[key])
+        else:
+            a[key] = b[key]
+    return a
+
+
 def SetError(retdata, message):
     retdata['error'] = True
     retdata['message'] = message
