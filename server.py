@@ -10,19 +10,18 @@ from sys import platform
 
 # ## LOCAL IMPORTS
 from app.logical.file import LoadDefault, PutGetJSON
-from app.config import WORKING_DIRECTORY, DATA_FILEPATH, HAS_EXTERNAL_IMAGE_SERVER
+from app.config import WORKING_DIRECTORY, DATA_FILEPATH
 
 
 # ## GLOBAL VARIABLES
 
 PID_FILENAME_FORMAT = WORKING_DIRECTORY + DATA_FILEPATH + '%s-server-pid.json'
-SERVER_NAMES = ['prebooru', 'worker', 'similarity', 'images']  # NGINX, ...
+SERVER_NAMES = ['prebooru', 'worker', 'similarity']
 
 SERVER_ARGS = {
     'prebooru': "server",
     'worker': "",
     'similarity': "server",
-    'images': "",
 }
 
 
@@ -31,8 +30,6 @@ SERVER_ARGS = {
 # #### Auxiliary functions
 
 def StartServer(name, keepopen):
-    if name == 'images' and HAS_EXTERNAL_IMAGE_SERVER:
-        return
     print("Starting %s" % name)
     if platform == "win32":
         if keepopen:
@@ -47,8 +44,6 @@ def StartServer(name, keepopen):
 
 
 def StopServer(name, *args):
-    if name == 'images' and HAS_EXTERNAL_IMAGE_SERVER:
-        return
     filename = PID_FILENAME_FORMAT % name
     pid = next(iter(LoadDefault(filename, [])), None)
     if pid is not None:
@@ -98,6 +93,6 @@ if __name__ == '__main__':
     parser = ArgumentParser(description="Helper application to start/stop servers.")
     parser.add_argument('operation', choices=['startall', 'stopall', 'start', 'stop'])
     parser.add_argument('--keepopen', required=False, default=False, action="store_true", help="Keeps the window open even after the process has been killed.")
-    parser.add_argument('--type', type=str, required=False, help="prebooru, worker, similarity, images")
+    parser.add_argument('--type', type=str, required=False, help="prebooru, worker, similarity")
     args = parser.parse_args()
     Main(args)
