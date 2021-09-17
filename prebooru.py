@@ -46,6 +46,10 @@ def StartServer(args):
             print("Install flaskwork module: pip install flask-flaskwork --upgrade")
         else:
             Flaskwork(PREBOORU_APP)
+    if args.logging:
+        import logging
+        logging.basicConfig()
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
     if args.title:
         os.system('title Prebooru Server')
     if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
@@ -138,6 +142,7 @@ if __name__ == '__main__':
     parser.add_argument('type', choices=['init', 'server'])
     parser.add_argument('--new', required=False, default=False, action="store_true", help="Start with a new database file.")
     parser.add_argument('--extension', required=False, default=False, action="store_true", help="Enable Chrome extension.")
+    parser.add_argument('--logging', required=False, default=False, action="store_true", help="Display the SQL commands.")
     parser.add_argument('--title', required=False, default=False, action="store_true", help="Adds server title to console window.")
     parser.add_argument('--public', required=False, default=False, action="store_true", help="Makes the server visible to other computers.")
     args = parser.parse_args()
