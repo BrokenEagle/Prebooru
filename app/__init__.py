@@ -27,9 +27,9 @@ if sys.version_info.major == 3 and sys.version_info.minor < 7:
 DATABASE_VERSION = '6a3814f17d95'
 
 # For imports outside the relative path
-PREBOORU_DB_URL = os.environ.get('PREBOORU_DB') if os.environ.get('PREBOORU_DB') is not None else 'sqlite:///%s' % DB_PATH
-PREBOORU_CACHE_URL = os.environ.get('PREBOORU_CACHE') if os.environ.get('PREBOORU_CACHE') is not None else 'sqlite:///%s' % CACHE_PATH
-PREBOORU_SIMILARITY_URL = os.environ.get('PREBOORU_SIMILARITY') if os.environ.get('PREBOORU_SIMILARITY') is not None else 'sqlite:///%s' % SIMILARITY_PATH
+PREBOORU_DB_URL = os.environ.get('PREBOORU_DB', 'sqlite:///%s' % DB_PATH)
+PREBOORU_CACHE_URL = os.environ.get('PREBOORU_CACHE', 'sqlite:///%s' % CACHE_PATH)
+PREBOORU_SIMILARITY_URL = os.environ.get('PREBOORU_SIMILARITY', 'sqlite:///%s' % SIMILARITY_PATH)
 
 NAMING_CONVENTION = {
     "ix": 'ix_%(column_0_label)s',
