@@ -4,18 +4,10 @@
 import requests
 
 # ## LOCAL IMPORTS
-from ..config import WORKER_PORT, SIMILARITY_PORT
+from ..config import SIMILARITY_PORT
 
 
 # ## FUNCTIONS
-
-def WorkerCheckUploads():
-    try:
-        requests.get('http://127.0.0.1:%d/check_uploads' % WORKER_PORT, timeout=2)
-    except Exception as e:
-        return {'error': True, 'message': "Unable to contact worker server: %s" % str(e)}
-    return {'error': False}
-
 
 def SimilarityCheckPosts():
     try:

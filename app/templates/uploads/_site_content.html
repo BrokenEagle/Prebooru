@@ -6,7 +6,7 @@
         <ul>
             <li><strong>Status:</strong>
                 {% if upload.status == 'pending' %}
-                    {{ helpers.upload.CheckPendingLink() }}
+                    {{ helpers.upload.CheckPendingLink(upload) }}
                 {% else %}
                     {{ upload.status }}
                 {% endif %}

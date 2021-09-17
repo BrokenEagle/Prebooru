@@ -17,5 +17,5 @@ def PostSearch(upload):
     return SearchUrlFor('post.index_html', uploads={'id': upload.id})
 
 
-def CheckPendingLink():
-    return GeneralLink('pending', url_for('upload.upload_check_html'))
+def CheckPendingLink(upload):
+    return GeneralLink('pending', url_for('upload.upload_check_html', id=upload.id))

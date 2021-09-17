@@ -16,6 +16,8 @@ IMAGE_FILEPATH = "pictures\\"
 DB_PATH = r'db\prebooru.db'
 CACHE_PATH = r'db\cache.db'
 SIMILARITY_PATH = r'db\similarity.db'
+JOBS_PATH = r'db\jobs.db'
+THREADS_PATH = r'db\threads.db'
 
 
 # ## NETWORK VARIABLES
@@ -29,7 +31,6 @@ DANBOORU_APIKEY = None
 PIXIV_PHPSESSID = None
 
 PREBOORU_PORT = 5000
-WORKER_PORT = 4000
 SIMILARITY_PORT = 3000
 IMAGE_PORT = 1234
 

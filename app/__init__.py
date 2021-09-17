@@ -5,6 +5,9 @@ import os
 import sys
 from io import BytesIO
 from types import SimpleNamespace
+from flask_apscheduler import APScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.schedulers.background import BackgroundScheduler
 from sqlalchemy import event, MetaData, Table, Column, String, select
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -13,7 +16,7 @@ from werkzeug.formparser import parse_form_data
 
 # ## LOCAL IMPORTS
 from .logical import query_extensions
-from .config import DB_PATH, CACHE_PATH, SIMILARITY_PATH, DEBUG_MODE
+from .config import DB_PATH, CACHE_PATH, SIMILARITY_PATH, JOBS_PATH, THREADS_PATH, DEBUG_MODE
 
 # #### Python Check
 
@@ -30,6 +33,8 @@ DATABASE_VERSION = '6a3814f17d95'
 PREBOORU_DB_URL = os.environ.get('PREBOORU_DB', 'sqlite:///%s' % DB_PATH)
 PREBOORU_CACHE_URL = os.environ.get('PREBOORU_CACHE', 'sqlite:///%s' % CACHE_PATH)
 PREBOORU_SIMILARITY_URL = os.environ.get('PREBOORU_SIMILARITY', 'sqlite:///%s' % SIMILARITY_PATH)
+SCHEDULER_DB_URL = os.environ.get('SCHEDULER_JOBSTORES', r'sqlite:///%s' % JOBS_PATH)
+THREADULER_DB_URL = os.environ.get('SCHEDULER_JOBSTORES', r'sqlite:///%s' % THREADS_PATH)
 
 NAMING_CONVENTION = {
     "ix": 'ix_%(column_0_label)s',
@@ -85,6 +90,9 @@ class MethodRewriteMiddleware(object):
 
 # ## INITIALIZATION
 
+SCHEDULER_JOBSTORES = SQLAlchemyJobStore(url=SCHEDULER_DB_URL + "?check_same_thread=true", engine_options={'isolation_level': "AUTOCOMMIT"})
+THREADULER_JOBSTORES = SQLAlchemyJobStore(url=THREADULER_DB_URL + "?check_same_thread=true", engine_options={'isolation_level': "AUTOCOMMIT"})
+
 PREBOORU_APP = Flask("", template_folder=os.path.join('app', 'templates'), static_folder=os.path.join('app', 'static'))
 PREBOORU_APP.config.from_mapping(
     SQLALCHEMY_DATABASE_URI=PREBOORU_DB_URL,
@@ -99,6 +107,21 @@ PREBOORU_APP.config.from_mapping(
     DEBUG=DEBUG_MODE,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     EXPLAIN_TEMPLATE_LOADING=False,
+    SCHEDULER_JOBSTORES = {"default": SCHEDULER_JOBSTORES},
+    SCHEDULER_EXECUTORS = {"default": {"type": "processpool", "max_workers": 3}},
+    SCHEDULER_JOB_DEFAULTS = {"coalesce": False, "max_instances": 1, 'misfire_grace_time': 30},
+    SCHEDULER_MISFIRE_GRACE_TIME = 30,
+    SCHEDULER_API_ENABLED=True,
+)
+
+SCHEDULER = APScheduler()
+SCHEDULER.init_app(PREBOORU_APP)
+
+THREADULER = BackgroundScheduler(
+    jobstores={'default': THREADULER_JOBSTORES},
+    executors={'default': {'type': 'threadpool', 'max_workers': 5}},
+    job_defaults={"coalesce": False, "max_instances": 1, 'misfire_grace_time': 30},
+    daemon=True,
 )
 
 METADATA = MetaData(naming_convention=NAMING_CONVENTION)
@@ -108,8 +131,13 @@ SESSION = DB.session
 event.listen(DB.engine, 'connect', _fk_pragma_on_connect)
 event.listen(DB.get_engine(bind='cache'), 'connect', _fk_pragma_on_connect)
 event.listen(DB.get_engine(bind='similarity'), 'connect', _fk_pragma_on_connect)
+event.listen(SCHEDULER_JOBSTORES.engine, 'connect', _fk_pragma_on_connect)
+event.listen(THREADULER_JOBSTORES.engine, 'connect', _fk_pragma_on_connect)
 
 PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
+
+# Scheduled tasks must be added only after everything else has been initialized
+from .logical import schedule_tasks
 
 
 # #### Extend Python imports

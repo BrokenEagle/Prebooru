@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from argparse import ArgumentParser
 
 # ## LOCAL IMPORTS
-from app import PREBOORU_APP, DB
+from app import PREBOORU_APP, DB, SCHEDULER, THREADULER
 from app import controllers
 from app import helpers
 from app.logical.file import LoadDefault, PutGetJSON
@@ -31,6 +31,10 @@ migrate = Migrate(PREBOORU_APP, DB, render_as_batch=True)  # noqa: F841
 def Cleanup():
     if SERVER_PID is not None:
         PutGetJSON(SERVER_PID_FILE, 'w', [])
+    if SCHEDULER.running:
+        SCHEDULER.shutdown()
+    if THREADULER.running:
+        THREADULER.shutdown()
 
 
 def StartServer(args):
@@ -50,6 +54,7 @@ def StartServer(args):
         import logging
         logging.basicConfig()
         logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        logging.getLogger('apscheduler').setLevel(logging.DEBUG)
     if args.title:
         os.system('title Prebooru Server')
     if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
@@ -57,6 +62,7 @@ def StartServer(args):
         SERVER_PID = os.getpid()
         PutGetJSON(SERVER_PID_FILE, 'w', [SERVER_PID])
     PREBOORU_APP.name = 'prebooru'
+    SCHEDULER.start()
     if args.public:
         PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT, host="0.0.0.0")
     else:
@@ -134,6 +140,9 @@ if not HAS_EXTERNAL_IMAGE_SERVER:
 PREBOORU_APP.jinja_env.globals.update(helpers=helpers)
 PREBOORU_APP.jinja_env.add_extension('jinja2.ext.do')
 PREBOORU_APP.jinja_env.add_extension('jinja2.ext.loopcontrols')
+
+THREADULER.start()
+
 
 # ##EXECUTION START
 

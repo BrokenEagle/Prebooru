@@ -16,7 +16,7 @@ from app.config import WORKING_DIRECTORY, DATA_FILEPATH
 # ## GLOBAL VARIABLES
 
 PID_FILENAME_FORMAT = WORKING_DIRECTORY + DATA_FILEPATH + '%s-server-pid.json'
-SERVER_NAMES = ['prebooru', 'worker', 'similarity']
+SERVER_NAMES = ['prebooru', 'similarity']
 
 SERVER_ARGS = {
     'prebooru': "server",
