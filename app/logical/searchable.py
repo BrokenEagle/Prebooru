@@ -102,7 +102,6 @@ def AllAttributeFilters(query, model, params):
     basic_attributes = [attribute for attribute in attributes if IsColumn(model, attribute)]
     basic_filters = ()
     for attribute in basic_attributes:
-        print(attribute, IsPolymorphicColumn(model, attribute))
         basic_model = model if not IsPolymorphicColumn(model, attribute) else model.polymorphic_columns[attribute]
         basic_filters += BasicAttributeFilters(basic_model, attribute, params)
     relationship_attributes = [attribute for attribute in attributes if IsRelationship(model, attribute)]
@@ -194,7 +193,6 @@ def TextFilters(model, columnname, params):
     cmp_regex = re.compile(TEXT_COMPARISON_RE % columnname)
     cmp_matches = [cmp_regex.match(key) for key in params.keys()]
     cmp_types = [match.group(1) for match in cmp_matches if match is not None]
-    print("TextFilters - compare types:", cmp_types)
     for cmp_type in cmp_types:
         param_key = columnname + '_' + cmp_type
         filters += (TextComparisonMatching(model, columnname, params[param_key], cmp_type),)
@@ -203,7 +201,6 @@ def TextFilters(model, columnname, params):
     array_regex = re.compile(TEXT_ARRAY_RE % columnname)
     array_matches = [array_regex.match(key) for key in params.keys()]
     array_types = [match.group(1) for match in array_matches if match is not None]
-    print("TextFilters - array types:", array_types)
     for array_type in array_types:
         param_key = columnname + '_' + array_type
         filters += (TextArrayMatching(model, columnname, params[param_key], array_type),)
@@ -299,7 +296,6 @@ def TextExistenceMatching(model, columnname, value):
 
 
 def TextArrayMatching(model, columnname, value, array_type):
-    print("TextArrayMatching", model, columnname, value, array_type)
     if array_type in COMMA_ARRAY_TYPES:
         value_array = value.split(',')
     elif array_type in SPACE_ARRAY_TYPES:
