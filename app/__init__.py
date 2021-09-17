@@ -92,6 +92,7 @@ PREBOORU_APP.config.from_mapping(
         'cache': PREBOORU_CACHE_URL,
         'similarity': PREBOORU_SIMILARITY_URL,
     },
+    SQLALCHEMY_ENGINE_OPTIONS = {'connect_args' :{"check_same_thread": False}} if 'sqlite' in PREBOORU_DB_URL else {},
     JSON_SORT_KEYS=False,
     SQLALCHEMY_ECHO=False,
     SECRET_KEY='\xfb\x12\xdf\xa1@i\xd6>V\xc0\xbb\x8fp\x16#Z\x0b\x81\xeb\x16',
