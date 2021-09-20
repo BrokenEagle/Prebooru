@@ -56,8 +56,12 @@ class JsonModel(DB.Model):
         return cls.query.filter_by(id=id).first()
 
     @property
+    def model_name(self):
+        return self.__table__.name
+
+    @property
     def shortlink(self):
-        return "%s #%d" % (self.__table__.name, self.id)
+        return "%s #%d" % (self.model_name, self.id) if self.id is not None else "new %s" % self.model_name
 
     @property
     def header(self):
@@ -65,7 +69,7 @@ class JsonModel(DB.Model):
 
     @property
     def show_url(self):
-        return url_for(self.__table__.name + ".show_html", id=self.id)
+        return url_for(self.model_name + ".show_html", id=self.id)
 
     @property
     def show_link(self):
@@ -73,23 +77,23 @@ class JsonModel(DB.Model):
 
     @property
     def index_url(self):
-        return url_for(self.__table__.name + ".index_html")
+        return url_for(self.model_name + ".index_html")
 
     @property
     def create_url(self):
-        return url_for(self.__table__.name + ".create_html")
+        return url_for(self.model_name + ".create_html")
 
     @property
     def update_url(self):
-        return url_for(self.__table__.name + ".update_html", id=self.id)
+        return url_for(self.model_name + ".update_html", id=self.id)
 
     @property
     def edit_url(self):
-        return url_for(self.__table__.name + ".edit_html", id=self.id)
+        return url_for(self.model_name + ".edit_html", id=self.id)
 
     @property
     def delete_url(self):
-        return url_for(self.__table__.name + ".delete_html", id=self.id)
+        return url_for(self.model_name + ".delete_html", id=self.id)
 
     def column_dict(self):
         return {k: getattr(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
