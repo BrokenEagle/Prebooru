@@ -2,6 +2,7 @@
 
 # ##LOCAL IMPORTS
 from .. import DB
+from ..base_model import JsonModel
 
 # ##GLOBAL VARIABLES
 
@@ -20,6 +21,7 @@ CHARACTERS_PER_CHUNK = 2  # Must be a power of 2
 
 BITS_PER_CHUNK = CHARACTERS_PER_CHUNK * BITS_PER_NIBBLE
 NUM_CHUNKS = (HASH_SIZE * HASH_SIZE) // BITS_PER_CHUNK
+TOTAL_BITS = HASH_SIZE * HASH_SIZE
 
 
 # ##FUNCTIONS
@@ -39,7 +41,7 @@ def HexChunk(hashstr, index):
 
 # ##CLASSES
 
-class SimilarityData(DB.Model):
+class SimilarityData(JsonModel):
     # ## Declarations
 
     # #### SqlAlchemy
@@ -56,7 +58,10 @@ class SimilarityData(DB.Model):
     def image_hash(self):
         rethash = ""
         for i in range(0, NUM_CHUNKS):
-            rethash += getattr(self, ChunkKey(i))
+            temp = getattr(self, ChunkKey(i))
+            if temp is None:
+                return None
+            rethash += temp
         return rethash
 
     @image_hash.setter
