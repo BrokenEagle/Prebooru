@@ -19,16 +19,6 @@ from ..database.error_db import CreateAndAppendError
 
 # ## FUNCTIONS
 
-#@SCHEDULER.task("interval", id="check_timer", seconds=10, coalesce=True, misfire_grace_time=30, jitter=1)
-#def check_timer():
-#    print("Blah:", os.getpid())
-
-
-#@SCHEDULER.task("interval", id="check_timer2", seconds=20, coalesce=True, misfire_grace_time=30, jitter=5)
-#def check_timer2():
-#    print("Blah2:", os.getpid())
-
-
 @SCHEDULER.task("interval", id="expunge_cache_records", hours=1, jitter=300, next_run_time=SecondsFromNowLocal(5))
 def expunge_cache_records_task():
     printer = buffered_print("Expunge Cache Records")
