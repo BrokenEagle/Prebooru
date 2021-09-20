@@ -8,7 +8,7 @@ from wtforms import StringField, IntegerField, TextAreaField
 # ## LOCAL IMPORTS
 from .. import SCHEDULER
 from ..logical.utility import EvalBoolString
-from ..logical.worker_tasks import process_upload
+from ..logical.tasks.worker import process_upload
 from ..models import Upload, Post, IllustUrl, Illust
 from ..sources.base_source import GetPostSource, GetPreviewUrl
 from ..database.upload_db import CreateUploadFromParameters

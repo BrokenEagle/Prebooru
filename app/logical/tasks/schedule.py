@@ -1,19 +1,19 @@
-# APP\LOGICAL\SCHEDULED_TASKS.PY
+# APP\LOGICAL\TASKS\SCHEDULE.PY
 
 # ## PYTHON IMPORTS
 import os
 import time
 
 # ## LOCAL IMPORTS
-from .. import SESSION, SCHEDULER
-from .utility import MinutesAgo, GetCurrentTime, SecondsFromNowLocal, buffered_print
-from .check_boorus import check_all_boorus
-from .check_booru_posts import CheckAllPostsForDanbooruID
-from .check_booru_artists import CheckAllArtistsForBoorus
-from ..models import Upload
-from ..cache import ApiData, MediaFile
-from ..database.upload_db import SetUploadStatus
-from ..database.error_db import CreateAndAppendError
+from ... import SESSION, SCHEDULER
+from ..utility import MinutesAgo, GetCurrentTime, SecondsFromNowLocal, buffered_print
+from ..check_boorus import check_all_boorus
+from ..check_booru_posts import CheckAllPostsForDanbooruID
+from ..check_booru_artists import CheckAllArtistsForBoorus
+from ...models import Upload
+from ...cache import ApiData, MediaFile
+from ...database.upload_db import SetUploadStatus
+from ...database.error_db import CreateAndAppendError
 
 # ## GLOBAL VARIABLES
 
