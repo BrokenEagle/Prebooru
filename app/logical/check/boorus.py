@@ -1,9 +1,9 @@
-# APP/LOGICAL/CHECK_BOORUS.PY
+# APP/LOGICAL/CHECK/BOORUS.PY
 
 # ## LOCAL IMPORTS
-from ..models import Booru
-from ..database.booru_db import UpdateBooruFromParameters
-from ..sources.danbooru_source import GetArtistsByIDs
+from ...models import Booru
+from ...database.booru_db import UpdateBooruFromParameters
+from ...sources.danbooru_source import GetArtistsByIDs
 
 
 # ## FUNCTIONS

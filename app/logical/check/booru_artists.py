@@ -1,13 +1,13 @@
-# APP/LOGICAL/CHECK_BOORU_ARTISTS.PY
+# APP/LOGICAL/CHECK/BOORU_ARTISTS.PY
 
 # ## PYTHON IMPORTS
 import itertools
 from sqlalchemy import not_
 
 # ## LOCAL IMPORTS
-from ..models import Artist, Booru
-from ..database.booru_db import CreateBooruFromParameters, BooruAppendArtist
-from ..sources.danbooru_source import GetArtistsByMultipleUrls
+from ...models import Artist, Booru
+from ...database.booru_db import CreateBooruFromParameters, BooruAppendArtist
+from ...sources.danbooru_source import GetArtistsByMultipleUrls
 
 
 # ## GLOBAL VARIABLES

@@ -10,8 +10,8 @@ from ..logger import LogError
 from ..similarity.generate_data import generate_post_similarity
 from ..similarity.populate_pools import populate_similarity_pools
 from ...models import Upload, Post, Illust
-from ..check_booru_posts import CheckPostsForDanbooruID
-from ..check_booru_artists import CheckArtistsForBoorus
+from ..check.posts import CheckPostsForDanbooruID
+from ..check.booru_artists import CheckArtistsForBoorus
 from ...database.artist_db import UpdateArtistFromSource
 from ...database.illust_db import CreateIllustFromSource, UpdateIllustFromSource
 from ...database.upload_db import SetUploadStatus, IsDuplicate

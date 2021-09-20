@@ -1,9 +1,9 @@
-# APP/LOGICAL/CHECK_BOORU_POSTS.PY
+# APP/LOGICAL/CHECK/POSTS.PY
 
 # ## LOCAL IMPORTS
-from .. import SESSION
-from ..models import Post
-from ..sources.danbooru_source import GetPostsByMD5s
+from ... import SESSION
+from ...models import Post
+from ...sources.danbooru_source import GetPostsByMD5s
 
 
 # ## FUNCTIONS
