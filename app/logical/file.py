@@ -2,6 +2,7 @@
 
 # ##PYTHON IMPORTS
 import os
+import time
 import json
 
 # ###LOCAL IMPORTS
@@ -62,3 +63,9 @@ def LoadDefault(filepath, defaultvalue, binary=False, unicode=False):
     if os.path.exists(filepath):
         return PutGetJSON(filepath, optype, unicode=unicode)
     return defaultvalue
+
+
+def delete_file(filepath):
+    if os.path.exists(filepath):
+        os.remove(filepath)
+        time.sleep(0.2)                         # Time to let the OS remove the file to prevent OS errors

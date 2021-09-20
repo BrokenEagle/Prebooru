@@ -4,11 +4,37 @@
 from .. import SESSION
 from ..logical.utility import UniqueObjects
 from ..similarity import SimilarityPoolElement
+from .base_db import UpdateColumnAttributes
+
+# ##GLOBAL VARIABLES
+
+COLUMN_ATTRIBUTES = ['pool_id', 'post_id', 'score']
+
+CREATE_ALLOWED_ATTRIBUTES = ['pool_id', 'post_id', 'score']
 
 
 # ## FUNCTIONS
 
 # #### Route DB functions
+
+# ###### CREATE
+
+def create_similarity_pool_element_from_parameters(createparams):
+    similarity_pool_element = SimilarityPoolElement()
+    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
+    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
+    UpdateColumnAttributes(similarity_pool_element, update_columns, createparams)
+    print("[%s]: created" % similarity_pool_element.shortlink)
+    return similarity_pool_element
+
+
+# ###### UPDATE
+
+def update_similarity_pool_element_pairing(similarity_pool_element_1, similarity_pool_element_2):
+    similarity_pool_element_1.sibling_id = similarity_pool_element_2.id
+    similarity_pool_element_2.sibling_id = similarity_pool_element_1.id
+    SESSION.commit()
+
 
 # ###### DELETE
 

@@ -7,6 +7,8 @@ import itertools
 from .. import SESSION, SCHEDULER, THREADULER
 from .utility import GetCurrentTime, MinutesAgo, UniqueObjects, buffered_print
 from .logger import LogError
+from .similarity.generate_data import generate_post_similarity
+from .similarity.populate_pools import populate_similarity_pools
 from ..models import Upload, Post, Illust
 from .check_booru_posts import CheckPostsForDanbooruID
 from .check_booru_artists import CheckArtistsForBoorus
@@ -54,8 +56,8 @@ def process_upload(upload_id):
         printer("Posts:", len(upload.posts))
         if upload.status in ['complete', 'duplicate'] and len(upload.posts) > 0:
             printer("Adding secondary jobs.")
-            THREADULER.add_job(contact_similarity_server, id="contact_similarity_server-%d" % upload.id)
             post_ids = [post.id for post in upload.posts]
+            THREADULER.add_job(process_similarity, id="process_similarity-%d" % upload.id, args=(post_ids,))
             THREADULER.add_job(check_for_matching_danbooru_posts, id="check_for_matching_danbooru_posts-%d" % upload.id, args=(post_ids,))
             THREADULER.add_job(check_for_new_artist_boorus, args=(post_ids,), id="check_for_new_artist_boorus-%d" % upload.id)
     printer.print()
@@ -67,6 +69,15 @@ def contact_similarity_server():
     printer("Result:", "success" if not results['error'] else "failure")
     if results['error']:
         printer("Similarity error:", results['message'])
+    printer.print()
+
+
+def process_similarity(post_ids):
+    printer = buffered_print("Process Similarity")
+    posts = Post.query.filter(Post.id.in_(post_ids)).all()
+    for post in posts:
+        generate_post_similarity(post, printer=printer)
+        populate_similarity_pools(post, printer=printer)
     printer.print()
 
 
