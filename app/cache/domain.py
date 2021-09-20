@@ -2,11 +2,12 @@
 
 # ##LOCAL IMPORTS
 from .. import DB
+from ..base_model import JsonModel
 
 
 # ## CLASSES
 
-class Domain(DB.Model):
+class Domain(JsonModel):
     # ## Declarations
 
     # #### SqlAlchemy

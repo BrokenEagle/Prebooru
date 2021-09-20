@@ -2,11 +2,12 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
+from ..base_model import JsonModel
 
 
 # ## CLASSES
 
-class ApiData(DB.Model):
+class ApiData(JsonModel):
     # ## Declarations
 
     # #### SqlAlchemy

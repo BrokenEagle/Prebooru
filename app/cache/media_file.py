@@ -2,12 +2,13 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
+from ..base_model import JsonModel
 from ..storage import CACHE_DATA_DIRECTORY, CacheNetworkUrlpath
 
 
 # ## CLASSES
 
-class MediaFile(DB.Model):
+class MediaFile(JsonModel):
     # ## Declarations
 
     # #### SqlAlchemy
