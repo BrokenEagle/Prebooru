@@ -47,6 +47,7 @@ def CreateBooruFromParameters(createparams):
     UpdateColumnAttributes(booru, update_columns, createparams)
     create_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
     UpdateRelationshipCollections(booru, create_relationships, createparams)
+    print("[%s]: created" % booru.shortlink)
     return booru
 
 
@@ -75,7 +76,7 @@ def UpdateBooruFromParameters(booru, updateparams):
     update_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
     update_results.append(UpdateRelationshipCollections(booru, update_relationships, updateparams))
     if any(update_results):
-        print("Changes detected.")
+        print("[%s]: updated" % booru.shortlink)
         booru.updated = GetCurrentTime()
         SESSION.commit()
 

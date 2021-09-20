@@ -24,6 +24,7 @@ def CreatePostFromParameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     UpdateColumnAttributes(post, update_columns, createparams)
+    print("[%s]: created" % post.shortlink)
     return post
 
 

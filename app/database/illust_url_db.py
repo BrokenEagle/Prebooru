@@ -20,10 +20,12 @@ def CreateIllustUrlFromParameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     UpdateColumnAttributes(illust_url, update_columns, createparams)
+    print("[%s]: created" % illust_url.shortlink)
     return illust_url
 
 
 def UpdateIllustUrlFromParameters(illust_url, updateparams):
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    UpdateColumnAttributes(illust_url, update_columns, updateparams)
+    if UpdateColumnAttributes(illust_url, update_columns, updateparams):
+        print("[%s]: updated" % illust_url.shortlink)

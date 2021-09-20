@@ -33,6 +33,7 @@ def CreateNotationFromParameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     UpdateColumnAttributes(notation, update_columns, createparams)
+    print("[%s]: created" % notation.shortlink)
     return notation
 
 
@@ -44,7 +45,7 @@ def UpdateNotationFromParameters(notation, updateparams):
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(UpdateColumnAttributes(notation, update_columns, updateparams))
     if any(update_results):
-        print("Changes detected.")
+        print("[%s]: updated" % notation.shortlink)
         notation.updated = GetCurrentTime()
         SESSION.commit()
 

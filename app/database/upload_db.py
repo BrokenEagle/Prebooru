@@ -37,6 +37,7 @@ def CreateUploadFromParameters(createparams):
     UpdateColumnAttributes(upload, update_columns, createparams)
     create_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
     UpdateRelationshipCollections(upload, create_relationships, createparams)
+    print("[%s]: created" % upload.shortlink)
     return upload
 
 

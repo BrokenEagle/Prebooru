@@ -26,6 +26,7 @@ def CreatePoolFromParameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     UpdateColumnAttributes(pool, update_columns, createparams)
+    print("[%s]: created" % pool.shortlink)
     return pool
 
 
@@ -37,6 +38,6 @@ def UpdatePoolFromParameters(pool, updateparams):
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(UpdateColumnAttributes(pool, update_columns, updateparams))
     if any(update_results):
-        print("Changes detected.")
+        print("[%s]: updated" % pool.shortlink)
         pool.updated = GetCurrentTime()
         SESSION.commit()

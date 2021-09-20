@@ -71,6 +71,7 @@ def CreateIllustFromParameters(createparams):
     UpdateSiteDataFromParameters(illust.site_data, illust.id, illust.site_id, createparams)
     if 'illust_urls' in createparams:
         UpdateIllustUrls(illust, createparams['illust_urls'])
+    print("[%s]: created" % illust.shortlink)
     return illust
 
 
@@ -103,7 +104,7 @@ def UpdateIllustFromParameters(illust, updateparams):
     if 'illust_urls' in updateparams:
         update_results.append(UpdateIllustUrls(illust, updateparams['illust_urls']))
     if any(update_results):
-        print("Changes detected.")
+        print("[%s]: updated" % illust.shortlink)
         illust.updated = GetCurrentTime()
         SESSION.commit()
     if 'requery' in updateparams:

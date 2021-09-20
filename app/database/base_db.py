@@ -17,11 +17,11 @@ def SetTimesvalue(params, key):
 
 
 def UpdateColumnAttributes(item, attrs, dataparams):
-    SafePrint("UpdateColumnAttributes", item.column_dict(), attrs, dataparams)
+    """For updating column attributes with scalar values"""
     is_dirty = False
     for attr in attrs:
         if getattr(item, attr) != dataparams[attr]:
-            SafePrint("Setting basic attr:", attr, getattr(item, attr), dataparams[attr])
+            SafePrint("Setting basic attr (%s):" % item.shortlink, attr, getattr(item, attr), dataparams[attr])
             setattr(item, attr, dataparams[attr])
             is_dirty = True
     if item.id is None:
@@ -41,7 +41,7 @@ def UpdateRelationshipCollections(item, relationships, updateparams):
         current_values = [getattr(subitem, subattr) for subitem in collection]
         add_values = set(updateparams[attr]).difference(current_values)
         for value in add_values:
-            SafePrint("Adding collection item:", attr, value)
+            SafePrint("Adding collection item (%s):" % item.shortlink, attr, value)
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
@@ -50,7 +50,7 @@ def UpdateRelationshipCollections(item, relationships, updateparams):
             is_dirty = True
         remove_values = set(current_values).difference(updateparams[attr])
         for value in remove_values:
-            SafePrint("Removing collection item:", attr, value)
+            SafePrint("Removing collection item (%s):" % item.shortlink, attr, value)
             remove_item = next(filter(lambda x: getattr(x, subattr) == value, collection))
             collection.remove(remove_item)
             is_dirty = True
@@ -69,7 +69,7 @@ def AppendRelationshipCollections(item, relationships, updateparams):
         current_values = [getattr(subitem, subattr) for subitem in collection]
         if updateparams[attr] not in current_values:
             value = updateparams[attr]
-            SafePrint("Adding collection item:", attr, value)
+            SafePrint("Adding collection item (%s):" % item.shortlink, attr, value)
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})

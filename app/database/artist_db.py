@@ -52,6 +52,7 @@ def CreateArtistFromParameters(createparams):
     AppendRelationshipCollections(artist, append_relationships, createparams)
     if 'webpages' in createparams:
         UpdateArtistWebpages(artist, createparams['webpages'])
+    print("[%s]: created" % artist.shortlink)
     return artist
 
 
@@ -79,7 +80,7 @@ def UpdateArtistFromParameters(artist, updateparams):
     if 'webpages' in updateparams:
         update_results.append(UpdateArtistWebpages(artist, updateparams['webpages']))
     if any(update_results):
-        print("Changes detected.")
+        print("[%s]: updated" % artist.shortlink)
         artist.updated = GetCurrentTime()
         SESSION.commit()
     if 'requery' in updateparams:
