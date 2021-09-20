@@ -17,7 +17,6 @@ from ...database.illust_db import CreateIllustFromSource, UpdateIllustFromSource
 from ...database.upload_db import SetUploadStatus, IsDuplicate
 from ...database.error_db import CreateAndAppendError, AppendError
 from ...sources.base_source import GetPostSource, GetSourceById
-from ...sources.local_source import SimilarityCheckPosts
 from ..downloader.network import ConvertNetworkUpload
 from ..downloader.file import ConvertFileUpload
 
@@ -60,15 +59,6 @@ def process_upload(upload_id):
             THREADULER.add_job(process_similarity, id="process_similarity-%d" % upload.id, args=(post_ids,))
             THREADULER.add_job(check_for_matching_danbooru_posts, id="check_for_matching_danbooru_posts-%d" % upload.id, args=(post_ids,))
             THREADULER.add_job(check_for_new_artist_boorus, args=(post_ids,), id="check_for_new_artist_boorus-%d" % upload.id)
-    printer.print()
-
-
-def contact_similarity_server():
-    printer = buffered_print("Contact Similarity")
-    results = SimilarityCheckPosts()
-    printer("Result:", "success" if not results['error'] else "failure")
-    if results['error']:
-        printer("Similarity error:", results['message'])
     printer.print()
 
 
