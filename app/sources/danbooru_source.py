@@ -43,6 +43,18 @@ def GetArtistByID(id, include_urls=False):
     return {'error': False, 'artist': data['json']}
 
 
+def GetArtistsByIDs(id_list):
+    params = {
+        'search[id]': ','.join(map(str, id_list)),
+        'limit': len(id_list),
+    }
+    request_url = '/artists.json'
+    data = DanbooruRequest(request_url, params)
+    if data['error']:
+        return data
+    return {'error': False, 'artists': data['json']}
+
+
 def GetArtistsByUrl(url):
     request_url = '/artist_urls.json'
     params = {

@@ -7,6 +7,7 @@ import time
 # ## LOCAL IMPORTS
 from .. import SESSION, SCHEDULER
 from .utility import MinutesAgo, GetCurrentTime, SecondsFromNowLocal, buffered_print
+from .check_boorus import check_all_boorus
 from .check_booru_posts import CheckAllPostsForDanbooruID
 from .check_booru_artists import CheckAllArtistsForBoorus
 from ..models import Upload
@@ -50,6 +51,14 @@ def expire_uploads_task():
     for upload in expired_uploads:
         SetUploadStatus(upload, 'complete')
         CreateAndAppendError('logical.scheduled_tasks.expire_uploads', "Upload has expired.", upload)
+    printer.print()
+
+
+@SCHEDULER.task('interval', id="check_all_boorus", days=1, jitter=3600)
+def check_all_boorus_task():
+    printer = buffered_print("Check All Boorus")
+    printer("PID:", os.getpid())
+    check_all_boorus(printer=printer)
     printer.print()
 
 
