@@ -1,14 +1,14 @@
-# APP/DOWNLOADER/NETWORK_DOWNLOADER.PY
+# APP/LOGICAL/DOWNLOADER/NETWORK.PY
 
-# ##LOCAL IMPORTS
-from ..logical.network import GetHTTPFile
-from ..database.post_db import CreatePostAndAddIllustUrl
-from ..database.error_db import CreateError, CreateAndAppendError, ExtendErrors, IsError
-from .base_downloader import ConvertImageUpload, ConvertVideoUpload, LoadImage, CheckExisting, CheckFiletype,\
+# ## LOCAL IMPORTS
+from ..network import GetHTTPFile
+from ...database.post_db import CreatePostAndAddIllustUrl
+from ...database.error_db import CreateError, CreateAndAppendError, ExtendErrors, IsError
+from .base import ConvertImageUpload, ConvertVideoUpload, LoadImage, CheckExisting, CheckFiletype,\
     CheckImageDimensions, CheckVideoDimensions, SaveImage, SaveVideo, SaveThumb
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### Main execution functions
 
@@ -20,7 +20,7 @@ def ConvertNetworkUpload(illust, upload, source):
         image_illust_urls = [illust_url for illust_url in source.ImageIllustDownloadUrls(illust)
                              if (len(all_upload_urls) == 0) or (illust_url.url in all_upload_urls)]
         return ConvertImageUpload(image_illust_urls, upload, source, CreateImagePost)
-    CreateAndAppendError('downloader.file_uploader.ConvertFileUpload', "No valid illust URLs.", upload)
+    CreateAndAppendError('logical.downloader.file.ConvertFileUpload', "No valid illust URLs.", upload)
     return False
 
 
@@ -30,11 +30,11 @@ def DownloadMedia(illust_url, source):
     download_url = source.GetFullUrl(illust_url)
     file_ext = source.GetMediaExtension(download_url)
     if file_ext not in ['jpg', 'png', 'mp4']:
-        return CreateError('downloader.network_downloader.DownloadMedia', "Unsupported file format: %s" % file_ext), None
+        return CreateError('logical.downloader.network.DownloadMedia', "Unsupported file format: %s" % file_ext), None
     print("Downloading", download_url)
     buffer = GetHTTPFile(download_url, headers=source.IMAGE_HEADERS)
     if type(buffer) is str:
-        return CreateError('downloader.network_downloader.DownloadMedia', buffer), None
+        return CreateError('logical.downloader.network.DownloadMedia', buffer), None
     return buffer, file_ext
 
 

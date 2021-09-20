@@ -18,8 +18,8 @@ from ...database.upload_db import SetUploadStatus, IsDuplicate
 from ...database.error_db import CreateAndAppendError, AppendError
 from ...sources.base_source import GetPostSource, GetSourceById
 from ...sources.local_source import SimilarityCheckPosts
-from ...downloader.network_downloader import ConvertNetworkUpload
-from ...downloader.file_downloader import ConvertFileUpload
+from ..downloader.network import ConvertNetworkUpload
+from ..downloader.file import ConvertFileUpload
 
 
 # ## GLOBAL VARIABLES

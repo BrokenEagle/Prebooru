@@ -1,31 +1,31 @@
-# APP/LOGICAL/UPLOADER.PY
+# APP/LOGICAL/DOWNLOADER/FILE.PY
 
-# ##LOCAL IMPORTS
-from ..logical.utility import GetFileExtension
-from ..logical.file import PutGetRaw
-from ..database.post_db import CreatePostAndAddIllustUrl
-from ..database.error_db import CreateAndAppendError, ExtendErrors, IsError
-from .base_downloader import ConvertImageUpload, ConvertVideoUpload, LoadImage, CheckExisting, CheckFiletype,\
+# ## LOCAL IMPORTS
+from ..utility import GetFileExtension
+from ..file import PutGetRaw
+from ...database.post_db import CreatePostAndAddIllustUrl
+from ...database.error_db import CreateAndAppendError, ExtendErrors, IsError
+from .base import ConvertImageUpload, ConvertVideoUpload, LoadImage, CheckExisting, CheckFiletype,\
     CheckImageDimensions, CheckVideoDimensions, SaveImage, SaveVideo, SaveThumb
 
-# ##FUNCTIONS
 
+# ## FUNCTIONS
 
 def ConvertFileUpload(upload, source):
     illust_url = upload.illust_url
     illust = illust_url.illust
     if source.IllustHasVideos(illust):
         if upload.sample_filepath is None:
-            CreateAndAppendError('downloader.file_uploader.ConvertFileUpload', "Must include sample filepath on video uploads (illust #%d)." % illust.id, upload)
+            CreateAndAppendError('logical.downloader.file.ConvertFileUpload', "Must include sample filepath on video uploads (illust #%d)." % illust.id, upload)
         else:
             return ConvertVideoUpload(illust, upload, source, CreateVideoPost)
     elif source.IllustHasImages(illust):
         return ConvertImageUpload([illust_url], upload, source, CreateImagePost)
-    CreateAndAppendError('downloader.file_uploader.ConvertFileUpload', "No valid illust URLs.", upload)
+    CreateAndAppendError('logical.downloader.file.ConvertFileUpload', "No valid illust URLs.", upload)
     return False
 
-
 # #### Post creation functions
+
 
 def CreateImagePost(image_illust_url, upload, source):
     file_ext = GetFileExtension(upload.media_filepath)
