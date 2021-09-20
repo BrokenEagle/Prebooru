@@ -144,7 +144,7 @@ PREBOORU_APP.jinja_env.add_extension('jinja2.ext.loopcontrols')
 THREADULER.start()
 
 
-# ##EXECUTION START
+# ## EXECUTION START
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Server to process network requests.")

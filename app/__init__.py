@@ -100,17 +100,17 @@ PREBOORU_APP.config.from_mapping(
         'cache': PREBOORU_CACHE_URL,
         'similarity': PREBOORU_SIMILARITY_URL,
     },
-    SQLALCHEMY_ENGINE_OPTIONS = {'connect_args' :{"check_same_thread": False}} if 'sqlite' in PREBOORU_DB_URL else {},
+    SQLALCHEMY_ENGINE_OPTIONS={'connect_args': {"check_same_thread": False}} if 'sqlite' in PREBOORU_DB_URL else {},
     JSON_SORT_KEYS=False,
     SQLALCHEMY_ECHO=False,
     SECRET_KEY='\xfb\x12\xdf\xa1@i\xd6>V\xc0\xbb\x8fp\x16#Z\x0b\x81\xeb\x16',
     DEBUG=DEBUG_MODE,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     EXPLAIN_TEMPLATE_LOADING=False,
-    SCHEDULER_JOBSTORES = {"default": SCHEDULER_JOBSTORES},
-    SCHEDULER_EXECUTORS = {"default": {"type": "processpool", "max_workers": 3}},
-    SCHEDULER_JOB_DEFAULTS = {"coalesce": False, "max_instances": 1, 'misfire_grace_time': 30},
-    SCHEDULER_MISFIRE_GRACE_TIME = 30,
+    SCHEDULER_JOBSTORES={"default": SCHEDULER_JOBSTORES},
+    SCHEDULER_EXECUTORS={"default": {"type": "processpool", "max_workers": 3}},
+    SCHEDULER_JOB_DEFAULTS={"coalesce": False, "max_instances": 1, 'misfire_grace_time': 30},
+    SCHEDULER_MISFIRE_GRACE_TIME=30,
     SCHEDULER_API_ENABLED=True,
 )
 
@@ -137,7 +137,7 @@ event.listen(THREADULER_JOBSTORES.engine, 'connect', _fk_pragma_on_connect)
 PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
 
 # Scheduled tasks must be added only after everything else has been initialized
-from .logical import schedule_tasks
+from .logical import schedule_tasks  # noqa: E402, F401
 
 
 # #### Extend Python imports
@@ -147,7 +147,7 @@ query_extensions.Initialize()
 
 # #### Validate database versions
 
-if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     t_alembic_version = Table('alembic_version', MetaData(), Column('version_num', String))
     for bind in [None, 'cache', 'similarity']:
         engine = DB.get_engine(bind=bind).engine

@@ -4,7 +4,7 @@
 import itertools
 
 # ## LOCAL IMPORTS
-from .. import SESSION, SCHEDULER, THREADULER
+from .. import SESSION, THREADULER
 from .utility import GetCurrentTime, MinutesAgo, UniqueObjects, buffered_print
 from .logger import LogError
 from .similarity.generate_data import generate_post_similarity

@@ -1,16 +1,15 @@
 # APP\CONTROLLERS\POSTS_CONTROLLER.PY
 
 # ## PYTHON IMPORTS
-from flask import Blueprint, request, render_template, redirect, url_for, flash
+from flask import Blueprint, request, render_template
 from sqlalchemy import not_, or_
 from sqlalchemy.orm import lazyload, selectinload
 
 # ## LOCAL IMPORTS
 from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust
 from ..logical.utility import EvalBoolString, IsFalsey
-from ..sources.local_source import SimilarityRegeneratePost
 from .base_controller import ShowJson, IndexJson, SearchFilter, ProcessRequestValues, GetParamsValue, Paginate,\
-    DefaultOrder, GetOrAbort, GetOrError
+    DefaultOrder, GetOrAbort
 
 
 # ## GLOBAL VARIABLES
