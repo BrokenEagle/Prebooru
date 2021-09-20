@@ -76,7 +76,7 @@ def DanbooruPostBookmarkletLinks(post):
 
 
 def RegenerateSimilarityLink(post):
-    return GeneralLink("Regenerate similarity", url_for('post.regenerate_html', id=post.id), **{'onclick': "return Post.regenerateSimilarity(this)"})
+    return GeneralLink("Regenerate similarity", url_for('similarity.regenerate_html', post_id=post.id), **{'onclick': "return Posts.regenerateSimilarity(this)"})
 
 
 def FileLink(post):

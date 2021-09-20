@@ -111,19 +111,3 @@ def index_html():
     q = q.options(INDEX_HTML_OPTIONS)
     posts = Paginate(q, request)
     return render_template("posts/index.html", posts=posts, post=Post())
-
-
-# ###### MISC
-
-@bp.route('/posts/<int:id>/regenerate', methods=['GET'])
-def regenerate_html(id):
-    post = GetOrError
-    if type(post) is dict:
-        flash(post['message'], 'error')
-    else:
-        results = SimilarityRegeneratePost(id)
-        if results['error']:
-            flash(results['message'], 'error')
-        else:
-            flash("Similarity regenerated.")
-    return redirect(url_for('post.show_html', id=id))
