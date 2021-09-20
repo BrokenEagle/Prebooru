@@ -5,7 +5,7 @@ import itertools
 
 # ## LOCAL IMPORTS
 from .. import SESSION, SCHEDULER, THREADULER
-from .utility import GetCurrentTime, MinutesAgo, UniqueObjects
+from .utility import GetCurrentTime, MinutesAgo, UniqueObjects, buffered_print
 from .logger import LogError
 from ..models import Upload, Post, Illust
 from .check_booru_posts import CheckPostsForDanbooruID
@@ -34,9 +34,9 @@ def check_requery(instance):
 # #### Task functions
 
 def process_upload(upload_id):
-    print("\n==========Process Upload==========")
+    printer = buffered_print("Process Upload")
     upload = Upload.find(upload_id)
-    print("Upload:", upload)
+    printer("Upload:", upload)
     SetUploadStatus(upload, 'processing')
     try:
         if upload.type == 'post':
@@ -44,49 +44,49 @@ def process_upload(upload_id):
         elif upload.type == 'file':
             process_file_upload(upload)
     except Exception as e:
-        print("\a\aProcessUpload: Exception occured in worker!\n", e)
-        print("Unlocking the database...")
+        printer("\a\aProcessUpload: Exception occured in worker!\n", e)
+        printer("Unlocking the database...")
         SESSION.rollback()
         LogError('worker.ProcessUpload', "Unhandled exception occurred on upload #%d: %s" % (upload.id, e))
         SetUploadStatus(upload, 'error')
     finally:
-        print("Upload:", upload.status)
-        print("Posts:", len(upload.posts))
+        printer("Upload:", upload.status)
+        printer("Posts:", len(upload.posts))
         if upload.status in ['complete', 'duplicate'] and len(upload.posts) > 0:
-            print("Adding secondary jobs.")
+            printer("Adding secondary jobs.")
             THREADULER.add_job(contact_similarity_server, id="contact_similarity_server-%d" % upload.id)
             post_ids = [post.id for post in upload.posts]
             THREADULER.add_job(check_for_matching_danbooru_posts, id="check_for_matching_danbooru_posts-%d" % upload.id, args=(post_ids,))
             THREADULER.add_job(check_for_new_artist_boorus, args=(post_ids,), id="check_for_new_artist_boorus-%d" % upload.id)
-    print("=================================\n")
+    printer.print()
 
 
 def contact_similarity_server():
-    print("\n==========Contact Similarity==========")
+    printer = buffered_print("Contact Similarity")
     results = SimilarityCheckPosts()
-    print("Result:", "success" if not results['error'] else "failure")
+    printer("Result:", "success" if not results['error'] else "failure")
     if results['error']:
-        print("Similarity error:", results['message'])
-    print("======================================\n")
+        printer("Similarity error:", results['message'])
+    printer.print()
 
 
 def check_for_matching_danbooru_posts(post_ids):
-    print("\n==========Check Danbooru Posts==========")
-    print("Posts to check:", len(post_ids))
+    printer = buffered_print("Check Danbooru Posts")
+    printer("Posts to check:", len(post_ids))
     posts = Post.query.filter(Post.id.in_(post_ids)).all()
     CheckPostsForDanbooruID(posts)
-    print("========================================\n")
+    printer.print()
 
 
 def check_for_new_artist_boorus(post_ids):
-    print("\n==========Check Artist Boorus==========")
+    printer = buffered_print("Check Artist Boorus")
     posts = Post.query.filter(Post.id.in_(post_ids)).all()
     all_artists = UniqueObjects([*itertools.chain(*[post.artists for post in posts])])
     check_artists = [artist for artist in all_artists if artist.created > MinutesAgo(1)]
-    print("Artists to check:", len(check_artists))
+    printer("Artists to check:", len(check_artists))
     if len(check_artists):
         CheckArtistsForBoorus(check_artists)
-    print("=======================================\n")
+    printer.print()
 
 
 # #### Auxiliary functions
