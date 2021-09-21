@@ -8,7 +8,6 @@ import imagehash
 # ## LOCAL IMPORTS
 from ...similarity.similarity_data import SimilarityData, HASH_SIZE, TOTAL_BITS
 from ...database.media_file_db import create_media_file_from_parameters, delete_media_file, get_media_file_by_url
-from ...storage import CACHE_DATA_DIRECTORY
 from ..utility import GetBufferChecksum
 from ..file import CreateDirectory, PutGetRaw
 from ..network import GetHTTPFile
@@ -78,7 +77,7 @@ def create_media(download_url, source):
     extension = source.GetMediaExtension(download_url)
     media_file = create_media_file_from_parameters({'md5': md5, 'file_ext': extension, 'media_url': download_url})
     try:
-        CreateDirectory(CACHE_DATA_DIRECTORY)
+        CreateDirectory(media_file.file_path)
         PutGetRaw(media_file.file_path, 'wb', buffer)
     except Exception as e:
         delete_media_file(media_file)

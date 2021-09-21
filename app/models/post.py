@@ -1,6 +1,7 @@
 # APP/MODELS/POST.PY
 
 # ##PYTHON IMPORTS
+import os
 import itertools
 import datetime
 from types import SimpleNamespace
@@ -11,9 +12,10 @@ from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ##LOCAL IMPORTS
-from .. import DB, storage
+from .. import DB
+from ..config import IMAGE_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from ..logical.utility import UniqueObjects
-from ..base_model import JsonModel, RemoveKeys
+from ..base_model import JsonModel, RemoveKeys, image_server_url
 from .error import Error
 from .illust_url import IllustUrl
 from .notation import Notation
@@ -21,7 +23,6 @@ from .pool_element import PoolPost, pool_element_delete
 from ..similarity.similarity_pool import SimilarityPool
 from ..similarity.similarity_pool_element import SimilarityPoolElement
 
-# ##GLOBAL VARIABLES
 
 # Many-to-many tables
 
@@ -44,7 +45,7 @@ PostNotations = DB.Table(
 )
 
 
-# Classes
+# ## CLASSES
 
 @dataclass
 class Post(JsonModel):
@@ -86,29 +87,37 @@ class Post(JsonModel):
 
     # ## Property methods
 
+    @memoized_property
+    def has_sample(self):
+        return self.width > SAMPLE_DIMENSIONS[0] or self.height > SAMPLE_DIMENSIONS[1] or self.file_ext not in ['jpg', 'png', 'gif']
+
+    @memoized_property
+    def has_preview(self):
+        return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1]
+
     @property
     def file_url(self):
-        return storage.NetworkDirectory('data', self.md5) + self.md5 + '.' + self.file_ext
+        return image_server_url('data' + self._partial_network_path + self.file_ext)
 
     @property
     def sample_url(self):
-        return storage.NetworkDirectory('sample', self.md5) + self.md5 + '.jpg' if storage.HasSample(self.width, self.height) or self.file_ext not in ['jpg', 'png', 'gif'] else self.file_url
+        return image_server_url('sample' + self._partial_network_path + 'jpg') if self.has_sample else self.file_url
 
     @property
     def preview_url(self):
-        return storage.NetworkDirectory('preview', self.md5) + self.md5 + '.jpg' if storage.HasPreview(self.width, self.height) else self.file_url
+        return image_server_url('preview' + self._partial_network_path + 'jpg') if self.has_preview else self.file_url
 
     @property
     def file_path(self):
-        return storage.DataDirectory('data', self.md5) + self.md5 + '.' + self.file_ext
+        return os.path.join(IMAGE_DIRECTORY, 'data', self._partial_file_path + self.file_ext)
 
     @property
     def sample_path(self):
-        return storage.DataDirectory('sample', self.md5) + self.md5 + '.jpg' if storage.HasSample(self.width, self.height) or self.file_ext not in ['jpg', 'png', 'gif'] else self.file_path
+        return os.path.join(IMAGE_DIRECTORY, 'sample', self._partial_file_path + 'jpg') if self.has_sample else self.file_path
 
     @property
     def preview_path(self):
-        return storage.DataDirectory('preview', self.md5) + self.md5 + '.jpg' if storage.HasPreview(self.width, self.height) else self.file_path
+        return os.path.join(IMAGE_DIRECTORY, 'preview', self._partial_file_path + 'jpg') if self.has_preview else self.file_path
 
     @memoized_property
     def related_posts(self):
@@ -161,6 +170,18 @@ class Post(JsonModel):
         return posts
 
     # ###### Private
+
+    @memoized_property
+    def _partial_network_path(self):
+        return '/%s/%s/%s.' % (self.md5[0:2], self.md5[2:4], self.md5)
+
+    @memoized_property
+    def _partial_file_path(self):
+        return os.path.join(self.md5[0:2], self.md5[2:4], self._file_name)
+
+    @memoized_property
+    def _file_name(self):
+        return '%s.' % (self.md5)
 
     @property
     def _similar_pool_element_query(self):

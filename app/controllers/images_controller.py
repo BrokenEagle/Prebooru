@@ -4,7 +4,7 @@
 from flask import Blueprint, send_from_directory
 
 # ## LOCAL IMPORTS
-from ..storage import IMAGE_DIRECTORY
+from ..config import IMAGE_DIRECTORY
 
 # ## GLOBAL VARIABLES
 

@@ -1,13 +1,32 @@
 # APP/DEFAULT_CONFIG.PY
 
+
 # ## DIRECTORY VARIABLES
 
+'''WINDOWS'''
 """Filepaths need to end with a double backslash ('\\')"""
 """All backslashes ('\') in a filepath need to be double escaped ('\\')"""
 
 WORKING_DIRECTORY = "C:\\Temp\\"
-DATA_FILEPATH = "data\\"
-IMAGE_FILEPATH = "pictures\\"
+
+
+'''LINUX'''
+"""Filepaths need to end with a forwardslash ('/')"""
+'''
+WORKING_DIRECTORY = "/tmp/"
+'''
+
+
+"""Subdirectory paths should not begin or end with a directory separator ('\' or '/')"""
+DATA_FILEPATH = "data"
+IMAGE_FILEPATH = "pictures"
+
+
+# ## IMAGE VARIABLES
+"""Maximum dimensions of width x height for preview and sample size images"""
+
+PREVIEW_DIMENSIONS = (300, 300)
+SAMPLE_DIMENSIONS = (1280, 1920)
 
 
 # ## DATABASE VARIABLES

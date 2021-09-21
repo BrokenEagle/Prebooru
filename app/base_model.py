@@ -6,7 +6,8 @@ from typing import List, _GenericAlias
 from flask import url_for, Markup
 
 # ## LOCAL IMPORTS
-from . import DB
+from . import DB, SERVER_INFO
+from .config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 
 
 # ## FUNCTIONS
@@ -27,6 +28,19 @@ def StrOrNone(data):
 
 def RemoveKeys(data, keylist):
     return {k: data[k] for k in data if k not in keylist}
+
+
+# #### Network functions
+
+def _external_server_url(urlpath):
+    return 'http://' + SERVER_INFO.addr + ':' + str(IMAGE_PORT) + '/images/' + urlpath
+
+
+def _internal_serval_url(urlpath):
+    return url_for('images.send_file', path=urlpath)
+
+
+image_server_url = _external_server_url if HAS_EXTERNAL_IMAGE_SERVER else _internal_serval_url
 
 
 # #### Factory functions

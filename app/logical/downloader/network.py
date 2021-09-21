@@ -2,6 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ..network import GetHTTPFile
+from ...models import Post
 from ...database.post_db import CreatePostAndAddIllustUrl
 from ...database.error_db import CreateError, CreateAndAppendError, ExtendErrors, IsError
 from .base import ConvertImageUpload, ConvertVideoUpload, LoadImage, CheckExisting, CheckFiletype,\
@@ -53,7 +54,8 @@ def CreateImagePost(image_illust_url, upload, source):
     if IsError(image):
         return post_errors + [image]
     image_width, image_height = CheckImageDimensions(image, image_illust_url, post_errors)
-    if not SaveImage(buffer, image, md5, image_file_ext, image_illust_url, post_errors):
+    temppost = Post(md5=md5, file_ext=image_file_ext, width=image_width, height=image_height)
+    if not SaveImage(buffer, image, temppost, post_errors):
         return post_errors
     post = CreatePostAndAddIllustUrl(image_illust_url, image_width, image_height, image_file_ext, md5, len(buffer))
     if len(post_errors):
@@ -70,14 +72,15 @@ def CreateVideoPost(video_illust_url, thumb_illust_url, upload, source):
         return [md5]
     post_errors = []
     video_file_ext = CheckFiletype(buffer, file_ext, post_errors)
-    filepath = SaveVideo(buffer, md5, video_file_ext)
-    if IsError(filepath):
-        return post_errors + [filepath]
-    video_width, video_height = CheckVideoDimensions(filepath, video_illust_url, post_errors)
+    temppost = Post(md5=md5, file_ext=video_file_ext)
+    error = SaveVideo(buffer, md5, video_file_ext)
+    if error is not None:
+        return post_errors + [error]
+    video_width, video_height = CheckVideoDimensions(temppost, video_illust_url, post_errors)
     thumb_binary, _ = DownloadMedia(thumb_illust_url, source)
     if IsError(thumb_binary):
         return post_errors + [thumb_binary]
-    SaveThumb(thumb_binary, md5, source, post_errors)
+    SaveThumb(thumb_binary, temppost, post_errors)
     post = CreatePostAndAddIllustUrl(video_illust_url, video_width, video_height, video_file_ext, md5, len(buffer))
     if len(post_errors):
         ExtendErrors(post, post_errors)

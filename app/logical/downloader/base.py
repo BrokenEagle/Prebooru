@@ -9,10 +9,10 @@ from io import BytesIO
 # ## LOCAL IMPORTS
 from ..utility import GetBufferChecksum
 from ..file import CreateDirectory, PutGetRaw
+from ...config import PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from ...database.upload_db import AddUploadSuccess, AddUploadFailure, UploadAppendPost
 from ...database.post_db import PostAppendIllustUrl, GetPostByMD5
 from ...database.error_db import CreateError, CreateAndAppendError, ExtendErrors, IsError
-from ... import storage
 
 
 # ## FUNCTIONS
@@ -97,9 +97,9 @@ def CheckImageDimensions(image, image_illust_url, post_errors):
     return image.width, image.height
 
 
-def CheckVideoDimensions(filepath, video_illust_url, post_errors):
+def CheckVideoDimensions(post, video_illust_url, post_errors):
     try:
-        probe = ffmpeg.probe(filepath)
+        probe = ffmpeg.probe(post.file_path)
     except FileNotFoundError:
         CreatePostError('logical.downloader.base.CheckVideoDimensions', "Must install ffprobe.exe. See Github page for details.", post_errors)
         return video_illust_url.width, video_illust_url.height
@@ -117,67 +117,52 @@ def CheckVideoDimensions(filepath, video_illust_url, post_errors):
 
 # #### Create media functions
 
-def CreatePreview(image, md5, downsample=True):
-    print("Creating preview:", image, md5)
+def CreatePreview(image, post, downsample=True):
     try:
         preview = image.copy().convert("RGB")
         if downsample:
-            preview.thumbnail(storage.PREVIEW_DIMENSIONS)
-        filepath = storage.DataDirectory('preview', md5) + md5 + '.jpg'
-        CreateDirectory(filepath)
-        print("Saving preview:", filepath)
-        preview.save(filepath, "JPEG")
+            preview.thumbnail(PREVIEW_DIMENSIONS)
+        CreateDirectory(post.preview_path)
+        print("Saving preview:", post.preview_path)
+        preview.save(post.preview_path, "JPEG")
     except Exception as e:
         return CreateError('logical.downloader.base.CreatePreview', "Error creating preview: %s" % repr(e))
 
 
-def CreateSample(image, md5, downsample=True):
-    print("Creating sample:", md5)
+def CreateSample(image, post, downsample=True):
     try:
         sample = image.copy().convert("RGB")
         if downsample:
-            sample.thumbnail(storage.SAMPLE_DIMENSIONS)
-        filepath = storage.DataDirectory('sample', md5) + md5 + '.jpg'
-        CreateDirectory(filepath)
-        print("Saving sample:", filepath)
-        sample.save(filepath, "JPEG")
+            sample.thumbnail(SAMPLE_DIMENSIONS)
+        CreateDirectory(post.sample_path)
+        print("Saving sample:", post.sample_path)
+        sample.save(post.sample_path, "JPEG")
     except Exception as e:
         return CreateError('logical.downloader.base.CreateSample', "Error creating sample: %s" % repr(e))
 
 
-def CreateData(buffer, md5, file_ext):
-    print("Saving data:", md5)
-    filepath = storage.DataDirectory('data', md5) + md5 + '.' + file_ext
-    CreateDirectory(filepath)
-    print("Saving data:", filepath)
-    PutGetRaw(filepath, 'wb', buffer)
-
-
-def CreateVideo(buffer, md5, file_ext):
-    print("Saving video:", md5)
-    filepath = storage.DataDirectory('data', md5) + md5 + '.' + file_ext
-    CreateDirectory(filepath)
-    print("Saving data:", filepath)
-    PutGetRaw(filepath, 'wb', buffer)
-    return filepath
+def CreateData(buffer, post):
+    CreateDirectory(post.file_path)
+    print("Saving data:", post.file_path)
+    PutGetRaw(post.file_path, 'wb', buffer)
 
 
 # #### Save functions
 
 # ###### Image illust
 
-def SaveImage(buffer, image, md5, image_file_ext, illust_url, post_errors):
+def SaveImage(buffer, image, post, post_errors):
     try:
-        CreateData(buffer, md5, image_file_ext)
+        CreateData(buffer, post)
     except Exception as e:
         CreatePostError('logical.downloader.base.SaveImage', "Error saving image to disk: %s" % repr(e), post_errors)
         return False
-    if storage.HasPreview(image.width, image.height):
-        error = CreatePreview(image, md5)
+    if post.has_preview:
+        error = CreatePreview(image, post)
         if error is not None:
             post_errors.append(error)
-    if storage.HasSample(image.width, image.height):
-        error = CreateSample(image, md5)
+    if post.has_sample:
+        error = CreateSample(image, post)
         if error is not None:
             post_errors.append(error)
     return True
@@ -185,23 +170,25 @@ def SaveImage(buffer, image, md5, image_file_ext, illust_url, post_errors):
 
 # ###### Video illust
 
-def SaveVideo(buffer, md5, file_ext):
+def SaveVideo(buffer, post):
     try:
-        return CreateVideo(buffer, md5, file_ext)
+        CreateData(buffer, post)
     except Exception as e:
         return CreateError('logical.downloader.base.SaveVideo', "Error saving video to disk: %s" % repr(e))
 
 
-def SaveThumb(buffer, md5, source, post_errors):
+def SaveThumb(buffer, post, post_errors):
     image = LoadImage(buffer)
     if IsError(image):
         post_errors.append(image)
         return
-    downsample = storage.HasPreview(image.width, image.height)
-    error = CreatePreview(image, md5, downsample)
+    post.width = image.width
+    post.height = image.height
+    downsample = post.has_preview
+    error = CreatePreview(image, post, downsample)
     if error is not None:
         post_errors.append(error)
-    downsample = storage.HasSample(image.width, image.height)
-    error = CreateSample(image, md5, downsample)
+    downsample = post.has_sample
+    error = CreateSample(image, post, downsample)
     if error is not None:
         post_errors.append(error)
