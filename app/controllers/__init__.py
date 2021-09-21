@@ -1,5 +1,8 @@
 # APP/CONTROLLERS/__INIT__.PY
 
+# ## LOCAL_IMPORTS
+from ..config import HAS_EXTERNAL_IMAGE_SERVER
+
 # ## COLLATION IMPORTS
 from . import base_controller as base  # noqa: F401
 
@@ -27,4 +30,5 @@ from . import similarity_pool_elements_controller as similarity_pool_element  # 
 # #### Misc
 from . import proxy_controller as proxy  # noqa: F401
 from . import static_controller as static  # noqa: F401
-from . import images_controller as images  # noqa: F401
+if not HAS_EXTERNAL_IMAGE_SERVER:
+    from . import images_controller as images  # noqa: F401
