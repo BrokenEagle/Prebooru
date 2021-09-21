@@ -5,7 +5,7 @@ import os
 import time
 
 # ## LOCAL IMPORTS
-from ... import SESSION, SCHEDULER
+from ... import DB, SESSION, SCHEDULER
 from ..utility import MinutesAgo, GetCurrentTime, SecondsFromNowLocal, buffered_print
 from ..check.boorus import check_all_boorus
 from ..check.posts import CheckAllPostsForDanbooruID
@@ -76,3 +76,12 @@ def check_all_posts_for_danbooru_id_task():
     printer("PID:", os.getpid())
     CheckAllPostsForDanbooruID()
     printer.print()
+
+
+@SCHEDULER.task('interval', id="vaccum_database", days=1, jitter=3600)
+def vaccum_database():
+    for bind in [None, 'cache', 'similarity']:
+        engine = DB.get_engine(bind=bind).engine
+        connection = engine.connect()
+        connection.execute("VACUUM")
+        connection.close()
