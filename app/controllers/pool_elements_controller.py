@@ -63,7 +63,7 @@ def create():
         return SetError(retdata, check)
     pool = Pool.find(createparams['pool_id'])
     if pool is None:
-        return SetError(retdata, "Pool #d not found." % createparams['pool_id'])
+        return SetError(retdata, "Pool #%d not found." % createparams['pool_id'])
     retdata.update(CreatePoolElementFromParameters(pool, createparams))
     return retdata
 
