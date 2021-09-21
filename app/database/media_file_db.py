@@ -1,5 +1,5 @@
 from .. import SESSION
-from ..cache import MediaFile
+from ..models import MediaFile
 from ..logical.utility import DaysFromNow
 from ..logical.file import delete_file
 from .base_db import UpdateColumnAttributes

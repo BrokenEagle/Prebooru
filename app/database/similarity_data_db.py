@@ -2,7 +2,7 @@
 
 # ##LOCAL IMPORTS
 from .. import SESSION
-from ..similarity import SimilarityData
+from ..models import SimilarityData
 from .base_db import UpdateColumnAttributes
 
 

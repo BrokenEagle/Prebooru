@@ -44,9 +44,6 @@ def HexChunk(hashstr, index):
 class SimilarityData(JsonModel):
     # ## Declarations
 
-    # #### SqlAlchemy
-    __bind_key__ = 'similarity'
-
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     post_id = DB.Column(DB.Integer, nullable=False)

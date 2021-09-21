@@ -6,7 +6,7 @@ import distance
 import imagehash
 
 # ## LOCAL IMPORTS
-from ...similarity.similarity_data import SimilarityData, HASH_SIZE, TOTAL_BITS
+from ...models.similarity_data import SimilarityData, HASH_SIZE, TOTAL_BITS
 from ...database.media_file_db import create_media_file_from_parameters, delete_media_file, get_media_file_by_url
 from ..utility import GetBufferChecksum
 from ..file import CreateDirectory, PutGetRaw

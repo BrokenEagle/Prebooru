@@ -13,8 +13,7 @@ def initialize():
     global SESSION, Post, SimilarityPool, SimilarityPoolElement, populate_similarity_pools
     sys.path.append(os.path.abspath('.'))
     from app import SESSION
-    from app.models.post import Post
-    from app.similarity import SimilarityPool, SimilarityPoolElement
+    from app.models import Post, SimilarityPool, SimilarityPoolElement
     from app.logical.similarity.populate_pools import populate_similarity_pools
 
 

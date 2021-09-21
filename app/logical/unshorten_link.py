@@ -8,8 +8,7 @@ from functools import reduce
 
 # ##LOCAL IMPORTS
 from .. import SESSION
-from ..cache import Domain
-from ..models import Description, ArtistUrl
+from ..models import Domain, Description, ArtistUrl
 
 
 # ##GLOBAL VARIABLES

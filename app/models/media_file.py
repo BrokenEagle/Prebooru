@@ -19,9 +19,6 @@ CACHE_DATA_DIRECTORY = os.path.join(IMAGE_DIRECTORY, 'cache')
 class MediaFile(JsonModel):
     # ## Declarations
 
-    # #### SqlAlchemy
-    __bind_key__ = 'cache'
-
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     md5 = DB.Column(DB.String(255), nullable=False)

@@ -2,7 +2,7 @@
 
 # ##LOCAL IMPORTS
 from .. import SESSION
-from ..similarity import SimilarityPool
+from ..models import SimilarityPool
 from ..logical.utility import GetCurrentTime
 from .base_db import UpdateColumnAttributes
 from .similarity_pool_element_db import BatchDeleteSimilarityPoolElement

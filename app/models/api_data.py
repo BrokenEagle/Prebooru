@@ -10,9 +10,6 @@ from ..base_model import JsonModel
 class ApiData(JsonModel):
     # ## Declarations
 
-    # #### SqlAlchemy
-    __bind_key__ = 'cache'
-
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     type = DB.Column(DB.String(255), nullable=False)

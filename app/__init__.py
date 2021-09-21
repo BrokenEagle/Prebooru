@@ -93,10 +93,7 @@ SCHEDULER_JOBSTORES = SQLAlchemyJobStore(url=SCHEDULER_DB_URL + "?check_same_thr
 PREBOORU_APP = Flask("", template_folder=os.path.join('app', 'templates'), static_folder=os.path.join('app', 'static'))
 PREBOORU_APP.config.from_mapping(
     SQLALCHEMY_DATABASE_URI=PREBOORU_DB_URL,
-    SQLALCHEMY_BINDS={
-        'cache': PREBOORU_CACHE_URL,
-        'similarity': PREBOORU_SIMILARITY_URL,
-    },
+    SQLALCHEMY_BINDS={},
     SQLALCHEMY_ENGINE_OPTIONS={'connect_args': {"check_same_thread": False}} if 'sqlite' in PREBOORU_DB_URL else {},
     JSON_SORT_KEYS=False,
     SQLALCHEMY_ECHO=False,
@@ -119,8 +116,6 @@ DB = SQLAlchemy(PREBOORU_APP, metadata=METADATA)
 SESSION = DB.session
 
 event.listen(DB.engine, 'connect', _fk_pragma_on_connect)
-event.listen(DB.get_engine(bind='cache'), 'connect', _fk_pragma_on_connect)
-event.listen(DB.get_engine(bind='similarity'), 'connect', _fk_pragma_on_connect)
 event.listen(SCHEDULER_JOBSTORES.engine, 'connect', _fk_pragma_on_connect)
 
 PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
@@ -138,14 +133,13 @@ query_extensions.Initialize()
 
 if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     t_alembic_version = Table('alembic_version', MetaData(), Column('version_num', String))
-    for bind in [None, 'cache', 'similarity']:
-        engine = DB.get_engine(bind=bind).engine
-        connection = engine.connect()
-        try:
-            version = connection.execute(select([t_alembic_version.c.version_num])).first()[0]
-        except Exception:
-            print("\nError querying database for version number:", engine.url)
-            exit(-1)
-        if version != DATABASE_VERSION:
-            print("\nMust upgrade the database:", version, '->', DATABASE_VERSION)
-            exit(-1)
+    engine = DB.get_engine(bind=None).engine
+    connection = engine.connect()
+    try:
+        version = connection.execute(select([t_alembic_version.c.version_num])).first()[0]
+    except Exception:
+        print("\nError querying database for version number:", engine.url)
+        exit(-1)
+    if version != DATABASE_VERSION:
+        print("\nMust upgrade the database:", version, '->', DATABASE_VERSION)
+        exit(-1)

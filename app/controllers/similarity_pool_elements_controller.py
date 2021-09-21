@@ -5,7 +5,7 @@ from flask import Blueprint, request, flash, redirect
 
 
 # ## LOCAL IMPORTS
-from ..similarity import SimilarityPoolElement
+from ..models import SimilarityPoolElement
 from ..database.similarity_pool_element_db import DeleteSimilarityPoolElement, BatchDeleteSimilarityPoolElement
 from .base_controller import GetDataParams, GetOrAbort, ParseListType
 

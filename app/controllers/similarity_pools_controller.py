@@ -4,8 +4,7 @@
 from flask import Blueprint, request, render_template
 
 # ## LOCAL IMPORTS
-from ..similarity import SimilarityPool
-from ..models import Post
+from ..models import SimilarityPool, Post
 from .base_controller import ShowJson, GetPage, GetLimit, GetOrAbort
 
 

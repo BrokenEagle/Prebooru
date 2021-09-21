@@ -4,7 +4,7 @@
 from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
-from ...similarity import SimilarityPool
+from ...models import SimilarityPool
 from ...database.similarity_data_db import get_similarity_data_by_post_id
 from ...database.similarity_pool_db import update_similarity_pool_element_count, get_or_create_similarity_pool,\
     get_similarity_pools_by_ids

@@ -14,9 +14,6 @@ from ..base_model import JsonModel
 class SimilarityPoolElement(JsonModel):
     # ## Declarations
 
-    # #### SqlAlchemy
-    __bind_key__ = 'similarity'
-
     # #### JSON format
     id: int
     pool_id: int

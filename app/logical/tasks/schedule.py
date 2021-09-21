@@ -10,8 +10,7 @@ from ..utility import MinutesAgo, GetCurrentTime, SecondsFromNowLocal, buffered_
 from ..check.boorus import check_all_boorus
 from ..check.posts import CheckAllPostsForDanbooruID
 from ..check.booru_artists import CheckAllArtistsForBoorus
-from ...models import Upload
-from ...cache import ApiData, MediaFile
+from ...models import Upload, ApiData, MediaFile
 from ...database.upload_db import SetUploadStatus
 from ...database.error_db import CreateAndAppendError
 
@@ -80,8 +79,7 @@ def check_all_posts_for_danbooru_id_task():
 
 @SCHEDULER.task('interval', id="vaccum_database", days=1, jitter=3600)
 def vaccum_database():
-    for bind in [None, 'cache', 'similarity']:
-        engine = DB.get_engine(bind=bind).engine
-        connection = engine.connect()
-        connection.execute("VACUUM")
-        connection.close()
+    engine = DB.get_engine(bind=None).engine
+    connection = engine.connect()
+    connection.execute("VACUUM")
+    connection.close()

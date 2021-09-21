@@ -5,7 +5,7 @@ from .. import SESSION
 from ..logical.utility import GetCurrentTime, DaysFromNow, GetBufferChecksum
 from ..logical.network import GetHTTPFile
 from ..logical.file import CreateDirectory, PutGetRaw
-from ..cache import ApiData, MediaFile
+from ..models import ApiData, MediaFile
 
 
 # ##FUNCTIONS

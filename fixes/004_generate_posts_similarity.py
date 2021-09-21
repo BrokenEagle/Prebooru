@@ -13,8 +13,7 @@ def initialize():
     global SESSION, Post, SimilarityData, generate_post_similarity
     sys.path.append(os.path.abspath('.'))
     from app import SESSION
-    from app.models.post import Post
-    from app.similarity import SimilarityData
+    from app.models import Post, SimilarityData
     from app.logical.similarity.generate_data import generate_post_similarity
 
 

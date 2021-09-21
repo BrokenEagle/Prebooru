@@ -18,9 +18,6 @@ from .similarity_pool_element import SimilarityPoolElement
 class SimilarityPool(JsonModel):
     # ## Declarations
 
-    # #### SqlAlchemy
-    __bind_key__ = 'similarity'
-
     # #### JSON format
     id: int
     post_id: int

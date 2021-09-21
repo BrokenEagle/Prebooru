@@ -20,8 +20,8 @@ from .error import Error
 from .illust_url import IllustUrl
 from .notation import Notation
 from .pool_element import PoolPost, pool_element_delete
-from ..similarity.similarity_pool import SimilarityPool
-from ..similarity.similarity_pool_element import SimilarityPoolElement
+from .similarity_pool import SimilarityPool
+from .similarity_pool_element import SimilarityPoolElement
 
 
 # Many-to-many tables

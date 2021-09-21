@@ -3,7 +3,7 @@
 # ## LOCAL IMPORTS
 from .. import SESSION
 from ..logical.utility import UniqueObjects
-from ..similarity import SimilarityPoolElement
+from ..models import SimilarityPoolElement
 from .base_db import UpdateColumnAttributes
 
 # ##GLOBAL VARIABLES
