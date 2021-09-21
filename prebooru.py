@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from argparse import ArgumentParser
 
 # ## LOCAL IMPORTS
-from app import PREBOORU_APP, DB, SCHEDULER, THREADULER
+from app import PREBOORU_APP, DB, SCHEDULER
 from app import controllers
 from app import helpers
 from app.logical.file import LoadDefault, PutGetJSON
@@ -33,8 +33,6 @@ def Cleanup():
         PutGetJSON(SERVER_PID_FILE, 'w', [])
     if SCHEDULER.running:
         SCHEDULER.shutdown()
-    if THREADULER.running:
-        THREADULER.shutdown()
 
 
 def StartServer(args):
@@ -140,8 +138,6 @@ if not HAS_EXTERNAL_IMAGE_SERVER:
 PREBOORU_APP.jinja_env.globals.update(helpers=helpers)
 PREBOORU_APP.jinja_env.add_extension('jinja2.ext.do')
 PREBOORU_APP.jinja_env.add_extension('jinja2.ext.loopcontrols')
-
-THREADULER.start()
 
 
 # ## EXECUTION START

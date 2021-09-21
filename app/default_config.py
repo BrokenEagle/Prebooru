@@ -17,7 +17,6 @@ DB_PATH = r'db\prebooru.db'
 CACHE_PATH = r'db\cache.db'
 SIMILARITY_PATH = r'db\similarity.db'
 JOBS_PATH = r'db\jobs.db'
-THREADS_PATH = r'db\threads.db'
 
 
 # ## NETWORK VARIABLES

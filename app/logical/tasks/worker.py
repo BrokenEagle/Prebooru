@@ -2,9 +2,10 @@
 
 # ## PYTHON IMPORTS
 import itertools
+import threading
 
 # ## LOCAL IMPORTS
-from ... import SESSION, THREADULER
+from ... import SESSION
 from ..utility import GetCurrentTime, MinutesAgo, UniqueObjects, buffered_print
 from ..logger import LogError
 from ..similarity.generate_data import generate_post_similarity
@@ -54,11 +55,11 @@ def process_upload(upload_id):
         printer("Upload:", upload.status)
         printer("Posts:", len(upload.posts))
         if upload.status in ['complete', 'duplicate'] and len(upload.posts) > 0:
-            printer("Adding secondary jobs.")
+            printer("Starting secondary threads.")
             post_ids = [post.id for post in upload.posts]
-            THREADULER.add_job(process_similarity, id="process_similarity-%d" % upload.id, args=(post_ids,))
-            THREADULER.add_job(check_for_matching_danbooru_posts, id="check_for_matching_danbooru_posts-%d" % upload.id, args=(post_ids,))
-            THREADULER.add_job(check_for_new_artist_boorus, args=(post_ids,), id="check_for_new_artist_boorus-%d" % upload.id)
+            threading.Thread(target=process_similarity, args=(post_ids,)).start()
+            threading.Thread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
+            threading.Thread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
     printer.print()
 
 
