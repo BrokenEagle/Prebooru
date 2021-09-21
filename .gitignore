@@ -9,9 +9,11 @@ db/
 temp/
 junk/
 ffprobe.exe
+sqlite3.exe
 prebooru-install/
 /pythonsave.bat
 /projectsave.bat
 /databasesave.bat
 /datasave.bat
 /datasave.log
+/datasave.sql
