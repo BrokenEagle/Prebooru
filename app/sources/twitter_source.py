@@ -15,7 +15,7 @@ from ..logical.file import LoadDefault, PutGetJSON
 from ..database.error_db import CreateError, IsError
 from ..database.cache_db import GetApiArtist, GetApiIllust, SaveApiData
 from ..database.illust_db import GetSiteIllust
-from ..config import WORKING_DIRECTORY, DATA_FILEPATH
+from ..config import DATA_DIRECTORY
 from ..sites import Site, GetSiteDomain, GetSiteId
 
 
@@ -182,7 +182,7 @@ TWITTER_ILLUST_TIMELINE_GRAPHQL = {
 IMAGE_SERVER = 'https://pbs.twimg.com'
 TWITTER_SIZES = [':orig', ':large', ':medium', ':small']
 
-TOKEN_FILE = WORKING_DIRECTORY + DATA_FILEPATH + 'twittertoken.txt'
+TOKEN_FILE = DATA_DIRECTORY + 'twittertoken.txt'
 
 
 # ##FUNCTIONS

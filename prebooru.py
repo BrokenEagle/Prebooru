@@ -12,11 +12,11 @@ from app import PREBOORU_APP, DB, SCHEDULER
 from app import controllers
 from app import helpers
 from app.logical.file import LoadDefault, PutGetJSON
-from app.config import WORKING_DIRECTORY, DATA_FILEPATH, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
+from app.config import WORKING_DIRECTORY, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
 
 # ## GLOBAL VARIABLES
 
-SERVER_PID_FILE = WORKING_DIRECTORY + DATA_FILEPATH + 'prebooru-server-pid.json'
+SERVER_PID_FILE = DATA_DIRECTORY + 'prebooru-server-pid.json'
 SERVER_PID = next(iter(LoadDefault(SERVER_PID_FILE, [])), None)
 
 # Registering this with the Prebooru app so that DB commands can be executed with flask
