@@ -41,18 +41,6 @@ def expunge_cache_records_task():
     printer.print()
 
 
-@SCHEDULER.task("interval", id="expire_uploads", minutes=1, jitter=5)
-def expire_uploads_task():
-    printer = buffered_print("Expire Uploads")
-    printer("PID:", os.getpid())
-    expired_uploads = Upload.query.filter(Upload.created < MinutesAgo(5)).filter_by(status="processing").all()
-    printer("Uploads to expire:", len(expired_uploads))
-    for upload in expired_uploads:
-        SetUploadStatus(upload, 'complete')
-        CreateAndAppendError('logical.scheduled_tasks.expire_uploads', "Upload has expired.", upload)
-    printer.print()
-
-
 @SCHEDULER.task('interval', id="check_all_boorus", days=1, jitter=3600)
 def check_all_boorus_task():
     printer = buffered_print("Check All Boorus")
