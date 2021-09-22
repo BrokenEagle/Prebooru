@@ -5,7 +5,7 @@ import os
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..base_model import JsonModel, image_server_url
+from .base import JsonModel, image_server_url
 from ..config import IMAGE_DIRECTORY
 
 

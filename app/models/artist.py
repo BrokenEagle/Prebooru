@@ -9,7 +9,7 @@ from sqlalchemy.util import memoized_property
 # ##LOCAL IMPORTS
 from .. import DB
 from ..sites import GetSiteDomain, GetSiteKey
-from ..base_model import JsonModel, RemoveKeys, DateTimeOrNull, IntOrNone, StrOrNone
+from .base import JsonModel, RemoveKeys, DateTimeOrNull, IntOrNone, StrOrNone
 from .artist_url import ArtistUrl
 from .illust import Illust
 from .label import Label

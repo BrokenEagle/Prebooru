@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..base_model import JsonModel
+from .base import JsonModel
 
 
 # ## CLASSES

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..base_model import JsonModel, DateTimeOrNull
+from .base import JsonModel, DateTimeOrNull
 
 
 # ## CLASSES

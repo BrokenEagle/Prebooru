@@ -8,7 +8,7 @@ from sqlalchemy.orm import lazyload, selectin_polymorphic
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..base_model import JsonModel, DateTimeOrNull
+from .base import JsonModel, DateTimeOrNull
 from .post import Post
 from .illust import Illust
 from .notation import Notation

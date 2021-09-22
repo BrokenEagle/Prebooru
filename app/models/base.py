@@ -6,8 +6,8 @@ from typing import List, _GenericAlias
 from flask import url_for, Markup
 
 # ## LOCAL IMPORTS
-from . import DB, SERVER_INFO
-from .config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
+from .. import DB, SERVER_INFO
+from ..config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 
 
 # ## FUNCTIONS

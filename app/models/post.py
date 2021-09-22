@@ -15,7 +15,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from .. import DB
 from ..config import IMAGE_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from ..logical.utility import UniqueObjects
-from ..base_model import JsonModel, RemoveKeys, image_server_url
+from .base import JsonModel, RemoveKeys, image_server_url
 from .error import Error
 from .illust_url import IllustUrl
 from .notation import Notation

@@ -6,7 +6,7 @@ from sqlalchemy.orm import declared_attr
 
 # ##LOCAL IMPORTS
 from .. import DB
-from ..base_model import JsonModel, DateTimeOrNull, IntOrNone
+from .base import JsonModel, DateTimeOrNull, IntOrNone
 
 
 # ##GLOBAL VARIABLES

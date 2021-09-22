@@ -10,7 +10,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ##LOCAL IMPORTS
 from .. import DB
 from ..logical.utility import UniqueObjects
-from ..base_model import JsonModel, IntOrNone, StrOrNone
+from .base import JsonModel, IntOrNone, StrOrNone
 from .upload_url import UploadUrl
 from .post import Post
 from .error import Error

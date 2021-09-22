@@ -10,7 +10,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ##LOCAL IMPORTS
 from .. import DB
 from ..sites import GetSiteDomain, GetSiteKey
-from ..base_model import JsonModel, DateTimeOrNull, RemoveKeys, IntOrNone, PolymorphicAccessorFactory
+from .base import JsonModel, DateTimeOrNull, RemoveKeys, IntOrNone, PolymorphicAccessorFactory
 from .tag import Tag
 from .illust_url import IllustUrl
 from .site_data import SiteData

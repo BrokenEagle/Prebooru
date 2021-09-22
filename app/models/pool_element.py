@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
-from ..base_model import JsonModel, IntOrNone
+from .base import JsonModel, IntOrNone
 
 
 # ## FUNCTIONS

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 # ##LOCAL IMPORTS
 from .. import DB
 from ..sites import GetSiteDomain, GetSiteKey
-from ..base_model import JsonModel, IntOrNone
+from .base import JsonModel, IntOrNone
 
 
 # ##GLOBAL VARIABLES
