@@ -33,8 +33,6 @@ SAMPLE_DIMENSIONS = (1280, 1920)
 
 # Relative path to the DB file
 DB_PATH = r'db\prebooru.db'
-CACHE_PATH = r'db\cache.db'
-SIMILARITY_PATH = r'db\similarity.db'
 JOBS_PATH = r'db\jobs.db'
 
 

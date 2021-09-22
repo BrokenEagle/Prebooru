@@ -15,7 +15,7 @@ from werkzeug.formparser import parse_form_data
 
 # ## LOCAL IMPORTS
 from .logical import query_extensions
-from .config import DB_PATH, CACHE_PATH, SIMILARITY_PATH, JOBS_PATH, DEBUG_MODE
+from .config import DB_PATH, JOBS_PATH, DEBUG_MODE
 
 # #### Python Check
 
@@ -30,8 +30,6 @@ DATABASE_VERSION = 'e0f58422fc61'
 
 # For imports outside the relative path
 PREBOORU_DB_URL = os.environ.get('PREBOORU_DB', 'sqlite:///%s' % DB_PATH)
-PREBOORU_CACHE_URL = os.environ.get('PREBOORU_CACHE', 'sqlite:///%s' % CACHE_PATH)
-PREBOORU_SIMILARITY_URL = os.environ.get('PREBOORU_SIMILARITY', 'sqlite:///%s' % SIMILARITY_PATH)
 SCHEDULER_DB_URL = os.environ.get('SCHEDULER_JOBSTORES', r'sqlite:///%s' % JOBS_PATH)
 
 NAMING_CONVENTION = {

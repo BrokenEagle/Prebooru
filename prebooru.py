@@ -72,25 +72,15 @@ def InitDB(args):
     if check.lower() != 'y':
         return
     from app.logical.file import CreateDirectory
-    from app.config import DB_PATH, CACHE_PATH, SIMILARITY_PATH
+    from app.config import DB_PATH
     if args.new:
         if os.path.exists(DB_PATH):
             print("Deleting prebooru database!")
             os.remove(DB_PATH)
-        if os.path.exists(CACHE_PATH):
-            print("Deleting cache database!")
-            os.remove(CACHE_PATH)
-        if os.path.exists(SIMILARITY_PATH):
-            print("Deleting similarity database!")
-            os.remove(SIMILARITY_PATH)
 
     print("Creating tables")
     from app.models import NONCE  # noqa: F401, F811
-    from app.cache import NONCE  # noqa: F401, F811
-    from app.similarity import NONCE  # noqa: F401, F811
     CreateDirectory(DB_PATH)
-    CreateDirectory(CACHE_PATH)
-    CreateDirectory(SIMILARITY_PATH)
     DB.drop_all()
     DB.create_all()
 
