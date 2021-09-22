@@ -27,7 +27,7 @@ class SimilarityPool(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    post_id = DB.Column(DB.Integer, nullable=False)
+    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False)
     element_count = DB.Column(DB.Integer, nullable=False)
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
     updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
@@ -48,16 +48,9 @@ class SimilarityPool(JsonModel):
     def element_paginate(self, page=None, per_page=None, post_options=lazyload('*')):
         from ..models import Post
         q = self._element_query
-        q = q.options(selectinload(SimilarityPoolElement.sibling))
+        q = q.options(selectinload(SimilarityPoolElement.post), selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
         q = q.order_by(SimilarityPoolElement.score.desc())
         page = q.count_paginate(per_page=per_page, page=page)
-        post_ids = [element.post_id for element in page.items]
-        post_options = post_options if type(post_options) is tuple else (post_options,)
-        posts = Post.query.options(*post_options).filter(Post.id.in_(post_ids)).all() if len(post_ids) else []
-        for i in range(len(page.items)):
-            element = page.items[i]
-            page.items[i] = SimpleNamespace(element=element, post=None)
-            page.items[i].post = next(filter(lambda x: x.id == element.post_id, posts), None)
         return page
 
     def append(self, post_id, score):

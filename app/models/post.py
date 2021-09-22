@@ -20,6 +20,7 @@ from .error import Error
 from .illust_url import IllustUrl
 from .notation import Notation
 from .pool_element import PoolPost, pool_element_delete
+from .similarity_data import SimilarityData
 from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
 
@@ -80,6 +81,9 @@ class Post(JsonModel):
     errors = DB.relationship(Error, secondary=PostErrors, lazy=True, cascade='all,delete')
     notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, backref=DB.backref('post', uselist=False, lazy=True), cascade='all,delete')
     _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False), cascade='all,delete')
+    similarity_data = DB.relationship(SimilarityData, lazy=True, uselist=False, backref=DB.backref('post', lazy=True, uselist=False), cascade='all,delete')
+    similarity_pool = DB.relationship(SimilarityPool, lazy=True, uselist=False, backref=DB.backref('post', lazy=True, uselist=False))                           # Similarity pools and elements must be deleted
+    similarity_elements = DB.relationship(SimilarityPoolElement, lazy=True, backref=DB.backref('post', lazy=True, uselist=False))                               # specially because of sibling relationships
     # uploads <- Upload (MtM)
 
     # #### Association proxies
@@ -146,28 +150,15 @@ class Post(JsonModel):
         return list(set(illust.artist_id for illust in self.illusts))
 
     @memoized_property
-    def similar_pool(self):
-        return SimilarityPool.query.filter_by(post_id=self.id).first()
-
-    @property
-    def similar_pool_id(self):
-        return self.similar_pool.id if self.similar_pool is not None else None
-
-    @memoized_property
     def similar_post_count(self):
-        return self._similar_pool_element_query.get_count() if self.similar_pool is not None else 0
+        return self._similar_pool_element_query.get_count() if self.similarity_pool is not None else 0
 
     @memoized_property
     def similar_posts(self):
-        similar_pool_elements = self._similar_pool_element_query.options(selectinload(SimilarityPoolElement.sibling)).order_by(SimilarityPoolElement.score.desc()).limit(10).all()
-        similar_post_ids = [element.post_id for element in similar_pool_elements]
-        similar_posts = Post.query.filter(Post.id.in_(similar_post_ids)).all()
-        posts = []
-        for element in similar_pool_elements:
-            data = SimpleNamespace(element=element, pool=self.similar_pool, post=None)
-            data.post = next(filter(lambda x: x.id == element.post_id, similar_posts), None)
-            posts.append(data)
-        return posts
+        query = self._similar_pool_element_query
+        query = query.options(selectinload(SimilarityPoolElement.post), selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
+        query = query.order_by(SimilarityPoolElement.score.desc())
+        return query.limit(10).all()
 
     # ###### Private
 
@@ -185,7 +176,7 @@ class Post(JsonModel):
 
     @property
     def _similar_pool_element_query(self):
-        return SimilarityPoolElement.query.filter(SimilarityPoolElement.pool_id == self.similar_pool_id)
+        return SimilarityPoolElement.query.filter(SimilarityPoolElement.pool_id == self.similarity_pool.id)
 
     # ## Methods
 

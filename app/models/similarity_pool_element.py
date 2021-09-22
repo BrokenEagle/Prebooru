@@ -24,7 +24,7 @@ class SimilarityPoolElement(JsonModel):
     id = DB.Column(DB.Integer, primary_key=True)
     pool_id = DB.Column(DB.Integer, DB.ForeignKey('similarity_pool.id'), nullable=False)
     sibling_id = DB.Column(DB.Integer, DB.ForeignKey('similarity_pool_element.id'), nullable=True)
-    post_id = DB.Column(DB.Integer, nullable=False)
+    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False)
     score = DB.Column(DB.Float, nullable=False)
 
     # #### Relationships

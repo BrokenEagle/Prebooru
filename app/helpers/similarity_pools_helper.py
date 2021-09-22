@@ -9,5 +9,5 @@ from .base_helper import GeneralLink
 
 # ## FUNCTIONS
 
-def SiblingPoolLink(element, post):
-    return GeneralLink(post.shortlink, url_for('similarity_pool.show_html', id=element.sibling.pool_id))
+def SiblingPoolLink(similarity_element):
+    return GeneralLink(similarity_element.post.shortlink, similarity_element.sibling.pool.show_url)

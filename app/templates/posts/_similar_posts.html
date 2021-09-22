@@ -4,21 +4,21 @@
         (&thinsp;{{ helpers.post.SimilarityPostPoolLink(post) }}&thinsp;)
     </div>
     <div id="similar-posts-container">
-        {% for post_data in post.similar_posts %}
+        {% for similarity_element in post.similar_posts %}
             <div class="similar-post-block">
                 <div class="similar-heading">
-                    <strong>{{ helpers.post.SimilaritySiblingPoolLink(post_data) }}</strong>
-                    &ensp;(&thinsp;{{ helpers.post.DeleteSimilarityElementLink(post_data.element) }}&thinsp;)
+                    <strong>{{ helpers.post.SimilaritySiblingPoolLink(similarity_element) }}</strong>
+                    &ensp;(&thinsp;{{ helpers.post.DeleteSimilarityElementLink(similarity_element) }}&thinsp;)
                 </div>
                 <article class="post similar-post">
-                    <a href="{{ post_data.post.show_url }}">
-                        <img src="{{ post_data.post.preview_url }}">
+                    <a href="{{ similarity_element.post.show_url }}">
+                        <img src="{{ similarity_element.post.preview_url }}">
                     </a>
                 </article>
                 <div>
-                    <strong>Score:</strong> {{ post_data.element.score }}<br>
-                    <strong>Type/Size:</strong> {{ post_data.post.file_ext.upper() }} @ {{ post_data.post.size }}<br>
-                    <strong>Dimensions:</strong> ( {{ post_data.post.width }} x {{ post_data.post.height }} )
+                    <strong>Score:</strong> {{ similarity_element.score }}<br>
+                    <strong>Type/Size:</strong> {{ similarity_element.post.file_ext.upper() }} @ {{ similarity_element.post.size }}<br>
+                    <strong>Dimensions:</strong> ( {{ similarity_element.post.width }} x {{ similarity_element.post.height }} )
                 </div>
             </div>
         {% else %}

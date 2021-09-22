@@ -23,7 +23,7 @@
     {% with posts=post.related_posts, post_search_link=helpers.post.RelatedPostsSearch(post) %}
         {% include "posts/_related_posts.html" %}
     {% endwith %}
-    {% if post.similar_pool_id is not none %}
+    {% if post.similarity_pool is not none %}
         {% include "posts/_similar_posts.html" %}
     {% endif %}
 {% endblock %}

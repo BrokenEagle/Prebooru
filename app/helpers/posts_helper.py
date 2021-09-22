@@ -97,11 +97,11 @@ def RelatedPostsSearch(post):
 
 
 def SimilarityPostPoolLink(post):
-    return GeneralLink(post.similar_post_count, url_for('similarity_pool.show_html', id=post.similar_pool_id))
+    return GeneralLink(post.similar_post_count, post.similarity_pool.show_url)
 
 
-def SimilaritySiblingPoolLink(post_data):
-    return GeneralLink(post_data.post.shortlink, url_for('similarity_pool.show_html', id=post_data.element.sibling.pool_id)) if post_data.element.sibling is not None else "Sibling missing"
+def SimilaritySiblingPoolLink(similarity_element):
+    return GeneralLink(similarity_element.post.shortlink, similarity_element.sibling.pool.show_url) if similarity_element.sibling is not None else "Sibling missing"
 
 
 def DeleteSimilarityElementLink(element):
