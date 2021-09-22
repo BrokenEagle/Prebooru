@@ -12,7 +12,7 @@ from ..logical.utility import GetCurrentTime, GetFileExtension, GetHTTPFilename,
 from ..database.error_db import CreateError, IsError
 from ..database.cache_db import GetApiArtist, GetApiIllust, GetApiData, SaveApiData
 from ..config import PIXIV_PHPSESSID
-from ..sites import Site, GetSiteDomain, GetSiteId
+from ..logical.sites import Site, GetSiteDomain, GetSiteId
 
 
 # ###GLOBAL VARIABLES

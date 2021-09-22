@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 # ##LOCAL IMPORTS
 from .. import DB
-from ..sites import GetSiteDomain, GetSiteKey
+from ..logical.sites import GetSiteDomain, GetSiteKey
 from .base import JsonModel, IntOrNone
 
 

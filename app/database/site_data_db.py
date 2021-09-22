@@ -2,7 +2,7 @@
 
 # ##LOCAL IMPORTS
 from .. import models, SESSION
-from ..sites import Site, GetSiteKey
+from ..logical.sites import Site, GetSiteKey
 from .base_db import UpdateColumnAttributes
 
 

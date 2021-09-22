@@ -5,7 +5,7 @@ import urllib.parse
 from flask import url_for
 
 # ##LOCAL IMPORTS
-from ..sites import GetSiteDomain, GetSiteKey
+from ..logical.sites import GetSiteDomain, GetSiteKey
 from ..sources import SOURCEDICT
 from ..sources.base_source import GetSourceById
 from .base_helper import SearchUrlFor, ExternalLink, UrlLink, GeneralLink

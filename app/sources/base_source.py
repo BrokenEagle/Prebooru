@@ -4,7 +4,7 @@
 import urllib
 
 # ##LOCAL IMPORTS
-from ..sites import GetSiteKey, GetSiteId, GetSiteDomain
+from ..logical.sites import GetSiteKey, GetSiteId, GetSiteDomain
 from ..sources import SOURCES, SOURCEDICT
 from ..logical.utility import GetHTTPFilename, GetFileExtension, SetError
 from ..database.error_db import IsError

@@ -4,7 +4,7 @@
 from flask import Markup
 
 # ## LOCAL IMPORTS
-from ..sites import GetSiteKey
+from ..logical.sites import GetSiteKey
 from ..sources import SOURCEDICT
 from .base_helper import SearchUrlFor, ExternalLink
 

@@ -16,7 +16,7 @@ from ..database.error_db import CreateError, IsError
 from ..database.cache_db import GetApiArtist, GetApiIllust, SaveApiData
 from ..database.illust_db import GetSiteIllust
 from ..config import DATA_DIRECTORY
-from ..sites import Site, GetSiteDomain, GetSiteId
+from ..logical.sites import Site, GetSiteDomain, GetSiteId
 
 
 # ##GLOBAL VARIABLES
