@@ -5,9 +5,9 @@ from flask import Blueprint, request, url_for, flash, redirect
 
 # ## LOCAL IMPORTS
 from ..models import Pool, PoolElement
-from ..database.pool_element_db import CreatePoolElementFromParameters, DeletePoolElement
-from .base_controller import GetDataParams, GetOrAbort, GetOrError, CheckParamRequirements, SetError, IndexJson, ShowJson,\
-    ProcessRequestValues, GetParamsValue, SearchFilter, DefaultOrder, ParseType
+from ..database.pool_element_db import create_pool_element_from_parameters, delete_pool_element
+from .base_controller import get_data_params, get_or_abort, get_or_error, check_param_requirements, set_error, index_json, show_json,\
+    process_request_values, get_params_value, search_filter, default_order, parse_type
 
 
 # ## GLOBAL VARIABLES
@@ -30,46 +30,46 @@ PARSE_PARAMS_DICT = {
 
 # #### Helper functions
 
-def CheckCreateParams(dataparams):
+def check_create_params(dataparams):
     if (dataparams['illust_id'] is None) and (dataparams['post_id'] is None) and (dataparams['notation_id'] is None):
         return "No illust, post, or notation ID specified!"
 
 
-def ConvertDataParams(dataparams):
-    return {key: ParseType(dataparams, key, parser) for (key, parser) in PARSE_PARAMS_DICT.items()}
+def convert_data_params(dataparams):
+    return {key: parse_type(dataparams, key, parser) for (key, parser) in PARSE_PARAMS_DICT.items()}
 
 
 # #### Route auxiliary functions
 
 def index():
-    params = ProcessRequestValues(request.values)
-    search = GetParamsValue(params, 'search', True)
-    negative_search = GetParamsValue(params, 'not', True)
+    params = process_request_values(request.values)
+    search = get_params_value(params, 'search', True)
+    negative_search = get_params_value(params, 'not', True)
     q = PoolElement.query
-    q = SearchFilter(q, search, negative_search)
-    q = DefaultOrder(q, search)
+    q = search_filter(q, search, negative_search)
+    q = default_order(q, search)
     return q
 
 
 def create():
-    dataparams = GetDataParams(request, 'pool_element')
-    createparams = ConvertDataParams(dataparams)
+    dataparams = get_data_params(request, 'pool_element')
+    createparams = convert_data_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = CheckParamRequirements(createparams, CREATE_REQUIRED_PARAMS)
+    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
-        return SetError(retdata, '\n'.join(errors))
-    check = CheckCreateParams(createparams)
+        return set_error(retdata, '\n'.join(errors))
+    check = check_create_params(createparams)
     if check is not None:
-        return SetError(retdata, check)
+        return set_error(retdata, check)
     pool = Pool.find(createparams['pool_id'])
     if pool is None:
-        return SetError(retdata, "Pool #%d not found." % createparams['pool_id'])
-    retdata.update(CreatePoolElementFromParameters(pool, createparams))
+        return set_error(retdata, "Pool #%d not found." % createparams['pool_id'])
+    retdata.update(create_pool_element_from_parameters(pool, createparams))
     return retdata
 
 
 def delete(pool_element):
-    DeletePoolElement(pool_element)
+    delete_pool_element(pool_element)
 
 
 # #### Route functions
@@ -78,7 +78,7 @@ def delete(pool_element):
 
 @bp.route('/pool_elements/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return ShowJson(PoolElement, id)
+    return show_json(PoolElement, id)
 
 
 # ###### INDEX
@@ -86,7 +86,7 @@ def show_json(id):
 @bp.route('/pool_elements.json', methods=['GET'])
 def index_json():
     q = index()
-    return IndexJson(q, request)
+    return index_json(q, request)
 
 
 # ###### CREATE
@@ -110,7 +110,7 @@ def create_json():
 
 @bp.route('/pool_elements/<int:id>', methods=['DELETE'])
 def delete_html(id):
-    pool_element = GetOrAbort(PoolElement, id)
+    pool_element = get_or_abort(PoolElement, id)
     delete(pool_element)
     flash("Removed from pool.")
     return redirect(request.referrer)
@@ -118,7 +118,7 @@ def delete_html(id):
 
 @bp.route('/pool_elements/<int:id>.json', methods=['DELETE'])
 def delete_json(id):
-    pool_element = GetOrError(PoolElement, id)
+    pool_element = get_or_error(PoolElement, id)
     if type(pool_element) is dict:
         return pool_element
     return {'error': False}
@@ -128,7 +128,7 @@ def delete_json(id):
 
 @bp.route('/pool_elements/<int:id>/previous', methods=['GET'])
 def previous_html(id):
-    pool_element = GetOrAbort(PoolElement, id)
+    pool_element = get_or_abort(PoolElement, id)
     previous_element = PoolElement.query.filter(PoolElement.pool_id == pool_element.pool_id, PoolElement.position < pool_element.position).order_by(PoolElement.position.desc()).first()
     if previous_element is None:
         return redirect(request.referrer)
@@ -137,7 +137,7 @@ def previous_html(id):
 
 @bp.route('/pool_elements/<int:id>/next', methods=['GET'])
 def next_html(id):
-    pool_element = GetOrAbort(PoolElement, id)
+    pool_element = get_or_abort(PoolElement, id)
     next_element = PoolElement.query.filter(PoolElement.pool_id == pool_element.pool_id, PoolElement.position > pool_element.position).order_by(PoolElement.position.asc()).first()
     if next_element is None:
         return redirect(request.referrer)

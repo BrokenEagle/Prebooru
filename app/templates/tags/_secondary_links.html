@@ -1,9 +1,9 @@
 <menu id="secondary-menu">
-    {{ helpers.base.SubnavLinkTo("Listing", 'tag.index_html') }}
-    {{ helpers.base.SubnavLinkTo("Illusts", 'illust.index_html') }}
-    {{ helpers.base.SubnavLinkTo("Posts", 'post.index_html') }}
+    {{ helpers.base.subnav_link_to("Listing", 'tag.index_html') }}
+    {{ helpers.base.subnav_link_to("Illusts", 'illust.index_html') }}
+    {{ helpers.base.subnav_link_to("Posts", 'post.index_html') }}
     {% if tag.id != None %}
         |
-        {{ helpers.base.SubnavLinkTo("Show", 'tag.show_html', tag.id) }}
+        {{ helpers.base.subnav_link_to("Show", 'tag.show_html', tag.id) }}
     {% endif %}
 </menu>

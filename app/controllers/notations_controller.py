@@ -9,10 +9,10 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Notation, Pool, Artist, Illust, Post, PoolNotation
-from ..logical.utility import EvalBoolString, IsFalsey
-from ..database.notation_db import CreateNotationFromParameters, UpdateNotationFromParameters, AppendToItem, DeleteNotation
-from .base_controller import ShowJson, IndexJson, SearchFilter, ProcessRequestValues, GetParamsValue, Paginate, DefaultOrder, GetDataParams, CustomNameForm,\
-    GetOrAbort, HideInput, NullifyBlanks, CheckParamRequirements, SetError
+from ..logical.utility import eval_bool_string, is_falsey
+from ..database.notation_db import create_notation_from_parameters, update_notation_from_parameters, append_notation_to_item, delete_notation
+from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate, default_order, get_data_params, CustomNameForm,\
+    get_or_abort, hide_input, nullify_blanks, check_param_requirements, set_error
 
 
 # ## GLOBAL VARIABLES
@@ -44,7 +44,7 @@ SHOW_HTML_OPTIONS = (
 
 # ####Forms
 
-def GetNotationForm(**kwargs):
+def get_notation_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class NotationForm(CustomNameForm):
         body = TextAreaField('Body', id='notation-body', custom_name='notation[body]', validators=[DataRequired()])
@@ -59,10 +59,10 @@ def GetNotationForm(**kwargs):
 
 # #### Query functions
 
-def PoolFilter(query, search):
-    if 'has_pool' in search and EvalBoolString(search['has_pool']) is not None:
+def pool_filter(query, search):
+    if 'has_pool' in search and eval_bool_string(search['has_pool']) is not None:
         subclause = Notation.id.in_(NOTATION_POOLS_SUBQUERY)
-        if IsFalsey(search['has_pool']):
+        if is_falsey(search['has_pool']):
             subclause = not_(subclause)
         query = query.filter(subclause)
     elif 'pool_id' in search and search['pool_id'].isdigit():
@@ -72,41 +72,41 @@ def PoolFilter(query, search):
 
 # #### Helper functions
 
-def AppendNewItems(notation, dataparams):
+def append_new_items(notation, dataparams):
     retdata = {'error': False}
     append_key = [key for key in APPEND_KEYS if key in dataparams and dataparams[key] is not None]
     if len(append_key) > 1:
-        return SetError(retdata, "May only append using the ID of a single entity; multiple values found: %s" % append_key)
+        return set_error(retdata, "May only append using the ID of a single entity; multiple values found: %s" % append_key)
     if len(append_key) == 1:
-        return AppendToItem(notation, append_key[0], dataparams)
+        return append_notation_to_item(notation, append_key[0], dataparams)
     return retdata
 
 
 # #### Form functions
 
-def HideNonGeneralInputs(form, item):
+def hide_nongeneral_inputs(form, item):
     append_key = item.__table__.name + '_id'
     for key in APPEND_KEYS:
         if key == append_key:
-            HideInput(form, key, item.id)
+            hide_input(form, key, item.id)
         else:
-            HideInput(form, key)
+            hide_input(form, key)
 
 
 # #### Param functions
 
-def ConvertDataParams(dataparams):
-    params = GetNotationForm(**dataparams).data
-    params = NullifyBlanks(params)
+def convert_data_params(dataparams):
+    params = get_notation_form(**dataparams).data
+    params = nullify_blanks(params)
     return params
 
 
-def ConvertCreateParams(dataparams):
-    return ConvertDataParams(dataparams)
+def convert_create_params(dataparams):
+    return convert_data_params(dataparams)
 
 
-def ConvertUpdateParams(dataparams):
-    updateparams = ConvertDataParams(dataparams)
+def convert_update_params(dataparams):
+    updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP or key in APPEND_KEYS]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
     return updateparams
@@ -115,35 +115,35 @@ def ConvertUpdateParams(dataparams):
 # #### Route auxiliary functions
 
 def index():
-    params = ProcessRequestValues(request.values)
-    search = GetParamsValue(params, 'search', True)
+    params = process_request_values(request.values)
+    search = get_params_value(params, 'search', True)
     q = Notation.query
-    q = SearchFilter(q, search)
-    q = PoolFilter(q, search)
-    q = DefaultOrder(q, search)
+    q = search_filter(q, search)
+    q = pool_filter(q, search)
+    q = default_order(q, search)
     return q
 
 
 def create():
-    dataparams = GetDataParams(request, 'notation')
-    createparams = ConvertCreateParams(dataparams)
+    dataparams = get_data_params(request, 'notation')
+    createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = CheckParamRequirements(createparams, CREATE_REQUIRED_PARAMS)
+    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
-        return SetError(retdata, '\n'.join(errors))
-    notation = CreateNotationFromParameters(createparams)
-    retdata.update(AppendNewItems(notation, createparams))
+        return set_error(retdata, '\n'.join(errors))
+    notation = create_notation_from_parameters(createparams)
+    retdata.update(append_new_items(notation, createparams))
     retdata['item'] = notation.to_json()
     return retdata
 
 
 def update(notation):
-    dataparams = GetDataParams(request, 'notation')
-    updateparams = ConvertUpdateParams(dataparams)
+    dataparams = get_data_params(request, 'notation')
+    updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
-    UpdateNotationFromParameters(notation, updateparams)
+    update_notation_from_parameters(notation, updateparams)
     if notation.append_type is None:
-        retdata.update(AppendNewItems(notation, updateparams))
+        retdata.update(append_new_items(notation, updateparams))
     retdata['item'] = notation.to_json()
     return retdata
 
@@ -154,12 +154,12 @@ def update(notation):
 
 @bp.route('/notations/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return ShowJson(Notation, id)
+    return show_json(Notation, id)
 
 
 @bp.route('/notations/<int:id>', methods=['GET'])
 def show_html(id):
-    notation = GetOrAbort(Notation, id, options=SHOW_HTML_OPTIONS)
+    notation = get_or_abort(Notation, id, options=SHOW_HTML_OPTIONS)
     return render_template("notations/show.html", notation=notation)
 
 
@@ -168,13 +168,13 @@ def show_html(id):
 @bp.route('/notations.json', methods=['GET'])
 def index_json():
     q = index()
-    return IndexJson(q, request)
+    return index_json(q, request)
 
 
 @bp.route('/notations', methods=['GET'])
 def index_html():
     q = index()
-    notations = Paginate(q, request)
+    notations = paginate(q, request)
     return render_template("notations/index.html", notations=notations, notation=Notation())
 
 
@@ -182,7 +182,7 @@ def index_html():
 
 @bp.route('/notations/new', methods=['GET'])
 def new_html():
-    form = GetNotationForm(**request.args)
+    form = get_notation_form(**request.args)
     if form.pool_id.data:
         item = Pool.find(form.pool_id.data)
     elif form.artist_id.data:
@@ -194,7 +194,7 @@ def new_html():
     else:
         item = None
     if item is not None:
-        HideNonGeneralInputs(form, item)
+        hide_nongeneral_inputs(form, item)
     return render_template("notations/new.html", form=form, item=item, notation=Notation())
 
 
@@ -216,22 +216,22 @@ def create_json():
 
 @bp.route('/notations/<int:id>/edit', methods=['GET'])
 def edit_html(id):
-    notation = GetOrAbort(Notation, id)
+    notation = get_or_abort(Notation, id)
     editparams = notation.to_json()
     append_type = notation.append_type
     if append_type is not None:
         append_key = append_type + '_id'
         append_item = notation.append_item
         editparams[append_key] = append_item.id
-    form = GetNotationForm(**editparams)
+    form = get_notation_form(**editparams)
     if append_type is not None:
-        HideNonGeneralInputs(form, append_item)
+        hide_nongeneral_inputs(form, append_item)
     return render_template("notations/edit.html", form=form, notation=notation)
 
 
 @bp.route('/notations/<int:id>', methods=['PUT'])
 def update_html(id):
-    notation = GetOrAbort(Notation, id)
+    notation = get_or_abort(Notation, id)
     results = update(notation)
     if results['error']:
         flash(results['message'], 'error')
@@ -242,7 +242,7 @@ def update_html(id):
 
 @bp.route('/notations/<int:id>', methods=['DELETE'])
 def delete_html(id):
-    notation = GetOrAbort(Notation, id)
-    DeleteNotation(notation)
+    notation = get_or_abort(Notation, id)
+    delete_notation(notation)
     flash("Notation deleted.")
     return redirect(url_for('notation.index_html'))

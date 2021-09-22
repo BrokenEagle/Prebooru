@@ -5,12 +5,12 @@
         <section id="artist-site-info">
             <h4>Site</h4>
             <ul>
-                <li><strong><a href="{{ helpers.artist.HrefUrl(artist) }}">{{ helpers.artist.ShortLink(artist) }}</a></strong></li>
+                <li><strong><a href="{{ helpers.artist.href_url(artist) }}">{{ helpers.artist.short_link(artist) }}</a></strong></li>
                 <li><strong>Domain:</strong> {{ artist.site_domain }}</li>
                 <li><strong>Site ID:</strong> {{ artist.site_artist_id }}</li>
-                <li><strong>Account:</strong> {{ helpers.base.StrOrNone(artist.current_site_account) }}</li>
-                <li><strong>Links:</strong> {{ helpers.artist.ArtistLinks(artist) | safe }}</li>
-                <li><strong>Created:</strong> {{ helpers.base.FormatTimestamp(artist.site_created) }}</li>
+                <li><strong>Account:</strong> {{ helpers.base.str_or_none(artist.current_site_account) }}</li>
+                <li><strong>Links:</strong> {{ helpers.artist.artist_links(artist) | safe }}</li>
+                <li><strong>Created:</strong> {{ helpers.base.format_timestamp(artist.site_created) }}</li>
                 <li><strong>Active:</strong> {{ artist.active }}</li>
             </ul>
         </section>
@@ -27,7 +27,7 @@
                 {% call(webpage) items_block(artist.webpages, 'webpages', '<br>') %}
                     <div class="artist-webpage-block">
                         <ul>
-                            <li><strong>URL:</strong> {{ helpers.base.ExternalLink(webpage.url, webpage.url) }}</li>
+                            <li><strong>URL:</strong> {{ helpers.base.external_link(webpage.url, webpage.url) }}</li>
                             <li><strong>Active:</strong> {{ webpage.active | tojson }}</li>
                         </ul>
                     </div>
@@ -44,7 +44,7 @@
                         <span class="artist-profile-delete">
                             (&thinsp;<a class="warning-link" href="{{ url_for('artist.delete_profile_html', id=artist.id, description_id=profile.id) }}" onclick="return Prebooru.deleteConfirm(this)">remove</a>&thinsp;)
                         </span>
-                        {{ helpers.base.ConvertStrToHTML(profile.body) }}
+                        {{ helpers.base.convert_str_to_html(profile.body) }}
                     </div>
                 {% endcall %}
             </div>

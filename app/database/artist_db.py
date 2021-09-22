@@ -3,8 +3,8 @@
 import datetime
 
 from .. import models, SESSION
-from ..logical.utility import GetCurrentTime, ProcessUTCTimestring, SetError
-from .base_db import UpdateColumnAttributes, UpdateRelationshipCollections, AppendRelationshipCollections
+from ..logical.utility import get_current_time, process_utc_timestring, set_error
+from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections, set_timesvalue
 
 
 # ##GLOBAL VARIABLES
@@ -21,15 +21,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account'
 
 # #### Helper functions
 
-def SetTimesvalues(params):
-    if 'site_created' in params:
-        if type(params['site_created']) is str:
-            params['site_created'] = ProcessUTCTimestring(params['site_created'])
-        elif type(params['site_created']) is not datetime.datetime:
-            params['site_created'] = None
-
-
-def SetAllSiteAccounts(params):
+def set_all_site_accounts(params):
     if 'current_site_account' in params and params['current_site_account']:
         params['site_accounts'] = list(set(params['site_accounts'] + [params['current_site_account']]))
 
@@ -38,69 +30,69 @@ def SetAllSiteAccounts(params):
 
 # ###### Create
 
-def CreateArtistFromParameters(createparams):
-    current_time = GetCurrentTime()
-    SetTimesvalues(createparams)
-    SetAllSiteAccounts(createparams)
+def create_artist_from_parameters(createparams):
+    current_time = get_current_time()
+    set_timesvalue(createparams, 'site_created')
+    set_all_site_accounts(createparams)
     artist = models.Artist(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    UpdateColumnAttributes(artist, update_columns, createparams)
+    update_column_attributes(artist, update_columns, createparams)
     create_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
-    UpdateRelationshipCollections(artist, create_relationships, createparams)
+    update_relationship_collections(artist, create_relationships, createparams)
     append_relationships = [relationship for relationship in APPEND_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
-    AppendRelationshipCollections(artist, append_relationships, createparams)
+    append_relationship_collections(artist, append_relationships, createparams)
     if 'webpages' in createparams:
-        UpdateArtistWebpages(artist, createparams['webpages'])
+        update_artist_webpages(artist, createparams['webpages'])
     print("[%s]: created" % artist.shortlink)
     return artist
 
 
-def CreateArtistFromSource(site_artist_id, source):
-    createparams = source.GetArtistData(site_artist_id)
+def create_artist_from_source(site_artist_id, source):
+    createparams = source.get_artist_data(site_artist_id)
     if not createparams['active']:
         return
-    return CreateArtistFromParameters(createparams)
+    return create_artist_from_parameters(createparams)
 
 
 # ###### Update
 
 
-def UpdateArtistFromParameters(artist, updateparams):
+def update_artist_from_parameters(artist, updateparams):
     update_results = []
-    SetTimesvalues(updateparams)
-    SetAllSiteAccounts(updateparams)
+    set_timesvalue(updateparams, 'site_created')
+    set_all_site_accounts(updateparams)
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(UpdateColumnAttributes(artist, update_columns, updateparams))
+    update_results.append(update_column_attributes(artist, update_columns, updateparams))
     update_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
-    update_results.append(UpdateRelationshipCollections(artist, update_relationships, updateparams))
+    update_results.append(update_relationship_collections(artist, update_relationships, updateparams))
     append_relationships = [relationship for relationship in APPEND_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
-    update_results.append(AppendRelationshipCollections(artist, append_relationships, updateparams))
+    update_results.append(append_relationship_collections(artist, append_relationships, updateparams))
     if 'webpages' in updateparams:
-        update_results.append(UpdateArtistWebpages(artist, updateparams['webpages']))
+        update_results.append(update_artist_webpages(artist, updateparams['webpages']))
     if any(update_results):
         print("[%s]: updated" % artist.shortlink)
-        artist.updated = GetCurrentTime()
+        artist.updated = get_current_time()
         SESSION.commit()
     if 'requery' in updateparams:
         artist.requery = updateparams['requery']
         SESSION.commit()
 
 
-def UpdateArtistFromSource(artist, source):
-    updateparams = source.GetArtistData(artist.site_artist_id)
+def update_artist_from_source(artist, source):
+    updateparams = source.get_artist_data(artist.site_artist_id)
     if updateparams['active']:
         # These are only removable through the HTML/JSON UPDATE routes
         updateparams['webpages'] += ['-' + webpage.url for webpage in artist.webpages if webpage.url not in updateparams['webpages']]
         updateparams['names'] += [artist_name.name for artist_name in artist.names if artist_name.name not in updateparams['names']]
         updateparams['site_accounts'] += [site_account.name for site_account in artist.site_accounts if site_account.name not in updateparams['site_accounts']]
-    UpdateArtistFromParameters(artist, updateparams)
+    update_artist_from_parameters(artist, updateparams)
 
 
 # #### Auxiliary functions
 
-def UpdateArtistWebpages(artist, params):
+def update_artist_webpages(artist, params):
     existing_webpages = [webpage.url for webpage in artist.webpages]
     current_webpages = []
     is_dirty = False
@@ -135,17 +127,17 @@ def UpdateArtistWebpages(artist, params):
 
 # ###### Misc
 
-def AppendBooru(artist, booru):
+def artist_append_booru(artist, booru):
     artist.boorus.append(booru)
-    artist.updated = GetCurrentTime()
+    artist.updated = get_current_time()
     SESSION.commit()
 
 
-def ArtistDeleteProfile(artist, description_id):
+def artist_delete_profile(artist, description_id):
     retdata = {'error': False, 'descriptions': [profile.to_json() for profile in artist.profiles]}
     remove_profile = next((profile for profile in artist.profiles if profile.id == description_id), None)
     if remove_profile is None:
-        return SetError(retdata, "Profile with description #%d does not exist on artist #%d." % (description_id, artist.id))
+        return set_error(retdata, "Profile with description #%d does not exist on artist #%d." % (description_id, artist.id))
     artist.profiles.remove(remove_profile)
     SESSION.commit()
     retdata['item'] = artist.to_json()
@@ -154,5 +146,5 @@ def ArtistDeleteProfile(artist, description_id):
 
 # #### Query functions
 
-def GetSiteArtist(site_artist_id, site_id):
+def get_site_artist(site_artist_id, site_id):
     return models.Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).first()

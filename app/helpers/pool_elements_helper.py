@@ -8,15 +8,15 @@ from flask import Markup, url_for
 
 # #### Helper functions
 
-def IsGeneralForm(form):
+def is_general_form(form):
     return (form.illust_id.data is None) and (form.post_id.data is None) and (form.notation_id.data is None)
 
 
 # ###### NEW/EDIT
 
-def FormHeader(form):
+def form_header(form):  # Unused
     html_text = "pool element"
-    if IsGeneralForm(form):
+    if is_general_form(form):
         return html_text
     html_text += ': '
     if form.illust_id.data is not None:

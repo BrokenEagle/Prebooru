@@ -14,10 +14,10 @@
             <a href="{{ select_bookmarklet }}">Select to Danbooru</a>
         </div>
         <p>Bookmark the above links by dragging them to the bookmark toolbar.</p>
-        <h4>{{ helpers.base.GeneralLink("All", url_for('upload.upload_all_html', show_form='true')) }}</h4>
+        <h4>{{ helpers.base.general_link("All", url_for('upload.upload_all_html', show_form='true')) }}</h4>
         <p>The all bookmarklet will open a new tab from a site post and upload all images available on that site post. The following is the code for this, and can be copied and modified instead.<p>
         <code>{{ all_bookmarklet }}</code>
-        <h4>{{ helpers.base.GeneralLink("Select", url_for('upload.upload_select_html', show_form='true')) }}</h4>
+        <h4>{{ helpers.base.general_link("Select", url_for('upload.upload_select_html', show_form='true')) }}</h4>
         <p>The select bookmarklet will open a new tab from a site post present all available images from that post, allowing one to select which images from the site post to upload. The following is the code for this, and can be copied and modified instead.<p>
         <code>{{ select_bookmarklet }}</code>
         <h4>Supported Sites</h4>

@@ -132,4 +132,4 @@ from .logical.tasks import schedule  # noqa: E402, F401
 
 # #### Extend Python imports
 
-query_extensions.Initialize()
+query_extensions.initialize()

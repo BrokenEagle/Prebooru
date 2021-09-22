@@ -10,6 +10,6 @@
         {% include "artists/_site_content.html" %}
     </div>
     <div id="artist-posts">
-        {{ recent_posts(artist.recent_posts, post_count=artist.post_count, post_search=helpers.artist.PostSearch(artist)) }}
+        {{ recent_posts(artist.recent_posts, post_count=artist.post_count, post_search=helpers.artist.post_search(artist)) }}
     </div>
 {% endblock %}

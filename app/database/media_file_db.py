@@ -1,8 +1,8 @@
 from .. import SESSION
 from ..models import MediaFile
-from ..logical.utility import DaysFromNow
+from ..logical.utility import days_from_now
 from ..logical.file import delete_file
-from .base_db import UpdateColumnAttributes
+from .base_db import update_column_attributes
 
 
 # ##GLOBAL VARIABLES
@@ -19,10 +19,10 @@ CREATE_ALLOWED_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
 # ###### CREATE
 
 def create_media_file_from_parameters(createparams):
-    media_file = MediaFile(expires=DaysFromNow(1))
+    media_file = MediaFile(expires=days_from_now(1))
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    UpdateColumnAttributes(media_file, update_columns, createparams)
+    update_column_attributes(media_file, update_columns, createparams)
     print("[%s]: created" % media_file.shortlink)
     return media_file
 

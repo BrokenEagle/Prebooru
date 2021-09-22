@@ -9,8 +9,8 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ##LOCAL IMPORTS
 from .. import DB
-from ..logical.utility import UniqueObjects
-from .base import JsonModel, IntOrNone, StrOrNone
+from ..logical.utility import unique_objects
+from .base import JsonModel, int_or_none, str_or_none
 from .upload_url import UploadUrl
 from .post import Post
 from .error import Error
@@ -45,11 +45,11 @@ class Upload(JsonModel):
 
     # #### JSON format
     id: int
-    subscription_id: IntOrNone
-    request_url: StrOrNone
-    media_filepath: StrOrNone
-    sample_filepath: StrOrNone
-    illust_url_id: IntOrNone
+    subscription_id: int_or_none
+    request_url: str_or_none
+    media_filepath: str_or_none
+    sample_filepath: str_or_none
+    illust_url_id: int_or_none
     type: str
     status: str
     successes: int
@@ -89,7 +89,7 @@ class Upload(JsonModel):
     @memoized_property
     def site_illust_id(self):
         if self.request_url:
-            return self._source.GetIllustId(self.request_url)
+            return self._source.get_illust_id(self.request_url)
         elif self.illust_url.id:
             return self.illust_url.illust.site_illust_id
         raise Exception("Unable to find site illust ID for upload #%d" % self.id)
@@ -98,7 +98,7 @@ class Upload(JsonModel):
     def illust(self):
         if len(self.posts) == 0:
             return None
-        illusts = UniqueObjects(sum([post.illusts for post in self.posts], []))
+        illusts = unique_objects(sum([post.illusts for post in self.posts], []))
         return next(filter(lambda x: (x.site_id == self.site_id) and (x.site_illust_id == self.site_illust_id), illusts), None)
 
     @memoized_property
@@ -109,11 +109,11 @@ class Upload(JsonModel):
 
     @memoized_property
     def _source(self):
-        from ..sources.base_source import GetPostSource, GetSourceById
+        from ..sources.base_source import get_post_source, get_source_by_id
         if self.request_url:
-            return GetPostSource(self.request_url)
+            return get_post_source(self.request_url)
         elif self.illust_url_id:
-            return GetSourceById(self.illust_url.site_id)
+            return get_source_by_id(self.illust_url.site_id)
         raise Exception("Unable to find source for upload #%d" % self.id)
 
     # ## Class properties

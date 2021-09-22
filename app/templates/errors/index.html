@@ -18,8 +18,8 @@
                 <tr id="error-{{ errors.id }}">
                     <td>{{ error.show_link }}</a></td>
                     <td><code>{{ error.module }}</code></td>
-                    <td>{{ helpers.error.FormatMessage(error) }}</td>
-                    <td>{{ helpers.base.FormatTimestamp(error.created) }}</td>
+                    <td>{{ helpers.error.format_message(error) }}</td>
+                    <td>{{ helpers.base.format_timestamp(error.created) }}</td>
                 </tr>
             {% endfor %}
         </tbody>

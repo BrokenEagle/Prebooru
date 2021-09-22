@@ -3,12 +3,12 @@
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Post
-from ...sources.danbooru_source import GetPostsByMD5s
+from ...sources.danbooru_source import get_posts_by_md5s
 
 
 # ## FUNCTIONS
 
-def CheckAllPostsForDanbooruID():
+def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
     query = Post.query.filter(Post.danbooru_id == None)  # noqa: E711
     max_id = 0
@@ -19,15 +19,15 @@ def CheckAllPostsForDanbooruID():
         if len(posts) == 0:
             return
         print("\n%d/%d" % (page, page_count))
-        if not CheckPostsForDanbooruID(posts):
+        if not check_posts_for_danbooru_id(posts):
             return
         max_id = max(post.id for post in posts)
         page += 1
 
 
-def CheckPostsForDanbooruID(posts):
+def check_posts_for_danbooru_id(posts):
     post_md5s = [post.md5 for post in posts]
-    results = GetPostsByMD5s(post_md5s)
+    results = get_posts_by_md5s(post_md5s)
     if results['error']:
         print(results['message'])
         return False

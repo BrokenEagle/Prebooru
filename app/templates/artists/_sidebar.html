@@ -5,7 +5,7 @@
 
 <div id="artist-sidebar">
     {{ boorus_section(artist.boorus, 'artist-boorus') }}
-    {{ illusts_display(helpers.artist.IllustSearch(artist), artist.illust_count, 'artist-illusts') }}
+    {{ illusts_display(helpers.artist.illust_search(artist), artist.illust_count, 'artist-illusts') }}
     {{ timestamps_section(artist, 'artist-timestamps') }}
     {{ notations_section(artist.notations, 'artist-notations') }}
     <section id="artist-options">

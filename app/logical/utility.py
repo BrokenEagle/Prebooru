@@ -12,7 +12,7 @@ import pathlib
 
 # ##FUNCTIONS
 
-def SafePrint(*args, **kwargs):
+def safe_print(*args, **kwargs):
     temp = ''
     for arg in args:
         if type(arg) is str:
@@ -26,7 +26,7 @@ def SafePrint(*args, **kwargs):
 def buffered_print(name, safe=False, sep=" ", end="\n"):
     header = name + " - " + uuid.uuid1().hex
     print("\n++++++++++ %s ++++++++++\n" % header, flush=True)
-    print_func = SafePrint if safe else print
+    print_func = safe_print if safe else print
     print_buffer = []
 
     def accumulator(*args):
@@ -45,35 +45,35 @@ def buffered_print(name, safe=False, sep=" ", end="\n"):
     return accumulator
 
 
-def ProcessUTCTimestring(timestring):
+def process_utc_timestring(timestring):
     try:
         return datetime.datetime.fromisoformat(timestring.replace('Z', '+00:00')).replace(tzinfo=None)
     except Exception:
         logging.error('Failed parse datetime string')
 
 
-def GetBufferChecksum(buffer):
+def get_buffer_checksum(buffer):
     hasher = hashlib.md5()
     hasher.update(buffer)
     return hasher.hexdigest()
 
 
-def GetHTTPFilename(webpath):
+def get_http_filename(webpath):
     start = webpath.rfind('/') + 1
     isextras = webpath.rfind('?')
     end = isextras if isextras > 0 else len(webpath) + 1
     return webpath[start:end]
 
 
-def GetFileExtension(filepath):
+def get_file_extension(filepath):
     return filepath[filepath.rfind('.') + 1:]
 
 
-def GetDirectory(filepath):
+def get_directory_path(filepath):
     return str(pathlib.Path(filepath).parent.resolve())
 
 
-def DecodeUnicode(byte_string):
+def decode_unicode(byte_string):
     try:
         decoded_string = byte_string.decode('utf')
     except Exception:
@@ -82,7 +82,7 @@ def DecodeUnicode(byte_string):
     return decoded_string
 
 
-def DecodeJSON(string):
+def decode_json(string):
     try:
         data = json.loads(string)
     except Exception:
@@ -91,40 +91,40 @@ def DecodeJSON(string):
     return data
 
 
-def GetCurrentTime():
+def get_current_time():
     t = datetime.datetime.utcnow()
     return t - datetime.timedelta(microseconds=t.microsecond)
 
 
-def DaysAgo(days):
-    return GetCurrentTime() - datetime.timedelta(days=days)
+def days_ago(days):  # Unused
+    return get_current_time() - datetime.timedelta(days=days)
 
 
-def DaysFromNow(days):
-    return GetCurrentTime() + datetime.timedelta(days=days)
+def days_from_now(days):
+    return get_current_time() + datetime.timedelta(days=days)
 
 
-def HoursFromNow(hours):
-    return GetCurrentTime() + datetime.timedelta(hours=hours)
+def hours_from_now(hours):  # Unused
+    return get_current_time() + datetime.timedelta(hours=hours)
 
 
-def HoursAgo(hours):
-    return GetCurrentTime() - datetime.timedelta(hours=hours)
+def hours_ago(hours):  # Unused
+    return get_current_time() - datetime.timedelta(hours=hours)
 
 
-def MinutesFromNow(minutes):
-    return GetCurrentTime() + datetime.timedelta(minutes=minutes)
+def minutes_from_now(minutes):  # Unused
+    return get_current_time() + datetime.timedelta(minutes=minutes)
 
 
-def MinutesAgo(minutes):
-    return GetCurrentTime() - datetime.timedelta(minutes=minutes)
+def minutes_ago(minutes):
+    return get_current_time() - datetime.timedelta(minutes=minutes)
 
 
-def SecondsFromNowLocal(seconds):
+def seconds_from_now_local(seconds):
     return datetime.datetime.now() + datetime.timedelta(seconds=seconds)
 
 
-def SafeGet(input_dict, *keys):
+def safe_get(input_dict, *keys):
     for key in keys:
         try:
             input_dict = input_dict[key]
@@ -133,24 +133,24 @@ def SafeGet(input_dict, *keys):
     return input_dict
 
 
-def IsTruthy(string):
+def is_truthy(string):
     truth_match = re.match(r'^(?:t(?:rue)?|y(?:es)?|1)$', string, re.IGNORECASE)
     return truth_match is not None
 
 
-def IsFalsey(string):
+def is_falsey(string):
     false_match = re.match(r'^(?:f(?:alse)?|n(?:o)?|0)$', string, re.IGNORECASE)
     return false_match is not None
 
 
-def EvalBoolString(string):
-    if IsTruthy(string):
+def eval_bool_string(string):
+    if is_truthy(string):
         return True
-    if IsFalsey(string):
+    if is_falsey(string):
         return False
 
 
-def StaticVars(**kwargs):
+def static_vars(**kwargs):  # Unused
     def decorate(func):
         for k in kwargs:
             setattr(func, k, kwargs[k])
@@ -158,7 +158,7 @@ def StaticVars(**kwargs):
     return decorate
 
 
-def UniqueObjects(objs):
+def unique_objects(objs):
     seen = set()
     output = []
     for obj in objs:
@@ -168,47 +168,47 @@ def UniqueObjects(objs):
     return output
 
 
-def SetPrecision(number, precision):
+def set_precision(number, precision):
     placenum = 10**precision
     return (int(number * placenum)) / placenum
 
 
-def TimeAgo(timeval, precision=2):
-    delta = GetCurrentTime() - timeval
+def time_ago(timeval, precision=2):
+    delta = get_current_time() - timeval
     if delta.days == 0:
         if delta.seconds < 60:
             return "%d seconds ago" % delta.seconds
         if delta.seconds < 3600:
-            return "%f minutes ago" % SetPrecision(delta.seconds / 60, 2)
-        return "%f hours ago" % SetPrecision(delta.seconds / 3600, 2)
+            return "%f minutes ago" % set_precision(delta.seconds / 60, 2)
+        return "%f hours ago" % set_precision(delta.seconds / 3600, 2)
     days = delta.days + (delta.seconds / 86400)
     if days < 7:
-        return "%f days ago" % SetPrecision(days, 2)
+        return "%f days ago" % set_precision(days, 2)
     if days < 30:
-        return "%f weeks ago" % SetPrecision(days / 7, 2)
+        return "%f weeks ago" % set_precision(days / 7, 2)
     if days < 365:
-        return "%f months ago" % SetPrecision(days / 30, 2)
-    return "%f years ago" % SetPrecision(days / 365, 2)
+        return "%f months ago" % set_precision(days / 30, 2)
+    return "%f years ago" % set_precision(days / 365, 2)
 
 
-def AddDictEntry(indict, key, entry):
+def add_dict_entry(indict, key, entry):
     indict[key] = indict[key] + [entry] if key in indict else [entry]
 
 
-def MergeDicts(a, b):
+def merge_dicts(a, b):
     for key in b:
         if key in a and isinstance(a[key], dict) and isinstance(b[key], dict):
-            MergeDicts(a[key], b[key])
+            merge_dicts(a[key], b[key])
         else:
             a[key] = b[key]
     return a
 
 
-def SetError(retdata, message):
+def set_error(retdata, message):
     retdata['error'] = True
     retdata['message'] = message
     return retdata
 
 
-def FixupCRLF(text):
+def fixup_crlf(text):
     return re.sub(r'(?<!\r)\n', '\r\n', text)

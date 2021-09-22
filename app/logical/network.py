@@ -7,7 +7,7 @@ import requests
 
 # ##FUNCTIONS
 
-def GetHTTPFile(serverfilepath, headers=None, timeout=10):
+def get_http_file(serverfilepath, headers=None, timeout=10):
     headers = headers if headers is not None else {}
     for i in range(3):
         try:

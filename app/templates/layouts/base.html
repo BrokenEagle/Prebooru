@@ -15,7 +15,7 @@
             {% block secondary_links %}{% endblock %}
         </nav>
     </header>
-    <section id="content" class="{{ helpers.base.EndpointClasses(request) }}">
+    <section id="content" class="{{ helpers.base.endpoint_classes(request) }}">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div id="notice">
@@ -27,7 +27,7 @@
                         {% endif %}
                     {% endfor %}
                 </div>
-                {% if not helpers.base.HasErrorMessages(messages) %}
+                {% if not helpers.base.has_error_messages(messages) %}
                     <script>
                         setTimeout(()=>{
                             document.getElementById('notice').style.setProperty('display', 'none');

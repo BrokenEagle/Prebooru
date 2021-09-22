@@ -5,10 +5,10 @@ import urllib.parse
 from flask import url_for
 
 # ##LOCAL IMPORTS
-from ..logical.sites import GetSiteDomain, GetSiteKey
+from ..logical.sites import get_site_domain, get_site_key
 from ..sources import SOURCEDICT
-from ..sources.base_source import GetSourceById
-from .base_helper import SearchUrlFor, ExternalLink, UrlLink, GeneralLink
+from ..sources.base_source import get_source_by_id
+from .base_helper import search_url_for, external_link, url_link, general_link
 from ..config import DANBOORU_HOSTNAME
 
 
@@ -24,11 +24,11 @@ SITE_DATA_LABELS = {
 
 # #### Form functions
 
-def IsGeneralForm(form):
+def is_general_form(form):  # Unused
     return (form.artist_id.data is None) or (form.site_id.data is None)
 
 
-def FormClass(form):
+def form_class(form):
     CLASS_MAP = {
         None: "",
         1: "pixiv-data",
@@ -39,14 +39,14 @@ def FormClass(form):
 
 # #### Site content functions
 
-def SiteMetricIterator(illust):
+def site_metric_iterator(illust):
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
         if key in ['retweets', 'replies', 'quotes', 'bookmarks', 'views']:
             yield key, val
 
 
-def SiteDateIterator(illust):
+def site_date_iterator(illust):
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
         if key in ['site_updated', 'site_uploaded']:
@@ -55,82 +55,82 @@ def SiteDateIterator(illust):
 
 # #### Media functions
 
-def IllustHasImages(illust):
-    site_key = GetSiteKey(illust.site_id)
+def illust_has_images(illust):  # Unused
+    site_key = get_site_key(illust.site_id)
     source = SOURCEDICT[site_key]
-    return source.IllustHasImages(illust)
+    return source.illust_has_images(illust)
 
 
-def IllustHasVideos(illust):
-    site_key = GetSiteKey(illust.site_id)
+def illust_has_videos(illust):  # Unused
+    site_key = get_site_key(illust.site_id)
     source = SOURCEDICT[site_key]
-    return source.IllustHasImages(illust)
+    return source.illust_has_images(illust)
 
 
-def IllustUrlsOrdered(illust):
+def illust_urls_ordered(illust):  # Unused
     return sorted(illust.urls, key=lambda x: x.order)
 
 
 # #### URL functions
 
-def OriginalUrl(illust_url):
-    return UrlLink('https://' + GetSiteDomain(illust_url.site_id) + illust_url.url)
+def original_url(illust_url):
+    return url_link('https://' + get_site_domain(illust_url.site_id) + illust_url.url)
 
 
-def ShortLink(illust):
-    site_key = GetSiteKey(illust.site_id)
+def short_link(illust):
+    site_key = get_site_key(illust.site_id)
     return "%s #%d" % (site_key.lower(), illust.site_illust_id)
 
 
-def SiteIllustUrl(illust):
-    site_key = GetSiteKey(illust.site_id)
+def site_illust_url(illust):
+    site_key = get_site_key(illust.site_id)
     source = SOURCEDICT[site_key]
-    return source.GetIllustUrl(illust.site_illust_id)
+    return source.get_illust_url(illust.site_illust_id)
 
 
-def PostIllustSearch(illust):
-    return SearchUrlFor('post.index_html', illust_urls={'illust_id': illust.id})
+def post_illust_search(illust):
+    return search_url_for('post.index_html', illust_urls={'illust_id': illust.id})
 
 
-def PostTagSearch(tag):
-    return SearchUrlFor('post.index_html', illust_urls={'illust': {'tags': {'name': tag.name}}})
+def post_tag_search(tag):
+    return search_url_for('post.index_html', illust_urls={'illust': {'tags': {'name': tag.name}}})
 
 
-def DanbooruBatchUrl(illust):
-    source = GetSourceById(illust.site_id)
-    post_url = source.GetPostUrl(illust)
+def danbooru_batch_url(illust):
+    source = get_source_by_id(illust.site_id)
+    post_url = source.get_post_url(illust)
     query_string = urllib.parse.urlencode({'url': post_url})
     return DANBOORU_HOSTNAME + '/uploads/batch?' + query_string
 
 
 # #### Link functions
 
-def DanbooruUploadLink(illust):
-    return ExternalLink("Danbooru", DanbooruBatchUrl(illust))
+def danbooru_upload_link(illust):
+    return external_link("Danbooru", danbooru_batch_url(illust))
 
 
-def UpdateFromSourceLink(illust):
-    return GeneralLink("Update from source", url_for('illust.query_update_html', id=illust.id), **{'onclick': "return Prebooru.linkPost(this)"})
+def update_from_source_link(illust):
+    return general_link("Update from source", url_for('illust.query_update_html', id=illust.id), **{'onclick': "return Prebooru.linkPost(this)"})
 
 
-def AddMediaUrlLink(illust):
-    return GeneralLink("Add media url", url_for('illust_url.new_html', illust_id=illust.id))
+def add_media_url_link(illust):
+    return general_link("Add media url", url_for('illust_url.new_html', illust_id=illust.id))
 
 
-def AddNotationLink(illust):
-    return GeneralLink("Add notation", url_for('notation.new_html', illust_id=illust.id))
+def add_notation_link(illust):
+    return general_link("Add notation", url_for('notation.new_html', illust_id=illust.id))
 
 
-def AddPoolLink(illust):
-    return GeneralLink("Add pool", url_for('pool_element.create_html'), **{'onclick': "return Prebooru.createPool(this, 'illust')", 'data-illust-id': illust.id})
+def add_pool_link(illust):
+    return general_link("Add pool", url_for('pool_element.create_html'), **{'onclick': "return Prebooru.createPool(this, 'illust')", 'data-illust-id': illust.id})
 
 
-def SiteIllustLink(illust):
-    return ExternalLink(ShortLink(illust), SiteIllustUrl(illust))
+def site_illust_link(illust):
+    return external_link(short_link(illust), site_illust_url(illust))
 
 
-def PostIllustLink(illust):
-    site_key = GetSiteKey(illust.site_id)
+def post_illust_link(illust):
+    site_key = get_site_key(illust.site_id)
     source = SOURCEDICT[site_key]
-    post_url = source.GetPostUrl(illust)
-    return ExternalLink('&raquo;', post_url) if post_url != source.GetIllustUrl(illust.site_illust_id) else ""
+    post_url = source.get_post_url(illust)
+    return external_link('&raquo;', post_url) if post_url != source.get_illust_url(illust.site_illust_id) else ""

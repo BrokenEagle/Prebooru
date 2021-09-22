@@ -3,10 +3,10 @@
         <h4>Boorus</h4>
         <ul>
             {% for booru in boorus %}
-                <li><span class="item-heading">{{ booru.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.booru.PostSearch(booru)) }}</span>
+                <li><span class="item-heading">{{ booru.show_link }} {{ helpers.base.general_link('&raquo;', helpers.booru.post_search(booru)) }}</span>
                     <ul>
                         <li><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</li>
-                        <li><strong>Name: {{ helpers.booru.SiteBooruLink(booru) }} {{ helpers.booru.SiteSearchLink(booru) }}</strong></li>
+                        <li><strong>Name: {{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</strong></li>
                     </ul>
                 </li>
             {% else %}

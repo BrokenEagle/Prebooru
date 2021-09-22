@@ -8,8 +8,8 @@ from sqlalchemy.util import memoized_property
 
 # ##LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import GetSiteDomain, GetSiteKey
-from .base import JsonModel, RemoveKeys, DateTimeOrNull, IntOrNone, StrOrNone
+from ..logical.sites import get_site_domain, get_site_key
+from .base import JsonModel, remove_keys, date_time_or_null, int_or_none, str_or_none
 from .artist_url import ArtistUrl
 from .illust import Illust
 from .label import Label
@@ -55,15 +55,15 @@ class Artist(JsonModel):
     # #### JSON format
     id: int
     site_id: int
-    site_artist_id: IntOrNone
-    current_site_account: StrOrNone
-    site_created: DateTimeOrNull
+    site_artist_id: int_or_none
+    current_site_account: str_or_none
+    site_created: date_time_or_null
     site_accounts: List[lambda x: x['name']]
     names: List[lambda x: x['name']]
     profiles: List[lambda x: x['body']]
-    webpages: List[lambda x: RemoveKeys(x, ['artist_id'])]
+    webpages: List[lambda x: remove_keys(x, ['artist_id'])]
     active: bool
-    requery: DateTimeOrNull
+    requery: date_time_or_null
     created: datetime.datetime.isoformat
     updated: datetime.datetime.isoformat
 
@@ -113,11 +113,11 @@ class Artist(JsonModel):
 
     @property
     def site_domain(self):
-        return GetSiteDomain(self.site_id)
+        return get_site_domain(self.site_id)
 
     @property
     def booru_search_url(self):
-        return self._source.ArtistBooruSearchUrl(self)
+        return self._source.artist_booru_search_url(self)
 
     # ###### Private
 
@@ -137,7 +137,7 @@ class Artist(JsonModel):
     @memoized_property
     def _source(self):
         from ..sources import SOURCEDICT
-        site_key = GetSiteKey(self.site_id)
+        site_key = get_site_key(self.site_id)
         return SOURCEDICT[site_key]
 
     # ## Methods

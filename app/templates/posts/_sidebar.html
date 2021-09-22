@@ -16,26 +16,26 @@
     <section id="post-image-search">
         <h4>Image search</h4>
         <ul>
-            <li><strong>Danbooru:</strong> {{ helpers.post.DanbooruSearchLinks(post) }}</li>
-            <li><strong>Sauce:</strong> {{ helpers.post.SauceNAOSearchLinks(post) }}</li>
-            <li><strong>Ascii2D:</strong> {{ helpers.post.Ascii2DSearchLinks(post) }}</li>
-            <li><strong>IQDB.org:</strong> {{ helpers.post.IQDBOrgSearchLinks(post) }}</li>
+            <li><strong>Danbooru:</strong> {{ helpers.post.danbooru_search_links(post) }}</li>
+            <li><strong>Sauce:</strong> {{ helpers.post.saucenao_search_links(post) }}</li>
+            <li><strong>Ascii2D:</strong> {{ helpers.post.ascii2d_search_links(post) }}</li>
+            <li><strong>IQDB.org:</strong> {{ helpers.post.iqdborg_search_links(post) }}</li>
         </ul>
     </section>
     <section id="post-image-search">
         <h4>Upload</h4>
         <ul>
-            <li><strong>Danbooru:</strong> {{ helpers.post.DanbooruPostBookmarkletLinks(post) }}</li>
+            <li><strong>Danbooru:</strong> {{ helpers.post.danbooru_post_bookmarklet_links(post) }}</li>
         </ul>
     </section>
     <section id="post-options">
         <h4>Options</h4>
         <ul>
-            <li>{{ helpers.base.GeneralLink("Original file", post.file_url) }}</li>
-            <li>{{ helpers.post.FileLink(post) }}</li>
-            <li>{{ helpers.post.AddToPoolLink(post) }}</li>
-            <li>{{ helpers.post.AddNotationLink(post) }}</li>
-            <li>{{ helpers.post.RegenerateSimilarityLink(post) }}</li>
+            <li>{{ helpers.base.general_link("Original file", post.file_url) }}</li>
+            <li>{{ helpers.post.disk_file_link(post) }}</li>
+            <li>{{ helpers.post.add_to_pool_link(post) }}</li>
+            <li>{{ helpers.post.add_notation_link(post) }}</li>
+            <li>{{ helpers.post.regenerate_similarity_link(post) }}</li>
         </ul>
     </section>
 </aside>

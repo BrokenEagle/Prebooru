@@ -5,8 +5,8 @@ import re
 
 # ## LOCAL IMPORTS
 from .. import models, SESSION
-from ..logical.utility import GetCurrentTime
-from .base_db import UpdateColumnAttributes, UpdateRelationshipCollections
+from ..logical.utility import get_current_time
+from .base_db import update_column_attributes, update_relationship_collections
 
 
 # ##GLOBAL VARIABLES
@@ -23,20 +23,20 @@ CREATE_ALLOWED_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath
 
 # ###### CREATE
 
-def CreateUploadFromParameters(createparams):
+def create_upload_from_parameters(createparams):
     data = {
         'successes': 0,
         'failures': 0,
         'status': 'pending',
         'subscription_id': None,
-        'created': GetCurrentTime(),
+        'created': get_current_time(),
     }
     upload = models.Upload(**data)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    UpdateColumnAttributes(upload, update_columns, createparams)
+    update_column_attributes(upload, update_columns, createparams)
     create_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
-    UpdateRelationshipCollections(upload, create_relationships, createparams)
+    update_relationship_collections(upload, create_relationships, createparams)
     print("[%s]: created" % upload.shortlink)
     return upload
 
@@ -44,25 +44,25 @@ def CreateUploadFromParameters(createparams):
 # #### Misc functions
 
 
-def IsDuplicate(upload):
+def has_duplicate_posts(upload):
     return any(re.match(r'Image already uploaded on post #\d+', error.message) for error in upload.errors)
 
 
-def SetUploadStatus(upload, status):
+def set_upload_status(upload, status):
     upload.status = status
     SESSION.commit()
 
 
-def AddUploadSuccess(upload):
+def add_upload_success(upload):
     upload.successes += 1
     SESSION.commit()
 
 
-def AddUploadFailure(upload):
+def add_upload_failure(upload):
     upload.failures += 1
     SESSION.commit()
 
 
-def UploadAppendPost(upload, post):
+def upload_append_post(upload, post):
     upload.posts.append(post)
     SESSION.commit()

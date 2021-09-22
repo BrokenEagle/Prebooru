@@ -24,7 +24,7 @@
                         {{ multi_post_preview(illust, 'illust') }}
                     </td>
                     <td>
-                        <span><strong>{{ illust.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.illust.PostIllustSearch(illust)) }}</strong></span><br>
+                        <span><strong>{{ illust.show_link }} {{ helpers.base.general_link('&raquo;', helpers.illust.post_illust_search(illust)) }}</strong></span><br>
                         <span><strong>Domain:</strong> {{ illust.site_domain }}</span><br>
                         <span><strong>Site ID:</strong> {{ illust.site_illust_id }}</span><br>
                     </td>
@@ -38,20 +38,20 @@
                             {% if loop.index == 8 %}
                                 ......<br>
                             {% elif loop.index < 8 %}
-                                {{ helpers.base.UrlLink(illust_url.full_url) }}<br>
+                                {{ helpers.base.url_link(illust_url.full_url) }}<br>
                             {% endif %}
                             {% if loop.last %}
                                 <br>
-                                <strong>{{ helpers.base.GeneralLink("&laquo;Search&raquo;", helpers.base.SearchUrlFor('illust_url.index_html', illust_id=illust.id)) }}</strong>
+                                <strong>{{ helpers.base.general_link("&laquo;Search&raquo;", helpers.base.search_url_for('illust_url.index_html', illust_id=illust.id)) }}</strong>
                             {% endif %}
                         {% else %}
                             <em>none</em>
                         {% endfor %}
                     </td>
                     <td>
-                        <strong>Requery:</strong> {{ helpers.base.FormatTimestamp(illust.requery) }}<br>
-                        <strong>Created:</strong> {{ helpers.base.FormatTimestamp(illust.created) }}<br>
-                        <strong>Updated:</strong> {{ helpers.base.FormatTimestamp(illust.updated) }}
+                        <strong>Requery:</strong> {{ helpers.base.format_timestamp(illust.requery) }}<br>
+                        <strong>Created:</strong> {{ helpers.base.format_timestamp(illust.created) }}<br>
+                        <strong>Updated:</strong> {{ helpers.base.format_timestamp(illust.updated) }}
                     </td>
                 </tr>
             {% endfor %}

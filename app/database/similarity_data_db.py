@@ -3,7 +3,7 @@
 # ##LOCAL IMPORTS
 from .. import SESSION
 from ..models import SimilarityData
-from .base_db import UpdateColumnAttributes
+from .base_db import update_column_attributes
 
 
 # ##GLOBAL VARIABLES
@@ -23,7 +23,7 @@ def create_similarity_data_from_parameters(createparams):
     similarity_data = SimilarityData()
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    UpdateColumnAttributes(similarity_data, update_columns, createparams)
+    update_column_attributes(similarity_data, update_columns, createparams)
     print("[%s]: created" % similarity_data.shortlink)
     return similarity_data
 

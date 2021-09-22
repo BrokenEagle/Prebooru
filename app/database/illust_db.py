@@ -5,11 +5,11 @@ import datetime
 
 # ##LOCAL IMPORTS
 from .. import models, SESSION
-from ..logical.utility import GetCurrentTime, SetError
-from .base_db import UpdateColumnAttributes, UpdateRelationshipCollections, AppendRelationshipCollections, SetTimesvalue
-from .artist_db import CreateArtistFromSource, GetSiteArtist
-from .illust_url_db import UpdateIllustUrlFromParameters
-from .site_data_db import UpdateSiteDataFromParameters
+from ..logical.utility import get_current_time, set_error
+from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections, set_timesvalue
+from .artist_db import create_artist_from_source, get_site_artist
+from .illust_url_db import update_illust_url_from_parameters
+from .site_data_db import update_site_data_from_parameters
 
 
 # ##GLOBAL VARIABLES
@@ -26,15 +26,15 @@ UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_illust_id', 'site_created', 'pages
 
 # #### Helper functions
 
-def SetTimesvalues(params):
-    SetTimesvalue(params, 'site_created')
-    SetTimesvalue(params, 'site_updated')
-    SetTimesvalue(params, 'site_uploaded')
+def set_timesvalues(params):
+    set_timesvalue(params, 'site_created')
+    set_timesvalue(params, 'site_updated')
+    set_timesvalue(params, 'site_uploaded')
 
 
 # #### Auxiliary functions
 
-def UpdateIllustUrls(illust, params):
+def update_illust_urls(illust, params):
     update_results = []
     existing_urls = [illust_url.url for illust_url in illust.urls]
     current_urls = []
@@ -42,7 +42,7 @@ def UpdateIllustUrls(illust, params):
         illust_url = next(filter(lambda x: x.url == url_data['url'], illust.urls), None)
         if illust_url is None:
             illust_url = models.IllustUrl(illust_id=illust.id)
-        update_results.append(UpdateIllustUrlFromParameters(illust_url, url_data))
+        update_results.append(update_illust_url_from_parameters(illust_url, url_data))
         current_urls.append(url_data['url'])
     removed_urls = set(existing_urls).difference(current_urls)
     for url in removed_urls:
@@ -57,76 +57,76 @@ def UpdateIllustUrls(illust, params):
 
 # ###### CREATE
 
-def CreateIllustFromParameters(createparams):
-    current_time = GetCurrentTime()
-    SetTimesvalues(createparams)
+def create_illust_from_parameters(createparams):
+    current_time = get_current_time()
+    set_timesvalues(createparams)
     illust = models.Illust(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    UpdateColumnAttributes(illust, update_columns, createparams)
+    update_column_attributes(illust, update_columns, createparams)
     create_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
-    UpdateRelationshipCollections(illust, create_relationships, createparams)
+    update_relationship_collections(illust, create_relationships, createparams)
     append_relationships = [relationship for relationship in APPEND_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
-    AppendRelationshipCollections(illust, append_relationships, createparams)
-    UpdateSiteDataFromParameters(illust.site_data, illust.id, illust.site_id, createparams)
+    append_relationship_collections(illust, append_relationships, createparams)
+    update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id, createparams)
     if 'illust_urls' in createparams:
-        UpdateIllustUrls(illust, createparams['illust_urls'])
+        update_illust_urls(illust, createparams['illust_urls'])
     print("[%s]: created" % illust.shortlink)
     return illust
 
 
-def CreateIllustFromSource(site_illust_id, source):
-    createparams = source.GetIllustData(site_illust_id)
+def create_illust_from_source(site_illust_id, source):
+    createparams = source.get_illust_data(site_illust_id)
     if not createparams['active']:
         return
-    artist = GetSiteArtist(createparams['site_artist_id'], source.SITE_ID)
+    artist = get_site_artist(createparams['site_artist_id'], source.SITE_ID)
     if artist is None:
-        artist = CreateArtistFromSource(createparams['site_artist_id'], source)
+        artist = create_artist_from_source(createparams['site_artist_id'], source)
         if artist is None:
             return
     createparams['artist_id'] = artist.id
-    return CreateIllustFromParameters(createparams)
+    return create_illust_from_parameters(createparams)
 
 
 # ###### UPDATE
 
-def UpdateIllustFromParameters(illust, updateparams):
+def update_illust_from_parameters(illust, updateparams):
     update_results = []
-    SetTimesvalues(updateparams)
+    set_timesvalues(updateparams)
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(UpdateColumnAttributes(illust, update_columns, updateparams))
+    update_results.append(update_column_attributes(illust, update_columns, updateparams))
     update_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
-    update_results.append(UpdateRelationshipCollections(illust, update_relationships, updateparams))
+    update_results.append(update_relationship_collections(illust, update_relationships, updateparams))
     append_relationships = [relationship for relationship in APPEND_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
-    update_results.append(AppendRelationshipCollections(illust, append_relationships, updateparams))
-    update_results.append(UpdateSiteDataFromParameters(illust.site_data, illust.id, illust.site_id, updateparams))
+    update_results.append(append_relationship_collections(illust, append_relationships, updateparams))
+    update_results.append(update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id, updateparams))
     if 'illust_urls' in updateparams:
-        update_results.append(UpdateIllustUrls(illust, updateparams['illust_urls']))
+        update_results.append(update_illust_urls(illust, updateparams['illust_urls']))
     if any(update_results):
         print("[%s]: updated" % illust.shortlink)
-        illust.updated = GetCurrentTime()
+        illust.updated = get_current_time()
         SESSION.commit()
     if 'requery' in updateparams:
         illust.requery = updateparams['requery']
         SESSION.commit()
 
 
-def UpdateIllustFromSource(illust, source):
-    updateparams = source.GetIllustData(illust.site_illust_id)
+def update_illust_from_source(illust, source):
+    updateparams = source.get_illust_data(illust.site_illust_id)
     if updateparams['active']:
         # These are only removable through the HTML/JSON UPDATE routes
         updateparams['tags'] += [tag.name for tag in illust.tags if tag.name not in updateparams['tags']]
-    UpdateIllustFromParameters(illust, updateparams)
+    update_illust_from_parameters(illust, updateparams)
 
 
 # ###### Misc
 
-def IllustDeleteCommentary(illust, description_id):
+def illust_delete_commentary(illust, description_id):
     retdata = {'error': False, 'descriptions': [commentary.to_json() for commentary in illust.commentaries]}
     remove_commentary = next((commentary for commentary in illust.commentaries if commentary.id == description_id), None)
     if remove_commentary is None:
-        return SetError(retdata, "Commentary with description #%d does not exist on illust #%d." % (description_id, illust.id))
+        return set_error(retdata, "Commentary with description #%d does not exist on illust #%d." % (description_id, illust.id))
     illust.commentaries.remove(remove_commentary)
     SESSION.commit()
     retdata['item'] = illust.to_json()
@@ -135,5 +135,5 @@ def IllustDeleteCommentary(illust, description_id):
 
 # #### Query functions
 
-def GetSiteIllust(site_illust_id, site_id):
+def get_site_illust(site_illust_id, site_id):
     return models.Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).first()

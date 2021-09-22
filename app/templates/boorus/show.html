@@ -10,6 +10,6 @@
         {% include "boorus/_site_content.html" %}
     </div>
     <div id="booru-posts">
-        {{ recent_posts(booru.recent_posts, booru.post_count, helpers.booru.PostSearch(booru)) }}
+        {{ recent_posts(booru.recent_posts, booru.post_count, helpers.booru.post_search(booru)) }}
     </div>
 {% endblock %}

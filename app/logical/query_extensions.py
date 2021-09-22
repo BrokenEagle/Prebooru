@@ -58,7 +58,7 @@ class CountPaginate():
 
 # #### Initialization functions
 
-def Initialize():
+def initialize():
     """This can only be set after the models have been initialized"""
     global INIT
     if not INIT:

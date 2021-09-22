@@ -11,14 +11,14 @@ from argparse import ArgumentParser
 from app import PREBOORU_APP, DB, SCHEDULER
 from app import controllers
 from app import helpers
-from app.logical.file import LoadDefault, PutGetJSON
+from app.logical.file import load_default, put_get_json
 from app.logical.validate import validate_version, validate_integrity
 from app.config import WORKING_DIRECTORY, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
 
 # ## GLOBAL VARIABLES
 
 SERVER_PID_FILE = DATA_DIRECTORY + 'prebooru-server-pid.json'
-SERVER_PID = next(iter(LoadDefault(SERVER_PID_FILE, [])), None)
+SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
 
 # Registering this with the Prebooru app so that DB commands can be executed with flask
 # The environment variables need to be set for this to work, which can be done by executing
@@ -29,14 +29,14 @@ migrate = Migrate(PREBOORU_APP, DB, render_as_batch=True)  # noqa: F841
 # ## FUNCTIONS
 
 @atexit.register
-def Cleanup():
+def cleanup():
     if SERVER_PID is not None:
-        PutGetJSON(SERVER_PID_FILE, 'w', [])
+        put_get_json(SERVER_PID_FILE, 'w', [])
     if SCHEDULER.running:
         SCHEDULER.shutdown()
 
 
-def StartServer(args):
+def start_server(args):
     global SERVER_PID
     if SERVER_PID is not None:
         print("Server process already running: %d" % SERVER_PID)
@@ -61,7 +61,7 @@ def StartServer(args):
         validate_integrity()
         print("\n========== Starting server - Prebooru-%s ==========" % VERSION)
         SERVER_PID = os.getpid()
-        PutGetJSON(SERVER_PID_FILE, 'w', [SERVER_PID])
+        put_get_json(SERVER_PID_FILE, 'w', [SERVER_PID])
     PREBOORU_APP.name = 'prebooru'
     SCHEDULER.start()
     if args.public:
@@ -70,11 +70,11 @@ def StartServer(args):
         PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT)
 
 
-def InitDB(args):
+def init_db(args):
     check = input("This will destroy any existing information. Proceed (y/n)? ")
     if check.lower() != 'y':
         return
-    from app.logical.file import CreateDirectory
+    from app.logical.file import create_directory
     from app.config import DB_PATH
     if args.new:
         if os.path.exists(DB_PATH):
@@ -83,7 +83,7 @@ def InitDB(args):
 
     print("Creating tables")
     from app.models import NONCE  # noqa: F401, F811
-    CreateDirectory(DB_PATH)
+    create_directory(DB_PATH)
     DB.drop_all()
     DB.create_all()
 
@@ -94,10 +94,10 @@ def InitDB(args):
         stamp()
 
 
-def Main(args):
+def main(args):
     switcher = {
-        'server': StartServer,
-        'init': InitDB,
+        'server': start_server,
+        'init': init_db,
     }
     switcher[args.type](args)
 
@@ -144,4 +144,4 @@ if __name__ == '__main__':
     parser.add_argument('--title', required=False, default=False, action="store_true", help="Adds server title to console window.")
     parser.add_argument('--public', required=False, default=False, action="store_true", help="Makes the server visible to other computers.")
     args = parser.parse_args()
-    Main(args)
+    main(args)

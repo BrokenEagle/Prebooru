@@ -2,7 +2,7 @@
 
 # ##LOCAL IMPORTS
 from .. import models, SESSION
-from ..logical.utility import GetCurrentTime
+from ..logical.utility import get_current_time
 
 
 # ##GLOBAL VARIABLES
@@ -25,15 +25,15 @@ ID_MODEL_DICT = {
 
 # ###### CREATE
 
-def CreatePoolElementFromParameters(pool, createparams):
+def create_pool_element_from_parameters(pool, createparams):
     for key in ID_MODEL_DICT:
         if createparams[key] is not None:
-            return AddTypeElement(pool, key, createparams)
+            return create_pool_element_for_item(pool, key, createparams)
 
 
 # ###### DELETE
 
-def DeletePoolElement(pool_element):
+def delete_pool_element(pool_element):
     pool = pool_element.pool
     SESSION.delete(pool_element)
     pool._elements.reorder()
@@ -44,7 +44,7 @@ def DeletePoolElement(pool_element):
 
 # #### Misc
 
-def AddTypeElement(pool, id_key, dataparams):
+def create_pool_element_for_item(pool, id_key, dataparams):
     itemclass = ID_MODEL_DICT[id_key]
     itemtype = itemclass.__table__.name
     id = dataparams[id_key]
@@ -54,7 +54,7 @@ def AddTypeElement(pool, id_key, dataparams):
     pool_ids = [pool.id for pool in item.pools]
     if pool.id in pool_ids:
         return {'error': True, 'message': "%s #%d already added to pool #%d." % (itemtype, item.id, pool.id), 'dataparams': dataparams}
-    pool.updated = GetCurrentTime()
+    pool.updated = get_current_time()
     pool.elements.append(item)
     SESSION.commit()
     pool.element_count = pool._get_element_count()

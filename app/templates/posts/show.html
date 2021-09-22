@@ -20,7 +20,7 @@
             {% include "posts/_site_content.html" %}
         </div>
     </div>
-    {% with posts=post.related_posts, post_search_link=helpers.post.RelatedPostsSearch(post) %}
+    {% with posts=post.related_posts, post_search_link=helpers.post.related_posts_search(post) %}
         {% include "posts/_related_posts.html" %}
     {% endwith %}
     {% if post.similarity_pool is not none %}

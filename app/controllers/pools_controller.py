@@ -9,11 +9,11 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Pool, Post, Illust, IllustUrl, PoolPost, PoolIllust, PoolNotation
-from ..database.pool_db import CreatePoolFromParameters, UpdatePoolFromParameters
-from ..logical.searchable import NumericMatching
-from .base_controller import ShowJson, IndexJson, SearchFilter, ProcessRequestValues, GetParamsValue, Paginate,\
-    DefaultOrder, GetDataParams, CustomNameForm, GetPage, GetLimit, GetOrAbort, GetOrError, CheckParamRequirements,\
-    NullifyBlanks, SetError, ParseBoolParameter, SetDefault
+from ..database.pool_db import create_pool_from_parameters, update_pool_from_parameters
+from ..logical.searchable import numeric_matching
+from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate,\
+    default_order, get_data_params, CustomNameForm, get_page, get_limit, get_or_abort, get_or_error, check_param_requirements,\
+    nullify_blanks, set_error, parse_bool_parameter, set_default
 
 
 # ## GLOBAL VARIABLES
@@ -40,7 +40,7 @@ SHOW_HTML_POST_OPTIONS = (
 
 # #### Forms
 
-def GetPoolForm(**kwargs):
+def get_pool_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class PoolForm(CustomNameForm):
         name = StringField('Name', id='pool-name', custom_name='pool[name]', validators=[DataRequired()])
@@ -52,27 +52,27 @@ def GetPoolForm(**kwargs):
 
 # #### Helper functions
 
-def UniquenessCheck(dataparams, pool):
+def uniqueness_check(dataparams, pool):
     name = dataparams['name'] if 'name' in dataparams else pool.name
     if name != pool.name:
         return Pool.query.filter_by(name=name).first()
 
 
-def ConvertDataParams(dataparams):
-    params = GetPoolForm(**dataparams).data
-    params['series'] = ParseBoolParameter(dataparams, 'series')
-    params = NullifyBlanks(params)
+def convert_data_params(dataparams):
+    params = get_pool_form(**dataparams).data
+    params['series'] = parse_bool_parameter(dataparams, 'series')
+    params = nullify_blanks(params)
     return params
 
 
-def ConvertCreateParams(dataparams):
-    createparams = ConvertDataParams(dataparams)
-    SetDefault(createparams, 'series', False)
+def convert_create_params(dataparams):
+    createparams = convert_data_params(dataparams)
+    set_default(createparams, 'series', False)
     return createparams
 
 
-def ConvertUpdateParams(dataparams):
-    updateparams = ConvertDataParams(dataparams)
+def convert_update_params(dataparams):
+    updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
     return updateparams
@@ -81,51 +81,51 @@ def ConvertUpdateParams(dataparams):
 # #### Route auxiliary functions
 
 def index():
-    params = ProcessRequestValues(request.values)
-    search = GetParamsValue(params, 'search', True)
+    params = process_request_values(request.values)
+    search = get_params_value(params, 'search', True)
     q = Pool.query
-    q = SearchFilter(q, search)
+    q = search_filter(q, search)
     if 'post_id' in search:
         q = q.unique_join(PoolPost, Pool._elements)
-        q = q.filter(NumericMatching(PoolPost, 'post_id', search['post_id']))
+        q = q.filter(numeric_matching(PoolPost, 'post_id', search['post_id']))
     elif 'illust_id' in search:
         q = q.unique_join(PoolIllust, Pool._elements)
-        q = q.filter(NumericMatching(PoolIllust, 'illust_id', search['illust_id']))
+        q = q.filter(numeric_matching(PoolIllust, 'illust_id', search['illust_id']))
     elif 'notation_id' in search:
         q = q.unique_join(PoolNotation, Pool._elements)
-        q = q.filter(NumericMatching(PoolNotation, 'notation_id', search['notation_id']))
+        q = q.filter(numeric_matching(PoolNotation, 'notation_id', search['notation_id']))
     if 'order' in search and search['order'] in ['updated']:
         q = q.order_by(Pool.updated.desc())
     else:
-        q = DefaultOrder(q, search)
+        q = default_order(q, search)
     return q
 
 
 def create():
-    dataparams = GetDataParams(request, 'pool')
-    createparams = ConvertCreateParams(dataparams)
+    dataparams = get_data_params(request, 'pool')
+    createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = CheckParamRequirements(createparams, CREATE_REQUIRED_PARAMS)
+    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
-        return SetError(retdata, '\n'.join(errors))
-    check_pool = UniquenessCheck(createparams, Pool())
+        return set_error(retdata, '\n'.join(errors))
+    check_pool = uniqueness_check(createparams, Pool())
     if check_pool is not None:
         retdata['item'] = check_pool.to_json()
-        return SetError(retdata, "Pool with name already exists: pool #%d" % check_pool.id)
-    pool = CreatePoolFromParameters(createparams)
+        return set_error(retdata, "Pool with name already exists: pool #%d" % check_pool.id)
+    pool = create_pool_from_parameters(createparams)
     retdata['item'] = pool.to_json()
     return retdata
 
 
 def update(pool):
-    dataparams = GetDataParams(request, 'pool')
-    updateparams = ConvertUpdateParams(dataparams)
+    dataparams = get_data_params(request, 'pool')
+    updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
-    check_pool = UniquenessCheck(updateparams, pool)
+    check_pool = uniqueness_check(updateparams, pool)
     if check_pool is not None:
         retdata['item'] = check_pool.to_json()
-        return SetError(retdata, "Pool with name already exists: pool #%d" % check_pool.id)
-    UpdatePoolFromParameters(pool, updateparams)
+        return set_error(retdata, "Pool with name already exists: pool #%d" % check_pool.id)
+    update_pool_from_parameters(pool, updateparams)
     retdata['item'] = pool.to_json()
     return retdata
 
@@ -136,13 +136,13 @@ def update(pool):
 
 @bp.route('/pools/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return ShowJson(Pool, id)
+    return show_json(Pool, id)
 
 
 @bp.route('/pools/<int:id>', methods=['GET'])
 def show_html(id):
-    pool = GetOrAbort(Pool, id)
-    elements = pool.element_paginate(page=GetPage(request), per_page=GetLimit(request), illust_options=SHOW_HTML_ILLUST_OPTIONS, post_options=SHOW_HTML_POST_OPTIONS)
+    pool = get_or_abort(Pool, id)
+    elements = pool.element_paginate(page=get_page(request), per_page=get_limit(request), illust_options=SHOW_HTML_ILLUST_OPTIONS, post_options=SHOW_HTML_POST_OPTIONS)
     return render_template("pools/show.html", pool=pool, elements=elements)
 
 
@@ -151,13 +151,13 @@ def show_html(id):
 @bp.route('/pools.json', methods=['GET'])
 def index_json():
     q = index()
-    return IndexJson(q, request)
+    return index_json(q, request)
 
 
 @bp.route('/pools', methods=['GET'])
 def index_html():
     q = index()
-    pools = Paginate(q, request)
+    pools = paginate(q, request)
     return render_template("pools/index.html", pools=pools, pool=Pool())
 
 
@@ -166,7 +166,7 @@ def index_html():
 @bp.route('/pools/new', methods=['GET'])
 def new_html():
     """HTML access point to create function."""
-    form = GetPoolForm(**request.args)
+    form = get_pool_form(**request.args)
     return render_template("pools/new.html", form=form, pool=Pool())
 
 
@@ -191,13 +191,13 @@ def edit_html(id):
     pool = Pool.find(id)
     if pool is None:
         abort(404)
-    form = GetPoolForm(name=pool.name)
+    form = get_pool_form(name=pool.name)
     return render_template("pools/edit.html", form=form, pool=pool)
 
 
 @bp.route('/pools/<int:id>', methods=['PUT'])
 def update_html(id):
-    pool = GetOrAbort(Pool, id)
+    pool = get_or_abort(Pool, id)
     results = update(pool)
     if results['error']:
         flash(results['message'], 'error')
@@ -207,7 +207,7 @@ def update_html(id):
 
 @bp.route('/pools/<int:id>', methods=['PUT'])
 def update_json(id):
-    pool = GetOrError(Pool, id)
+    pool = get_or_error(Pool, id)
     if type(pool) is dict:
         return pool
     return update(pool)

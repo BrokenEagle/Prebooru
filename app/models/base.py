@@ -14,19 +14,19 @@ from ..config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 
 # #### Helper functions
 
-def DateTimeOrNull(value):
+def date_time_or_null(value):
     return value if value is None else datetime.datetime.isoformat(value)
 
 
-def IntOrNone(data):
+def int_or_none(data):
     return data if data is None else int(data)
 
 
-def StrOrNone(data):
+def str_or_none(data):
     return data if data is None else str(data)
 
 
-def RemoveKeys(data, keylist):
+def remove_keys(data, keylist):
     return {k: data[k] for k in data if k not in keylist}
 
 
@@ -45,7 +45,7 @@ image_server_url = _external_server_url if HAS_EXTERNAL_IMAGE_SERVER else _inter
 
 # #### Factory functions
 
-def PolymorphicAccessorFactory(collection_type, proxy):
+def polymorphic_accessor_factory(collection_type, proxy):
 
     def getter(obj):
         if not hasattr(obj, proxy.value_attr):

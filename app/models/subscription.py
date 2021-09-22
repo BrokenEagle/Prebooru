@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, DateTimeOrNull
+from .base import JsonModel, date_time_or_null
 
 
 # ## CLASSES
@@ -18,7 +18,7 @@ class Subscription(JsonModel):
     # #### JSON format
     id: int
     artist_id: int
-    requery: DateTimeOrNull
+    requery: date_time_or_null
     created: datetime.datetime.isoformat
 
     # #### Columns

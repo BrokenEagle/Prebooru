@@ -8,11 +8,11 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl
-from ..sources.base_source import GetImageSiteId, GetImageSource
-from ..database.illust_url_db import CreateIllustUrlFromParameters, UpdateIllustUrlFromParameters
-from .base_controller import GetParamsValue, ProcessRequestValues, ShowJson, IndexJson, SearchFilter, DefaultOrder, Paginate,\
-    GetDataParams, CustomNameForm, GetOrAbort, GetOrError, SetError, NullifyBlanks, CheckParamRequirements, HideInput, SetDefault,\
-    ParseBoolParameter
+from ..sources.base_source import get_image_site_id, get_image_source
+from ..database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
+from .base_controller import get_params_value, process_request_values, show_json, index_json, search_filter, default_order, paginate,\
+    get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error, nullify_blanks, check_param_requirements, hide_input, set_default,\
+    parse_bool_parameter
 
 
 # ## GLOBAL VARIABLES
@@ -38,7 +38,7 @@ INDEX_HTML_OPTIONS = (
 
 # Forms
 
-def GetIllustUrlForm(**kwargs):
+def get_illust_url_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class IllustUrlForm(CustomNameForm):
         illust_id = IntegerField('Illust ID', id='illust-url-illust_id', custom_name='illust_url[illust_id]', validators=[DataRequired()])
@@ -54,7 +54,7 @@ def GetIllustUrlForm(**kwargs):
 
 # #### Helper functions
 
-def UniquenessCheck(dataparams, illust_url):
+def uniqueness_check(dataparams, illust_url):
     illust_id = dataparams['illust_id'] if 'illust_id' in dataparams else illust_url.illust_id
     site_id = dataparams['url'] if 'site_id' in dataparams else illust_url.site_id
     url = dataparams['url'] if 'url' in dataparams else illust_url.url
@@ -62,79 +62,79 @@ def UniquenessCheck(dataparams, illust_url):
         return IllustUrl.query.filter_by(illust_id=illust_id, site_id=site_id, url=url).first()
 
 
-def ConvertDataParams(dataparams):
-    params = GetIllustUrlForm(**dataparams).data
-    params['active'] = ParseBoolParameter(dataparams, 'active')
-    params = NullifyBlanks(params)
+def convert_data_params(dataparams):
+    params = get_illust_url_form(**dataparams).data
+    params['active'] = parse_bool_parameter(dataparams, 'active')
+    params = nullify_blanks(params)
     return params
 
 
-def ConvertCreateParams(dataparams):
-    createparams = ConvertDataParams(dataparams)
-    SetDefault(createparams, 'active', True)
+def convert_create_params(dataparams):
+    createparams = convert_data_params(dataparams)
+    set_default(createparams, 'active', True)
     return createparams
 
 
-def ConvertUpdateParams(dataparams):
-    updateparams = ConvertDataParams(dataparams)
+def convert_update_params(dataparams):
+    updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
     return updateparams
 
 
-def SetURLSite(dataparams, source):
-    dataparams['site_id'] = GetImageSiteId(dataparams['url'])
-    dataparams['url'] = source.PartialMediaUrl(dataparams['url'])
+def set_url_site(dataparams, source):
+    dataparams['site_id'] = get_image_site_id(dataparams['url'])
+    dataparams['url'] = source.partial_media_url(dataparams['url'])
 
 
 # #### Route helpers
 
 def index():
-    params = ProcessRequestValues(request.values)
-    search = GetParamsValue(params, 'search', True)
+    params = process_request_values(request.values)
+    search = get_params_value(params, 'search', True)
     q = IllustUrl.query
-    q = SearchFilter(q, search)
-    q = DefaultOrder(q, search)
+    q = search_filter(q, search)
+    q = default_order(q, search)
     return q
 
 
 def create():
-    dataparams = GetDataParams(request, 'illust_url')
-    createparams = ConvertCreateParams(dataparams)
+    dataparams = get_data_params(request, 'illust_url')
+    createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = CheckParamRequirements(createparams, CREATE_REQUIRED_PARAMS)
+    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
-        return SetError(retdata, '\n'.join(errors))
+        return set_error(retdata, '\n'.join(errors))
     illust = Illust.find(createparams['illust_id'])
     if illust is None:
-        return SetError(retdata, "Illust #%d not found." % dataparams['illust_id'])
-    source = GetImageSource(createparams['url'])
+        return set_error(retdata, "Illust #%d not found." % dataparams['illust_id'])
+    source = get_image_source(createparams['url'])
     if source is None:
-        return SetError(retdata, "URL is not a valid image URL from a recognized source.")
-    SetURLSite(createparams, source)
-    check_illust_url = UniquenessCheck(createparams, IllustUrl())
+        return set_error(retdata, "URL is not a valid image URL from a recognized source.")
+    set_url_site(createparams, source)
+    check_illust_url = uniqueness_check(createparams, IllustUrl())
     if check_illust_url is not None:
         retdata['item'] = check_illust_url.to_json()
-        return SetError(retdata, "Illust URL already exists: %s" % check_illust_url.shortlink)
-    illust_url = CreateIllustUrlFromParameters(createparams)
+        return set_error(retdata, "Illust URL already exists: %s" % check_illust_url.shortlink)
+    illust_url = create_illust_url_from_parameters(createparams)
     retdata['item'] = illust_url.to_json()
     return retdata
 
 
 def update(illust_url):
-    dataparams = GetDataParams(request, 'illust_url')
-    updateparams = ConvertUpdateParams(dataparams)
+    dataparams = get_data_params(request, 'illust_url')
+    updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
     if 'url' in updateparams:
-        source = GetImageSource(updateparams['url'])
+        source = get_image_source(updateparams['url'])
         if source is None:
-            return SetError(retdata, "URL is not a valid image URL from a recognized source.")
-        SetURLSite(updateparams, source)
-        check_illust_url = UniquenessCheck(updateparams, illust_url)
+            return set_error(retdata, "URL is not a valid image URL from a recognized source.")
+        set_url_site(updateparams, source)
+        check_illust_url = uniqueness_check(updateparams, illust_url)
         if check_illust_url is not None:
             retdata['item'] = check_illust_url.to_json()
-            return SetError(retdata, "Illust URL already exists: %s" % check_illust_url.shortlink)
-    UpdateIllustUrlFromParameters(illust_url, updateparams)
+            return set_error(retdata, "Illust URL already exists: %s" % check_illust_url.shortlink)
+    update_illust_url_from_parameters(illust_url, updateparams)
     retdata['item'] = illust_url.to_json()
     return retdata
 
@@ -145,12 +145,12 @@ def update(illust_url):
 
 @bp.route('/illust_urls/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return ShowJson(IllustUrl, id)
+    return show_json(IllustUrl, id)
 
 
 @bp.route('/illust_urls/<int:id>', methods=['GET'])
 def show_html(id):
-    illust_url = GetOrAbort(IllustUrl, id, options=SHOW_HTML_OPTIONS)
+    illust_url = get_or_abort(IllustUrl, id, options=SHOW_HTML_OPTIONS)
     return render_template("illust_urls/show.html", illust_url=illust_url)
 
 
@@ -159,14 +159,14 @@ def show_html(id):
 @bp.route('/illust_urls.json', methods=['GET'])
 def index_json():
     q = index()
-    return IndexJson(q, request)
+    return index_json(q, request)
 
 
 @bp.route('/illust_urls', methods=['GET'])
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    illust_urls = Paginate(q, request)
+    illust_urls = paginate(q, request)
     return render_template("illust_urls/index.html", illust_urls=illust_urls, illust_url=IllustUrl())
 
 
@@ -175,7 +175,7 @@ def index_html():
 @bp.route('/illust_urls/new', methods=['GET'])
 def new_html():
     """HTML access point to create function."""
-    form = GetIllustUrlForm(**request.args)
+    form = get_illust_url_form(**request.args)
     illust = None
     if form.illust_id.data is not None:
         illust = Illust.find(form.illust_id.data)
@@ -183,7 +183,7 @@ def new_html():
             flash("Illust #%d not a valid illust." % form.illust_id.data, 'error')
             form.illust_id.data = None
         else:
-            HideInput(form, 'illust_id', illust.id)
+            hide_input(form, 'illust_id', illust.id)
     return render_template("illust_urls/new.html", form=form, illust_url=IllustUrl(), illust=illust)
 
 
@@ -201,17 +201,17 @@ def create_html():
 @bp.route('/illust_urls/<int:id>/edit', methods=['GET'])
 def edit_html(id):
     """HTML access point to update function."""
-    illust_url = GetOrAbort(IllustUrl, id)
+    illust_url = get_or_abort(IllustUrl, id)
     editparams = illust_url.to_json()
     editparams['url'] = illust_url.full_url
-    form = GetIllustUrlForm(**editparams)
-    HideInput(form, 'illust_id', illust_url.illust_id)
+    form = get_illust_url_form(**editparams)
+    hide_input(form, 'illust_id', illust_url.illust_id)
     return render_template("illust_urls/edit.html", form=form, illust_url=illust_url)
 
 
 @bp.route('/illust_urls/<int:id>', methods=['PUT'])
 def update_html(id):
-    illust_url = GetOrAbort(IllustUrl, id)
+    illust_url = get_or_abort(IllustUrl, id)
     results = update(illust_url)
     if results['error']:
         flash(results['message'], 'error')
@@ -221,7 +221,7 @@ def update_html(id):
 
 @bp.route('/illust_urls/<int:id>.json', methods=['PUT'])
 def update_json(id):
-    illust_url = GetOrError(IllustUrl, id)
+    illust_url = get_or_error(IllustUrl, id)
     if type(illust_url) is dict:
         return illust_url
     return update(illust_url)

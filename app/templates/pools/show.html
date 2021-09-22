@@ -12,12 +12,12 @@
             {% for item in elements.items %}
                 <div class="pool-block">
                     <div class="pool-block-heading heading">
-                        {{ helpers.pool.MediaHeader(item) }}
+                        {{ helpers.pool.media_header(item) }}
                         {{ item.show_link }}
                     </div>
                     <div class="pool-block-content">
                         {{ pool_display_block(item) }}
-                        {% if helpers.pool.ItemIsOfTypes(item, ['post', 'illust']) %}
+                        {% if helpers.pool.item_is_of_types(item, ['post', 'illust']) %}
                             {{ pool_info_block(item) }}
                         {% endif %}
                     </div>

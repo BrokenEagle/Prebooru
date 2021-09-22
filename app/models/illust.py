@@ -9,8 +9,8 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ##LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import GetSiteDomain, GetSiteKey
-from .base import JsonModel, DateTimeOrNull, RemoveKeys, IntOrNone, PolymorphicAccessorFactory
+from ..logical.sites import get_site_domain, get_site_key
+from .base import JsonModel, date_time_or_null, remove_keys, int_or_none, polymorphic_accessor_factory
 from .tag import Tag
 from .illust_url import IllustUrl
 from .site_data import SiteData
@@ -52,16 +52,16 @@ class Illust(JsonModel):
     id: int
     site_id: int
     site_illust_id: int
-    site_created: DateTimeOrNull
+    site_created: date_time_or_null
     commentaries: List[lambda x: x['body']]
     tags: List[lambda x: x['name']]
-    urls: List[lambda x: RemoveKeys(x, ['id', 'illust_id'])]
+    urls: List[lambda x: remove_keys(x, ['id', 'illust_id'])]
     artist_id: int
     pages: int
-    score: IntOrNone
-    site_data: lambda x: RemoveKeys(x.to_json(), ['id', 'illust_id', 'type'])
+    score: int_or_none
+    site_data: lambda x: remove_keys(x.to_json(), ['id', 'illust_id', 'type'])
     active: bool
-    requery: DateTimeOrNull
+    requery: date_time_or_null
     created: datetime.datetime.isoformat
     updated: datetime.datetime.isoformat
 
@@ -91,13 +91,13 @@ class Illust(JsonModel):
     pools = association_proxy('_pools', 'pool')
     _posts = association_proxy('urls', 'post')
     boorus = association_proxy('artist', 'boorus')
-    title = association_proxy('site_data', 'title', getset_factory=PolymorphicAccessorFactory)
-    retweets = association_proxy('site_data', 'retweets', getset_factory=PolymorphicAccessorFactory)
-    replies = association_proxy('site_data', 'replies', getset_factory=PolymorphicAccessorFactory)
-    quotes = association_proxy('site_data', 'quotes', getset_factory=PolymorphicAccessorFactory)
-    bookmarks = association_proxy('site_data', 'bookmarks', getset_factory=PolymorphicAccessorFactory)
-    site_updated = association_proxy('site_data', 'site_updated', getset_factory=PolymorphicAccessorFactory)
-    site_uploaded = association_proxy('site_data', 'site_uploaded', getset_factory=PolymorphicAccessorFactory)
+    title = association_proxy('site_data', 'title', getset_factory=polymorphic_accessor_factory)
+    retweets = association_proxy('site_data', 'retweets', getset_factory=polymorphic_accessor_factory)
+    replies = association_proxy('site_data', 'replies', getset_factory=polymorphic_accessor_factory)
+    quotes = association_proxy('site_data', 'quotes', getset_factory=polymorphic_accessor_factory)
+    bookmarks = association_proxy('site_data', 'bookmarks', getset_factory=polymorphic_accessor_factory)
+    site_updated = association_proxy('site_data', 'site_updated', getset_factory=polymorphic_accessor_factory)
+    site_uploaded = association_proxy('site_data', 'site_uploaded', getset_factory=polymorphic_accessor_factory)
 
     # ## Property methods
 
@@ -111,31 +111,31 @@ class Illust(JsonModel):
 
     @property
     def site_domain(self):
-        return GetSiteDomain(self.site_id)
+        return get_site_domain(self.site_id)
 
     @memoized_property
     def type(self):
-        if self._source.IllustHasVideos(self):
+        if self._source.illust_has_videos(self):
             return 'video'
-        elif self._source.IllustHasImages(self):
+        elif self._source.illust_has_images(self):
             return 'image'
         else:
             return 'unknown'
 
     @memoized_property
     def video_illust_url(self):
-        return self._source.VideoIllustVideoUrl(self) if self.type == 'video' else None
+        return self._source.video_illust_video_url(self) if self.type == 'video' else None
 
     @memoized_property
     def thumb_illust_url(self):
-        return self._source.VideoIllustThumbUrl(self) if self.type == 'video' else None
+        return self._source.video_illust_thumb_url(self) if self.type == 'video' else None
 
     # ###### Private
 
     @memoized_property
     def _source(self):
         from ..sources import SOURCEDICT
-        site_key = GetSiteKey(self.site_id)
+        site_key = get_site_key(self.site_id)
         return SOURCEDICT[site_key]
 
     # ## methods

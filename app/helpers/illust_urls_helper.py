@@ -4,12 +4,12 @@
 from flask import url_for
 
 # ##LOCAL IMPORTS
-from .base_helper import GeneralLink
+from .base_helper import general_link
 
 
 # ##FUNCTIONS
 
-def IllustLink(illust_url):
+def illust_link(illust_url):
     link_text = 'illust #%d' % illust_url.illust_id
     link_url = url_for('illust.show_html', id=illust_url.illust_id)
-    return GeneralLink(link_text, link_url)
+    return general_link(link_text, link_url)

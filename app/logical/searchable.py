@@ -9,7 +9,7 @@ from sqlalchemy.orm.relationships import RelationshipProperty
 from sqlalchemy import func as sqlfuncs
 
 # ##LOCAL IMPORTS
-from .utility import IsTruthy, IsFalsey, ProcessUTCTimestring
+from .utility import is_truthy, is_falsey, process_utc_timestring
 
 
 # ##GLOBAL VARIABLES
@@ -31,29 +31,29 @@ TEXT_ARRAY_RE = '%%s_(%s)' % '|'.join(ALL_ARRAY_TYPES)
 
 # #### Test functions
 
-def IsRelationship(model, columnname):
+def is_relationship(model, columnname):
     return hasattr(model, columnname) and type(getattr(model, columnname).property) is RelationshipProperty
 
 
-def RelationshipModel(model, attribute):
+def relationship_model(model, attribute):
     return getattr(model, attribute).property.mapper.class_
 
 
-def IsPolymorphic(model, attribute):
+def is_polymorphic(model, attribute):
     return getattr(model, attribute).property.mapper.polymorphic_on is not None
 
 
-def IsColumn(model, columnname):
+def is_column(model, columnname):
     return columnname in model.__table__.c.keys()
 
 
-def IsPolymorphicColumn(model, columnname):
+def is_polymorphic_column(model, columnname):
     return hasattr(model, 'polymorphic_columns') and columnname in model.polymorphic_columns
 
 
 # #### Helper functions
 
-def SQLEscape(value):
+def sql_excape(value):
     retvalue = value.replace('%', '\x01%')
     retvalue = retvalue.replace('_', '\x01_')
     retvalue = re.sub(r'(?<!\\)\*', '%', retvalue)
@@ -61,17 +61,17 @@ def SQLEscape(value):
     return retvalue
 
 
-def ParseCast(value, type):
+def parse_cast(value, type):
     if type == 'INTEGER':
         return int(value)
     if type == 'DATETIME':
-        return ProcessUTCTimestring(value)
+        return process_utc_timestring(value)
     if type == 'FLOAT':
         return float(value)
     return value
 
 
-def ColumnType(model, columnname):
+def column_type(model, columnname):
     switcher = {
         sqltypes.Integer: 'INTEGER',
         sqltypes.Float: 'FLOAT',
@@ -91,42 +91,42 @@ def ColumnType(model, columnname):
 
 # #### Main execution functions
 
-def SearchAttributes(query, model, params):
-    all_filters, query = AllAttributeFilters(query, model, params)
+def search_attributes(query, model, params):
+    all_filters, query = all_attribute_filters(query, model, params)
     query = query.filter(*all_filters)
     return query
 
 
-def AllAttributeFilters(query, model, params):
+def all_attribute_filters(query, model, params):
     attributes = model.searchable_attributes
-    basic_attributes = [attribute for attribute in attributes if IsColumn(model, attribute)]
+    basic_attributes = [attribute for attribute in attributes if is_column(model, attribute)]
     basic_filters = ()
     for attribute in basic_attributes:
-        basic_model = model if not IsPolymorphicColumn(model, attribute) else model.polymorphic_columns[attribute]
-        basic_filters += BasicAttributeFilters(basic_model, attribute, params)
-    relationship_attributes = [attribute for attribute in attributes if IsRelationship(model, attribute)]
+        basic_model = model if not is_polymorphic_column(model, attribute) else model.polymorphic_columns[attribute]
+        basic_filters += basic_attribute_filters(basic_model, attribute, params)
+    relationship_attributes = [attribute for attribute in attributes if is_relationship(model, attribute)]
     relationship_filters = ()
     for attribute in relationship_attributes:
-        filters, query = RelationAttributeFilters(query, model, attribute, params)
+        filters, query = relationship_attribute_filters(query, model, attribute, params)
         relationship_filters += filters
     return (basic_filters + relationship_filters), query
 
 
-def BasicAttributeFilters(model, columnname, params):
+def basic_attribute_filters(model, columnname, params):
     switcher = {
-        'INTEGER': NumericFilters,
-        'DATETIME': NumericFilters,
-        'FLOAT': NumericFilters,
-        'BOOLEAN': BooleanFilters,
-        'STRING': TextFilters,
-        'TEXT': TextFilters,
+        'INTEGER': numeric_filters,
+        'DATETIME': numeric_filters,
+        'FLOAT': numeric_filters,
+        'BOOLEAN': boolean_filters,
+        'STRING': text_filters,
+        'TEXT': text_filters,
     }
-    type = ColumnType(model, columnname)
+    type = column_type(model, columnname)
     return switcher[type](model, columnname, params)
 
 
-def RelationAttributeFilters(query, model, attribute, params):
-    if IsPolymorphic(model, attribute):
+def relationship_attribute_filters(query, model, attribute, params):
+    if is_polymorphic(model, attribute):
         raise Exception("%s - polymorphic relationships are currently unhandled" % attribute)
     relation = getattr(model, attribute)
     filters = ()
@@ -134,43 +134,43 @@ def RelationAttributeFilters(query, model, attribute, params):
         primaryjoin = relation.property.primaryjoin
         subquery = model.query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right).filter(primaryjoin.left == primaryjoin.right).with_entities(model.id)
         subclause = model.id.in_(subquery)
-        if IsTruthy(params['has_' + attribute]):
+        if is_truthy(params['has_' + attribute]):
             filters += (subclause,)
-        elif IsFalsey(params['has_' + attribute]):
+        elif is_falsey(params['has_' + attribute]):
             filters += (not_(subclause),)
         else:
             raise Exception("%s - value must be truthy or falsey" % ('has_' + attribute))
     elif ('count_' + attribute) in params:
         primaryjoin = relation.property.primaryjoin
         value = params['count_' + attribute]
-        count_clause = RelationshipCount(model, primaryjoin, value)
+        count_clause = relationship_count(model, primaryjoin, value)
         if count_clause is not None:
             query = query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right).group_by(model).having(count_clause)
         else:
             raise Exception("%s - invalid value: %s" % ('count_' + attribute, value))
     if attribute in params:
-        relation_model = RelationshipModel(model, attribute)
+        relation_model = relationship_model(model, attribute)
         aliased_model = aliased(relation_model)
         query = query.unique_join(aliased_model, relation)
-        attr_filters, query = AllAttributeFilters(query, aliased_model, params[attribute])
+        attr_filters, query = all_attribute_filters(query, aliased_model, params[attribute])
         filters += (and_(*attr_filters),)
     return filters, query
 
 
 # #### Type filter functions
 
-def NumericFilters(model, columnname, params):
-    type = ColumnType(model, columnname)
+def numeric_filters(model, columnname, params):
+    type = column_type(model, columnname)
 
     def parser(value):
         nonlocal type
-        return ParseCast(value, type)
+        return parse_cast(value, type)
 
     filters = ()
     if columnname in params:
-        filters += (NumericMatching(model, columnname, params[columnname]),)
+        filters += (numeric_matching(model, columnname, params[columnname]),)
     if (columnname + '_not') in params:
-        filters += (not_(NumericMatching(model, columnname, params[columnname + '_not'])),)
+        filters += (not_(numeric_matching(model, columnname, params[columnname + '_not'])),)
     if (columnname + '_eq') in params:
         filters += (getattr(model, columnname) == parser(params[columnname + '_eq']),)
     if (columnname + '_ne') in params:
@@ -186,7 +186,7 @@ def NumericFilters(model, columnname, params):
     return filters
 
 
-def TextFilters(model, columnname, params):
+def text_filters(model, columnname, params):
     filters = ()
     if columnname in params:
         filters += (getattr(model, columnname) == params[columnname],)
@@ -195,27 +195,27 @@ def TextFilters(model, columnname, params):
     cmp_types = [match.group(1) for match in cmp_matches if match is not None]
     for cmp_type in cmp_types:
         param_key = columnname + '_' + cmp_type
-        filters += (TextComparisonMatching(model, columnname, params[param_key], cmp_type),)
+        filters += (text_comparion_matching(model, columnname, params[param_key], cmp_type),)
     if (columnname + '_exists') in params:
-        filters += (TextExistenceMatching(model, columnname, params[columnname + '_exists']),)
+        filters += (text_existence_matching(model, columnname, params[columnname + '_exists']),)
     array_regex = re.compile(TEXT_ARRAY_RE % columnname)
     array_matches = [array_regex.match(key) for key in params.keys()]
     array_types = [match.group(1) for match in array_matches if match is not None]
     for array_type in array_types:
         param_key = columnname + '_' + array_type
-        filters += (TextArrayMatching(model, columnname, params[param_key], array_type),)
+        filters += (text_array_matching(model, columnname, params[param_key], array_type),)
     return filters
 
 
-def BooleanFilters(model, columnname, params):
+def boolean_filters(model, columnname, params):
     if columnname in params:
-        return BooleanMatching(model, columnname, params[columnname])
+        return boolean_matching(model, columnname, params[columnname])
     return ()
 
 
 # #### Type auxiliary functions
 
-def RelationshipCount(model, primaryjoin, value):
+def relationship_count(model, primaryjoin, value):
     match = re.match(r'^\d+$', value)
     if match:
         return func.count(primaryjoin.right) == int(value)
@@ -236,12 +236,12 @@ def RelationshipCount(model, primaryjoin, value):
         return func.count(primaryjoin.right) != int(match.group(1))
 
 
-def NumericMatching(model, columnname, value):
-    type = ColumnType(model, columnname)
+def numeric_matching(model, columnname, value):
+    type = column_type(model, columnname)
 
     def parser(value):
         nonlocal type
-        return ParseCast(value, type)
+        return parse_cast(value, type)
 
     match = re.match(r'(.+?)\.\.(.+)', value)
     if match:
@@ -267,35 +267,35 @@ def NumericMatching(model, columnname, value):
     return getattr(model, columnname) == parser(value)
 
 
-def TextComparisonMatching(model, columnname, value, cmp_type):
+def text_comparion_matching(model, columnname, value, cmp_type):
     if cmp_type == 'eq':
         return getattr(model, columnname) == value
     if cmp_type == 'ne':
         return getattr(model, columnname) != value
     if cmp_type == 'like':
-        return getattr(model, columnname).like(SQLEscape(value), escape='\x01')
+        return getattr(model, columnname).like(sql_excape(value), escape='\x01')
     if cmp_type == 'ilike':
-        return getattr(model, columnname).ilike(SQLEscape(value), escape='\x01')
+        return getattr(model, columnname).ilike(sql_excape(value), escape='\x01')
     if cmp_type == 'not_like':
-        return not_(getattr(model, columnname).like(SQLEscape(value), escape='\x01'))
+        return not_(getattr(model, columnname).like(sql_excape(value), escape='\x01'))
     if cmp_type == 'not_ilike':
-        return not_(getattr(model, columnname).ilike(SQLEscape(value), escape='\x01'))
+        return not_(getattr(model, columnname).ilike(sql_excape(value), escape='\x01'))
     if cmp_type == 'regex':
         return getattr(model, columnname).regexp_match(value)
     if cmp_type == 'not_regex':
         return not_(getattr(model, columnname).regexp_match(value))
 
 
-def TextExistenceMatching(model, columnname, value):
-    if IsTruthy(value):
+def text_existence_matching(model, columnname, value):
+    if is_truthy(value):
         return getattr(model, columnname).__ne__(None)
-    elif IsFalsey(value):
+    elif is_falsey(value):
         return getattr(model, columnname).__eq__(None)
     else:
         raise Exception("%s - value must be truthy or falsey" % (columnname + '_exists'))
 
 
-def TextArrayMatching(model, columnname, value, array_type):
+def text_array_matching(model, columnname, value, array_type):
     if array_type in COMMA_ARRAY_TYPES:
         value_array = value.split(',')
     elif array_type in SPACE_ARRAY_TYPES:
@@ -314,9 +314,9 @@ def TextArrayMatching(model, columnname, value, array_type):
         return not_(sqlfuncs.lower(getattr(model, columnname)).in_(value_array))
 
 
-def BooleanMatching(model, columnname, value):
-    if IsTruthy(value):
+def boolean_matching(model, columnname, value):
+    if is_truthy(value):
         return (getattr(model, columnname).__eq__(True),)
-    if IsFalsey(value):
+    if is_falsey(value):
         return (getattr(model, columnname).__eq__(False),)
     raise Exception("%s - value must be truthy or falsey" % columnname)

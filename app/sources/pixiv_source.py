@@ -8,11 +8,11 @@ import requests
 import datetime
 
 # ##LOCAL IMPORTS
-from ..logical.utility import GetCurrentTime, GetFileExtension, GetHTTPFilename, SafeGet, FixupCRLF, ProcessUTCTimestring
-from ..database.error_db import CreateError, IsError
-from ..database.cache_db import GetApiArtist, GetApiIllust, GetApiData, SaveApiData
+from ..logical.utility import get_current_time, get_file_extension, get_http_filename, safe_get, fixup_crlf, process_utc_timestring
+from ..database.error_db import create_error, is_error
+from ..database.cache_db import get_api_artist, get_api_illust, get_api_data, save_api_data
 from ..config import PIXIV_PHPSESSID
-from ..logical.sites import Site, GetSiteDomain, GetSiteId
+from ..logical.sites import Site, get_site_domain, get_site_id
 
 
 # ###GLOBAL VARIABLES
@@ -88,152 +88,152 @@ IMAGE_SERVER = 'https://i.pximg.net'
 
 #   AUXILIARY
 
-def HasArtistUrls(artist):
+def has_artist_urls(artist):
     return (artist.current_site_account is not None) or (len(artist.site_accounts) == 1)
 
 
-def ArtistMainUrl(artist):
-    if not HasArtistUrls(artist):
+def artist_main_url(artist):
+    if not has_artist_urls(artist):
         return ""
     return ARTIST_HREFURL % artist.site_artist_id
 
 
-def ArtistArtworksUrl(artist):
-    url = ArtistMainUrl(artist)
+def artist_artworks_url(artist):
+    url = artist_main_url(artist)
     return url + '/artworks' if len(url) else ""
 
 
-def ArtistIllustrationsUrl(artist):
-    url = ArtistMainUrl(artist)
+def artist_illustrations_url(artist):
+    url = artist_main_url(artist)
     return url + '/illustrations' if len(url) else ""
 
 
-def ArtistMangaUrl(artist):
-    url = ArtistMainUrl(artist)
+def artist_manga_url(artist):
+    url = artist_main_url(artist)
     return url + '/manga' if len(url) else ""
 
 
-def ArtistBookmarksUrl(artist):
-    url = ArtistMainUrl(artist)
+def artist_bookmarks_url(artist):
+    url = artist_main_url(artist)
     return url + '/bookmarks/artworks' if len(url) else ""
 
 
-def ArtistBooruSearchUrl(artist):
+def artist_booru_search_url(artist):
     return 'http://www.pixiv.net/member.php?id=%d/' % artist.site_artist_id
 
 
-def GetDataIllustIDs(pixiv_data, type):
+def get_data_illust_ids(pixiv_data, type):
     try:
         return list(map(int, pixiv_data[type].keys()))
     except Exception:
         return []
 
 
-def IsPostUrl(url):
+def is_post_url(url):
     return bool(ARTWORKS_RG.match(url))
 
 
-def GetMediaUrl(illust_url):
-    return illust_url.url if illust_url.site_id == 0 else 'https://' + GetSiteDomain(illust_url.site_id) + illust_url.url
+def get_media_url(illust_url):
+    return illust_url.url if illust_url.site_id == 0 else 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
 
 
-def GetPostUrl(illust):
+def get_post_url(illust):
     return ILLUST_HREFURL % illust.site_illust_id
 
 
-def GetIllustUrl(site_illust_id):
+def get_illust_url(site_illust_id):
     return ILLUST_HREFURL % site_illust_id
 
 
-def IllustHasImages(illust_url):
+def illust_has_images(illust_url):
     return True
 
 
-def IllustHasVideos(illust_url):
+def illust_has_videos(illust_url):
     return False
 
 
-def ImageIllustDownloadUrls(illust):
-    return list(filter(lambda x: ImageUrlMapper, illust.urls))
+def image_illust_download_urls(illust):
+    return list(filter(lambda x: image_url_mapper, illust.urls))
 
 
-def GetFullUrl(illust_url):
-    return GetMediaUrl(illust_url)
+def get_full_url(illust_url):
+    return get_media_url(illust_url)
 
 
-def ImageUrlMapper(x):
-    return IsImageUrl(GetFullUrl(x))
+def image_url_mapper(x):
+    return is_image_url(get_full_url(x))
 
 
-def VideoUrlMapper(x):
-    return IsVideoUrl(GetFullUrl(x))
+def video_url_mapper(x):
+    return is_video_url(get_full_url(x))
 
 
 # Artist
 
-def ArtistLinks(artist):
+def artist_links(artist):
     return {
-        'main': ArtistMainUrl(artist),
-        'artworks': ArtistArtworksUrl(artist),
-        # 'illustrations': ArtistIllustrationsUrl(artist),
-        # 'manga': ArtistMangaUrl(artist),
-        'bookmarks': ArtistBookmarksUrl(artist),
+        'main': artist_main_url(artist),
+        'artworks': artist_artworks_url(artist),
+        # 'illustrations': artist_illustrations_url(artist),
+        # 'manga': artist_manga_url(artist),
+        'bookmarks': artist_bookmarks_url(artist),
     }
 
 
 # Tag
 
-def TagSearchUrl(tag):
+def tag_search_url(tag):
     return TAG_SEARCH_HREFURL % tag.name
 
 
 #   URL
 
-def GetImageExtension(image_url):
-    filename = GetHTTPFilename(image_url)
-    return GetFileExtension(filename)
+def get_image_extension(image_url):
+    filename = get_http_filename(image_url)
+    return get_file_extension(filename)
 
 
-def GetMediaExtension(media_url):
-    return GetImageExtension(media_url)
+def get_media_extension(media_url):
+    return get_image_extension(media_url)
 
 
-def IsRequestUrl(request_url):
+def is_request_url(request_url):
     return ARTWORKS_RG.match(request_url) or IMAGE_RG.match(request_url)
 
 
-def IsImageUrl(image_url):
+def is_image_url(image_url):
     return bool(IMAGE_RG.match(image_url))
 
 
-def IsVideoUrl(video_url):
+def is_video_url(video_url):
     return False
 
 
-def IsArtistIdUrl(artist_url):
+def is_artist_id_url(artist_url):
     return bool(USERS_RG.match(artist_url))
 
 
-def GetArtistId(artist_url):
+def get_artist_id(artist_url):
     match = USERS_RG.match(artist_url)
     if match:
         return match.group(1)
 
 
-def IsArtistUrl(artist_url):
-    return IsArtistIdUrl(artist_url)
+def is_artist_url(artist_url):
+    return is_artist_id_url(artist_url)
 
 
-def SmallImageUrl(image_url):
+def small_image_url(image_url):
     date, id, order, type = IMAGE_RG.match(image_url).groups()
     return IMAGE_SERVER + '/c/540x540_70/img-master/img/' + date + '/' + id + '_p' + order + '_master1200.jpg'
 
 
-def NormalizedImageUrl(image_url):
-    return IMAGE_SERVER + NormalizeImageURL(image_url)
+def normalized_image_url(image_url):
+    return IMAGE_SERVER + normalize_image_url(image_url)
 
 
-def GetUploadType(request_url):
+def get_upload_type(request_url):  # Unused
     artwork_match = ARTWORKS_RG.match(request_url)
     if artwork_match:
         return 'post'
@@ -242,7 +242,7 @@ def GetUploadType(request_url):
         return 'image'
 
 
-def GetIllustId(request_url):
+def get_illust_id(request_url):
     artwork_match = ARTWORKS_RG.match(request_url)
     if artwork_match:
         return int(artwork_match.group(1))
@@ -251,7 +251,7 @@ def GetIllustId(request_url):
         return int(image_match.group(2))
 
 
-def GetUploadInfo(request_url):
+def get_upload_info(request_url):  # Unused
     artwork_match = ARTWORKS_RG.match(request_url)
     if artwork_match:
         illust_id = int(artwork_match.group(1))
@@ -263,7 +263,7 @@ def GetUploadInfo(request_url):
     return type, illust_id
 
 
-def SubscriptionCheck(request_url):
+def subscription_check(request_url):  # Unused
     artist_id = None
     artwork_match = USERS_RG.match(request_url)
     if artwork_match:
@@ -271,7 +271,7 @@ def SubscriptionCheck(request_url):
     return artist_id
 
 
-def NormalizeImageURL(image_url):
+def normalize_image_url(image_url):
     image_url = urllib.parse.urlparse(image_url).path.replace('img-master', 'img-original')
     image_url = re.sub(r'_(?:master|square)1200', '', image_url)
     image_url = re.sub(r'(?:/c/\w+)', '', image_url)
@@ -280,7 +280,7 @@ def NormalizeImageURL(image_url):
 
 #   Network
 
-def PixivRequest(url):
+def pixiv_request(url):
     for i in range(3):
         try:
             response = requests.get(url, headers=API_HEADERS, cookies=API_JAR, timeout=10)
@@ -301,66 +301,66 @@ def PixivRequest(url):
         return {'error': True, 'message': "Error decoding response into JSON."}
 
 
-def GetPixivIllust(illust_id):
+def get_pixiv_illust(illust_id):
     print("Getting pixiv #%d" % illust_id)
-    data = PixivRequest("https://www.pixiv.net/ajax/illust/%d" % illust_id)
+    data = pixiv_request("https://www.pixiv.net/ajax/illust/%d" % illust_id)
     if data['error']:
-        return CreateError('sources.pixiv.GetPixivIllust', data['message'])
+        return create_error('sources.pixiv.get_pixiv_illust', data['message'])
     return data['body']
 
 
-def GetPixivArtist(artist_id):
+def get_pixiv_artist(artist_id):
     print("Getting Pixiv user data...")
-    data = PixivRequest("https://www.pixiv.net/ajax/user/%d?full=1" % artist_id)
+    data = pixiv_request("https://www.pixiv.net/ajax/user/%d?full=1" % artist_id)
     if data['error']:
-        return CreateError('sources.pixiv.GetPixivArtist', data['message'])
+        return create_error('sources.pixiv.get_pixiv_artist', data['message'])
     return data['body']
 
 
-def GetAllPixivArtistIllusts(artist_id):
-    data = PixivRequest('https://www.pixiv.net/ajax/user/%d/profile/all' % artist_id)
+def get_all_pixiv_artist_illusts(artist_id):
+    data = pixiv_request('https://www.pixiv.net/ajax/user/%d/profile/all' % artist_id)
     if data['error']:
-        return CreateError('sources.pixiv.GetAllPixivArtistIllusts', data['message'])
-    ids = GetDataIllustIDs(data['body'], 'illusts')
-    ids += GetDataIllustIDs(data['body'], 'manga')
+        return create_error('sources.pixiv.get_all_pixiv_artist_illusts', data['message'])
+    ids = get_data_illust_ids(data['body'], 'illusts')
+    ids += get_data_illust_ids(data['body'], 'manga')
     return ids
 
 
-def GetPixivPageData(site_illust_id):
+def get_pixiv_page_data(site_illust_id):
     print("Downloading pages for pixiv #%d" % site_illust_id)
-    data = PixivRequest("https://www.pixiv.net/ajax/illust/%s/pages" % site_illust_id)
+    data = pixiv_request("https://www.pixiv.net/ajax/illust/%s/pages" % site_illust_id)
     if data['error']:
-        return CreateError('sources.pixiv.GetPageData', data['message'])
+        return create_error('sources.pixiv.get_page_data', data['message'])
     return {'illustId': site_illust_id, 'pages': data['body']}
 
 
-def GetPixivProfileData(site_artist_id):
+def get_pixiv_profile_data(site_artist_id):
     print("Downloading profile data for pxuser #%d" % site_artist_id)
-    data = PixivRequest("https://www.pixiv.net/ajax/user/%d/profile/all" % site_artist_id)
+    data = pixiv_request("https://www.pixiv.net/ajax/user/%d/profile/all" % site_artist_id)
     if data['error']:
-        return CreateError('sources.pixiv.GetPageData', data['message'])
+        return create_error('sources.pixiv.get_page_data', data['message'])
     return {'userId': site_artist_id, 'profile': data['body']}
 
 
 # #### Param functions
 
-def Prework(site_illust_id):
+def source_prework(site_illust_id):
     pass
 
 
 # ###### ILLUST
 
-def GetIllustTags(artwork):
-    tags = set(tag_data['tag'] for tag_data in (SafeGet(artwork, 'tags', 'tags') or []))
+def get_illust_tags(artwork):
+    tags = set(tag_data['tag'] for tag_data in (safe_get(artwork, 'tags', 'tags') or []))
     if artwork['isOriginal']:
         tags.add('original')
     return list(tags)
 
 
-def GetIllustUrlsFromArtwork(artwork):
+def get_illust_urls_from_artwork(artwork):
     original_url = artwork['urls']['original']
     parse = urllib.parse.urlparse(original_url)
-    site_id = GetSiteId(parse.netloc)
+    site_id = get_site_id(parse.netloc)
     url = parse.path if site_id != 0 else original_url
     return [
         {
@@ -374,12 +374,12 @@ def GetIllustUrlsFromArtwork(artwork):
     ]
 
 
-def GetIllustUrlsFromPage(page_data):
+def get_illust_urls_from_page(page_data):
     image_urls = []
     for i in range(len(page_data['pages'])):
         image = page_data['pages'][i]
         parse = urllib.parse.urlparse(image['urls']['original'])
-        site_id = GetSiteId(parse.netloc)
+        site_id = get_site_id(parse.netloc)
         url = parse.path if site_id != 0 else image['urls']['original']
         image_urls.append(
             {
@@ -394,25 +394,25 @@ def GetIllustUrlsFromPage(page_data):
     return image_urls
 
 
-def GetIllustParametersFromArtwork(artwork, page_data):
+def get_illust_parameters_from_artwork(artwork, page_data):
     site_illust_id = int(artwork['illustId'])
-    illust_urls = GetIllustUrlsFromPage(page_data) if page_data is not None else GetIllustUrlsFromArtwork(artwork)
+    illust_urls = get_illust_urls_from_page(page_data) if page_data is not None else get_illust_urls_from_artwork(artwork)
     sub_data = artwork['userIllusts'][str(site_illust_id)]
     return {
         'site_id': SITE_ID,
         'site_illust_id': site_illust_id,
-        'site_created': ProcessUTCTimestring(artwork['createDate']),
+        'site_created': process_utc_timestring(artwork['createDate']),
         'pages': artwork['pageCount'],
         'score': artwork['likeCount'],
-        'site_uploaded': ProcessUTCTimestring(artwork['uploadDate']),
-        'site_updated': ProcessUTCTimestring(sub_data['updateDate']),
+        'site_uploaded': process_utc_timestring(artwork['uploadDate']),
+        'site_updated': process_utc_timestring(sub_data['updateDate']),
         'title': artwork['title'],
         'bookmarks': artwork['bookmarkCount'],
         'replies': artwork['responseCount'],
         'views': artwork['viewCount'],
-        'requery': GetCurrentTime() + datetime.timedelta(days=1),
-        'tags': GetIllustTags(artwork),
-        'commentaries': SafeGet(artwork, 'extraData', 'meta', 'twitter', 'description') or None,
+        'requery': get_current_time() + datetime.timedelta(days=1),
+        'tags': get_illust_tags(artwork),
+        'commentaries': safe_get(artwork, 'extraData', 'meta', 'twitter', 'description') or None,
         'illust_urls': illust_urls,
         'active': True,
         'site_artist_id': int(artwork['userId']),
@@ -421,7 +421,7 @@ def GetIllustParametersFromArtwork(artwork, page_data):
 
 # ###### ARTIST
 
-def GetPixivUserWebpages(pxuser):
+def get_pixiv_user_webpages(pxuser):
     webpages = set()
     if pxuser['webpage'] is not None:
         webpages.add(pxuser['webpage'])
@@ -430,95 +430,95 @@ def GetPixivUserWebpages(pxuser):
     return list(webpages)
 
 
-def GetArtistParametersFromPxuser(pxuser, artwork):
+def get_artist_parameters_from_pxuser(pxuser, artwork):
     return {
         'site_id': SITE_ID,
         'site_artist_id': int(pxuser['userId']),
         'site_created': None,
         'current_site_account': artwork['userAccount'] if artwork is not None else None,
-        'requery': GetCurrentTime() + datetime.timedelta(days=1),
+        'requery': get_current_time() + datetime.timedelta(days=1),
         'active': True,
         'names': [pxuser['name']],
         'site_accounts': [artwork['userAccount']] if artwork is not None else [],
-        'profiles': FixupCRLF(pxuser['comment']) or None,
-        'webpages': GetPixivUserWebpages(pxuser)
+        'profiles': fixup_crlf(pxuser['comment']) or None,
+        'webpages': get_pixiv_user_webpages(pxuser)
     }
 
 
 # Data lookup functions
 
-def GetPageData(site_illust_id):
-    page_data = GetApiData([site_illust_id], SITE_ID, 'page')
+def get_page_data(site_illust_id):
+    page_data = get_api_data([site_illust_id], SITE_ID, 'page')
     if len(page_data) == 0:
-        page_data = GetPixivPageData(site_illust_id)
-        if IsError(page_data):
+        page_data = get_pixiv_page_data(site_illust_id)
+        if is_error(page_data):
             return
-        SaveApiData([page_data], 'illustId', SITE_ID, 'page')
+        save_api_data([page_data], 'illustId', SITE_ID, 'page')
     else:
         page_data = page_data[0].data
     return page_data
 
 
-def GetProfileData(site_artist_id):
-    profile_data = GetApiData([site_artist_id], SITE_ID, 'profile')
+def get_profile_data(site_artist_id):
+    profile_data = get_api_data([site_artist_id], SITE_ID, 'profile')
     if len(profile_data) == 0:
-        profile_data = GetPixivProfileData(site_artist_id)
-        if IsError(profile_data):
+        profile_data = get_pixiv_profile_data(site_artist_id)
+        if is_error(profile_data):
             return
-        SaveApiData([profile_data], 'userId', SITE_ID, 'profile')
+        save_api_data([profile_data], 'userId', SITE_ID, 'profile')
     else:
         profile_data = profile_data[0].data
     return profile_data
 
 
-def GetArtistApiData(site_artist_id):
-    pxuser = GetApiArtist(site_artist_id, SITE_ID)
+def get_artist_api_data(site_artist_id):
+    pxuser = get_api_artist(site_artist_id, SITE_ID)
     if pxuser is None:
-        pxuser = GetPixivArtist(site_artist_id)
-        if IsError(pxuser):
+        pxuser = get_pixiv_artist(site_artist_id)
+        if is_error(pxuser):
             print("Error getting artist data!")
             return
-        SaveApiData([pxuser], 'userId', SITE_ID, 'artist')
+        save_api_data([pxuser], 'userId', SITE_ID, 'artist')
     return pxuser
 
 
-def GetArtistData(site_artist_id):
-    pxuser = GetArtistApiData(site_artist_id)
+def get_artist_data(site_artist_id):
+    pxuser = get_artist_api_data(site_artist_id)
     if pxuser is None:
         return {'active': False, 'requery': None}
-    profile_data = GetProfileData(site_artist_id)
+    profile_data = get_profile_data(site_artist_id)
     artwork = None
-    if not IsError(profile_data):
-        artwork_ids = [int(artwork_id) for artwork_id in (SafeGet(profile_data, 'profile', 'illusts') or {}).keys()]
+    if not is_error(profile_data):
+        artwork_ids = [int(artwork_id) for artwork_id in (safe_get(profile_data, 'profile', 'illusts') or {}).keys()]
         if len(artwork_ids):
-            artworks = GetApiData(artwork_ids, SITE_ID, 'illust')
+            artworks = get_api_data(artwork_ids, SITE_ID, 'illust')
             if len(artworks):
                 artwork = artworks[0].data
             else:
-                artwork = GetIllustApiData(artwork_ids[0])
-    return GetArtistParametersFromPxuser(pxuser, artwork)
+                artwork = get_illust_api_data(artwork_ids[0])
+    return get_artist_parameters_from_pxuser(pxuser, artwork)
 
 
-def GetIllustApiData(site_illust_id):
-    artwork = GetApiIllust(site_illust_id, SITE_ID)
+def get_illust_api_data(site_illust_id):
+    artwork = get_api_illust(site_illust_id, SITE_ID)
     if artwork is None:
-        artwork = GetPixivIllust(site_illust_id)
-        if IsError(artwork):
+        artwork = get_pixiv_illust(site_illust_id)
+        if is_error(artwork):
             print("Error getting illust data!")
             return
-        SaveApiData([artwork], 'illustId', SITE_ID, 'illust')
+        save_api_data([artwork], 'illustId', SITE_ID, 'illust')
     return artwork
 
 
-def GetIllustData(site_illust_id):
-    artwork = GetIllustApiData(site_illust_id)
+def get_illust_data(site_illust_id):
+    artwork = get_illust_api_data(site_illust_id)
     if artwork is None:
         return {'active': False, 'requery': None}
-    page_data = GetPageData(site_illust_id) if artwork['pageCount'] > 1 else None
-    page_data = page_data if not IsError(page_data) else None
-    return GetIllustParametersFromArtwork(artwork, page_data)
+    page_data = get_page_data(site_illust_id) if artwork['pageCount'] > 1 else None
+    page_data = page_data if not is_error(page_data) else None
+    return get_illust_parameters_from_artwork(artwork, page_data)
 
 
-def GetArtistIdByIllustId(site_illust_id):
-    artwork = GetIllustApiData(site_illust_id)
-    return SafeGet(artwork, 'userId')
+def get_artist_id_by_illust_id(site_illust_id):
+    artwork = get_illust_api_data(site_illust_id)
+    return safe_get(artwork, 'userId')

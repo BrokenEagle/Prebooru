@@ -8,14 +8,14 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Artist, Booru
-from ..sources.base_source import GetSourceById, GetArtistRequiredParams
-from ..sources.danbooru_source import GetArtistsByUrl
-from ..database.artist_db import CreateArtistFromParameters, UpdateArtistFromParameters, UpdateArtistFromSource, AppendBooru,\
-    ArtistDeleteProfile
-from ..database.booru_db import CreateBooruFromParameters
-from .base_controller import ShowJson, IndexJson, SearchFilter, ProcessRequestValues, GetParamsValue, Paginate,\
-    DefaultOrder, GetDataParams, CustomNameForm, GetOrAbort, GetOrError, SetError, ParseArrayParameter, CheckParamRequirements,\
-    IntOrBlank, NullifyBlanks, SetDefault, ParseBoolParameter, HideInput
+from ..sources.base_source import get_source_by_id, get_artist_required_params
+from ..sources.danbooru_source import get_artists_by_url
+from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, update_artist_from_source, artist_append_booru,\
+    artist_delete_profile
+from ..database.booru_db import create_booru_from_parameters
+from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate,\
+    default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error, parse_array_parameter, check_param_requirements,\
+    int_or_blank, nullify_blanks, set_default, parse_bool_parameter, hide_input
 
 
 # ## GLOBAL VARIABLES
@@ -64,10 +64,10 @@ JSON_OPTIONS = (
 
 # #### Forms
 
-def GetArtistForm(**kwargs):
+def get_artist_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class ArtistForm(CustomNameForm):
-        site_id = SelectField('Site', choices=[("", ""), (1, 'Pixiv'), (3, 'Twitter')], id='artist-site-id', custom_name='artist[site_id]', validators=[DataRequired()], coerce=IntOrBlank)
+        site_id = SelectField('Site', choices=[("", ""), (1, 'Pixiv'), (3, 'Twitter')], id='artist-site-id', custom_name='artist[site_id]', validators=[DataRequired()], coerce=int_or_blank)
         site_artist_id = IntegerField('Site Artist ID', id='artist-site-artist-id', custom_name='artist[site_artist_id]', validators=[DataRequired()])
         current_site_account = StringField('Current Site Account', id='artist-current-site-account', custom_name='artist[current_site_account]')
         site_created = StringField('Site Created', id='artist-site-created', custom_name='artist[site_created]', description='Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).')
@@ -83,32 +83,32 @@ def GetArtistForm(**kwargs):
 
 # #### Helper functions
 
-def UniquenessCheck(dataparams, artist):
+def uniqueness_check(dataparams, artist):
     site_id = dataparams['site_id'] if 'site_id' in dataparams else artist.site_id
     site_artist_id = dataparams['site_artist_id'] if 'site_artist_id' in dataparams else artist.site_artist_id
     if site_id != artist.site_id or site_artist_id != artist.site_artist_id:
         return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).first()
 
 
-def ConvertDataParams(dataparams):
-    params = GetArtistForm(**dataparams).data
-    params['site_accounts'] = ParseArrayParameter(dataparams, 'site_accounts', 'site_account_string', r'\s')
-    params['names'] = ParseArrayParameter(dataparams, 'names', 'name_string', r'\r?\n')
-    params['webpages'] = ParseArrayParameter(dataparams, 'webpages', 'webpage_string', r'\r?\n')
-    params['active'] = ParseBoolParameter(dataparams, 'active')
+def convert_data_params(dataparams):
+    params = get_artist_form(**dataparams).data
+    params['site_accounts'] = parse_array_parameter(dataparams, 'site_accounts', 'site_account_string', r'\s')
+    params['names'] = parse_array_parameter(dataparams, 'names', 'name_string', r'\r?\n')
+    params['webpages'] = parse_array_parameter(dataparams, 'webpages', 'webpage_string', r'\r?\n')
+    params['active'] = parse_bool_parameter(dataparams, 'active')
     params['profiles'] = params['profile']
-    params = NullifyBlanks(params)
+    params = nullify_blanks(params)
     return params
 
 
-def ConvertCreateParams(dataparams):
-    createparams = ConvertDataParams(dataparams)
-    SetDefault(createparams, 'active', True)
+def convert_create_params(dataparams):
+    createparams = convert_data_params(dataparams)
+    set_default(createparams, 'active', True)
     return createparams
 
 
-def ConvertUpdateParams(dataparams):
-    updateparams = ConvertDataParams(dataparams)
+def convert_update_params(dataparams):
+    updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
     return updateparams
@@ -117,39 +117,39 @@ def ConvertUpdateParams(dataparams):
 # #### Route auxiliary functions
 
 def index():
-    params = ProcessRequestValues(request.values)
-    search = GetParamsValue(params, 'search', True)
+    params = process_request_values(request.values)
+    search = get_params_value(params, 'search', True)
     q = Artist.query
-    q = SearchFilter(q, search)
-    q = DefaultOrder(q, search)
+    q = search_filter(q, search)
+    q = default_order(q, search)
     return q
 
 
 def create():
-    dataparams = GetDataParams(request, 'artist')
-    createparams = ConvertCreateParams(dataparams)
+    dataparams = get_data_params(request, 'artist')
+    createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = CheckParamRequirements(createparams, CREATE_REQUIRED_PARAMS)
+    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
-        return SetError(retdata, '\n'.join(errors))
-    check_artist = UniquenessCheck(createparams, Artist())
+        return set_error(retdata, '\n'.join(errors))
+    check_artist = uniqueness_check(createparams, Artist())
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
-        return SetError(retdata, "Artist already exists: artist #%d" % check_artist.id)
-    artist = CreateArtistFromParameters(createparams)
+        return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
+    artist = create_artist_from_parameters(createparams)
     retdata['item'] = artist.to_json()
     return retdata
 
 
 def update(artist):
-    dataparams = GetDataParams(request, 'artist')
-    updateparams = ConvertUpdateParams(dataparams)
+    dataparams = get_data_params(request, 'artist')
+    updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
-    check_artist = UniquenessCheck(updateparams, artist)
+    check_artist = uniqueness_check(updateparams, artist)
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
-        return SetError(retdata, "Artist already exists: artist #%d" % check_artist.id)
-    UpdateArtistFromParameters(artist, updateparams)
+        return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
+    update_artist_from_parameters(artist, updateparams)
     retdata['item'] = artist.to_json()
     return retdata
 
@@ -158,35 +158,35 @@ def query_create():
     """Query source and create artist."""
     params = dict(url=request.values.get('url'))
     retdata = {'error': False, 'params': params}
-    retdata.update(GetArtistRequiredParams(params['url']))
+    retdata.update(get_artist_required_params(params['url']))
     if retdata['error']:
         return retdata
-    check_artist = UniquenessCheck(retdata, Artist())
+    check_artist = uniqueness_check(retdata, Artist())
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
-        return SetError(retdata, "Artist already exists: artist #%d" % check_artist.id)
-    source = GetSourceById(retdata['site_id'])
-    createparams = retdata['data'] = source.GetArtistData(retdata['site_artist_id'])
+        return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
+    source = get_source_by_id(retdata['site_id'])
+    createparams = retdata['data'] = source.get_artist_data(retdata['site_artist_id'])
     if not createparams['active']:
-        return SetError(retdata, "Artist account does not exist!")
-    artist = CreateArtistFromParameters(createparams)
+        return set_error(retdata, "Artist account does not exist!")
+    artist = create_artist_from_parameters(createparams)
     retdata['item'] = artist.to_json()
     return retdata
 
 
 def query_booru(artist):
-    source = GetSourceById(artist.site_id)
-    search_url = source.ArtistBooruSearchUrl(artist)
-    artist_data = GetArtistsByUrl(search_url)
+    source = get_source_by_id(artist.site_id)
+    search_url = source.artist_booru_search_url(artist)
+    artist_data = get_artists_by_url(search_url)
     if artist_data['error']:
         return artist_data
     existing_booru_ids = [booru.id for booru in artist.boorus]
     for danbooru_artist in artist_data['artists']:
         booru = Booru.query.filter_by(danbooru_id=danbooru_artist['id']).first()
         if booru is None:
-            booru = CreateBooruFromParameters({'danbooru_id': danbooru_artist['id'], 'current_name': danbooru_artist['name']})
+            booru = create_booru_from_parameters({'danbooru_id': danbooru_artist['id'], 'current_name': danbooru_artist['name']})
         if booru.id not in existing_booru_ids:
-            AppendBooru(artist, booru)
+            artist_append_booru(artist, booru)
     return {'error': False, 'artist': artist, 'boorus': artist.boorus}
 
 
@@ -194,8 +194,8 @@ def delete_profile(artist):
     description_id = request.values.get('description_id', type=int)
     retdata = {'error': False, 'params': {'description_id': description_id}}
     if description_id is None:
-        return SetError(retdata, "Description ID not set or a bad value.")
-    retdata.update(ArtistDeleteProfile(artist, description_id))
+        return set_error(retdata, "Description ID not set or a bad value.")
+    retdata.update(artist_delete_profile(artist, description_id))
     return retdata
 
 
@@ -205,12 +205,12 @@ def delete_profile(artist):
 
 @bp.route('/artists/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return ShowJson(Artist, id, options=JSON_OPTIONS)
+    return show_json(Artist, id, options=JSON_OPTIONS)
 
 
 @bp.route('/artists/<int:id>', methods=['GET'])
 def show_html(id):
-    artist = GetOrAbort(Artist, id, options=SHOW_HTML_OPTIONS)
+    artist = get_or_abort(Artist, id, options=SHOW_HTML_OPTIONS)
     return render_template("artists/show.html", artist=artist)
 
 
@@ -220,14 +220,14 @@ def show_html(id):
 def index_json():
     q = index()
     q = q.options(JSON_OPTIONS)
-    return IndexJson(q, request)
+    return index_json(q, request)
 
 
 @bp.route('/artists', methods=['GET'])
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    artists = Paginate(q, request)
+    artists = paginate(q, request)
     return render_template("artists/index.html", artists=artists, artist=Artist())
 
 
@@ -236,7 +236,7 @@ def index_html():
 @bp.route('/artists/new', methods=['GET'])
 def new_html():
     """HTML access point to create function."""
-    form = GetArtistForm(**request.args)
+    form = get_artist_form(**request.args)
     return render_template("artists/new.html", form=form, artist=Artist())
 
 
@@ -259,22 +259,22 @@ def create_json():
 @bp.route('/artists/<int:id>/edit', methods=['GET'])
 def edit_html(id):
     """HTML access point to update function."""
-    artist = GetOrAbort(Artist, id)
+    artist = get_or_abort(Artist, id)
     editparams = artist.to_json()
     editparams['site_account_string'] = '\r\n'.join(site_account.name for site_account in artist.site_accounts)
     editparams['name_string'] = '\r\n'.join(artist_name.name for artist_name in artist.names)
     editparams['webpage_string'] = '\r\n'.join((('' if webpage.active else '-') + webpage.url) for webpage in artist.webpages)
-    form = GetArtistForm(**editparams)
+    form = get_artist_form(**editparams)
     if artist.illust_count > 0:
         # Artists with illusts cannot have their critical identifiers changed
-        HideInput(form, 'site_id')
-        HideInput(form, 'site_artist_id')
+        hide_input(form, 'site_id')
+        hide_input(form, 'site_artist_id')
     return render_template("artists/edit.html", form=form, artist=artist)
 
 
 @bp.route('/artists/<int:id>', methods=['PUT'])
 def update_html(id):
-    artist = GetOrAbort(Artist, id)
+    artist = get_or_abort(Artist, id)
     results = update(artist)
     if results['error']:
         flash(results['message'], 'error')
@@ -284,7 +284,7 @@ def update_html(id):
 
 @bp.route('/artists/<int:id>', methods=['PUT'])
 def update_json(id):
-    artist = GetOrError(Artist, id)
+    artist = get_or_error(Artist, id)
     if type(artist) is dict:
         return artist
     return update(artist)
@@ -306,9 +306,9 @@ def query_create_html():
 @bp.route('/artists/<int:id>/query_update', methods=['POST'])
 def query_update_html(id):
     """Query source and update artist."""
-    artist = GetOrAbort(Artist, id)
-    source = GetSourceById(artist.site_id)
-    UpdateArtistFromSource(artist, source)
+    artist = get_or_abort(Artist, id)
+    source = get_source_by_id(artist.site_id)
+    update_artist_from_source(artist, source)
     flash("Artist updated.")
     return redirect(url_for('artist.show_html', id=id))
 
@@ -316,7 +316,7 @@ def query_update_html(id):
 @bp.route('/artists/<int:id>/query_booru', methods=['POST'])
 def query_booru_html(id):
     """Query booru and create/update booru relationships."""
-    artist = GetOrAbort(Artist, id)
+    artist = get_or_abort(Artist, id)
     response = query_booru(artist)
     if response['error']:
         flash(response['message'])
@@ -327,7 +327,7 @@ def query_booru_html(id):
 
 @bp.route('/artists/<int:id>/profile', methods=['DELETE'])
 def delete_profile_html(id):
-    artist = GetOrAbort(Artist, id)
+    artist = get_or_abort(Artist, id)
     results = delete_profile(artist)
     if results['error']:
         flash(results['message'], 'error')

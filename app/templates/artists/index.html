@@ -18,7 +18,7 @@
         <tbody>
             {% for artist in artists.items %}
                 <tr id="artist-{{ artist.id }}">
-                    <td>{{ artist.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.artist.PostSearch(artist)) }}</td>
+                    <td>{{ artist.show_link }} {{ helpers.base.general_link('&raquo;', helpers.artist.post_search(artist)) }}</td>
                     <td>
                         <span><strong>Domain:</strong> {{ artist.site_domain }}</span><br>
                         <span><strong>Artist ID:</strong> {{ artist.site_artist_id }}</span>
@@ -26,13 +26,13 @@
                     <td>{{ simple_list(artist.names, 'name') }}</td>
                     <td>{{ simple_list(artist.site_accounts, 'name') }}</td>
                     <td>{% call(webpage) simple_list(artist.webpages, 'url') %}
-                            <code>[{{ 'Active' if webpage.active else 'Inactive' }}]</code> {{ helpers.artist.WebpageLink(webpage.url) }}
+                            <code>[{{ 'Active' if webpage.active else 'Inactive' }}]</code> {{ helpers.artist.webpage_link(webpage.url) }}
                         {% endcall %}
                     </td>
                     <td>
-                        <strong>Requery:</strong> {{ helpers.base.FormatTimestamp(artist.requery) }}<br>
-                        <strong>Created:</strong> {{ helpers.base.FormatTimestamp(artist.created) }}<br>
-                        <strong>Updated:</strong> {{ helpers.base.FormatTimestamp(artist.updated) }}
+                        <strong>Requery:</strong> {{ helpers.base.format_timestamp(artist.requery) }}<br>
+                        <strong>Created:</strong> {{ helpers.base.format_timestamp(artist.created) }}<br>
+                        <strong>Updated:</strong> {{ helpers.base.format_timestamp(artist.updated) }}
                     </td>
                 </tr>
             {% endfor %}

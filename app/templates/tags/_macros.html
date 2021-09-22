@@ -1,7 +1,7 @@
 {% macro tag_list(tags) -%}
     <ul>
         {% for tag in tags %}
-            <li>{{ helpers.base.GeneralLink(tag.name, tag.show_url) }}&emsp;<a href="{{ helpers.tag.PostSearch(tag) }}">&raquo;</a></li>
+            <li>{{ helpers.base.general_link(tag.name, tag.show_url) }}&emsp;<a href="{{ helpers.tag.post_search(tag) }}">&raquo;</a></li>
         {% else %}
             <li><em>none</em></li>
         {% endfor %}
@@ -10,7 +10,7 @@
 
 {% macro simple_tag_list(tags) -%}
         {% for tag in tags %}
-            {{ helpers.base.GeneralLink(tag.name, tag.show_url) }}&emsp;<a href="{{ helpers.tag.PostSearch(tag) }}">&raquo;</a>
+            {{ helpers.base.general_link(tag.name, tag.show_url) }}&emsp;<a href="{{ helpers.tag.post_search(tag) }}">&raquo;</a>
             {% if not loop.last %}
                 <br>
             {% endif %}

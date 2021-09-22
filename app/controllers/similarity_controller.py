@@ -9,14 +9,14 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Post
-from ..database.post_db import GetPostsByID
+from ..database.post_db import get_posts_by_id
 from ..database.similarity_data_db import delete_similarity_data_by_post_id
 from ..database.similarity_pool_db import delete_similarity_pool_by_post_id
 from ..logical.similarity.check_image import check_all_image_urls_similarity
 from ..logical.similarity.generate_data import generate_post_similarity
 from ..logical.similarity.populate_pools import populate_similarity_pools
-from .base_controller import ProcessRequestValues, CustomNameForm, ParseType, ParseBoolParameter, ParseStringList, NullifyBlanks,\
-    SetDefault, CheckParamRequirements, SetError
+from .base_controller import process_request_values, CustomNameForm, parse_type, parse_bool_parameter, parse_string_list, nullify_blanks,\
+    set_default, check_param_requirements, set_error
 
 
 # ## GLOBAL VARIABLES
@@ -26,7 +26,7 @@ bp = Blueprint("similarity", __name__)
 
 # #### Forms
 
-def GetSimilarityForm(**kwargs):
+def get_similarity_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class SimilarityForm(CustomNameForm):
         urls_string = TextAreaField('URLs', id='similarity-urls', custom_name='urls_string', description="Separated by carriage returns.", validators=[DataRequired()])
@@ -40,32 +40,32 @@ def GetSimilarityForm(**kwargs):
 # #### Helper functions
 
 def convert_data_params(dataparams):
-    params = GetSimilarityForm(**dataparams).data
+    params = get_similarity_form(**dataparams).data
     if 'urls' in dataparams:
         params['urls'] = dataparams['urls']
     elif 'urls_string' in dataparams:
-        params['urls'] = ParseStringList(dataparams, 'urls_string', r'\r?\n')
-    params['use_original'] = ParseBoolParameter(dataparams, 'use_original')
-    params['score'] = ParseType(dataparams, 'score', float)
-    params = NullifyBlanks(params)
-    SetDefault(params, 'score', 90.0)
-    SetDefault(params, 'use_original', False)
+        params['urls'] = parse_string_list(dataparams, 'urls_string', r'\r?\n')
+    params['use_original'] = parse_bool_parameter(dataparams, 'use_original')
+    params['score'] = parse_type(dataparams, 'score', float)
+    params = nullify_blanks(params)
+    set_default(params, 'score', 90.0)
+    set_default(params, 'use_original', False)
     return params
 
 
 # #### Route auxiliary functions
 
 def check(include_posts):
-    params = ProcessRequestValues(request.args)
+    params = process_request_values(request.args)
     dataparams = convert_data_params(params)
     retdata = {'error': False, 'data': dataparams, 'params': params}
-    errors = CheckParamRequirements(dataparams, ['urls'])
+    errors = check_param_requirements(dataparams, ['urls'])
     if len(errors) > 0:
-        return SetError(retdata, '\n'.join(errors))
+        return set_error(retdata, '\n'.join(errors))
     dataparams['url_string'] = '\r\n'.join(dataparams['urls'])
     similar_results = check_all_image_urls_similarity(dataparams['urls'], dataparams['score'], dataparams['use_original'], include_posts)
     if type(similar_results) is str:
-        return SetError(retdata, similar_results)
+        return set_error(retdata, similar_results)
     retdata['similar_results'] = similar_results
     return retdata
 
@@ -75,7 +75,7 @@ def generate_similarity():
     post = Post.find(post_id) if post_id is not None else None
     retdata = {'error': False, 'post_id': post_id}
     if post is None:
-        return SetError(retdata, "Must use a valid post id.")
+        return set_error(retdata, "Must use a valid post id.")
     delete_similarity_data_by_post_id(post.id)
     delete_similarity_pool_by_post_id(post.id)
     generate_post_similarity(post)
@@ -93,7 +93,7 @@ def check_json():
 @bp.route('/similarity/check', methods=['GET'])
 def check_html():
     results = check(False)
-    form = GetSimilarityForm(**results['data'])
+    form = get_similarity_form(**results['data'])
     if results['error']:
         flash(results['message'], 'error')
         return render_template("similarity/check.html", similar_results=None, form=form)
@@ -102,7 +102,7 @@ def check_html():
         similarity_result = SimpleNamespace(**json_result)
         similarity_result.post_results = [SimpleNamespace(**post_result) for post_result in similarity_result.post_results]
         post_ids = [post_result.post_id for post_result in similarity_result.post_results]
-        posts = GetPostsByID(post_ids)
+        posts = get_posts_by_id(post_ids)
         for post_result in similarity_result.post_results:
             post_result.post = next(filter(lambda x: x.id == post_result.post_id, posts), None)
         similar_results.append(similarity_result)

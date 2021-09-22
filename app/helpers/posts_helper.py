@@ -5,104 +5,104 @@ from flask import Markup, url_for
 import urllib.parse
 
 # ##LOCAL IMPORTS
-from ..sources.base_source import GetSourceById
-from .base_helper import SearchUrlFor, GeneralLink, ExternalLink
+from ..sources.base_source import get_source_by_id
+from .base_helper import search_url_for, general_link, external_link
 from ..config import DANBOORU_HOSTNAME
 
 
 # ## FUNCTIONS
 
-def DanbooruPostLink(post):
-    return ExternalLink('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id) if post.danbooru_id is not None else Markup('<em>N/A</em>')
+def danbooru_post_link(post):
+    return external_link('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id) if post.danbooru_id is not None else Markup('<em>N/A</em>')
 
 
-def SimilarSearchLinks(post, format_url, proxy_url=None):
+def similar_search_links(post, format_url, proxy_url=None):
     image_links = []
     for i in range(0, len(post.illust_urls)):
         illust_url = post.illust_urls[i]
         illust = illust_url.illust
         if not illust.active:
             continue
-        source = GetSourceById(illust_url.site_id)
-        media_url = source.GetMediaUrl(illust_url)
-        if source.IsVideoUrl(media_url):
+        source = get_source_by_id(illust_url.site_id)
+        media_url = source.get_media_url(illust_url)
+        if source.is_video_url(media_url):
             _, thumb_illust_url = source.VideoIllustDownloadUrls(illust)
-            small_url = source.GetMediaUrl(thumb_illust_url)
+            small_url = source.get_media_url(thumb_illust_url)
         else:
-            small_url = source.SmallImageUrl(media_url)
+            small_url = source.small_image_url(media_url)
         encoded_url = urllib.parse.quote_plus(small_url)
         href_url = format_url + encoded_url
-        image_links.append(ExternalLink(illust.shortlink, href_url))
+        image_links.append(external_link(illust.shortlink, href_url))
     if len(image_links) == 0:
         if proxy_url is not None:
-            image_links.append(ExternalLink('file', proxy_url + '?post_id=' + str(post.id)))
+            image_links.append(external_link('file', proxy_url + '?post_id=' + str(post.id)))
         else:
             image_links.append('N/A')
     return Markup(' | ').join(image_links)
 
 
-def DanbooruSearchLinks(post):
-    return SimilarSearchLinks(post, DANBOORU_HOSTNAME + '/iqdb_queries?url=', '/proxy/danbooru_iqdb')
+def danbooru_search_links(post):
+    return similar_search_links(post, DANBOORU_HOSTNAME + '/iqdb_queries?url=', '/proxy/danbooru_iqdb')
 
 
-def SauceNAOSearchLinks(post):
-    return SimilarSearchLinks(post, 'https://saucenao.com/search.php?db=999&url=', '/proxy/saucenao')
+def saucenao_search_links(post):
+    return similar_search_links(post, 'https://saucenao.com/search.php?db=999&url=', '/proxy/saucenao')
 
 
-def Ascii2DSearchLinks(post):
-    return SimilarSearchLinks(post, 'https://ascii2d.net/search/url/', '/proxy/ascii2d')
+def ascii2d_search_links(post):
+    return similar_search_links(post, 'https://ascii2d.net/search/url/', '/proxy/ascii2d')
 
 
-def IQDBOrgSearchLinks(post):
-    return SimilarSearchLinks(post, 'https://iqdb.org/?url=')
+def iqdborg_search_links(post):
+    return similar_search_links(post, 'https://iqdb.org/?url=')
 
 
-def DanbooruPostBookmarkletLinks(post):
+def danbooru_post_bookmarklet_links(post):
     image_links = []
     for i in range(0, len(post.illust_urls)):
         illust_url = post.illust_urls[i]
         illust = illust_url.illust
         if not illust.active:
             continue
-        source = GetSourceById(illust_url.site_id)
-        media_url = source.GetMediaUrl(illust_url)
-        post_url = source.GetPostUrl(illust)
+        source = get_source_by_id(illust_url.site_id)
+        media_url = source.get_media_url(illust_url)
+        post_url = source.get_post_url(illust)
         query_string = urllib.parse.urlencode({'url': media_url, 'ref': post_url})
         href_url = DANBOORU_HOSTNAME + '/uploads/new?' + query_string
-        image_links.append(ExternalLink(illust.shortlink, href_url))
+        image_links.append(external_link(illust.shortlink, href_url))
     if len(image_links) == 0:
-        image_links.append(ExternalLink('file', DANBOORU_HOSTNAME + '/uploads/new?prebooru_post_id=%d' % post.id))
+        image_links.append(external_link('file', DANBOORU_HOSTNAME + '/uploads/new?prebooru_post_id=%d' % post.id))
     return Markup(' | ').join(image_links)
 
 
-def RegenerateSimilarityLink(post):
-    return GeneralLink("Regenerate similarity", url_for('similarity.regenerate_html', post_id=post.id), **{'onclick': "return Posts.regenerateSimilarity(this)"})
+def regenerate_similarity_link(post):
+    return general_link("Regenerate similarity", url_for('similarity.regenerate_html', post_id=post.id), **{'onclick': "return Posts.regenerateSimilarity(this)"})
 
 
-def FileLink(post):
-    return GeneralLink("Copy file link", "#", **{'onclick': 'return Posts.copyFileLink(this)', 'data-file-path': post.file_path})
+def disk_file_link(post):
+    return general_link("Copy file link", "#", **{'onclick': 'return Posts.copyFileLink(this)', 'data-file-path': post.file_path})
 
 
-def AddNotationLink(post):
-    return GeneralLink("Add notation", url_for('notation.new_html', post_id=post.id))
+def add_notation_link(post):
+    return general_link("Add notation", url_for('notation.new_html', post_id=post.id))
 
 
-def AddToPoolLink(post):
-    return GeneralLink("Add to pool", url_for('pool_element.create_html'), **{'onclick': "return Prebooru.createPool(this, 'post')", 'data-post-id': post.id})
+def add_to_pool_link(post):
+    return general_link("Add to pool", url_for('pool_element.create_html'), **{'onclick': "return Prebooru.createPool(this, 'post')", 'data-post-id': post.id})
 
 
-def RelatedPostsSearch(post):
+def related_posts_search(post):
     illust_ids_str = ','.join([str(illust.id) for illust in post.illusts])
-    return SearchUrlFor('post.index_html', illust_urls={'illust_id': illust_ids_str})
+    return search_url_for('post.index_html', illust_urls={'illust_id': illust_ids_str})
 
 
-def SimilarityPostPoolLink(post):
-    return GeneralLink(post.similar_post_count, post.similarity_pool.show_url)
+def similarity_post_pool_link(post):
+    return general_link(post.similar_post_count, post.similarity_pool.show_url)
 
 
-def SimilaritySiblingPoolLink(similarity_element):
-    return GeneralLink(similarity_element.post.shortlink, similarity_element.sibling.pool.show_url) if similarity_element.sibling is not None else "Sibling missing"
+def similarity_sibling_pool_link(similarity_element):
+    return general_link(similarity_element.post.shortlink, similarity_element.sibling.pool.show_url) if similarity_element.sibling is not None else "Sibling missing"
 
 
-def DeleteSimilarityElementLink(element):
-    return GeneralLink("remove", element.delete_url, **{'onclick': 'return SimilarityPosts.deleteElement(this)', 'class': 'warning-link'})
+def delete_similarity_element_link(element):
+    return general_link("remove", element.delete_url, **{'onclick': 'return SimilarityPosts.deleteElement(this)', 'class': 'warning-link'})

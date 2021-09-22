@@ -8,7 +8,7 @@ from sqlalchemy.orm import lazyload, selectin_polymorphic
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, DateTimeOrNull
+from .base import JsonModel, date_time_or_null
 from .post import Post
 from .illust import Illust
 from .notation import Notation
@@ -26,8 +26,8 @@ class Pool(JsonModel):
     name: str
     element_count: int
     series: bool
-    created: DateTimeOrNull
-    updated: DateTimeOrNull
+    created: date_time_or_null
+    updated: date_time_or_null
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)

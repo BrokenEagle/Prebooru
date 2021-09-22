@@ -16,15 +16,15 @@
         <tbody>
             {% for booru in boorus.items %}
                 <tr id="booru-{{ booru.id }}">
-                    <td class="booru-id">{{ booru.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.booru.PostSearch(booru)) }}</td>
+                    <td class="booru-id">{{ booru.show_link }} {{ helpers.base.general_link('&raquo;', helpers.booru.post_search(booru)) }}</td>
                     <td class="booru-info">
                         <span><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</span><br>
-                        <span><strong>Current name:</strong> {{ helpers.booru.SiteBooruLink(booru) }} {{ helpers.booru.SiteSearchLink(booru) }}</span>
+                        <span><strong>Current name:</strong> {{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span>
                     </td>
                     <td class="booru-names">{{ simple_list(booru.names, 'name') }}</td>
                     <td class="booru-timestamps">
-                        <strong>Created:</strong> {{ helpers.base.FormatTimestamp(booru.created) }}<br>
-                        <strong>Updated:</strong> {{ helpers.base.FormatTimestamp(booru.updated) }}
+                        <strong>Created:</strong> {{ helpers.base.format_timestamp(booru.created) }}<br>
+                        <strong>Updated:</strong> {{ helpers.base.format_timestamp(booru.updated) }}
                     </td>
                 </tr>
             {% endfor %}

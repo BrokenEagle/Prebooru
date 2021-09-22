@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
-from .base import JsonModel, IntOrNone
+from .base import JsonModel, int_or_none
 
 
 # ## FUNCTIONS
@@ -85,7 +85,7 @@ class PoolPost(PoolElement):
     # ## Declarations
 
     # #### JSON format
-    post_id: IntOrNone
+    post_id: int_or_none
 
     # #### Columns
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
@@ -107,7 +107,7 @@ class PoolIllust(PoolElement):
     # ## Declarations
 
     # #### JSON format
-    illust_id: IntOrNone
+    illust_id: int_or_none
 
     # #### Columns
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
@@ -129,7 +129,7 @@ class PoolNotation(PoolElement):
     # ## Declarations
 
     # #### JSON format
-    notation_id: IntOrNone
+    notation_id: int_or_none
 
     # #### Columns
     notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)

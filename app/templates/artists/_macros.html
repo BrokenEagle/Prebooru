@@ -11,12 +11,12 @@
                 <h4>{{ "Artist" if singular else "Artists" }}</h4>
                 <ul>
                     {% for artist in artists %}
-                        <li><span class="item-heading">{{ artist.show_link }} {{ helpers.base.GeneralLink('&raquo;', helpers.artist.PostSearch(artist)) }}</span>
+                        <li><span class="item-heading">{{ artist.show_link }} {{ helpers.base.general_link('&raquo;', helpers.artist.post_search(artist)) }}</span>
                             <ul>
-                                <li><strong>{{ helpers.artist.SiteArtistLink(artist) }}</strong></li>
+                                <li><strong>{{ helpers.artist.site_artist_link(artist) }}</strong></li>
                                 <li><strong>Site ID:</strong> {{ artist.site_artist_id }}</li>
-                                <li><strong>Account:</strong> {{ helpers.base.StrOrNone(artist.current_site_account) }}</li>
-                                <li><strong>Links:</strong> {{ helpers.artist.ArtistLinks(artist) }}</li>
+                                <li><strong>Account:</strong> {{ helpers.base.str_or_none(artist.current_site_account) }}</li>
+                                <li><strong>Links:</strong> {{ helpers.artist.artist_links(artist) }}</li>
                             </ul>
                         </li>
                     {% endfor %}

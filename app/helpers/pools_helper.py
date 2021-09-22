@@ -2,17 +2,17 @@
 
 # ## FUNCTIONS
 
-def ItemIsOfType(item, type):
+def item_is_of_type(item, type):
     return item.__table__.name == type
 
 
-def ItemIsOfTypes(item, types):
-    return any(map(lambda x: ItemIsOfType(item, x), types))
+def item_is_of_types(item, types):
+    return any(map(lambda x: item_is_of_type(item, x), types))
 
 
-def MediaHeader(item):
-    if ItemIsOfType(item, 'illust'):
+def media_header(item):
+    if item_is_of_type(item, 'illust'):
         return item.type.title() + ':'
-    if ItemIsOfType(item, 'post'):
+    if item_is_of_type(item, 'post'):
         return ('Video' if item.file_ext in ['mp4'] else 'Image') + ':'
     return ""

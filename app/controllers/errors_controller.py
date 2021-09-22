@@ -5,8 +5,8 @@ from flask import Blueprint, request, render_template
 
 # ## LOCAL IMPORTS
 from ..models import Error
-from .base_controller import GetParamsValue, ProcessRequestValues, ShowJson, IndexJson, SearchFilter, DefaultOrder, Paginate,\
-    GetOrAbort
+from .base_controller import get_params_value, process_request_values, show_json, index_json, search_filter, default_order, paginate,\
+    get_or_abort
 
 
 # ## GLOBAL VARIABLES
@@ -19,11 +19,11 @@ bp = Blueprint("error", __name__)
 # #### Route helpers
 
 def index():
-    params = ProcessRequestValues(request.values)
-    search = GetParamsValue(params, 'search', True)
+    params = process_request_values(request.values)
+    search = get_params_value(params, 'search', True)
     q = Error.query
-    q = SearchFilter(q, search)
-    q = DefaultOrder(q, search)
+    q = search_filter(q, search)
+    q = default_order(q, search)
     return q
 
 
@@ -33,12 +33,12 @@ def index():
 
 @bp.route('/errors/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return ShowJson(Error, id)
+    return show_json(Error, id)
 
 
 @bp.route('/errors/<int:id>', methods=['GET'])
 def show_html(id):
-    error = GetOrAbort(Error, id)
+    error = get_or_abort(Error, id)
     return render_template("errors/show.html", error=error)
 
 
@@ -47,11 +47,11 @@ def show_html(id):
 @bp.route('/errors.json', methods=['GET'])
 def index_json():
     q = index()
-    return IndexJson(q, request)
+    return index_json(q, request)
 
 
 @bp.route('/errors', methods=['GET'])
 def index_html():
     q = index()
-    errors = Paginate(q, request)
+    errors = paginate(q, request)
     return render_template("errors/index.html", errors=errors, error=Error())

@@ -4,10 +4,10 @@
 import urllib
 
 # ##LOCAL IMPORTS
-from ..logical.sites import GetSiteKey, GetSiteId, GetSiteDomain
+from ..logical.sites import get_site_key, get_site_id, get_site_domain
 from ..sources import SOURCES, SOURCEDICT
-from ..logical.utility import GetHTTPFilename, GetFileExtension, SetError
-from ..database.error_db import IsError
+from ..logical.utility import get_http_filename, get_file_extension, set_error
+from ..database.error_db import is_error
 
 
 # ##GLOBAL VARIABLES
@@ -21,119 +21,118 @@ class NoSource():
     IMAGE_HEADERS = {}
 
     @staticmethod
-    def SmallImageUrl(url):
+    def small_image_url(url):
         return url
 
     @staticmethod
-    def NormalizedImageUrl(url):
+    def normalized_image_url(url):
         return url
 
     @staticmethod
-    def GetMediaExtension(url):
-        return GetFileExtension(GetHTTPFilename(url)).replace('jpeg', 'jpg')
+    def get_media_extension(url):
+        return get_file_extension(get_http_filename(url)).replace('jpeg', 'jpg')
 
 
 # ##FUNCTIONS
 
 # #### Utility functions
 
-def GetImageSiteId(url):
+def get_image_site_id(url):
     parse = urllib.parse.urlparse(url)
-    return GetSiteId(parse.netloc)
+    return get_site_id(parse.netloc)
 
 
 # #### Source lookup functions
 
-def GetPostSource(request_url):
+def get_post_source(request_url):
     for source in SOURCES:
-        if source.IsRequestUrl(request_url):
+        if source.is_request_url(request_url):
             return source
 
 
-def GetArtistSource(artist_url):
+def get_artist_source(artist_url):
     for source in SOURCES:
-        if source.IsArtistUrl(artist_url):
+        if source.is_artist_url(artist_url):
             return source
 
 
-def GetIllustSource(illust_url):
+def get_illust_source(illust_url):
     for source in SOURCES:
-        if source.IsPostUrl(illust_url):
+        if source.is_post_url(illust_url):
             return source
 
 
-def GetArtistIdSource(artist_url):
+def get_artist_id_source(artist_url):
     for source in SOURCES:
-        if source.IsArtistIdUrl(artist_url):
+        if source.is_artist_id_url(artist_url):
             return source
 
 
-def GetImageSource(image_url):
+def get_image_source(image_url):
     for source in SOURCES:
-        if source.IsImageUrl(image_url):
+        if source.is_image_url(image_url):
             return source
 
 
 # #### Param functions
 
-def GetArtistRequiredParams(url):
+def get_artist_required_params(url):
     retdata = {'error': False}
-    source = GetArtistSource(url)
+    source = get_artist_source(url)
     if source is None:
-        return SetError(retdata, "Not a valid artist URL.")
+        return set_error(retdata, "Not a valid artist URL.")
     retdata['site_id'] = source.SITE_ID
-    ret = source.GetArtistId(url)
+    ret = source.get_artist_id(url)
     if ret is None:
-        return SetError(retdata, "Unable to find site artist ID with URL.")
-    if IsError(ret):
-        return SetError(retdata, ret.message)
+        return set_error(retdata, "Unable to find site artist ID with URL.")
+    if is_error(ret):
+        return set_error(retdata, ret.message)
     retdata['site_artist_id'] = int(ret)
     return retdata
 
 
-def GetIllustRequiredParams(url):
+def get_illust_required_params(url):
     retdata = {'error': False}
-    source = GetIllustSource(url)
+    source = get_illust_source(url)
     if source is None:
-        return SetError(retdata, "Not a valid illust URL.")
+        return set_error(retdata, "Not a valid illust URL.")
     retdata['site_id'] = source.SITE_ID
-    ret = source.GetIllustId(url)
+    ret = source.get_illust_id(url)
     if ret is None:
-        return SetError(retdata, "Unable to find site illust ID with URL.")
-    if IsError(ret):
-        return SetError(retdata, ret.message)
+        return set_error(retdata, "Unable to find site illust ID with URL.")
+    if is_error(ret):
+        return set_error(retdata, ret.message)
     retdata['site_illust_id'] = int(ret)
     return retdata
 
 
 # #### Other
 
-def GetPreviewUrl(url, site_id):
-    return url if site_id == 0 else 'https://' + GetSiteDomain(site_id) + url
+def get_preview_url(url, site_id):
+    return url if site_id == 0 else 'https://' + get_site_domain(site_id) + url
 
 
-# ##### Base source functions
-
-"""These mirror the functions in the other source files, for when a source is not found"""
-
-
-def GetSourceById(site_id):
-    site_key = GetSiteKey(site_id)
+def get_source_by_id(site_id):
+    site_key = get_site_key(site_id)
     return SOURCEDICT[site_key]
 
 
-def SmallImageUrl(image_url):
+# ##### Base source functions (Unused... maybe???)
+
+"""These mirror the functions in the other source files, for when a source is not found"""
+
+def small_image_url(image_url):
     return image_url
 
 
-def NormalizedImageUrl(image_url):
+def normalized_image_url(image_url):
     return image_url
 
 
-def GetImageExtension(image_url):
-    filename = GetHTTPFilename(image_url)
-    return GetFileExtension(filename)
+def get_image_extension(image_url):
+    filename = get_http_filename(image_url)
+    return get_file_extension(filename)
 
 
-def GetMediaExtension(media_url):
-    return GetImageExtension(media_url)
+def get_media_extension(media_url):
+    return get_image_extension(media_url)

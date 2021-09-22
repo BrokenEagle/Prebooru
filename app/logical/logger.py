@@ -7,7 +7,7 @@ import traceback
 
 # ###LOCAL IMPORTS
 from ..config import DATA_DIRECTORY
-from .file import LoadDefault, PutGetJSON
+from .file import load_default, put_get_json
 
 
 # ##GLOBAL VARIABLES
@@ -18,8 +18,8 @@ ERROR_LOG_FILE = DATA_DIRECTORY + 'error_log.json'
 # ##FUNCTIONS
 
 
-def LogError(module, message):
-    all_errors = LoadDefault(ERROR_LOG_FILE, [])
+def log_error(module, message):
+    all_errors = load_default(ERROR_LOG_FILE, [])
     exc_type, exc_value, exc_tb = sys.exc_info()
     error = traceback.format_exception(exc_type, exc_value, exc_tb)
     all_errors.append({
@@ -28,4 +28,4 @@ def LogError(module, message):
         'traceback': error,
         'time': time.ctime(),
     })
-    PutGetJSON(ERROR_LOG_FILE, 'w', all_errors)
+    put_get_json(ERROR_LOG_FILE, 'w', all_errors)

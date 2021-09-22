@@ -28,16 +28,16 @@ class Site(Enum):
 # ##FUNCTIONS
 
 
-def GetSiteId(domain):
+def get_site_id(domain):
     if domain in DOMAINS:
         s = DOMAINS[domain]
         return Site[s].value
     return 0
 
 
-def GetSiteDomain(site_id):
+def get_site_domain(site_id):
     return SITES[Site(site_id).name]
 
 
-def GetSiteKey(site_id):
+def get_site_key(site_id):
     return Site(site_id).name

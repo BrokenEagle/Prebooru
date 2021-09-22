@@ -6,7 +6,7 @@ import html
 from flask import Markup, url_for
 
 # ##LOCAL IMPORTS
-from .base_helper import ConvertStrToHTML, GeneralLink
+from .base_helper import convert_str_to_html, general_link
 from . import artists_helper as ARTIST
 from . import illusts_helper as ILLUST
 
@@ -29,13 +29,13 @@ APPEND_KEY_DICT = {
 
 # #### Helper functions
 
-def IsGeneralForm(form):
+def is_general_form(form):  # Unused
     return (form.pool_id.data is None) and (form.artist_id.data is None) and (form.illust_id.data is None) and (form.post_id.data is None)
 
 
 # #### General functions
 
-def ConvertToHTML(notation):
+def convert_to_html(notation):
     links = HTTP_RG.findall(notation.body)
     output_html = html.escape(notation.body)
     for link in links:
@@ -46,18 +46,18 @@ def ConvertToHTML(notation):
         html_link = '<a href="%s">%s</a>' % (link, link)
         output_html = output_html[:link_match.start()] + html_link + output_html[link_match.end():]
     output_html = re.sub(r'\r?\n', '<br>', output_html)
-    output_html = ConvertShortlinks(output_html)
+    output_html = convert_short_links(output_html)
     return Markup(output_html)
 
 
-def ConvertShortlinks(notation_text):
+def convert_short_links(notation_text):
     position = 0
     while True:
         match = SHORTLINK_RG.search(notation_text, pos=position)
         if not match:
             return notation_text
         link_url = url_for(match.group(1) + '.show_html', id=int(match.group(2)))
-        link = str(GeneralLink(match.group(0), link_url))
+        link = str(general_link(match.group(0), link_url))
         notation_text = notation_text[:match.start()] + link + notation_text[match.end():]
         position = match.start() + len(link)
 
@@ -66,30 +66,30 @@ def ConvertShortlinks(notation_text):
 
 # ###### INDEX
 
-def Excerpt(notation):
+def body_excerpt(notation):
     lines = re.split(r'\r?\n', notation.body)
-    return ConvertStrToHTML(lines[0][:50] + ('...' if len(lines[0]) > 50 else ''))
+    return convert_str_to_html(lines[0][:50] + ('...' if len(lines[0]) > 50 else ''))
 
 
 # ###### SHOW
 
-def ItemLink(item):
-    return GeneralLink(ItemLinkTitle(item), item.show_url)
+def item_link(item):
+    return general_link(item_link_title(item), item.show_url)
 
 
-def ItemLinkTitle(item):
+def item_link_title(item):
     if item.__table__.name == 'pool':
         return item.name
     if item.__table__.name == 'artist':
-        return ARTIST.ShortLink(item)
+        return ARTIST.short_link(item)
     if item.__table__.name == 'illust':
-        return ILLUST.ShortLink(item)
+        return ILLUST.short_link(item)
     return item.header
 
 
-def HasAppendItem(notation):
+def has_append_item(notation):
     return any((getattr(notation, attr) is not None) for attr in ['_pool', 'artist', 'illust', 'post'])
 
 
-def AppendKey(notation):
+def append_key(notation):
     return next((key, getattr(notation, attr)) for (attr, key) in APPEND_KEY_DICT.items() if (getattr(notation, attr) is not None))

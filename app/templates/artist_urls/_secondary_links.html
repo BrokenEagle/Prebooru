@@ -1,8 +1,8 @@
 <menu id="secondary-menu">
-    {{ helpers.base.SubnavLinkTo("Listing", 'artist_url.index_html') }}
-    {{ helpers.base.SubnavLinkTo("Artists", 'artist.index_html') }}
+    {{ helpers.base.subnav_link_to("Listing", 'artist_url.index_html') }}
+    {{ helpers.base.subnav_link_to("Artists", 'artist.index_html') }}
     {% if artist_url.id != None %}
         |
-        {{ helpers.base.SubnavLinkTo("Show", 'artist_url.show_html', artist_url.id) }}
+        {{ helpers.base.subnav_link_to("Show", 'artist_url.show_html', artist_url.id) }}
     {% endif %}
 </menu>

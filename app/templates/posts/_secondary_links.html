@@ -1,8 +1,8 @@
 <menu id="secondary-menu">
-    {{ helpers.base.SubnavLinkTo("Listing", 'post.index_html') }}
-    {{ helpers.base.SubnavLinkTo("Tags", 'tag.index_html') }}
-    | {{ helpers.base.SubnavLinkTo("Upload", 'upload.create_html', attrs={'class': 'nav-control', 'onclick': 'return Posts.createUpload(this)'}) }}
+    {{ helpers.base.subnav_link_to("Listing", 'post.index_html') }}
+    {{ helpers.base.subnav_link_to("Tags", 'tag.index_html') }}
+    | {{ helpers.base.subnav_link_to("Upload", 'upload.create_html', attrs={'class': 'nav-control', 'onclick': 'return Posts.createUpload(this)'}) }}
     {% if post.id is not none %}
-        {{ helpers.base.SubnavLinkTo("Show", 'post.show_html', post.id) }}
+        {{ helpers.base.subnav_link_to("Show", 'post.show_html', post.id) }}
     {% endif %}
 </menu>

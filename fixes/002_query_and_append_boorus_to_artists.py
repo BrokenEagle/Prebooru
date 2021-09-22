@@ -8,13 +8,13 @@ import sys
 # ## FUNCTIONS
 
 def initialize():
-    global CheckAllArtistsForBoorus
+    global check_all_artists_for_boorus
     sys.path.append(os.path.abspath('.'))
-    from app.logical.check.booru_artists import CheckAllArtistsForBoorus
+    from app.logical.check.booru_artists import check_all_artists_for_boorus
 
 
 def main():
-    CheckAllArtistsForBoorus()
+    check_all_artists_for_boorus()
 
 
 # ##EXECUTION START

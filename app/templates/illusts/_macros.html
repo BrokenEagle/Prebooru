@@ -7,7 +7,7 @@
         {% set container_tag = 'div' %}
     {% endif %}
     <{{ container_tag }} id="{{ section_id }}">
-        <span class="heading">Illusts</span> (&thinsp;{{ illust_count }}&thinsp;) {{ helpers.base.GeneralLink('&raquo;', illust_search_url) }}
+        <span class="heading">Illusts</span> (&thinsp;{{ illust_count }}&thinsp;) {{ helpers.base.general_link('&raquo;', illust_search_url) }}
     </{{ container_tag }}>
 {%- endmacro %}
 
@@ -26,7 +26,7 @@
                     {% for illust in illusts %}
                         <li><span class="item-heading"><a href="{{ illust.show_url }}">{{ illust.shortlink }}</a></span>
                             <ul>
-                                <li><strong>{{ helpers.illust.SiteIllustLink(illust) }} {{ helpers.illust.PostIllustLink(illust) }}</strong></li>
+                                <li><strong>{{ helpers.illust.site_illust_link(illust) }} {{ helpers.illust.post_illust_link(illust) }}</strong></li>
                                 <li><strong>Site ID:</strong> {{ illust.site_illust_id }}</li>
                                 <li><strong>Domain:</strong> {{ illust.site_domain }}</li>
                                 <li><strong>Tags:</strong>
@@ -34,7 +34,7 @@
                                         {% if loop.first %}
                                             <ul>
                                         {% endif %}
-                                        <li>{{ helpers.base.GeneralLink(tag.name, tag.show_url) }}&emsp;<a href="{{ helpers.illust.PostTagSearch(tag) }}">&raquo;</a></li>
+                                        <li>{{ helpers.base.general_link(tag.name, tag.show_url) }}&emsp;<a href="{{ helpers.illust.post_tag_search(tag) }}">&raquo;</a></li>
                                         {% if loop.last %}
                                             </ul>
                                         {% endif %}

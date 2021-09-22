@@ -12,7 +12,7 @@
             For {{ artist.show_link }}:
         </div>
     {% endif %}
-    {% call(field_name, field_input) render_form(form, 'POST', illust.create_url, class=helpers.illust.FormClass(form)) %}
+    {% call(field_name, field_input) render_form(form, 'POST', illust.create_url, class=helpers.illust.form_class(form)) %}
         {% if field_name == 'site_id' and artist is none %}
             {{ field_input(onclick="ChangeSite()") }}
         {% else %}

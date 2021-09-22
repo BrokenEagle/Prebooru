@@ -8,9 +8,9 @@ import imagehash
 # ## LOCAL IMPORTS
 from ...models.similarity_data import SimilarityData, HASH_SIZE, TOTAL_BITS
 from ...database.media_file_db import create_media_file_from_parameters, delete_media_file, get_media_file_by_url
-from ..utility import GetBufferChecksum
-from ..file import CreateDirectory, PutGetRaw
-from ..network import GetHTTPFile
+from ..utility import get_buffer_checksum
+from ..file import create_directory, put_get_raw
+from ..network import get_http_file
 
 
 # ## FUNCTIONS
@@ -70,15 +70,15 @@ def check_similarity_match_scores(similarity_results, image_hash, min_score):
 
 
 def create_media(download_url, source):
-    buffer = GetHTTPFile(download_url, headers=source.IMAGE_HEADERS)
+    buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
     if type(buffer) is str:
         return buffer
-    md5 = GetBufferChecksum(buffer)
-    extension = source.GetMediaExtension(download_url)
+    md5 = get_buffer_checksum(buffer)
+    extension = source.get_media_extension(download_url)
     media_file = create_media_file_from_parameters({'md5': md5, 'file_ext': extension, 'media_url': download_url})
     try:
-        CreateDirectory(media_file.file_path)
-        PutGetRaw(media_file.file_path, 'wb', buffer)
+        create_directory(media_file.file_path)
+        put_get_raw(media_file.file_path, 'wb', buffer)
     except Exception as e:
         delete_media_file(media_file)
         return "Exception creating media file on disk: %s" % str(e)

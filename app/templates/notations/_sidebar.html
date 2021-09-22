@@ -4,8 +4,8 @@
 {% from "illusts/_macros.html" import illusts_section %}
 
 <aside id="notation-sidebar">
-    {% if helpers.notation.HasAppendItem(notation) %}
-        {% with append_key, append_item = helpers.notation.AppendKey(notation) %}
+    {% if helpers.notation.has_append_item(notation) %}
+        {% with append_key, append_item = helpers.notation.append_key(notation) %}
             {% if append_key == 'pool' %}
                 {{ pools_section(append_item, 'notation-pool') }}
             {% elif append_key == 'artist' %}
@@ -16,7 +16,7 @@
                 <section id="notation-{{ append_key }}">
                     <h4>{{ append_key.title() }}</h4>
                     <ul>
-                        <li>{{ helpers.notation.ItemLink(append_item) }}</li>
+                        <li>{{ helpers.notation.item_link(append_item) }}</li>
                     </ul>
                 </section>
             {% endif %}

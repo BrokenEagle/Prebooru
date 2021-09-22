@@ -8,7 +8,7 @@
         {% endif %}
         {{ form.csrf_token }}
         {% if not manual %}
-            {% for field_name, field_input in helpers.base.FormIterator(form) %}
+            {% for field_name, field_input in helpers.base.form_iterator(form) %}
                 {{ caller(field_name, field_input) }}
             {% endfor %}
         {% else %}
@@ -76,7 +76,7 @@
         <ul>
             {% for attr in ['requery', 'created', 'updated'] %}
                 {% if item[attr] is defined %}
-                    <li><strong>{{ attr | title }}:</strong> {{ helpers.base.FormatTimestamp(item[attr]) }}</li>
+                    <li><strong>{{ attr | title }}:</strong> {{ helpers.base.format_timestamp(item[attr]) }}</li>
                 {% endif %}
             {% endfor %}
         </ul>
@@ -98,12 +98,12 @@
 {%- endmacro %}
 
 {% macro page_navigation(pagination) -%}
-    {% with previous_page, current_page, next_page, pages = helpers.base.PageNavigation(pagination) %}
+    {% with previous_page, current_page, next_page, pages = helpers.base.page_navigation(pagination) %}
         <div class="paginator numbered-paginator">
             {% if previous_page is none %}
                 <span>&lt;</span>
             {% else %}
-                <a href="{{ helpers.base.UrlForWithArgs(request.endpoint, page=previous_page) }}">&lt;</a>
+                <a href="{{ helpers.base.url_for_with_args(request.endpoint, page=previous_page) }}">&lt;</a>
             {% endif %}
 
             {% for page in pages %}
@@ -112,14 +112,14 @@
                 {% elif page == current_page %}
                     <span>{{ current_page }}</span>
                 {% else %}
-                    <a href="{{ helpers.base.UrlForWithArgs(request.endpoint, page=page) }}">{{ page }}</a>
+                    <a href="{{ helpers.base.url_for_with_args(request.endpoint, page=page) }}">{{ page }}</a>
                 {% endif %}
             {% endfor %}
 
             {% if next_page is none %}
                 <span>&gt;</span>
             {% else %}
-                <a href="{{ helpers.base.UrlForWithArgs(request.endpoint, page=next_page) }}">&gt;</a>
+                <a href="{{ helpers.base.url_for_with_args(request.endpoint, page=next_page) }}">&gt;</a>
             {% endif %}
         </div>
     {% endwith %}

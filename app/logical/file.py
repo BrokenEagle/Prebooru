@@ -6,62 +6,62 @@ import time
 import json
 
 # ###LOCAL IMPORTS
-from .utility import GetDirectory, DecodeUnicode, DecodeJSON
+from .utility import get_directory_path, decode_unicode, decode_json
 
 
 # ##FUNCTIONS
 
 
-def CreateDirectory(filepath):
+def create_directory(filepath):
     """Create the directory path if it doesn't already exist"""
-    directory = GetDirectory(filepath)
+    directory = get_directory_path(filepath)
     if not os.path.exists(directory):
         os.makedirs(directory)
 
 
-def PutGetRaw(filepath, optype, data=None, unicode=False):
+def put_get_raw(filepath, optype, data=None, unicode=False):
     if filepath != os.devnull:
-        CreateDirectory(filepath)
+        create_directory(filepath)
         if optype[0] == 'r' and not os.path.exists(filepath):
             return
     with open(filepath, optype) as file:
         if optype[0] in ['w', 'a']:
-            return PutRaw(file, data, unicode)
+            return put_raw(file, data, unicode)
         elif optype[0] == 'r':
-            return GetRaw(file, data, unicode)
+            return get_raw(file, data, unicode)
 
 
-def PutRaw(file, data, unicode):
+def put_raw(file, data, unicode):
     if unicode:
         data = data.encode('utf')
     return 0 if file.write(data) else -1
 
 
-def GetRaw(file, data, unicode):
+def get_raw(file, data, unicode):
     try:
         load = file.read()
     except Exception:
         print("File not found!")
         return
-    return DecodeUnicode(load) if unicode else load
+    return decode_unicode(load) if unicode else load
 
 
-def PutGetJSON(filepath, optype, data=None, unicode=False):
+def put_get_json(filepath, optype, data=None, unicode=False):
     if optype[0] in ['w', 'a']:
         save_data = json.dumps(data, ensure_ascii=unicode)
         # Try writing to null device first to avoid clobbering the files upon errors
-        PutGetRaw(os.devnull, optype, save_data, unicode)
-        return PutGetRaw(filepath, optype, save_data, unicode)
+        put_get_raw(os.devnull, optype, save_data, unicode)
+        return put_get_raw(filepath, optype, save_data, unicode)
     if optype[0] == 'r':
-        load = PutGetRaw(filepath, optype, None, unicode)
+        load = put_get_raw(filepath, optype, None, unicode)
         if load is not None:
-            return DecodeJSON(load)
+            return decode_json(load)
 
 
-def LoadDefault(filepath, defaultvalue, binary=False, unicode=False):
+def load_default(filepath, defaultvalue, binary=False, unicode=False):
     optype = 'rb' if binary else 'r'
     if os.path.exists(filepath):
-        return PutGetJSON(filepath, optype, unicode=unicode)
+        return put_get_json(filepath, optype, unicode=unicode)
     return defaultvalue
 
 

@@ -6,8 +6,8 @@ from sqlalchemy import not_
 
 # ## LOCAL IMPORTS
 from ...models import Artist, Booru
-from ...database.booru_db import CreateBooruFromParameters, BooruAppendArtist
-from ...sources.danbooru_source import GetArtistsByMultipleUrls
+from ...database.booru_db import create_booru_from_parameters, booru_append_artist
+from ...sources.danbooru_source import get_artists_by_multiple_urls
 
 
 # ## GLOBAL VARIABLES
@@ -21,7 +21,7 @@ BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 
 # ## FUNCTIONS
 
-def CheckAllArtistsForBoorus():
+def check_all_artists_for_boorus():
     print("Checking all artists for Danbooru artists.")
     query = Artist.query.filter(not_(BOORU_SUBCLAUSE))
     max_id = 0
@@ -32,15 +32,15 @@ def CheckAllArtistsForBoorus():
         if len(artists) == 0:
             return
         print("\n%d/%d" % (page, page_count))
-        if not CheckArtistsForBoorus(artists):
+        if not check_artists_for_boorus(artists):
             return
         max_id = max(artist.id for artist in artists)
         page += 1
 
 
-def CheckArtistsForBoorus(artists):
+def check_artists_for_boorus(artists):
     query_urls = [artist.booru_search_url for artist in artists]
-    results = GetArtistsByMultipleUrls(query_urls)
+    results = get_artists_by_multiple_urls(query_urls)
     if results['error']:
         print(results['message'])
         return False
@@ -48,14 +48,14 @@ def CheckArtistsForBoorus(artists):
         booru_artist_ids = set(artist['id'] for artist in itertools.chain(*[results['data'][url] for url in results['data']]))
         boorus = Booru.query.filter(Booru.danbooru_id.in_(booru_artist_ids)).all()
         for url in results['data']:
-            AddDanbooruArtists(url, results['data'][url], boorus, artists)
+            add_danbooru_artists(url, results['data'][url], boorus, artists)
     return True
 
 
-def AddDanbooruArtists(url, danbooru_artists, db_boorus, db_artists):
+def add_danbooru_artists(url, danbooru_artists, db_boorus, db_artists):
     artist = next(filter(lambda x: x.booru_search_url == url, db_artists))
     for danbooru_artist in danbooru_artists:
         booru = next(filter(lambda x: x.danbooru_id == danbooru_artist['id'], db_boorus), None)
         if booru is None:
-            booru = CreateBooruFromParameters({'danbooru_id': danbooru_artist['id'], 'current_name': danbooru_artist['name']})
-        BooruAppendArtist(booru, artist)
+            booru = create_booru_from_parameters({'danbooru_id': danbooru_artist['id'], 'current_name': danbooru_artist['name']})
+        booru_append_artist(booru, artist)

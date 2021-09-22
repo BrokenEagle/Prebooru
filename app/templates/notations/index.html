@@ -17,9 +17,9 @@
             {% for notation in notations.items %}
                 <tr id="notation-{{ notation.id }}">
                     <td>{{ notation.show_link }}</td>
-                    <td>{{ helpers.notation.Excerpt(notation) }}</td>
-                    <td>{{ helpers.base.FormatTimestamp(notation.created) }}</td>
-                    <td>{{ helpers.base.FormatTimestamp(notation.updated) }}</td>
+                    <td>{{ helpers.notation.body_excerpt(notation) }}</td>
+                    <td>{{ helpers.base.format_timestamp(notation.created) }}</td>
+                    <td>{{ helpers.base.format_timestamp(notation.updated) }}</td>
                 </tr>
             {% endfor %}
         </tbody>

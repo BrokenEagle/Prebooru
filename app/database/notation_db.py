@@ -2,8 +2,8 @@
 
 # ##LOCAL IMPORTS
 from .. import models, SESSION
-from ..logical.utility import GetCurrentTime
-from .base_db import UpdateColumnAttributes
+from ..logical.utility import get_current_time
+from .base_db import update_column_attributes
 
 
 # ##GLOBAL VARIABLES
@@ -27,32 +27,32 @@ ID_MODEL_DICT = {
 
 # ###### Create
 
-def CreateNotationFromParameters(createparams):
-    current_time = GetCurrentTime()
+def create_notation_from_parameters(createparams):
+    current_time = get_current_time()
     notation = models.Notation(created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    UpdateColumnAttributes(notation, update_columns, createparams)
+    update_column_attributes(notation, update_columns, createparams)
     print("[%s]: created" % notation.shortlink)
     return notation
 
 
 # ###### Update
 
-def UpdateNotationFromParameters(notation, updateparams):
+def update_notation_from_parameters(notation, updateparams):
     update_results = []
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(UpdateColumnAttributes(notation, update_columns, updateparams))
+    update_results.append(update_column_attributes(notation, update_columns, updateparams))
     if any(update_results):
         print("[%s]: updated" % notation.shortlink)
-        notation.updated = GetCurrentTime()
+        notation.updated = get_current_time()
         SESSION.commit()
 
 
 # ###### Delete
 
-def DeleteNotation(notation):
+def delete_notation(notation):
     pool = notation.pool
     SESSION.delete(notation)
     SESSION.commit()
@@ -63,7 +63,7 @@ def DeleteNotation(notation):
 
 # #### Misc functions
 
-def AppendToItem(notation, append_key, dataparams):
+def append_notation_to_item(notation, append_key, dataparams):
     model = ID_MODEL_DICT[append_key]
     item = model.find(dataparams[append_key])
     table_name = model.__table__.name

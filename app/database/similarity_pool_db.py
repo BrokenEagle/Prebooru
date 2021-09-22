@@ -3,9 +3,9 @@
 # ##LOCAL IMPORTS
 from .. import SESSION
 from ..models import SimilarityPool
-from ..logical.utility import GetCurrentTime
-from .base_db import UpdateColumnAttributes
-from .similarity_pool_element_db import BatchDeleteSimilarityPoolElement
+from ..logical.utility import get_current_time
+from .base_db import update_column_attributes
+from .similarity_pool_element_db import batch_delete_similarity_pool_element
 
 
 # ##GLOBAL VARIABLES
@@ -23,11 +23,11 @@ UPDATE_ALLOWED_ATTRIBUTES = ['element_count']
 # ###### CREATE
 
 def create_similarity_pool_from_parameters(createparams):
-    current_time = GetCurrentTime()
+    current_time = get_current_time()
     similarity_pool = SimilarityPool(element_count=0, created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    UpdateColumnAttributes(similarity_pool, update_columns, createparams)
+    update_column_attributes(similarity_pool, update_columns, createparams)
     print("[%s]: created" % similarity_pool.shortlink)
     return similarity_pool
 
@@ -38,10 +38,10 @@ def update_similarity_pool_from_parameters(similarity_pool, updateparams):
     update_results = []
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(UpdateColumnAttributes(similarity_pool, update_columns, updateparams))
+    update_results.append(update_column_attributes(similarity_pool, update_columns, updateparams))
     if any(update_results):
         print("[%s]: updated" % similarity_pool.shortlink)
-        similarity_pool.updated = GetCurrentTime()
+        similarity_pool.updated = get_current_time()
         SESSION.commit()
 
 
@@ -55,7 +55,7 @@ def delete_similarity_pool_by_post_id(post_id):
     similarity_pool = SimilarityPool.query.filter(SimilarityPool.post_id == post_id).first()
     if similarity_pool is None:
         return
-    BatchDeleteSimilarityPoolElement(similarity_pool.elements)
+    batch_delete_similarity_pool_element(similarity_pool.elements)
     SESSION.delete(similarity_pool)
 
 

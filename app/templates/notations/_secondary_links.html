@@ -1,10 +1,10 @@
 <menu id="secondary-menu">
-    {{ helpers.base.SubnavLinkTo("Listing", 'notation.index_html') }}
-    {{ helpers.base.SubnavLinkTo("New", 'notation.new_html') }}
+    {{ helpers.base.subnav_link_to("Listing", 'notation.index_html') }}
+    {{ helpers.base.subnav_link_to("New", 'notation.new_html') }}
     {% if notation.id is not none %}
         |
-        {{ helpers.base.SubnavLinkTo("Show", 'notation.show_html', id=notation.id) }}
-        {{ helpers.base.SubnavLinkTo("Edit", 'notation.edit_html', id=notation.id) }}
-        {{ helpers.base.SubnavLinkTo("Delete", 'notation.delete_html', id=notation.id, attrs={'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+        {{ helpers.base.subnav_link_to("Show", 'notation.show_html', id=notation.id) }}
+        {{ helpers.base.subnav_link_to("Edit", 'notation.edit_html', id=notation.id) }}
+        {{ helpers.base.subnav_link_to("Delete", 'notation.delete_html', id=notation.id, attrs={'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
     {% endif %}
 </menu>

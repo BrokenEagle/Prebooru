@@ -8,9 +8,9 @@
                 <div class="image-post">
                     <div class="image-post-info">
                         <ul>
-                            <li><strong>Edit( {{ helpers.base.GeneralLink('image', illust_url.edit_url) }} )</strong></li>
+                            <li><strong>Edit( {{ helpers.base.general_link('image', illust_url.edit_url) }} )</strong></li>
                             <li><strong>Order: {{ illust_url.order }}</strong></li>
-                            <li><strong>URL:</strong> {{ helpers.base.UrlLink(illust_url.full_url) }}</li>
+                            <li><strong>URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}</li>
                             <li><strong>Dimensions:</strong> {{ illust_url.width }} x {{ illust_url.height }}</li>
                             <li><strong>Active:</strong> {{ illust_url.active | tojson }}</li>
                             {% if illust_url.post is none %}
@@ -39,12 +39,12 @@
         <div class="video-post-info">
             <ul>
                 <li><strong>Edit( 
-                    {{ helpers.base.GeneralLink('video', video_illust_url.edit_url) }} |
-                    {{ helpers.base.GeneralLink('sample', sample_illust_url.edit_url) }}
+                    {{ helpers.base.general_link('video', video_illust_url.edit_url) }} |
+                    {{ helpers.base.general_link('sample', sample_illust_url.edit_url) }}
                     )
                 </strong></li>
-                <li><strong>Video URL:</strong> {{ helpers.base.UrlLink(video_illust_url.full_url) }}</li>
-                <li><strong>Thumb URL:</strong> {{ helpers.base.UrlLink(sample_illust_url.full_url) }}</li>
+                <li><strong>Video URL:</strong> {{ helpers.base.url_link(video_illust_url.full_url) }}</li>
+                <li><strong>Thumb URL:</strong> {{ helpers.base.url_link(sample_illust_url.full_url) }}</li>
                 <li><strong>Dimensions:</strong> {{ video_illust_url.width }} x {{ video_illust_url.height }}</li>
                 <li><strong>Active:</strong> {{ video_illust_url.active | tojson }}</li>
             </ul>

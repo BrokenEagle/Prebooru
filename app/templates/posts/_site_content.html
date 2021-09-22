@@ -4,14 +4,14 @@
     <section id="post-info">
         <h4>Info</h4>
         <ul>
-            <li><strong>Danbooru:</strong> {{ helpers.post.DanbooruPostLink(post) }}</li>
-            <li><strong>Created:</strong> {{ helpers.base.FormatTimestamp(post.created) }}</li>
+            <li><strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(post) }}</li>
+            <li><strong>Created:</strong> {{ helpers.base.format_timestamp(post.created) }}</li>
             <li><strong>Type/Size:</strong> {{ post.file_ext.upper() }} @ {{ post.size }} bytes</li>
             <li><strong>Dimensions:</strong> ({{ post.width }} x {{ post.height }})</li>
             <li><strong>MD5:</strong> {{ post.md5 }}</li>
             <li><strong>Sources:</strong>
                 {% call(illust_url) items_list(post.illust_urls) %}
-                    {{ helpers.illust.OriginalUrl(illust_url) }}
+                    {{ helpers.illust.original_url(illust_url) }}
                 {% endcall %}
             </li>
         </ul>
@@ -22,7 +22,7 @@
             <div class="post-commentaries-container"><strong>{{ illust.header }}:</strong>
                 {% call(commentary) items_block(illust.commentaries, 'commentaries', '<hr>') %}
                     <div class="post-commentaries-block">
-                        {{ helpers.base.ConvertStrToHTML(commentary.body) }}
+                        {{ helpers.base.convert_str_to_html(commentary.body) }}
                     </div>
                 {% endcall %}
             </div>

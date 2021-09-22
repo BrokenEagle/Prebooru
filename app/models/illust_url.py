@@ -5,8 +5,8 @@ from dataclasses import dataclass
 
 # ##LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import GetSiteDomain, GetSiteKey
-from .base import JsonModel, IntOrNone
+from ..logical.sites import get_site_domain, get_site_key
+from .base import JsonModel, int_or_none
 
 
 # ##GLOBAL VARIABLES
@@ -17,8 +17,8 @@ class IllustUrl(JsonModel):
     id: int
     site_id: int
     url: str
-    width: IntOrNone
-    height: IntOrNone
+    width: int_or_none
+    height: int_or_none
     order: int
     illust_id: int
     active: bool
@@ -34,20 +34,20 @@ class IllustUrl(JsonModel):
     @property
     def full_url(self):
         if not hasattr(self, '__full_url'):
-            self.__full_url = self._source.GetMediaUrl(self)
+            self.__full_url = self._source.get_media_url(self)
         return self.__full_url
 
     @property
     def _source(self):
         if not hasattr(self, '__source'):
             from ..sources import SOURCEDICT
-            site_key = GetSiteKey(self.site_id)
+            site_key = get_site_key(self.site_id)
             self.__source = SOURCEDICT[site_key]
         return self.__source
 
     @property
     def site_domain(self):
-        return GetSiteDomain(self.site_id)
+        return get_site_domain(self.site_id)
 
     basic_attributes = ['id', 'site_id', 'url', 'width', 'height', 'order', 'illust_id', 'active']
     relation_attributes = ['illust', 'post']

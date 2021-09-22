@@ -8,13 +8,13 @@ import sys
 # ## FUNCTIONS
 
 def initialize():
-    global CheckAllPostsForDanbooruID
+    global check_all_posts_for_danbooru_id
     sys.path.append(os.path.abspath('.'))
-    from app.logical.check.posts import CheckAllPostsForDanbooruID
+    from app.logical.check.posts import check_all_posts_for_danbooru_id
 
 
 def main():
-    CheckAllPostsForDanbooruID()
+    check_all_posts_for_danbooru_id()
 
 
 # ##EXECUTION START

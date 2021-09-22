@@ -14,8 +14,8 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ##LOCAL IMPORTS
 from .. import DB
 from ..config import IMAGE_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
-from ..logical.utility import UniqueObjects
-from .base import JsonModel, RemoveKeys, image_server_url
+from ..logical.utility import unique_objects
+from .base import JsonModel, remove_keys, image_server_url
 from .error import Error
 from .illust_url import IllustUrl
 from .notation import Notation
@@ -59,7 +59,7 @@ class Post(JsonModel):
     file_ext: str
     md5: str
     size: int
-    illust_urls: List[lambda x: RemoveKeys(x, ['height', 'width'])]
+    illust_urls: List[lambda x: remove_keys(x, ['height', 'width'])]
     file_url: str
     sample_url: str
     preview_url: str
@@ -127,19 +127,19 @@ class Post(JsonModel):
     def related_posts(self):
         illust_posts = [illust.posts for illust in self.illusts]
         post_generator = (post for post in itertools.chain(*illust_posts) if post is not None)
-        return [post for post in UniqueObjects(post_generator) if post.id != self.id]
+        return [post for post in unique_objects(post_generator) if post.id != self.id]
 
     @memoized_property
     def illusts(self):
-        return UniqueObjects([illust_url.illust for illust_url in self.illust_urls])
+        return unique_objects([illust_url.illust for illust_url in self.illust_urls])
 
     @memoized_property
     def artists(self):
-        return UniqueObjects([illust.artist for illust in self.illusts])
+        return unique_objects([illust.artist for illust in self.illusts])
 
     @memoized_property
     def boorus(self):
-        return UniqueObjects(list(itertools.chain(*[artist.boorus for artist in self.artists])))
+        return unique_objects(list(itertools.chain(*[artist.boorus for artist in self.artists])))
 
     @property
     def illust_ids(self):

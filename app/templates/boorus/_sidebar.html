@@ -4,7 +4,7 @@
 
 <div id="booru-sidebar">
     {{ artists_section(booru.artists, 'booru-artists') }}
-    {{ illusts_display(helpers.booru.IllustSearch(booru), booru.illust_count, 'booru-illusts') }}
+    {{ illusts_display(helpers.booru.illust_search(booru), booru.illust_count, 'booru-illusts') }}
     {{ timestamps_section(booru, 'booru-timestamps') }}
     <section id="booru-options">
         <h4>Options</h4>

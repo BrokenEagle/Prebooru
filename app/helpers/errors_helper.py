@@ -6,7 +6,7 @@ import html
 from flask import url_for
 
 # ## LOCAL IMPORTS
-from .base_helper import GeneralLink
+from .base_helper import general_link
 
 
 # ## GLOBAL VARIABLES
@@ -16,7 +16,7 @@ SHORTLINK_RG = re.compile(r'(\w+) #(\d+)')
 
 # ## FUNCTIONS
 
-def FormatMessage(error):
+def format_message(error):
     position = 0
     message = re.sub('\r?\n', '<br>', html.escape(error.message))
     while True:
@@ -25,7 +25,7 @@ def FormatMessage(error):
             return message
         try:
             show_url = url_for(match.group(1) + '.show_html', id=int(match.group(2)))
-            replace = GeneralLink(match.group(0), show_url)
+            replace = general_link(match.group(0), show_url)
         except Exception as e:
             print("Format message error:", e)
             replace = match.group(0)

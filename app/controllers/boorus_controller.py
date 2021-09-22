@@ -8,9 +8,9 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Booru
-from ..database.booru_db import CreateBooruFromParameters, CreateBooruFromID, UpdateBooruFromParameters, QueryUpdateBooru, CheckArtistsBooru
-from .base_controller import ShowJson, IndexJson, SearchFilter, ProcessRequestValues, GetParamsValue, Paginate, DefaultOrder, GetOrAbort, GetOrError,\
-    GetDataParams, SetError, CheckParamRequirements, NullifyBlanks, CustomNameForm, ParseArrayParameter
+from ..database.booru_db import create_booru_from_parameters, create_booru_from_id, update_booru_from_parameters, query_update_booru, check_artists_booru
+from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate, default_order, get_or_abort, get_or_error,\
+    get_data_params, set_error, check_param_requirements, nullify_blanks, CustomNameForm, parse_array_parameter
 
 
 # ## GLOBAL VARIABLES
@@ -45,7 +45,7 @@ JSON_OPTIONS = (
 
 # #### Forms
 
-def GetBooruForm(**kwargs):
+def get_booru_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class BooruForm(CustomNameForm):
         danbooru_id = IntegerField('Danbooru ID', id='booru-danbooru-id', custom_name='booru[danbooru_id]', validators=[DataRequired()])
@@ -58,26 +58,26 @@ def GetBooruForm(**kwargs):
 
 # #### Helper functions
 
-def UniquenessCheck(dataparams, artist):
+def uniqueness_check(dataparams, artist):
     danbooru_id = dataparams['danbooru_id'] if 'danbooru_id' in dataparams else artist.danbooru_id
     if danbooru_id != artist.danbooru_id:
         return Booru.query.filter_by(danbooru_id=danbooru_id).first()
 
 
-def ConvertDataParams(dataparams):
-    params = GetBooruForm(**dataparams).data
-    params['names'] = [name.lower() for name in ParseArrayParameter(dataparams, 'names', 'name_string', r'\s')]
+def convert_data_params(dataparams):
+    params = get_booru_form(**dataparams).data
+    params['names'] = [name.lower() for name in parse_array_parameter(dataparams, 'names', 'name_string', r'\s')]
     params['current_name'] = params['current_name'].lower()
-    params = NullifyBlanks(params)
+    params = nullify_blanks(params)
     return params
 
 
-def ConvertCreateParams(dataparams):
-    return ConvertDataParams(dataparams)
+def convert_create_params(dataparams):
+    return convert_data_params(dataparams)
 
 
-def ConvertUpdateParams(dataparams):
-    updateparams = ConvertDataParams(dataparams)
+def convert_update_params(dataparams):
+    updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
     return updateparams
@@ -86,39 +86,39 @@ def ConvertUpdateParams(dataparams):
 # #### Route auxiliary functions
 
 def index():
-    params = ProcessRequestValues(request.values)
-    search = GetParamsValue(params, 'search', True)
+    params = process_request_values(request.values)
+    search = get_params_value(params, 'search', True)
     q = Booru.query
-    q = SearchFilter(q, search)
-    q = DefaultOrder(q, search)
+    q = search_filter(q, search)
+    q = default_order(q, search)
     return q
 
 
 def create():
-    dataparams = GetDataParams(request, 'booru')
-    createparams = ConvertCreateParams(dataparams)
+    dataparams = get_data_params(request, 'booru')
+    createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = CheckParamRequirements(createparams, CREATE_REQUIRED_PARAMS)
+    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
-        return SetError(retdata, '\n'.join(errors))
-    check_booru = UniquenessCheck(createparams, Booru())
+        return set_error(retdata, '\n'.join(errors))
+    check_booru = uniqueness_check(createparams, Booru())
     if check_booru is not None:
         retdata['item'] = check_booru.to_json()
-        return SetError(retdata, "Booru already exists: booru #%d" % check_booru.id)
-    booru = CreateBooruFromParameters(createparams)
+        return set_error(retdata, "Booru already exists: booru #%d" % check_booru.id)
+    booru = create_booru_from_parameters(createparams)
     retdata['item'] = booru.to_json()
     return retdata
 
 
 def update(booru):
-    dataparams = GetDataParams(request, 'booru')
-    updateparams = ConvertUpdateParams(dataparams)
+    dataparams = get_data_params(request, 'booru')
+    updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
-    check_booru = UniquenessCheck(updateparams, booru)
+    check_booru = uniqueness_check(updateparams, booru)
     if check_booru is not None:
         retdata['item'] = check_booru.to_json()
-        return SetError(retdata, "Booru already exists: booru #%d" % check_booru.id)
-    UpdateBooruFromParameters(booru, updateparams)
+        return set_error(retdata, "Booru already exists: booru #%d" % check_booru.id)
+    update_booru_from_parameters(booru, updateparams)
     retdata['item'] = booru.to_json()
     return retdata
 
@@ -127,12 +127,12 @@ def query_create():
     params = dict(danbooru_id=request.values.get('danbooru_id', type=int))
     retdata = {'error': False, 'params': params}
     if params['danbooru_id'] is None:
-        return SetError(retdata, "Must include the Danbooru ID.")
-    check_booru = UniquenessCheck(params, Booru())
+        return set_error(retdata, "Must include the Danbooru ID.")
+    check_booru = uniqueness_check(params, Booru())
     if check_booru is not None:
         retdata['item'] = check_booru.to_json()
-        return SetError(retdata, "Booru already exists: booru #%d" % check_booru.id)
-    retdata.update(CreateBooruFromID(params['danbooru_id']))
+        return set_error(retdata, "Booru already exists: booru #%d" % check_booru.id)
+    retdata.update(create_booru_from_id(params['danbooru_id']))
     return retdata
 
 
@@ -142,12 +142,12 @@ def query_create():
 
 @bp.route('/boorus/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return ShowJson(Booru, id, options=SHOW_HTML_OPTIONS)
+    return show_json(Booru, id, options=SHOW_HTML_OPTIONS)
 
 
 @bp.route('/boorus/<int:id>', methods=['GET'])
 def show_html(id):
-    booru = GetOrAbort(Booru, id, options=SHOW_HTML_OPTIONS)
+    booru = get_or_abort(Booru, id, options=SHOW_HTML_OPTIONS)
     return render_template("boorus/show.html", booru=booru)
 
 
@@ -157,14 +157,14 @@ def show_html(id):
 def index_json():
     q = index()
     q = q.options(JSON_OPTIONS)
-    return IndexJson(q, request)
+    return index_json(q, request)
 
 
 @bp.route('/boorus', methods=['GET'])
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    boorus = Paginate(q, request)
+    boorus = paginate(q, request)
     return render_template("boorus/index.html", boorus=boorus, booru=Booru())
 
 
@@ -173,7 +173,7 @@ def index_html():
 @bp.route('/boorus/new', methods=['GET'])
 def new_html():
     """HTML access point to create function."""
-    form = GetBooruForm()
+    form = get_booru_form()
     return render_template("boorus/new.html", form=form, booru=Booru())
 
 
@@ -196,16 +196,16 @@ def create_json():
 @bp.route('/boorus/<int:id>/edit', methods=['GET'])
 def edit_html(id):
     """HTML access point to update function."""
-    booru = GetOrAbort(Booru, id)
+    booru = get_or_abort(Booru, id)
     editparams = booru.to_json()
     editparams['name_string'] = '\r\n'.join(booru_name.name for booru_name in booru.names)
-    form = GetBooruForm(**editparams)
+    form = get_booru_form(**editparams)
     return render_template("boorus/edit.html", form=form, booru=booru)
 
 
 @bp.route('/boorus/<int:id>', methods=['PUT'])
 def update_html(id):
-    booru = GetOrAbort(Booru, id)
+    booru = get_or_abort(Booru, id)
     results = update(booru)
     if results['error']:
         flash(results['message'], 'error')
@@ -215,7 +215,7 @@ def update_html(id):
 
 @bp.route('/boorus/<int:id>', methods=['PUT'])
 def update_json(id):
-    booru = GetOrError(Booru, id)
+    booru = get_or_error(Booru, id)
     if type(booru) is dict:
         return booru
     return update(booru)
@@ -236,8 +236,8 @@ def query_create_html():
 
 @bp.route('/boorus/<int:id>/query_update', methods=['POST'])
 def query_update_html(id):
-    booru = GetOrAbort(Booru, id)
-    results = QueryUpdateBooru(booru)
+    booru = get_or_abort(Booru, id)
+    results = query_update_booru(booru)
     if results['error']:
         flash(results['message'], 'error')
     else:
@@ -247,8 +247,8 @@ def query_update_html(id):
 
 @bp.route('/boorus/<int:id>/check_artists', methods=['POST'])
 def check_artists_html(id):
-    booru = GetOrAbort(Booru, id)
-    results = CheckArtistsBooru(booru)
+    booru = get_or_abort(Booru, id)
+    results = check_artists_booru(booru)
     if results['error']:
         flash(results['message'], 'error')
     else:

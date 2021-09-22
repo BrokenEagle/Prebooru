@@ -4,7 +4,7 @@
 {% block title %}New Upload{% endblock %}
 
 {% block content %}
-    <div id="upload-form-heading" class="form-heading heading">New upload{{ helpers.upload.FormTitleApellation(illust_url) }}</div>
+    <div id="upload-form-heading" class="form-heading heading">New upload{{ helpers.upload.form_title_apellation(illust_url) }}</div>
     {% if illust_url is not none %}
         <div id="upload-url-info">
             <ul>

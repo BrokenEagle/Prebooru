@@ -1,11 +1,11 @@
 <menu id="secondary-menu">
-    {{ helpers.base.SubnavLinkTo("Listing", 'illust.index_html') }}
-    {{ helpers.base.SubnavLinkTo("New", 'illust.new_html') }}
-    {{ helpers.base.SubnavLinkTo("URLs", 'illust_url.index_html') }}
-    {{ helpers.base.SubnavLinkTo("Tags", 'tag.index_html') }}
-    | {{ helpers.base.SubnavLinkTo("Create", 'illust.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return CreateIllustFromUrl(this)'}) }}
+    {{ helpers.base.subnav_link_to("Listing", 'illust.index_html') }}
+    {{ helpers.base.subnav_link_to("New", 'illust.new_html') }}
+    {{ helpers.base.subnav_link_to("URLs", 'illust_url.index_html') }}
+    {{ helpers.base.subnav_link_to("Tags", 'tag.index_html') }}
+    | {{ helpers.base.subnav_link_to("Create", 'illust.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return CreateIllustFromUrl(this)'}) }}
     {% if illust.id != None %}
-        {{ helpers.base.SubnavLinkTo("Show", 'illust.show_html', illust.id) }}
-        {{ helpers.base.SubnavLinkTo("Edit", 'illust.edit_html', illust.id) }}
+        {{ helpers.base.subnav_link_to("Show", 'illust.show_html', illust.id) }}
+        {{ helpers.base.subnav_link_to("Edit", 'illust.edit_html', illust.id) }}
     {% endif %}
 </menu>

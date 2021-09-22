@@ -4,66 +4,66 @@
 from flask import Markup
 
 # ## LOCAL IMPORTS
-from ..logical.sites import GetSiteKey
+from ..logical.sites import get_site_key
 from ..sources import SOURCEDICT
-from .base_helper import SearchUrlFor, ExternalLink
+from .base_helper import search_url_for, external_link
 
 
 # ## FUNCTIONS
 
 
-def ShortLink(artist):
-    site_key = GetSiteKey(artist.site_id)
+def short_link(artist):
+    site_key = get_site_key(artist.site_id)
     source = SOURCEDICT[site_key]
     return source.ARTIST_SHORTLINK % artist.site_artist_id
 
 
-def HrefUrl(artist):
-    site_key = GetSiteKey(artist.site_id)
+def href_url(artist):
+    site_key = get_site_key(artist.site_id)
     source = SOURCEDICT[site_key]
     return source.ARTIST_HREFURL % artist.site_artist_id
 
 
-def PostSearch(artist):
-    return SearchUrlFor('post.index_html', illust_urls={'illust': {'artist_id': artist.id}})
+def post_search(artist):
+    return search_url_for('post.index_html', illust_urls={'illust': {'artist_id': artist.id}})
 
 
-def IllustSearch(artist):
-    return SearchUrlFor('illust.index_html', artist_id=artist.id)
+def illust_search(artist):
+    return search_url_for('illust.index_html', artist_id=artist.id)
 
 
-def MainUrl(artist):
-    site_key = GetSiteKey(artist.site_id)
+def main_url(artist):  # Unused
+    site_key = get_site_key(artist.site_id)
     source = SOURCEDICT[site_key]
-    return source.ArtistMainUrl(artist)
+    return source.artist_main_url(artist)
 
 
-def MediaUrl(artist):
-    site_key = GetSiteKey(artist.site_id)
+def media_url(artist):  # Unused
+    site_key = get_site_key(artist.site_id)
     source = SOURCEDICT[site_key]
-    return source.ArtistMediaUrl(artist)
+    return source.artist_media_url(artist)
 
 
-def LikesUrl(artist):
-    site_key = GetSiteKey(artist.site_id)
+def likes_url(artist):  # Unused
+    site_key = get_site_key(artist.site_id)
     source = SOURCEDICT[site_key]
-    return source.ArtistLikesUrl(artist)
+    return source.artist_likes_url(artist)
 
 
 # #### Link functions
 
-def WebpageLink(url):
-    return ExternalLink(url, url)
+def webpage_link(url):
+    return external_link(url, url)
 
 
-def SiteArtistLink(artist):
-    return ExternalLink(ShortLink(artist), HrefUrl(artist))
+def site_artist_link(artist):
+    return external_link(short_link(artist), href_url(artist))
 
 
-def ArtistLinks(artist):
-    site_key = GetSiteKey(artist.site_id)
+def artist_links(artist):
+    site_key = get_site_key(artist.site_id)
     source = SOURCEDICT[site_key]
-    if not source.HasArtistUrls(artist):
+    if not source.has_artist_urls(artist):
         return Markup('<em>N/A</em>')
-    all_links = [ExternalLink(name.title(), url) for (name, url) in source.ArtistLinks(artist).items()]
+    all_links = [external_link(name.title(), url) for (name, url) in source.artist_links(artist).items()]
     return Markup(' | '.join(all_links))

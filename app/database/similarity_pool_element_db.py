@@ -2,9 +2,9 @@
 
 # ## LOCAL IMPORTS
 from .. import SESSION
-from ..logical.utility import UniqueObjects
+from ..logical.utility import unique_objects
 from ..models import SimilarityPoolElement
-from .base_db import UpdateColumnAttributes
+from .base_db import update_column_attributes
 
 # ##GLOBAL VARIABLES
 
@@ -23,7 +23,7 @@ def create_similarity_pool_element_from_parameters(createparams):
     similarity_pool_element = SimilarityPoolElement()
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    UpdateColumnAttributes(similarity_pool_element, update_columns, createparams)
+    update_column_attributes(similarity_pool_element, update_columns, createparams)
     print("[%s]: created" % similarity_pool_element.shortlink)
     return similarity_pool_element
 
@@ -38,7 +38,7 @@ def update_similarity_pool_element_pairing(similarity_pool_element_1, similarity
 
 # ###### DELETE
 
-def DeleteSimilarityPoolElement(similarity_pool_element):
+def delete_similarity_pool_element(similarity_pool_element):
     sibling_pool_element = similarity_pool_element.sibling
     similarity_pool_element.sibling_id = None
     if sibling_pool_element is not None:
@@ -55,10 +55,10 @@ def DeleteSimilarityPoolElement(similarity_pool_element):
         SESSION.commit()
 
 
-def BatchDeleteSimilarityPoolElement(similarity_pool_elements):
+def batch_delete_similarity_pool_element(similarity_pool_elements):
     pool_element_ids = [element.id for element in similarity_pool_elements]
     pool_element_ids += [element.sibling_id for element in similarity_pool_elements if element.sibling_id is not None]
-    similarity_pools = UniqueObjects(similarity_pool_elements + [element.sibling.pool for element in similarity_pool_elements if element.sibling_id is not None])  # This could maybe be done better
+    similarity_pools = unique_objects(similarity_pool_elements + [element.sibling.pool for element in similarity_pool_elements if element.sibling_id is not None])  # This could maybe be done better
     SimilarityPoolElement.query.filter(SimilarityPoolElement.id.in_(pool_element_ids)).update({'sibling_id': None})
     SESSION.commit()
     SimilarityPoolElement.query.filter(SimilarityPoolElement.id.in_(pool_element_ids)).delete()

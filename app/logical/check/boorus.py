@@ -2,8 +2,8 @@
 
 # ## LOCAL IMPORTS
 from ...models import Booru
-from ...database.booru_db import UpdateBooruFromParameters
-from ...sources.danbooru_source import GetArtistsByIDs
+from ...database.booru_db import update_booru_from_parameters
+from ...sources.danbooru_source import get_artists_by_ids
 
 
 # ## FUNCTIONS
@@ -22,11 +22,11 @@ def check_all_boorus(printer=print):
 
 def check_boorus(boorus, printer=print):
     danbooru_ids = [booru.danbooru_id for booru in boorus]
-    results = GetArtistsByIDs(danbooru_ids)
+    results = get_artists_by_ids(danbooru_ids)
     if results['error']:
         printer(results['message'])
         return False
     for data in results['artists']:
         booru = next(filter(lambda x: x.danbooru_id == data['id'], boorus))
-        UpdateBooruFromParameters(booru, {'current_name': data['name']})
+        update_booru_from_parameters(booru, {'current_name': data['name']})
     return True

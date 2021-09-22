@@ -6,12 +6,12 @@ import requests
 
 # ##LOCAL IMPORTS
 from ..config import DANBOORU_HOSTNAME
-from ..logical.utility import AddDictEntry
+from ..logical.utility import add_dict_entry
 
 
 # ##FUNCTIONS
 
-def DanbooruRequest(url, params=None, long=False):
+def danbooru_request(url, params=None, long=False):
     send_method = requests.post if long else requests.get
     send_data = params if long else None
     params = None if long else params
@@ -34,64 +34,64 @@ def DanbooruRequest(url, params=None, long=False):
         return {'error': True, 'message': "HTTP %d: %s" % (response.status_code, response.reason)}
 
 
-def GetArtistByID(id, include_urls=False):
+def get_artist_by_id(id, include_urls=False):
     params = {'only': 'name,urls'} if include_urls else None
     request_url = '/artists/%d.json' % id
-    data = DanbooruRequest(request_url, params)
+    data = danbooru_request(request_url, params)
     if data['error']:
         return data
     return {'error': False, 'artist': data['json']}
 
 
-def GetArtistsByIDs(id_list):
+def get_artists_by_ids(id_list):
     params = {
         'search[id]': ','.join(map(str, id_list)),
         'limit': len(id_list),
     }
     request_url = '/artists.json'
-    data = DanbooruRequest(request_url, params)
+    data = danbooru_request(request_url, params)
     if data['error']:
         return data
     return {'error': False, 'artists': data['json']}
 
 
-def GetArtistsByUrl(url):
+def get_artists_by_url(url):
     request_url = '/artist_urls.json'
     params = {
         'search[normalized_url]': url,
         'only': 'url,artist',
         'limit': 1000,
     }
-    data = DanbooruRequest(request_url, params)
+    data = danbooru_request(request_url, params)
     if data['error']:
         return data
     artists = [artist_url['artist'] for artist_url in data['json']]
     return {'error': False, 'artists': artists}
 
 
-def GetArtistsByMultipleUrls(url_list):
+def get_artists_by_multiple_urls(url_list):
     request_url = '/artist_urls.json'
     params = {
         'search[normalized_url_space]': ' '.join(url_list),
         'only': 'normalized_url,artist',
         'limit': 1000,
     }
-    data = DanbooruRequest(request_url, params)
+    data = danbooru_request(request_url, params)
     if data['error']:
         return data
     retdata = {}
     for artist_url in data['json']:
-        AddDictEntry(retdata, artist_url['normalized_url'], artist_url['artist'])
+        add_dict_entry(retdata, artist_url['normalized_url'], artist_url['artist'])
     return {'error': False, 'data': retdata}
 
 
-def GetPostsByMD5s(md5_list):
+def get_posts_by_md5s(md5_list):
     request_url = '/posts.json'
     params = {
         'tags': 'md5:' + ','.join(md5_list),
         'limit': 100,
     }
-    data = DanbooruRequest(request_url, params)
+    data = danbooru_request(request_url, params)
     if data['error']:
         return data
     return {'error': False, 'posts': [post for post in data['json'] if 'md5' in post]}
