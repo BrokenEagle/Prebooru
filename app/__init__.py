@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 import os
 import sys
+import logging
 from io import BytesIO
 from types import SimpleNamespace
 from flask_apscheduler import APScheduler
@@ -47,7 +48,14 @@ SERVER_INFO = SimpleNamespace(addr="127.0.0.1")
 
 def _fk_pragma_on_connect(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL2")
+    cursor.execute("PRAGMA journal_mode")
+    mode = cursor.fetchone()
+    if mode != ('wal',):
+        cursor.execute("PRAGMA journal_mode = wal;")
+        cursor.execute("PRAGMA journal_mode")
+        mode = cursor.fetchone()
+        if mode != ('wal',):
+            logging.error("Unable to set journal mode to WAL")
     cursor.close()
 
 
