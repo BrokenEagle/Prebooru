@@ -81,7 +81,7 @@ class Post(JsonModel):
     errors = DB.relationship(Error, secondary=PostErrors, lazy=True, cascade='all,delete')
     notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, backref=DB.backref('post', uselist=False, lazy=True), cascade='all,delete')
     _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False), cascade='all,delete')
-    similarity_data = DB.relationship(SimilarityData, lazy=True, uselist=False, backref=DB.backref('post', lazy=True, uselist=False), cascade='all,delete')
+    similarity_data = DB.relationship(SimilarityData, lazy=True, backref=DB.backref('post', lazy=True, uselist=False), cascade='all,delete')
     similarity_pool = DB.relationship(SimilarityPool, lazy=True, uselist=False, backref=DB.backref('post', lazy=True, uselist=False))                           # Similarity pools and elements must be deleted
     similarity_elements = DB.relationship(SimilarityPoolElement, lazy=True, backref=DB.backref('post', lazy=True, uselist=False))                               # specially because of sibling relationships
     # uploads <- Upload (MtM)
@@ -195,5 +195,5 @@ class Post(JsonModel):
     # ## Class properties
 
     basic_attributes = ['id', 'width', 'height', 'size', 'file_ext', 'md5', 'danbooru_id', 'created']
-    relation_attributes = ['illust_urls', 'uploads', 'notations', 'errors']
+    relation_attributes = ['illust_urls', 'uploads', 'notations', 'errors', 'similarity_data', 'similarity_pool', 'similarity_elements']
     searchable_attributes = basic_attributes + relation_attributes
