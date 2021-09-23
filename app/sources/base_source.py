@@ -10,14 +10,11 @@ from ..logical.utility import get_http_filename, get_file_extension, set_error
 from ..database.error_db import is_error
 
 
-# ##GLOBAL VARIABLES
-
-IMAGE_HEADERS = {}
-
-
 # #### Classes
 
 class NoSource():
+    """These mirror the functions in the other source files, for when a source is not found"""
+
     IMAGE_HEADERS = {}
 
     @staticmethod
@@ -115,24 +112,3 @@ def get_preview_url(url, site_id):
 def get_source_by_id(site_id):
     site_key = get_site_key(site_id)
     return SOURCEDICT[site_key]
-
-
-# ##### Base source functions (Unused... maybe???)
-
-"""These mirror the functions in the other source files, for when a source is not found"""
-
-def small_image_url(image_url):
-    return image_url
-
-
-def normalized_image_url(image_url):
-    return image_url
-
-
-def get_image_extension(image_url):
-    filename = get_http_filename(image_url)
-    return get_file_extension(filename)
-
-
-def get_media_extension(media_url):
-    return get_image_extension(media_url)

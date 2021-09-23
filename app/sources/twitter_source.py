@@ -209,14 +209,6 @@ def illust_has_videos(illust):
     return any(map(video_url_mapper, illust.urls))
 
 
-def post_has_images(post):  # Unused
-    return any(map(image_url_mapper, post.illust_urls))
-
-
-def post_has_videos(post):  # Unused
-    return any(map(video_url_mapper, post.illust_urls))
-
-
 def image_illust_download_urls(illust):
     return list(filter(lambda x: image_url_mapper, illust.urls))
 
@@ -295,10 +287,6 @@ def partial_media_url(url):
     return parse.path + query_addon if site_id != 0 else parse.geturl()
 
 
-def is_media_url(url):  # Unused
-    return is_image_url(url) or is_video_url(url)
-
-
 def is_image_url(url):
     return bool(IMAGE1_RG.match(url) or IMAGE2_RG.match(url) or IMAGE3_RG.match(url) or IMAGE4_RG.match(url))
 
@@ -309,11 +297,6 @@ def is_video_url(url):
 
 def is_request_url(request_url):
     return is_post_url(request_url)
-
-
-def get_upload_type(request_url):  # Unused
-    # Have already validated urls with UploadCheck
-    return 'post' if is_post_url(request_url) else 'image'
 
 
 def get_illust_id(request_url):
@@ -376,14 +359,6 @@ def get_illust_url(site_illust_id):
     return "https://twitter.com/i/web/status/%d" % site_illust_id
 
 
-def subscription_check(request_url):  # Unused
-    artist_id = None
-    artwork_match = USERS1_RG.match(request_url)
-    if artwork_match:
-        artist_id = int(artwork_match.group(1))
-    return artist_id
-
-
 def normalize_image_url(image_url):
     image_match = IMAGE1_RG.match(image_url) or IMAGE2_RG.match(image_url)
     return r'/media/%s.%s' % (image_match.group(2), image_match.group(3))
@@ -434,14 +409,6 @@ def artist_media_url(artist):
 def artist_likes_url(artist):
     url = artist_main_url(artist)
     return url + '/likes' if len(url) else ""
-
-
-def get_global_objects(data, type_name):  # Unused
-    return safe_get(data, 'globalObjects', type_name)
-
-
-def get_global_object(data, type_name, key):  # Unused
-    return safe_get(data, 'globalObjects', type_name, key)
 
 
 def process_twitter_timestring(time_string):

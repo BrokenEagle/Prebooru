@@ -233,15 +233,6 @@ def normalized_image_url(image_url):
     return IMAGE_SERVER + normalize_image_url(image_url)
 
 
-def get_upload_type(request_url):  # Unused
-    artwork_match = ARTWORKS_RG.match(request_url)
-    if artwork_match:
-        return 'post'
-    image_match = IMAGE_RG.match(request_url)
-    if image_match:
-        return 'image'
-
-
 def get_illust_id(request_url):
     artwork_match = ARTWORKS_RG.match(request_url)
     if artwork_match:
@@ -249,26 +240,6 @@ def get_illust_id(request_url):
     image_match = IMAGE_RG.match(request_url)
     if image_match:
         return int(image_match.group(2))
-
-
-def get_upload_info(request_url):  # Unused
-    artwork_match = ARTWORKS_RG.match(request_url)
-    if artwork_match:
-        illust_id = int(artwork_match.group(1))
-        type = 'post'
-    image_match = IMAGE_RG.match(request_url) if artwork_match is None else None
-    if image_match:
-        illust_id = int(image_match.group(2))
-        type = 'image'
-    return type, illust_id
-
-
-def subscription_check(request_url):  # Unused
-    artist_id = None
-    artwork_match = USERS_RG.match(request_url)
-    if artwork_match:
-        artist_id = int(artwork_match.group(1))
-    return artist_id
 
 
 def normalize_image_url(image_url):

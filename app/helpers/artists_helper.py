@@ -32,24 +32,6 @@ def illust_search(artist):
     return search_url_for('illust.index_html', artist_id=artist.id)
 
 
-def main_url(artist):  # Unused
-    site_key = get_site_key(artist.site_id)
-    source = SOURCEDICT[site_key]
-    return source.artist_main_url(artist)
-
-
-def media_url(artist):  # Unused
-    site_key = get_site_key(artist.site_id)
-    source = SOURCEDICT[site_key]
-    return source.artist_media_url(artist)
-
-
-def likes_url(artist):  # Unused
-    site_key = get_site_key(artist.site_id)
-    source = SOURCEDICT[site_key]
-    return source.artist_likes_url(artist)
-
-
 # #### Link functions
 
 def webpage_link(url):

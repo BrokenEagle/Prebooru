@@ -27,11 +27,6 @@ APPEND_KEY_DICT = {
 
 # ## FUNCTIONS
 
-# #### Helper functions
-
-def is_general_form(form):  # Unused
-    return (form.pool_id.data is None) and (form.artist_id.data is None) and (form.illust_id.data is None) and (form.post_id.data is None)
-
 
 # #### General functions
 

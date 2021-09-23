@@ -19,7 +19,7 @@ def check_all_image_urls_similarity(image_urls, min_score, use_original=False, i
 
 def check_image_url_similarity(image_url, min_score, use_original=False, include_posts=False):
     source = get_image_source(image_url) or NoSource()
-    download_url = source.small_image_url(image_url) if source is not None and not use_original else image_url
+    download_url = source.small_image_url(image_url) if not use_original else image_url
     media_file = get_or_create_media(download_url, source)
     if type(media_file) is str:
         return media_file

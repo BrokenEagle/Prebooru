@@ -24,10 +24,6 @@ SITE_DATA_LABELS = {
 
 # #### Form functions
 
-def is_general_form(form):  # Unused
-    return (form.artist_id.data is None) or (form.site_id.data is None)
-
-
 def form_class(form):
     CLASS_MAP = {
         None: "",
@@ -51,24 +47,6 @@ def site_date_iterator(illust):
     for key, val in site_data_json.items():
         if key in ['site_updated', 'site_uploaded']:
             yield SITE_DATA_LABELS[key], val
-
-
-# #### Media functions
-
-def illust_has_images(illust):  # Unused
-    site_key = get_site_key(illust.site_id)
-    source = SOURCEDICT[site_key]
-    return source.illust_has_images(illust)
-
-
-def illust_has_videos(illust):  # Unused
-    site_key = get_site_key(illust.site_id)
-    source = SOURCEDICT[site_key]
-    return source.illust_has_images(illust)
-
-
-def illust_urls_ordered(illust):  # Unused
-    return sorted(illust.urls, key=lambda x: x.order)
 
 
 # #### URL functions

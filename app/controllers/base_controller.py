@@ -241,19 +241,6 @@ def set_default(indict, key, default):
     indict[key] = indict[key] if (key in indict and indict[key] is not None) else default
 
 
-def build_url_args(params, permit_list):  # Unused
-    urlparams = []
-    for key, value in params.items():
-        if key not in permit_list:
-            continue
-        if type(value) is list:
-            for item in value:
-                urlparams.append(urllib.parse.urlencode({key + '[]': item}))
-        elif value is not None:
-            urlparams.append(urllib.parse.urlencode({key: value}))
-    return '&'.join(urlparams)
-
-
 # #### Private functions
 
 def _custom_order(ids, entity):
