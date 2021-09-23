@@ -16,7 +16,7 @@ from ..logical.similarity.check_image import check_all_image_urls_similarity
 from ..logical.similarity.generate_data import generate_post_similarity
 from ..logical.similarity.populate_pools import populate_similarity_pools
 from .base_controller import process_request_values, CustomNameForm, parse_type, parse_bool_parameter, parse_string_list, nullify_blanks,\
-    set_default, check_param_requirements, set_error
+    set_default, check_param_requirements, set_error, eval_bool_string
 
 
 # ## GLOBAL VARIABLES
@@ -45,6 +45,8 @@ def convert_data_params(dataparams):
         params['urls'] = dataparams['urls']
     elif 'urls_string' in dataparams:
         params['urls'] = parse_string_list(dataparams, 'urls_string', r'\r?\n')
+    else:
+        params['urls'] = None
     params['use_original'] = parse_bool_parameter(dataparams, 'use_original')
     params['score'] = parse_type(dataparams, 'score', float)
     params = nullify_blanks(params)
@@ -92,6 +94,9 @@ def check_json():
 
 @bp.route('/similarity/check', methods=['GET'])
 def check_html():
+    show_form = request.args.get('show_form', type=eval_bool_string)
+    if show_form:
+        return render_template("similarity/check.html", similar_results=None, form=get_similarity_form())
     results = check(False)
     form = get_similarity_form(**results['data'])
     if results['error']:
