@@ -10,13 +10,13 @@ import requests
 import datetime
 
 # ##LOCAL IMPORTS
-from ..logical.utility import get_current_time, get_file_extension, get_http_filename, safe_get, decode_json, fixup_crlf
-from ..logical.file import load_default, put_get_json
-from ..database.error_db import create_error, is_error
-from ..database.cache_db import get_api_artist, get_api_illust, save_api_data
-from ..database.illust_db import get_site_illust
-from ..config import DATA_DIRECTORY
-from ..logical.sites import Site, get_site_domain, get_site_id
+from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, decode_json, fixup_crlf
+from ..file import load_default, put_get_json
+from ...database.error_db import create_error, is_error
+from ...database.cache_db import get_api_artist, get_api_illust, save_api_data
+from ...database.illust_db import get_site_illust
+from ...config import DATA_DIRECTORY
+from ..sites import Site, get_site_domain, get_site_id
 
 
 # ##GLOBAL VARIABLES
@@ -577,13 +577,13 @@ def get_twitter_illust_timeline(illust_id):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     data = twitter_request("https://twitter.com/i/api/graphql/uvk82Jn4z84yUPI1rViRsg/TweetDetail?%s" % urladdons)
     if data['error']:
-        return create_error('sources.twitter.GetTwitterTimelineIllust', data['message'])
+        return create_error('logical.sources.twitter.GetTwitterTimelineIllust', data['message'])
     found_tweets = get_graphql_timeline_entries(data['body'], [])
     if len(found_tweets) == 0:
-        return create_error('sources.twitter.GetTwitterTimelineIllust', "No tweets found in data.")
+        return create_error('logical.sources.twitter.GetTwitterTimelineIllust', "No tweets found in data.")
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
     if illust_id_str not in tweet_ids:
-        return create_error('sources.twitter.GetTwitterTimelineIllust', "Tweet not found: %d" % illust_id)
+        return create_error('logical.sources.twitter.GetTwitterTimelineIllust', "Tweet not found: %d" % illust_id)
     return found_tweets
 
 
@@ -591,9 +591,9 @@ def get_twitter_illust(illust_id):
     print("Getting twitter #%d" % illust_id)
     data = twitter_request('https://api.twitter.com/1.1/statuses/lookup.json?id=%d&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true' % illust_id)
     if data['error']:
-        return create_error('sources.twitter.get_twitter_illust', data['message'])
+        return create_error('logical.sources.twitter.get_twitter_illust', data['message'])
     if len(data['body']) == 0:
-        return create_error('sources.twitter.get_twitter_illust', "Tweet not found: %d" % illust_id)
+        return create_error('logical.sources.twitter.get_twitter_illust', "Tweet not found: %d" % illust_id)
     return data['body'][0]
 
 
@@ -606,7 +606,7 @@ def get_twitter_user_id(account):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     data = twitter_request('https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/UserByScreenNameWithoutResults?%s' % urladdons)
     if data['error']:
-        return create_error('sources.twitter.GetUserID', data['message'])
+        return create_error('logical.sources.twitter.GetUserID', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
 
 
@@ -619,13 +619,13 @@ def get_twitter_artist(artist_id):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     data = twitter_request('https://twitter.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/UserByRestIdWithoutResults?%s' % urladdons)
     if data['error']:
-        return create_error('sources.twitter.get_twitter_artist', data['message'])
+        return create_error('logical.sources.twitter.get_twitter_artist', data['message'])
     twitterdata = data['body']
     if 'errors' in twitterdata and len(twitterdata['errors']):
-        return create_error('sources.twitter.get_twitter_artist', 'Twitter error: ' + '; '.join([error['message'] for error in twitterdata['errors']]))
+        return create_error('logical.sources.twitter.get_twitter_artist', 'Twitter error: ' + '; '.join([error['message'] for error in twitterdata['errors']]))
     userdata = safe_get(twitterdata, 'data', 'user')
     if userdata is None or 'rest_id' not in userdata or 'legacy' not in userdata:
-        return create_error('sources.twitter.get_twitter_artist', "Error parsing data: %s" % json.dumps(twitterdata))
+        return create_error('logical.sources.twitter.get_twitter_artist', "Error parsing data: %s" % json.dumps(twitterdata))
     retdata = userdata['legacy']
     retdata['id_str'] = userdata['rest_id']
     return retdata

@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...database.post_db import get_posts_by_id
-from ...sources.base_source import get_image_source, NoSource
+from ...logical.sources.base import get_image_source, NoSource
 from .base import get_or_create_media, get_image, get_image_hash, get_similarity_data_matches, check_similarity_match_scores,\
     filter_score_results
 

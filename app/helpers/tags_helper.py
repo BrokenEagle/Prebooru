@@ -4,7 +4,7 @@
 from flask import Markup
 
 # ## LOCAL IMPORTS
-from ..sources import SOURCES
+from ..logical.sources import SOURCES
 from .base_helper import search_url_for, external_link
 
 

@@ -8,8 +8,8 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Artist, Booru
-from ..sources.base_source import get_source_by_id, get_artist_required_params
-from ..sources.danbooru_source import get_artists_by_url
+from ..logical.sources.base import get_source_by_id, get_artist_required_params
+from ..logical.sources.danbooru import get_artists_by_url
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, update_artist_from_source, artist_append_booru,\
     artist_delete_profile
 from ..database.booru_db import create_booru_from_parameters

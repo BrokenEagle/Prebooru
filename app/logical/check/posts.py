@@ -3,7 +3,7 @@
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Post
-from ...sources.danbooru_source import get_posts_by_md5s
+from ...logical.sources.danbooru import get_posts_by_md5s
 
 
 # ## FUNCTIONS

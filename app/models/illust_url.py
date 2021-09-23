@@ -40,7 +40,7 @@ class IllustUrl(JsonModel):
     @property
     def _source(self):
         if not hasattr(self, '__source'):
-            from ..sources import SOURCEDICT
+            from ..logical.sources import SOURCEDICT
             site_key = get_site_key(self.site_id)
             self.__source = SOURCEDICT[site_key]
         return self.__source

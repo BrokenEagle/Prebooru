@@ -10,7 +10,7 @@ from .. import SCHEDULER
 from ..logical.utility import eval_bool_string
 from ..logical.tasks.worker import process_upload
 from ..models import Upload, Post, IllustUrl, Illust
-from ..sources.base_source import get_post_source, get_preview_url
+from ..logical.sources.base import get_post_source, get_preview_url
 from ..database.upload_db import create_upload_from_parameters
 from ..database.cache_db import get_media_data
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate, default_order, CustomNameForm, get_data_params,\

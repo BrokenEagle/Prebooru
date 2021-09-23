@@ -6,8 +6,8 @@ from flask import url_for
 
 # ##LOCAL IMPORTS
 from ..logical.sites import get_site_domain, get_site_key
-from ..sources import SOURCEDICT
-from ..sources.base_source import get_source_by_id
+from ..logical.sources import SOURCEDICT
+from ..logical.sources.base import get_source_by_id
 from .base_helper import search_url_for, external_link, url_link, general_link
 from ..config import DANBOORU_HOSTNAME
 

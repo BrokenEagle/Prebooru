@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
 from ..logical.utility import eval_bool_string, is_falsey
-from ..sources.base_source import get_source_by_id, get_illust_required_params
+from ..logical.sources.base import get_source_by_id, get_illust_required_params
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, update_illust_from_source,\
     illust_delete_commentary
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response, search_filter, default_order,\

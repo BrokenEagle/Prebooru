@@ -5,8 +5,8 @@ import time
 import requests
 
 # ##LOCAL IMPORTS
-from ..config import DANBOORU_HOSTNAME
-from ..logical.utility import add_dict_entry
+from ...config import DANBOORU_HOSTNAME
+from ..utility import add_dict_entry
 
 
 # ##FUNCTIONS

@@ -8,11 +8,11 @@ import requests
 import datetime
 
 # ##LOCAL IMPORTS
-from ..logical.utility import get_current_time, get_file_extension, get_http_filename, safe_get, fixup_crlf, process_utc_timestring
-from ..database.error_db import create_error, is_error
-from ..database.cache_db import get_api_artist, get_api_illust, get_api_data, save_api_data
-from ..config import PIXIV_PHPSESSID
-from ..logical.sites import Site, get_site_domain, get_site_id
+from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, fixup_crlf, process_utc_timestring
+from ...database.error_db import create_error, is_error
+from ...database.cache_db import get_api_artist, get_api_illust, get_api_data, save_api_data
+from ...config import PIXIV_PHPSESSID
+from ..sites import Site, get_site_domain, get_site_id
 
 
 # ###GLOBAL VARIABLES
@@ -276,7 +276,7 @@ def get_pixiv_illust(illust_id):
     print("Getting pixiv #%d" % illust_id)
     data = pixiv_request("https://www.pixiv.net/ajax/illust/%d" % illust_id)
     if data['error']:
-        return create_error('sources.pixiv.get_pixiv_illust', data['message'])
+        return create_error('logical.sources.pixiv.get_pixiv_illust', data['message'])
     return data['body']
 
 
@@ -284,14 +284,14 @@ def get_pixiv_artist(artist_id):
     print("Getting Pixiv user data...")
     data = pixiv_request("https://www.pixiv.net/ajax/user/%d?full=1" % artist_id)
     if data['error']:
-        return create_error('sources.pixiv.get_pixiv_artist', data['message'])
+        return create_error('logical.sources.pixiv.get_pixiv_artist', data['message'])
     return data['body']
 
 
 def get_all_pixiv_artist_illusts(artist_id):
     data = pixiv_request('https://www.pixiv.net/ajax/user/%d/profile/all' % artist_id)
     if data['error']:
-        return create_error('sources.pixiv.get_all_pixiv_artist_illusts', data['message'])
+        return create_error('logical.sources.pixiv.get_all_pixiv_artist_illusts', data['message'])
     ids = get_data_illust_ids(data['body'], 'illusts')
     ids += get_data_illust_ids(data['body'], 'manga')
     return ids
@@ -301,7 +301,7 @@ def get_pixiv_page_data(site_illust_id):
     print("Downloading pages for pixiv #%d" % site_illust_id)
     data = pixiv_request("https://www.pixiv.net/ajax/illust/%s/pages" % site_illust_id)
     if data['error']:
-        return create_error('sources.pixiv.get_page_data', data['message'])
+        return create_error('logical.sources.pixiv.get_page_data', data['message'])
     return {'illustId': site_illust_id, 'pages': data['body']}
 
 
@@ -309,7 +309,7 @@ def get_pixiv_profile_data(site_artist_id):
     print("Downloading profile data for pxuser #%d" % site_artist_id)
     data = pixiv_request("https://www.pixiv.net/ajax/user/%d/profile/all" % site_artist_id)
     if data['error']:
-        return create_error('sources.pixiv.get_page_data', data['message'])
+        return create_error('logical.sources.pixiv.get_page_data', data['message'])
     return {'userId': site_artist_id, 'profile': data['body']}
 
 

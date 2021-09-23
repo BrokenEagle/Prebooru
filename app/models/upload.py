@@ -109,7 +109,7 @@ class Upload(JsonModel):
 
     @memoized_property
     def _source(self):
-        from ..sources.base_source import get_post_source, get_source_by_id
+        from ..logical.sources.base import get_post_source, get_source_by_id
         if self.request_url:
             return get_post_source(self.request_url)
         elif self.illust_url_id:

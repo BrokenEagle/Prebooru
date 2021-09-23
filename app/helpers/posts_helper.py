@@ -5,7 +5,7 @@ from flask import Markup, url_for
 import urllib.parse
 
 # ##LOCAL IMPORTS
-from ..sources.base_source import get_source_by_id
+from ..logical.sources.base import get_source_by_id
 from .base_helper import search_url_for, general_link, external_link
 from ..config import DANBOORU_HOSTNAME
 

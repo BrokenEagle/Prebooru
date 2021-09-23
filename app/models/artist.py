@@ -136,7 +136,7 @@ class Artist(JsonModel):
 
     @memoized_property
     def _source(self):
-        from ..sources import SOURCEDICT
+        from ..logical.sources import SOURCEDICT
         site_key = get_site_key(self.site_id)
         return SOURCEDICT[site_key]
 

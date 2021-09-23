@@ -3,7 +3,7 @@
 # ## LOCAL IMPORTS
 from ...models import Booru
 from ...database.booru_db import update_booru_from_parameters
-from ...sources.danbooru_source import get_artists_by_ids
+from ...logical.sources.danbooru import get_artists_by_ids
 
 
 # ## FUNCTIONS

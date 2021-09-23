@@ -7,7 +7,7 @@ from sqlalchemy import not_
 # ## LOCAL IMPORTS
 from ...models import Artist, Booru
 from ...database.booru_db import create_booru_from_parameters, booru_append_artist
-from ...sources.danbooru_source import get_artists_by_multiple_urls
+from ...logical.sources.danbooru import get_artists_by_multiple_urls
 
 
 # ## GLOBAL VARIABLES
