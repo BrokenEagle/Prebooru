@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired
 from ..models import Illust, IllustUrl
 from ..sources.base_source import get_image_site_id, get_image_source
 from ..database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
-from .base_controller import get_params_value, process_request_values, show_json, index_json, search_filter, default_order, paginate,\
+from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response, search_filter, default_order, paginate,\
     get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error, nullify_blanks, check_param_requirements, hide_input, set_default,\
     parse_bool_parameter
 
@@ -145,7 +145,7 @@ def update(illust_url):
 
 @bp.route('/illust_urls/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(IllustUrl, id)
+    return show_json_response(IllustUrl, id)
 
 
 @bp.route('/illust_urls/<int:id>', methods=['GET'])
@@ -159,7 +159,7 @@ def show_html(id):
 @bp.route('/illust_urls.json', methods=['GET'])
 def index_json():
     q = index()
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 @bp.route('/illust_urls', methods=['GET'])

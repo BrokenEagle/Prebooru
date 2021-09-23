@@ -9,7 +9,7 @@ from wtforms.validators import DataRequired
 # ## LOCAL IMPORTS
 from ..models import Booru
 from ..database.booru_db import create_booru_from_parameters, create_booru_from_id, update_booru_from_parameters, query_update_booru, check_artists_booru
-from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate, default_order, get_or_abort, get_or_error,\
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate, default_order, get_or_abort, get_or_error,\
     get_data_params, set_error, check_param_requirements, nullify_blanks, CustomNameForm, parse_array_parameter
 
 
@@ -142,7 +142,7 @@ def query_create():
 
 @bp.route('/boorus/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(Booru, id, options=SHOW_HTML_OPTIONS)
+    return show_json_response(Booru, id, options=SHOW_HTML_OPTIONS)
 
 
 @bp.route('/boorus/<int:id>', methods=['GET'])
@@ -157,7 +157,7 @@ def show_html(id):
 def index_json():
     q = index()
     q = q.options(JSON_OPTIONS)
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 @bp.route('/boorus', methods=['GET'])

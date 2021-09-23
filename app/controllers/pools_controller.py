@@ -11,7 +11,7 @@ from wtforms.validators import DataRequired
 from ..models import Pool, Post, Illust, IllustUrl, PoolPost, PoolIllust, PoolNotation
 from ..database.pool_db import create_pool_from_parameters, update_pool_from_parameters
 from ..logical.searchable import numeric_matching
-from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate,\
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate,\
     default_order, get_data_params, CustomNameForm, get_page, get_limit, get_or_abort, get_or_error, check_param_requirements,\
     nullify_blanks, set_error, parse_bool_parameter, set_default
 
@@ -136,7 +136,7 @@ def update(pool):
 
 @bp.route('/pools/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(Pool, id)
+    return show_json_response(Pool, id)
 
 
 @bp.route('/pools/<int:id>', methods=['GET'])
@@ -151,7 +151,7 @@ def show_html(id):
 @bp.route('/pools.json', methods=['GET'])
 def index_json():
     q = index()
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 @bp.route('/pools', methods=['GET'])

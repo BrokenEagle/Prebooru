@@ -13,7 +13,7 @@ from ..models import Upload, Post, IllustUrl, Illust
 from ..sources.base_source import get_post_source, get_preview_url
 from ..database.upload_db import create_upload_from_parameters
 from ..database.cache_db import get_media_data
-from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate, default_order, CustomNameForm, get_data_params,\
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate, default_order, CustomNameForm, get_data_params,\
     hide_input, parse_string_list, nullify_blanks, set_default, set_error, get_or_abort, referrer_check
 
 
@@ -178,7 +178,7 @@ def upload_select():
 
 @bp.route('/uploads/<int:id>.json')
 def show_json(id):
-    return show_json(Upload, id, options=JSON_OPTIONS)
+    return show_json_response(Upload, id, options=JSON_OPTIONS)
 
 
 @bp.route('/uploads/<int:id>')
@@ -193,7 +193,7 @@ def show_html(id):
 def index_json():
     q = index()
     q = q.options(JSON_OPTIONS)
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 @bp.route('/uploads', methods=['GET'])

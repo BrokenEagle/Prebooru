@@ -6,7 +6,7 @@ from flask import Blueprint, request, url_for, flash, redirect
 # ## LOCAL IMPORTS
 from ..models import Pool, PoolElement
 from ..database.pool_element_db import create_pool_element_from_parameters, delete_pool_element
-from .base_controller import get_data_params, get_or_abort, get_or_error, check_param_requirements, set_error, index_json, show_json,\
+from .base_controller import get_data_params, get_or_abort, get_or_error, check_param_requirements, set_error, index_json_response, show_json_response,\
     process_request_values, get_params_value, search_filter, default_order, parse_type
 
 
@@ -78,7 +78,7 @@ def delete(pool_element):
 
 @bp.route('/pool_elements/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(PoolElement, id)
+    return show_json_response(PoolElement, id)
 
 
 # ###### INDEX
@@ -86,7 +86,7 @@ def show_json(id):
 @bp.route('/pool_elements.json', methods=['GET'])
 def index_json():
     q = index()
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 # ###### CREATE

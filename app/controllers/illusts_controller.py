@@ -13,7 +13,7 @@ from ..logical.utility import eval_bool_string, is_falsey
 from ..sources.base_source import get_source_by_id, get_illust_required_params
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, update_illust_from_source,\
     illust_delete_commentary
-from .base_controller import get_params_value, process_request_values, show_json, index_json, search_filter, default_order,\
+from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response, search_filter, default_order,\
     paginate, get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error, hide_input, int_or_blank,\
     nullify_blanks, set_default, check_param_requirements, parse_array_parameter, parse_bool_parameter
 
@@ -233,7 +233,7 @@ def delete_commentary(illust):
 
 @bp.route('/illusts/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(Illust, id, options=JSON_OPTIONS)
+    return show_json_response(Illust, id, options=JSON_OPTIONS)
 
 
 @bp.route('/illusts/<int:id>', methods=['GET'])
@@ -248,7 +248,7 @@ def show_html(id):
 def index_json():
     q = index()
     q = q.options(JSON_OPTIONS)
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 @bp.route('/illusts', methods=['GET'])

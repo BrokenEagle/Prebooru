@@ -13,7 +13,7 @@ from ..sources.danbooru_source import get_artists_by_url
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, update_artist_from_source, artist_append_booru,\
     artist_delete_profile
 from ..database.booru_db import create_booru_from_parameters
-from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate,\
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate,\
     default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error, parse_array_parameter, check_param_requirements,\
     int_or_blank, nullify_blanks, set_default, parse_bool_parameter, hide_input
 
@@ -205,7 +205,7 @@ def delete_profile(artist):
 
 @bp.route('/artists/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(Artist, id, options=JSON_OPTIONS)
+    return show_json_response(Artist, id, options=JSON_OPTIONS)
 
 
 @bp.route('/artists/<int:id>', methods=['GET'])
@@ -220,7 +220,7 @@ def show_html(id):
 def index_json():
     q = index()
     q = q.options(JSON_OPTIONS)
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 @bp.route('/artists', methods=['GET'])

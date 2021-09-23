@@ -11,7 +11,7 @@ from wtforms.validators import DataRequired
 from ..models import Notation, Pool, Artist, Illust, Post, PoolNotation
 from ..logical.utility import eval_bool_string, is_falsey
 from ..database.notation_db import create_notation_from_parameters, update_notation_from_parameters, append_notation_to_item, delete_notation
-from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate, default_order, get_data_params, CustomNameForm,\
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate, default_order, get_data_params, CustomNameForm,\
     get_or_abort, hide_input, nullify_blanks, check_param_requirements, set_error
 
 
@@ -154,7 +154,7 @@ def update(notation):
 
 @bp.route('/notations/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(Notation, id)
+    return show_json_response(Notation, id)
 
 
 @bp.route('/notations/<int:id>', methods=['GET'])
@@ -168,7 +168,7 @@ def show_html(id):
 @bp.route('/notations.json', methods=['GET'])
 def index_json():
     q = index()
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 @bp.route('/notations', methods=['GET'])

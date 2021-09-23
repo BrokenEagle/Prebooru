@@ -5,7 +5,7 @@ from flask import Blueprint, request, render_template
 
 # ## LOCAL IMPORTS
 from ..models import ArtistUrl
-from .base_controller import get_params_value, process_request_values, show_json, index_json, search_filter, default_order, paginate, get_or_abort
+from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response, search_filter, default_order, paginate, get_or_abort
 
 
 # ## GLOBAL VARIABLES
@@ -32,7 +32,7 @@ def index():
 
 @bp.route('/artist_urls/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(ArtistUrl, id)
+    return show_json_response(ArtistUrl, id)
 
 
 @bp.route('/artist_urls/<int:id>', methods=['GET'])
@@ -46,7 +46,7 @@ def show_html(id):
 @bp.route('/artist_urls.json', methods=['GET'])
 def index_json():
     q = index()
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 @bp.route('/artist_urls', methods=['GET'])

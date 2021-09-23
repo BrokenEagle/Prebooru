@@ -8,7 +8,7 @@ from sqlalchemy.orm import lazyload, selectinload
 # ## LOCAL IMPORTS
 from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust
 from ..logical.utility import eval_bool_string, is_falsey
-from .base_controller import show_json, index_json, search_filter, process_request_values, get_params_value, paginate,\
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate,\
     default_order, get_or_abort
 
 
@@ -85,7 +85,7 @@ def index():
 
 @bp.route('/posts/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(Post, id, JSON_OPTIONS)
+    return show_json_response(Post, id, JSON_OPTIONS)
 
 
 @bp.route('/posts/<int:id>', methods=['GET'])
@@ -100,7 +100,7 @@ def show_html(id):
 def index_json():
     q = index()
     q = q.options(JSON_OPTIONS)
-    return index_json(q, request)
+    return index_json_response(q, request)
 
 
 @bp.route('/', methods=['GET'])

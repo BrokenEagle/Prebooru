@@ -42,12 +42,12 @@ def referrer_check(endpoint, request):
     return urllib.parse.urlparse(request.referrer).path == url_for(endpoint)
 
 
-def show_json(model, id, options=None):
+def show_json_response(model, id, options=None):
     results = get_or_error(model, id, options)
     return results.to_json() if type(results) is not dict else results
 
 
-def index_json(query, request):
+def index_json_response(query, request):
     return jsonify([x.to_json() for x in paginate(query, request).items])
 
 

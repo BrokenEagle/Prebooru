@@ -5,7 +5,7 @@ from flask import Blueprint, request, render_template
 
 # ## LOCAL IMPORTS
 from ..models import SimilarityPool, Post
-from .base_controller import show_json, get_page, get_limit, get_or_abort
+from .base_controller import show_json_response, get_page, get_limit, get_or_abort
 
 
 # ## GLOBAL VARIABLES
@@ -19,7 +19,7 @@ bp = Blueprint("similarity_pool", __name__)
 
 @bp.route('/similarity_pools/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json(SimilarityPool, id)
+    return show_json_response(SimilarityPool, id)
 
 
 @bp.route('/similarity_pools/<int:id>', methods=['GET'])
