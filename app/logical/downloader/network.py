@@ -73,7 +73,7 @@ def create_video_post(video_illust_url, thumb_illust_url, upload, source):
     post_errors = []
     video_file_ext = check_filetype(buffer, file_ext, post_errors)
     temppost = Post(md5=md5, file_ext=video_file_ext)
-    error = save_video(buffer, md5, video_file_ext)
+    error = save_video(buffer, temppost)
     if error is not None:
         return post_errors + [error]
     video_width, video_height = check_video_dimensions(temppost, video_illust_url, post_errors)
