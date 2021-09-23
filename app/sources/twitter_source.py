@@ -194,7 +194,7 @@ TWITTER_ILLUST_TIMELINE_GRAPHQL = {
 IMAGE_SERVER = 'https://pbs.twimg.com'
 TWITTER_SIZES = [':orig', ':large', ':medium', ':small']
 
-TOKEN_FILE = DATA_DIRECTORY + 'twittertoken.txt'
+TOKEN_FILE = os.path.join(DATA_DIRECTORY, 'twittertoken.txt')
 
 
 # ##FUNCTIONS

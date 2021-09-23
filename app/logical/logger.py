@@ -1,6 +1,7 @@
 # APP/LOGICAL/LOGGER.PY
 
 # ##PYTHON IMPORTS
+import os
 import sys
 import time
 import traceback
@@ -12,7 +13,7 @@ from .file import load_default, put_get_json
 
 # ##GLOBAL VARIABLES
 
-ERROR_LOG_FILE = DATA_DIRECTORY + 'error_log.json'
+ERROR_LOG_FILE = os.path.join(DATA_DIRECTORY, 'error_log.json')
 
 
 # ##FUNCTIONS

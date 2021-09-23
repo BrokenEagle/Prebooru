@@ -17,7 +17,7 @@ from app.config import WORKING_DIRECTORY, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_M
 
 # ## GLOBAL VARIABLES
 
-SERVER_PID_FILE = DATA_DIRECTORY + 'prebooru-server-pid.json'
+SERVER_PID_FILE = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
 SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
 
 # Registering this with the Prebooru app so that DB commands can be executed with flask
