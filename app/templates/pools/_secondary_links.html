@@ -1,10 +1,12 @@
+{% from 'layouts/_macros.html' import subnav_link_to %}
+
 <menu id="secondary-menu">
-    {{ helpers.base.subnav_link_to("Listing", 'pool.index_html') }}
-    {{ helpers.base.subnav_link_to("New", 'pool.new_html') }}
+    {{ subnav_link_to("Listing", 'pool.index_html') }}
+    {{ subnav_link_to("New", 'pool.new_html') }}
     {# Add link to pool elements index #}
     {% if pool.id is not none %}
         |
-        {{ helpers.base.subnav_link_to("Show", 'pool.show_html', id=pool.id) }}
-        {{ helpers.base.subnav_link_to("Edit", 'pool.edit_html', id=pool.id) }}
+        {{ subnav_link_to("Show", 'pool.show_html', id=pool.id) }}
+        {{ subnav_link_to("Edit", 'pool.edit_html', id=pool.id) }}
     {% endif %}
 </menu>

@@ -130,13 +130,13 @@ def nav_link_to(text, endpoint):
     request_blueprint = request.endpoint.split('.')[0]
     klass = 'current' if link_blueprint == request_blueprint else None
     html_text = text.lower().replace(" ", "-")
-    return Markup(render_template("layouts/_nav_link.html", text=text, html_text=html_text, endpoint=endpoint, klass=klass))
+    return html_text, klass
 
 
-def subnav_link_to(text, endpoint, id=None, attrs=None, **kwargs):
+def subnav_link_to(text, endpoint, attrs=None, **kwargs):
     attrs = attrs if attrs is not None else {}
     html_text = text.lower().replace(" ", "-")
-    return Markup(render_template("layouts/_subnav_link.html", text=text, html_text=html_text, endpoint=endpoint, id=id, attrs=attrs, kwargs=kwargs))
+    return html_text, attrs
 
 
 def page_navigation(paginate):

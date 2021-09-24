@@ -1,11 +1,13 @@
+{% from 'layouts/_macros.html' import subnav_link_to %}
+
 <menu id="secondary-menu">
-    {{ helpers.base.subnav_link_to("Listing", 'artist.index_html') }}
-    {{ helpers.base.subnav_link_to("New", 'artist.new_html') }}
-    {{ helpers.base.subnav_link_to("URLs", 'artist_url.index_html') }}
+    {{ subnav_link_to("Listing", 'artist.index_html') }}
+    {{ subnav_link_to("New", 'artist.new_html') }}
+    {{ subnav_link_to("URLs", 'artist_url.index_html') }}
     |
-    {{ helpers.base.subnav_link_to("Create", 'artist.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return CreateArtistFromUrl(this)'}) }}
+    {{ subnav_link_to("Create", 'artist.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return CreateArtistFromUrl(this)'}) }}
     {% if artist.id is not none %}
-        {{ helpers.base.subnav_link_to("Show", 'artist.show_html', id=artist.id) }}
-        {{ helpers.base.subnav_link_to("Edit", 'artist.edit_html', id=artist.id) }}
+        {{ subnav_link_to("Show", 'artist.show_html', id=artist.id) }}
+        {{ subnav_link_to("Edit", 'artist.edit_html', id=artist.id) }}
     {% endif %}
 </menu>

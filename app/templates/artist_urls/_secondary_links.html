@@ -1,8 +1,10 @@
+{% from 'layouts/_macros.html' import subnav_link_to %}
+
 <menu id="secondary-menu">
-    {{ helpers.base.subnav_link_to("Listing", 'artist_url.index_html') }}
-    {{ helpers.base.subnav_link_to("Artists", 'artist.index_html') }}
+    {{ subnav_link_to("Listing", 'artist_url.index_html') }}
+    {{ subnav_link_to("Artists", 'artist.index_html') }}
     {% if artist_url.id != None %}
         |
-        {{ helpers.base.subnav_link_to("Show", 'artist_url.show_html', artist_url.id) }}
+        {{ subnav_link_to("Show", 'artist_url.show_html', artist_url.id) }}
     {% endif %}
 </menu>

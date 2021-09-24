@@ -1,3 +1,23 @@
+{% macro nav_link_to(text, endpoint) -%}
+    {% with html_text, klass = helpers.base.nav_link_to(text, endpoint) %}
+        <li id="nav-{{ html_text }}" class="{{ klass }}">
+            <a id="nav-{{ html_text }}-link" href="{{ url_for(endpoint) }}">{{ text }}</a>
+        </li>
+    {% endwith %}
+{%- endmacro %}
+
+{% macro subnav_link_to(text, endpoint, id=None, attrs=None) -%}
+    {% with html_text, attrs = helpers.base.subnav_link_to(text, endpoint) %}
+        <li id="subnav-{{ html_text }}">
+            <a id="subnav-{{ html_text }}-link"
+            {% for key in attrs %}
+                {{ key }}="{{ attrs[key] | safe }}"
+            {% endfor %}
+            href="{{ url_for(endpoint, id=id, **kwargs) }}">{{ text }}</a>
+        </li>
+    {% endwith %}
+{%- endmacro %}
+
 {% macro render_form(form, method, url, class=None, manual=False) -%}
     {% set submethod = method.lower() if method not in ['GET', 'POST'] else None %}
     {% set method = method if method.upper() in ['GET', 'POST'] else 'POST' %}

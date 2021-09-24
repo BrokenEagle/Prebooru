@@ -1,10 +1,12 @@
+{% from 'layouts/_macros.html' import subnav_link_to %}
+
 <menu id="secondary-menu">
-    {{ helpers.base.subnav_link_to("Listing", 'illust_url.index_html') }}
-    {{ helpers.base.subnav_link_to("New", 'illust_url.new_html') }}
-    {{ helpers.base.subnav_link_to("Illusts", 'illust.index_html') }}
+    {{ subnav_link_to("Listing", 'illust_url.index_html') }}
+    {{ subnav_link_to("New", 'illust_url.new_html') }}
+    {{ subnav_link_to("Illusts", 'illust.index_html') }}
     {% if illust_url.id != None %}
         |
-        {{ helpers.base.subnav_link_to("Show", 'illust_url.show_html', illust_url.id) }}
-        {{ helpers.base.subnav_link_to("Edit", 'illust_url.edit_html', illust_url.id) }}
+        {{ subnav_link_to("Show", 'illust_url.show_html', illust_url.id) }}
+        {{ subnav_link_to("Edit", 'illust_url.edit_html', illust_url.id) }}
     {% endif %}
 </menu>
