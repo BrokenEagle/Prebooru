@@ -24,7 +24,7 @@
                 {{ post_preview(item.video_illust_url.post) }}
             {% endif %}
         {% elif helpers.pool.item_is_of_type(item, 'notation') %}
-            <div class="pool-display-notation">{{ helpers.notation.convert_to_html(item) }}</div>
+            <div class="pool-display-notation">{{ helpers.base.convert_to_html(item.body) }}</div>
         {% endif %}
     </div>
 {%- endmacro %}

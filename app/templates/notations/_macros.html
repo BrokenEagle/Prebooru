@@ -1,7 +1,7 @@
 {% macro notations_block(notation) -%}
     <strong>{{ notation.show_link }}</strong>
     <div class="notation-block">
-        {{ helpers.notation.convert_to_html(notation) }}<br><br>
+        {{ helpers.base.convert_to_html(notation.body) }}<br><br>
         <span class="muted-timestamp">{{ helpers.base.format_timestamps(notation) }}</span>
     </div>
 {%- endmacro %}
@@ -10,7 +10,7 @@
     <ul>
         {% for notation in notations %}
             <li>
-                <span class="notation-list-item thin-list">{{ helpers.notation.convert_to_html(notation) }}</span>
+                <span class="notation-list-item thin-list">{{ helpers.base.convert_to_html(notation.body) }}</span>
             </li>
         {% endfor %}
     </ul>

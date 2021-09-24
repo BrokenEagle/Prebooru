@@ -10,6 +10,21 @@ from wtforms.widgets import HiddenInput
 
 # ##LOCAL IMPORTS
 from ..logical.utility import time_ago
+from ..logical.sources import pixiv, twitter
+
+
+# ##GLOBAL VARIABLES
+
+HTTP_RG = re.compile(r'(\b(?:http|https)(?::\/{2}[\w]+)(?:[\/|\.]?)(?:[^\s<>\uff08\uff09\u3011\u3000"\[\]]*))', re.IGNORECASE | re.ASCII)
+LOCAL_SHORTLINK_RG = re.compile(r'\b(booru|artist|illust|post|upload|pool|notation) #(\d+)\b', re.IGNORECASE)
+SITE_SHORTLINK_RG = re.compile(r'\b(pixiv|pxuser|twitter|twuser) #(\d+)\b', re.IGNORECASE)
+
+SITE_URL_DICT = {
+    'pixiv': pixiv.ILLUST_HREFURL,
+    'pxuser': pixiv.ARTIST_HREFURL,
+    'twitter': twitter.ILLUST_HREFURL,
+    'twuser': twitter.ARTIST_HREFURL,
+}
 
 
 # ##FUNCTIONS
@@ -30,6 +45,22 @@ def format_timestamps(item):
     if delta.days > 0 or delta.seconds > 3600:
         text += " ( %s )" % time_ago(item.updated)
     return text
+
+
+def convert_to_html(text):
+    links = HTTP_RG.findall(text)
+    output_html = html.escape(text)
+    for link in links:
+        escaped_link = re.escape(html.escape(link))
+        link_match = re.search(escaped_link, output_html)
+        if link_match is None:
+            continue
+        html_link = url_link(link)
+        output_html = output_html[:link_match.start()] + str(html_link) + output_html[link_match.end():]
+    output_html = _convert_local_short_links(output_html)
+    output_html = _convert_site_short_links(output_html)
+    output_html = re.sub(r'\r?\n', '<br>', output_html)
+    return Markup(output_html)
 
 
 # #### HTML functions
@@ -166,3 +197,30 @@ def endpoint_classes(request):
 
 def has_error_messages(messages):
     return any((category, message) for (category, message) in messages if category == 'error')
+
+
+# #### Private functions
+
+def _convert_local_short_links(text):
+    position = 0
+    while True:
+        match = LOCAL_SHORTLINK_RG.search(text, pos=position)
+        if not match:
+            return text
+        link_url = url_for(match.group(1) + '.show_html', id=int(match.group(2)))
+        link = str(general_link(match.group(0), link_url))
+        text = text[:match.start()] + link + text[match.end():]
+        position = match.start() + len(link)
+
+
+def _convert_site_short_links(text):
+    position = 0
+    while True:
+        match = SITE_SHORTLINK_RG.search(text, pos=position)
+        if not match:
+            return text
+        format_str = SITE_URL_DICT[match.group(1)]
+        link_url = format_str % int(match.group(2))
+        link = str(external_link(match.group(0), link_url))
+        text = text[:match.start()] + link + text[match.end():]
+        position = match.start() + len(link)

@@ -6,8 +6,8 @@
     <div id="error-heading" class="heading">{{ error.shortlink.title() }}</div>
     <div id="error-content">
         <ul>
-            <li><strong>Module:</strong> {{ error.module }}</li>
-            <li><strong>Message:</strong> {{ helpers.error.format_message(error) }}</li>
+            <li><strong>Module:</strong> <code>{{ error.module }}</code></li>
+            <li><strong>Message:</strong> {{ helpers.base.convert_to_html(error.message) }}</li>
             <li><strong>Created:</strong> {{ helpers.base.format_timestamp(error.created) }}</li>
         </ul>
     </div>
