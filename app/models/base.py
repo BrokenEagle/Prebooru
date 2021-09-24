@@ -4,6 +4,8 @@
 import datetime
 from typing import List, _GenericAlias
 from flask import url_for, Markup
+from sqlalchemy.orm import RelationshipProperty, reconstructor
+from sqlalchemy.util import memoized_property
 
 # ## LOCAL IMPORTS
 from .. import DB, SERVER_INFO
@@ -130,3 +132,35 @@ class JsonModel(DB.Model):
             else:
                 data[key] = type_func(value)
         return data
+
+    @classmethod
+    def relations(cls):
+        if not hasattr(cls, '_relation_keys'):
+            primary_keys = [key for key in dir(cls) if not key.startswith('_')]
+            setattr(cls, '_relation_keys', [])
+            for key in primary_keys:
+                attr = getattr(cls, key)
+                if not hasattr(attr, 'property'):
+                    continue
+                if type(attr.property) is RelationshipProperty:
+                    cls._relation_keys.append(key)
+        return cls._relation_keys
+
+    @classmethod
+    def fk_relations(cls):
+        relations = []
+        for key in cls.relations():
+            table = cls.__table__
+            relation = getattr(cls, key)
+            if relation.property.primaryjoin.right.table == table:
+                relations.append(key)
+        return relations
+
+    @classmethod
+    def set_relation_properties(cls):
+        for key in cls.fk_relations():
+            table_name = getattr(cls, key).property.primaryjoin.left.table.name
+            relation_key = getattr(cls, key).property.primaryjoin.right.name
+            setattr(cls, key + '_shortlink', property(lambda x: "%s #%d" % (table_name, getattr(x, relation_key)) if getattr(x, relation_key) is not None else "new %s" % table_name))
+            setattr(cls, key + '_show_url', property(lambda x: url_for("%s.show_html" % table_name, id=getattr(x, relation_key)) if getattr(x, relation_key) is not None else None))
+            setattr(cls, key + '_show_link', property(lambda x: Markup('<a href="%s">%s</a>' % (getattr(x, key + '_show_url'), getattr(x, key + '_shortlink'))) if getattr(x, relation_key) is not None else None))

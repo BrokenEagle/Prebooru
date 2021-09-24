@@ -52,6 +52,10 @@ PoolElement.polymorphic_relations = {
     'notation': PoolNotation,
 }
 
+Illust.set_relation_properties()
+ArtistUrl.set_relation_properties()
+IllustUrl.set_relation_properties()
+
 # ## GLOBAL VARIABLES
 
 NONCE = None

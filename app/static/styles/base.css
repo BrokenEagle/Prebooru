@@ -81,10 +81,14 @@ table {
     border-collapse: collapse;
     border-spacing: 0;
 }
+table.striped {
+    margin-top: 2em;
+}
 table.striped thead tr {
     border-bottom: 2px solid #5b5c79;
 }
 table.striped thead th {
+    font-size: 1.25em;
     text-align: left;
 }
 table.striped td,

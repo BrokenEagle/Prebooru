@@ -10,15 +10,14 @@
         <thead>
             <tr>
                 <th width="1%">Preview</th>
-                <th width="10%">Info</th>
+                <th width="15%">Info</th>
                 <th width="25%">Tags</th>
                 <th width="25%">Illust urls</th>
-                <th width="12%">Timestamps</th>
+                <th width="15%">Timestamps</th>
             </tr>
         </thead>
         <tbody>
             {% for illust in illusts.items %}
-                {% set outer_loop = loop %}
                 <tr id="illust-{{ illust.id }}">
                     <td>
                         {{ multi_post_preview(illust, 'illust') }}
@@ -26,7 +25,8 @@
                     <td>
                         <span><strong>{{ illust.show_link }} {{ helpers.base.general_link('&raquo;', helpers.illust.post_illust_search(illust)) }}</strong></span><br>
                         <span><strong>Domain:</strong> {{ illust.site_domain }}</span><br>
-                        <span><strong>Site ID:</strong> {{ illust.site_illust_id }}</span><br>
+                        <span><strong>Site ID:</strong> {{ illust.site_illust_id }}</span><br><br>
+                        <span><strong>{{ illust.artist_show_link }}</strong></span>
                     </td>
                     <td>
                         <div class="simple-tags-container">

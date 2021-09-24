@@ -17,8 +17,8 @@
             {% for artist_url in artist_urls.items %}
                 <tr id="artist-url-{{ artist_url.id }}">
                     <td>{{ artist_url.show_link }}</td>
-                    <td>{{ helpers.base.show_link('artist', artist_url.artist_id) }}</td>
-                    <td>{{ artist_url.url }}</td>
+                    <td>{{ artist_url.artist_show_link }}</td>
+                    <td>{{ helpers.base.url_link(artist_url.url) }}</td>
                     <td>{{ artist_url.active | tojson }}</td>
                 </tr>
             {% endfor %}
