@@ -11,7 +11,7 @@
     <header id="top">
         <a id="app-name-header" class="heading" href="/">Prebooru</a>
         <nav>
-            {{ helpers.base.render_template("layouts/_main_links.html") | safe }}
+            {% include "layouts/_main_links.html" %}
             {% block secondary_links %}{% endblock %}
         </nav>
     </header>

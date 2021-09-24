@@ -14,7 +14,7 @@
                             <li><strong>Dimensions:</strong> {{ illust_url.width }} x {{ illust_url.height }}</li>
                             <li><strong>Active:</strong> {{ illust_url.active | tojson }}</li>
                             {% if illust_url.post is none %}
-                                <li><strong>Upload( <a href="{{ url_for('upload.new_html', illust_url_id=illust_url.id) }}">image</a> )</strong></li>
+                                <li><strong>Upload( {{ helpers.illust_url.upload_media_link('image', illust_url) }} )</strong></li>
                             {% endif %}
                         </ul>
                     </div>
@@ -38,24 +38,28 @@
         <h3>Video URLs</h3>
         <div class="video-post-info">
             <ul>
-                <li><strong>Edit( 
-                    {{ helpers.base.general_link('video', video_illust_url.edit_url) }} |
-                    {{ helpers.base.general_link('sample', sample_illust_url.edit_url) }}
-                    )
-                </strong></li>
-                <li><strong>Video URL:</strong> {{ helpers.base.url_link(video_illust_url.full_url) }}</li>
+                <li><strong>Edit( {{ helpers.illust_url.edit_video_links(video_illust_url, sample_illust_url) }} )</strong></li>
+                {% if video_illust_url is not none %}
+                    <li><strong>Video URL:</strong> {{ helpers.base.url_link(video_illust_url.full_url) }}</li>
+                {% endif %}
+                {% if sample_illust_url is not none %}
                 <li><strong>Thumb URL:</strong> {{ helpers.base.url_link(sample_illust_url.full_url) }}</li>
+                {% endif %}
                 <li><strong>Dimensions:</strong> {{ video_illust_url.width }} x {{ video_illust_url.height }}</li>
                 <li><strong>Active:</strong> {{ video_illust_url.active | tojson }}</li>
+                {% if video_illust_url.post is none %}
+                    <li><strong>Upload( {{ helpers.illust_url.upload_media_link('video', video_illust_url) }} )</strong></li>
+                {% endif %}
             </ul>
         </div>
-        <div class="video-post-preview">
-            {% if video_illust_url.post is not none %}
+        {% if video_illust_url.post is not none %}
+            <div class="video-post-preview">
                 {{ post_preview(video_illust_url.post) }}
-            {% else %}
-                <em>No post.</em><br><br>
-                ( <a href="{{ url_for('upload.new_html', illust_url_id=video_illust_url.id) }}">upload</a> )
-            {% endif %}
-        </div>
+            </div>
+        {% else %}
+            <div class="no-post-preview">
+                <span class="explanation">No post.</span>
+            </div>
+        {% endif %}
     </section>
 {%- endmacro %}

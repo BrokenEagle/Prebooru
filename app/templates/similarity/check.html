@@ -10,9 +10,7 @@
     <div id="similarity-content">
         <div id="similarity-heading" class="heading">Similarity results</div>
         <div id="similarity-form" class="{{ helpers}}">
-            {% call(field_name, field_input) render_form(form, 'GET', url_for('similarity.check_html'), class=helpers.similarity.form_class(similar_results)) %}
-                {{ field_input() }}
-            {% endcall %}
+            {{ render_form(form, 'GET', url_for('similarity.check_html'), class=helpers.similarity.form_class(similar_results)) }}
             {% if similar_results is not none %}
                 <div id="display-form">
                     <a href="#" onclick="return ShowForm(this)">&laquo;Show form&raquo;</a>

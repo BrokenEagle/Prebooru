@@ -5,7 +5,7 @@
     {{ subnav_link_to("New", 'artist.new_html') }}
     {{ subnav_link_to("URLs", 'artist_url.index_html') }}
     |
-    {{ subnav_link_to("Create", 'artist.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return CreateArtistFromUrl(this)'}) }}
+    {{ subnav_link_to("Create", 'artist.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return Artists.createArtistFromUrl(this)'}) }}
     {% if artist.id is not none %}
         {{ subnav_link_to("Show", 'artist.show_html', id=artist.id) }}
         {{ subnav_link_to("Edit", 'artist.edit_html', id=artist.id) }}

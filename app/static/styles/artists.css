@@ -69,9 +69,6 @@ div#artist-webpages-container {
     max-height: 200px;
     overflow-y: auto;
 }
-div.artist-webpage-block > ul {
-    padding-right: 0.5em;
-}
 div#artist-site-content-2 {
     margin-top: 2em;
 }
@@ -97,4 +94,14 @@ span.artist-profile-delete {
 }
 div#artist-posts {
     margin-top: 2em;
+}
+/****MACROS****/
+span.artist-webpage {
+    font-family: monospace;
+}
+span.artist-webpage span.active {
+    background-color: lightgreen;
+}
+span.artist-webpage span.inactive {
+    background-color: lightsalmon;
 }

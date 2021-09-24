@@ -1,5 +1,6 @@
 {% extends 'artists/_base.html' %}
 {% from 'layouts/_macros.html' import simple_list, page_navigation %}
+{% from 'artists/_macros.html' import artist_webpage %}
 
 {% block title %}Artists{% endblock %}
 
@@ -18,15 +19,16 @@
         <tbody>
             {% for artist in artists.items %}
                 <tr id="artist-{{ artist.id }}">
-                    <td>{{ artist.show_link }} {{ helpers.base.general_link('&raquo;', helpers.artist.post_search(artist)) }}</td>
+                    <td>{{ artist.show_link }} {{ helpers.artist.post_search_link(artist) }}</td>
                     <td>
                         <span><strong>Domain:</strong> {{ artist.site_domain }}</span><br>
                         <span><strong>Artist ID:</strong> {{ artist.site_artist_id }}</span>
                     </td>
                     <td>{{ simple_list(artist.names, 'name') }}</td>
                     <td>{{ simple_list(artist.site_accounts, 'name') }}</td>
-                    <td>{% call(webpage) simple_list(artist.webpages, 'url') %}
-                            <code>[{{ 'Active' if webpage.active else 'Inactive' }}]</code> {{ helpers.artist.webpage_link(webpage.url) }}
+                    <td>
+                        {% call(webpage) simple_list(artist.webpages, 'url') %}
+                            {{ artist_webpage(webpage) }}
                         {% endcall %}
                     </td>
                     <td>

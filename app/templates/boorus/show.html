@@ -1,10 +1,10 @@
 {% extends 'boorus/_base.html' %}
 {% from 'posts/_macros.html' import recent_posts %}
 
-{% block title %}{{ booru.shortlink.title() }}{% endblock %}
+{% block title %}{{ booru.header }}{% endblock %}
 
 {% block content %}
-    <div id="booru-heading" class="heading">{{ booru.shortlink.title() }}</div>
+    <div id="booru-heading" class="heading">{{ booru.header }}</div>
     <div id="booru-content">
         {% include "boorus/_sidebar.html" %}
         {% include "boorus/_site_content.html" %}

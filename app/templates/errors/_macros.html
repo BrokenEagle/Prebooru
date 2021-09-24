@@ -2,13 +2,17 @@
     {% if errors | length > 0 %}
         <section id="{{ section_id }}">
             <h4>Errors</h4>
-            <ul>
             {% for error in errors %}
-                <li><strong>Module:</strong> {{ error.module }}</li>
-                <li><strong>Message:</strong> {{ error.message }}</li>
-                <li><strong>Created:</strong> {{ helpers.base.format_timestamp(error.created) }}</li>
+                <strong>{{ error.show_link }}</strong>
+                <ul>
+                    <li><strong>Module:</strong> <code>{{ error.module }}</code></li>
+                    <li><strong>Message:</strong> {{ helpers.base.convert_to_html(error.message) }}</li>
+                    <li><strong>Created:</strong> {{ helpers.base.format_timestamp(error.created) }}</li>
+                </ul>
+                {% if not loop.last %}
+                    <hr>
+                {% endif %}
             {% endfor %}
-            </ul>
         </section>
     {% endif %}
 {%- endmacro %}

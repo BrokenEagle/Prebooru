@@ -1,11 +1,16 @@
 {% extends 'errors/_base.html' %}
 
-{% block title %}{{ error.shortlink.title() }}{% endblock %}
+{% block title %}{{ error.header }}{% endblock %}
 
 {% block content %}
-    <div id="error-heading" class="heading">{{ error.shortlink.title() }}</div>
+    <div id="error-heading" class="heading">{{ error.header }}</div>
     <div id="error-content">
         <ul>
+            {% if error.upload is not none %}
+                <li><strong>{{ error.upload.show_link }}</strong></li>
+            {% elif error.post is not none %}
+                <li><strong>{{ error.post.show_link }}</strong></li>
+            {% endif %}
             <li><strong>Module:</strong> <code>{{ error.module }}</code></li>
             <li><strong>Message:</strong> {{ helpers.base.convert_to_html(error.message) }}</li>
             <li><strong>Created:</strong> {{ helpers.base.format_timestamp(error.created) }}</li>

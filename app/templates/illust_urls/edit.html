@@ -8,9 +8,7 @@
         Edit {{ illust_url.header }}
     </div>
     <div id="illust-url-form-info">
-        For {{ illust_url.illust.show_link }}:
+        For {{ illust_url.illust_show_link }}:
     </div>
-    {% call(field_name, field_input) render_form(form, 'PUT', illust_url.update_url) %}
-        {{ field_input() }}
-    {% endcall%}
+    {{ render_form(form, 'PUT', illust_url.update_url) }}
 {% endblock %}

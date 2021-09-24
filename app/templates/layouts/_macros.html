@@ -1,19 +1,15 @@
 {% macro nav_link_to(text, endpoint) -%}
     {% with html_text, klass = helpers.base.nav_link_to(text, endpoint) %}
         <li id="nav-{{ html_text }}" class="{{ klass }}">
-            <a id="nav-{{ html_text }}-link" href="{{ url_for(endpoint) }}">{{ text }}</a>
+            {{ helpers.base.general_link(text, url_for(endpoint), id=("nav-%s-link" % html_text)) }}
         </li>
     {% endwith %}
 {%- endmacro %}
 
-{% macro subnav_link_to(text, endpoint, id=None, attrs=None) -%}
-    {% with html_text, attrs = helpers.base.subnav_link_to(text, endpoint) %}
+{% macro subnav_link_to(text, endpoint, id=None, attrs={}) -%}
+    {% with html_text, attrs = helpers.base.subnav_link_to(text, attrs) %}
         <li id="subnav-{{ html_text }}">
-            <a id="subnav-{{ html_text }}-link"
-            {% for key in attrs %}
-                {{ key }}="{{ attrs[key] | safe }}"
-            {% endfor %}
-            href="{{ url_for(endpoint, id=id, **kwargs) }}">{{ text }}</a>
+            {{ helpers.base.general_link(text, url_for(endpoint, id=id, **kwargs), **attrs) }}
         </li>
     {% endwith %}
 {%- endmacro %}
@@ -29,7 +25,11 @@
         {{ form.csrf_token }}
         {% if not manual %}
             {% for field_name, field_input in helpers.base.form_iterator(form) %}
-                {{ caller(field_name, field_input) }}
+                {% if caller is undefined %}
+                    {{ field_input() }}
+                {% else %}
+                    {{ caller(field_name, field_input) }}
+                {% endif %}
             {% endfor %}
         {% else %}
             {{ caller() }}
@@ -123,7 +123,7 @@
             {% if previous_page is none %}
                 <span>&lt;</span>
             {% else %}
-                <a href="{{ helpers.base.url_for_with_args(request.endpoint, page=previous_page) }}">&lt;</a>
+                {{ helpers.base.page_link('&lt;', request.endpoint, previous_page) }}
             {% endif %}
 
             {% for page in pages %}
@@ -132,14 +132,14 @@
                 {% elif page == current_page %}
                     <span>{{ current_page }}</span>
                 {% else %}
-                    <a href="{{ helpers.base.url_for_with_args(request.endpoint, page=page) }}">{{ page }}</a>
+                    {{ helpers.base.page_link(page | string, request.endpoint, page) }}
                 {% endif %}
             {% endfor %}
 
             {% if next_page is none %}
                 <span>&gt;</span>
             {% else %}
-                <a href="{{ helpers.base.url_for_with_args(request.endpoint, page=next_page) }}">&gt;</a>
+                {{ helpers.base.page_link('&gt;', request.endpoint, next_page) }}
             {% endif %}
         </div>
     {% endwith %}

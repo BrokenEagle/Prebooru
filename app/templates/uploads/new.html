@@ -8,12 +8,10 @@
     {% if illust_url is not none %}
         <div id="upload-url-info">
             <ul>
-                <li><strong>URL:</strong> {{ illust_url.full_url }}</li>
+                <li><strong>URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}</li>
                 <li><strong>Dimensions:</strong> ( {{ illust_url.width }} x {{ illust_url.height }} )</li>
             </ul>
         </div>
     {% endif %}
-    {% call(field_name, field_input) render_form(form, 'POST', upload.create_url) %}
-        {{ field_input() }}
-    {% endcall %}
+    {{ render_form(form, 'POST', upload.create_url) }}
 {% endblock %}

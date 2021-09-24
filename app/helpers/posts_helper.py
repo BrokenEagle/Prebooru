@@ -12,9 +12,16 @@ from ..config import DANBOORU_HOSTNAME
 
 # ## FUNCTIONS
 
-def danbooru_post_link(post):
-    return external_link('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id) if post.danbooru_id is not None else Markup('<em>N/A</em>')
+# #### URL functions
 
+def related_posts_search(post):
+    illust_ids_str = ','.join([str(illust.id) for illust in post.illusts])
+    return search_url_for('post.index_html', illust_urls={'illust_id': illust_ids_str})
+
+
+# #### Link functions
+
+# ###### GENERAL
 
 def similar_search_links(post, format_url, proxy_url=None):
     image_links = []
@@ -40,6 +47,8 @@ def similar_search_links(post, format_url, proxy_url=None):
             image_links.append('N/A')
     return Markup(' | ').join(image_links)
 
+
+# ###### SHOW
 
 def danbooru_search_links(post):
     return similar_search_links(post, DANBOORU_HOSTNAME + '/iqdb_queries?url=', '/proxy/danbooru_iqdb')
@@ -91,18 +100,6 @@ def add_to_pool_link(post):
     return general_link("Add to pool", url_for('pool_element.create_html'), **{'onclick': "return Prebooru.createPool(this, 'post')", 'data-post-id': post.id})
 
 
-def related_posts_search(post):
-    illust_ids_str = ','.join([str(illust.id) for illust in post.illusts])
-    return search_url_for('post.index_html', illust_urls={'illust_id': illust_ids_str})
+def danbooru_post_link(post):
+    return external_link('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id) if post.danbooru_id is not None else Markup('<em>N/A</em>')
 
-
-def similarity_post_pool_link(post):
-    return general_link(post.similar_post_count, post.similarity_pool.show_url)
-
-
-def similarity_sibling_pool_link(similarity_element):
-    return general_link(similarity_element.post.shortlink, similarity_element.sibling.pool.show_url) if similarity_element.sibling is not None else "Sibling missing"
-
-
-def delete_similarity_element_link(element):
-    return general_link("remove", element.delete_url, **{'onclick': 'return SimilarityPosts.deleteElement(this)', 'class': 'warning-link'})

@@ -17,7 +17,7 @@
                     </div>
                     <div class="pool-block-content">
                         {{ pool_display_block(item) }}
-                        {% if helpers.pool.item_is_of_types(item, ['post', 'illust']) %}
+                        {% if item.model_name == 'post' or item.model_name == 'illust' %}
                             {{ pool_info_block(item) }}
                         {% endif %}
                     </div>

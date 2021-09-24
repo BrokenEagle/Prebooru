@@ -17,18 +17,3 @@
         {% endif %}
     </div>
 {% endblock %}
-
-{% block pagescript %}
-<script>
-function IllustCreatePool(obj) {
-    let illust_id = obj.dataset.illustId;
-    console.log(illust_id);
-    let pool_id = prompt("Enter pool # to add to:");
-    if (pool_id !== null) {
-        console.log(pool_id);
-        Prebooru.postRequest(obj.href, {'pool_element[pool_id]': pool_id, 'pool_element[illust_id]': illust_id});
-    }
-    return false;
-}
-</script>
-{% endblock %}

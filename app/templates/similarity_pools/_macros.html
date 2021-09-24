@@ -1,0 +1,30 @@
+{% macro similar_posts(post) -%}
+    {% if post.similarity_pool is not none %}
+        <div id="similar-posts-heading" class="heading">
+            Similar posts
+            (&thinsp;{{ helpers.similarity_pool.pool_count_link(post.similarity_pool) }}&thinsp;)
+        </div>
+        <div id="similar-posts-container">
+            {% for similarity_element in post.similar_posts %}
+                <div class="similar-post-block">
+                    <div class="similar-heading">
+                        <strong>{{ helpers.similarity_pool.sibling_pool_link(similarity_element) }}</strong>
+                        &ensp;(&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element) }}&thinsp;)
+                    </div>
+                    <article class="post similar-post">
+                        <a href="{{ similarity_element.post.show_url }}">
+                            <img src="{{ similarity_element.post.preview_url }}">
+                        </a>
+                    </article>
+                    <div>
+                        <strong>Score:</strong> {{ similarity_element.score }}<br>
+                        <strong>Type/Size:</strong> {{ similarity_element.post.file_ext.upper() }} @ {{ similarity_element.post.size }}<br>
+                        <strong>Dimensions:</strong> ( {{ similarity_element.post.width }} x {{ similarity_element.post.height }} )
+                    </div>
+                </div>
+            {% else %}
+                <span class="explanation">There are no similar posts.</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+{%- endmacro %}

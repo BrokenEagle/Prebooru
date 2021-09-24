@@ -33,7 +33,7 @@ def form_class(form):
     return CLASS_MAP[form.site_id.data]
 
 
-# #### Site content functions
+# #### Iterator functions
 
 def site_metric_iterator(illust):
     site_data_json = illust.site_data.to_json()
@@ -51,11 +51,7 @@ def site_date_iterator(illust):
 
 # #### URL functions
 
-def original_url(illust_url):
-    return url_link('https://' + get_site_domain(illust_url.site_id) + illust_url.url)
-
-
-def short_link(illust):
+def site_short_link(illust):
     site_key = get_site_key(illust.site_id)
     return "%s #%d" % (site_key.lower(), illust.site_illust_id)
 
@@ -66,14 +62,6 @@ def site_illust_url(illust):
     return source.get_illust_url(illust.site_illust_id)
 
 
-def post_illust_search(illust):
-    return search_url_for('post.index_html', illust_urls={'illust_id': illust.id})
-
-
-def post_tag_search(tag):
-    return search_url_for('post.index_html', illust_urls={'illust': {'tags': {'name': tag.name}}})
-
-
 def danbooru_batch_url(illust):
     source = get_source_by_id(illust.site_id)
     post_url = source.get_post_url(illust)
@@ -82,6 +70,18 @@ def danbooru_batch_url(illust):
 
 
 # #### Link functions
+
+# ###### INDEX
+
+def post_search_link(illust):
+    return general_link('&raquo;', search_url_for('post.index_html', illust_urls={'illust_id': illust.id}))
+
+
+def illust_url_search_link(illust):
+    return general_link("&laquo;search&raquo;", search_url_for('illust_url.index_html', illust_id=illust.id))
+
+
+# ###### SHOW
 
 def danbooru_upload_link(illust):
     return external_link("Danbooru", danbooru_batch_url(illust))
@@ -103,11 +103,17 @@ def add_pool_link(illust):
     return general_link("Add pool", url_for('pool_element.create_html'), **{'onclick': "return Prebooru.createPool(this, 'illust')", 'data-illust-id': illust.id})
 
 
+def delete_commentary_link(illust, commentary):
+    return general_link("remove", url_for('illust.delete_commentary_html', id=illust.id, description_id=commentary.id), method="DELETE", **{'class': 'warning-link'})
+
+
+# ###### GENERAL
+
 def site_illust_link(illust):
-    return external_link(short_link(illust), site_illust_url(illust))
+    return external_link(site_short_link(illust), site_illust_url(illust))
 
 
-def post_illust_link(illust):
+def alt_site_illust_link(illust):
     site_key = get_site_key(illust.site_id)
     source = SOURCEDICT[site_key]
     post_url = source.get_post_url(illust)

@@ -12,7 +12,5 @@
             For {{ notation.append_item.show_link }}:
         </div>
     {% endif %}
-    {% call(field_name, field_input) render_form(form, 'PUT', notation.update_url) %}
-        {{ field_input() }}
-    {% endcall %}
+    {{ render_form(form, 'PUT', notation.update_url) }}
 {% endblock %}

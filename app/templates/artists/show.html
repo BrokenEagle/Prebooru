@@ -1,10 +1,10 @@
 {% extends 'artists/_base.html' %}
 {% from "posts/_macros.html" import recent_posts %}
 
-{% block title %}{{ artist.shortlink.title() }}{% endblock %}
+{% block title %}{{ artist.header }}{% endblock %}
 
 {% block content %}
-    <div id="artist-heading" class="heading">{{ artist.shortlink.title() }}</div>
+    <div id="artist-heading" class="heading">{{ artist.header }}</div>
     <div id="artist-content">
         {% include "artists/_sidebar.html" %}
         {% include "artists/_site_content.html" %}

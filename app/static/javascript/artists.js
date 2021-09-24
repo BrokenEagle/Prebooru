@@ -1,3 +1,5 @@
-function CreateArtistFromUrl(obj) {
+const Artists = {};
+
+Artists.createArtistFromUrl = function(obj) {
     return Prebooru.promptArgPost(obj, "Enter the site artist URL to create from:", 'url');
-}
+};

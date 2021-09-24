@@ -148,7 +148,7 @@ class SimilarityData(JsonModel):
         return clause
 
 
-# ## INITIALIZATION
+# INITIALIZATION
 
 # Initialize chunk attributes, CHUNK00 - CHUNKXX
 for i in range(0, NUM_CHUNKS):

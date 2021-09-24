@@ -65,9 +65,9 @@ def get_artist_id_source(artist_url):
             return source
 
 
-def get_image_source(image_url):
+def get_media_source(image_url):
     for source in SOURCES:
-        if source.is_image_url(image_url):
+        if source.is_image_url(image_url) or source.is_video_url(image_url):
             return source
 
 

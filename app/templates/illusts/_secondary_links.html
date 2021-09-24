@@ -5,7 +5,7 @@
     {{ subnav_link_to("New", 'illust.new_html') }}
     {{ subnav_link_to("URLs", 'illust_url.index_html') }}
     {{ subnav_link_to("Tags", 'tag.index_html') }}
-    | {{ subnav_link_to("Create", 'illust.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return CreateIllustFromUrl(this)'}) }}
+    | {{ subnav_link_to("Create", 'illust.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return Illusts.createFromUrl(this)'}) }}
     {% if illust.id != None %}
         {{ subnav_link_to("Show", 'illust.show_html', illust.id) }}
         {{ subnav_link_to("Edit", 'illust.edit_html', illust.id) }}

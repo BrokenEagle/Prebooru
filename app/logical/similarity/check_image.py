@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...database.post_db import get_posts_by_id
-from ...logical.sources.base import get_image_source, NoSource
+from ...logical.sources.base import get_media_source, NoSource
 from .base import get_or_create_media, get_image, get_image_hash, get_similarity_data_matches, check_similarity_match_scores,\
     filter_score_results
 
@@ -18,7 +18,7 @@ def check_all_image_urls_similarity(image_urls, min_score, use_original=False, i
 
 
 def check_image_url_similarity(image_url, min_score, use_original=False, include_posts=False):
-    source = get_image_source(image_url) or NoSource()
+    source = get_media_source(image_url) or NoSource()
     download_url = source.small_image_url(image_url) if not use_original else image_url
     media_file = get_or_create_media(download_url, source)
     if type(media_file) is str:

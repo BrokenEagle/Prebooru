@@ -1,6 +1,7 @@
 # APP/MODELS/TAG.PY
 
 # ##PYTHON IMPORTS
+from flask import url_for, Markup
 from dataclasses import dataclass
 from sqlalchemy.util import memoized_property
 
@@ -24,6 +25,10 @@ class Tag(JsonModel):
     name = DB.Column(DB.Unicode(255), nullable=False)
 
     # ## Property methods
+
+    @property
+    def name_link(self):
+        return Markup('<a href="%s">%s</a>' % (self.show_url, self.name))
 
     @memoized_property
     def recent_posts(self):

@@ -5,7 +5,5 @@
 
 {% block content %}
     <div class="heading booru-form-heading">New booru</div>
-    {% call(field_name, field_input) render_form(form, 'POST', booru.create_url) %}
-        {{ field_input() }}
-    {% endcall %}
+    {{ render_form(form, 'POST', booru.create_url) }}
 {% endblock %}

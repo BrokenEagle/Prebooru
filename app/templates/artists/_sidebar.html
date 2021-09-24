@@ -11,10 +11,10 @@
     <section id="artist-options">
         <h4>Options</h4>
         <ul>
-            <li><a href="{{ url_for('artist.query_update_html', id=artist.id) }}" onclick="return Prebooru.linkPost(this)">Update from source</a></li>
-            <li><a href="{{ url_for('artist.query_booru_html', id=artist.id) }}" onclick="return Prebooru.linkPost(this)">Query for booru</a></li>
-            <li><a href="{{ url_for('illust.new_html', artist_id=artist.id) }}">Add illust</a></li>
-            <li><a href="{{ url_for('notation.new_html', artist_id=artist.id) }}">Add notation</a></li>
+            <li>{{ helpers.artist.query_update_link(artist) }}</li>
+            <li>{{ helpers.artist.query_booru_link(artist) }}</li>
+            <li>{{ helpers.artist.add_illust_link(artist) }}</li>
+            <li>{{ helpers.artist.add_notation_link(artist) }}</li>
         </ul>
     </section>
 </div>

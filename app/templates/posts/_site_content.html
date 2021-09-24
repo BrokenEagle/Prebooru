@@ -11,7 +11,7 @@
             <li><strong>MD5:</strong> {{ post.md5 }}</li>
             <li><strong>Sources:</strong>
                 {% call(illust_url) items_list(post.illust_urls) %}
-                    {{ helpers.illust.original_url(illust_url) }}
+                    {{ helpers.base.url_link(illust_url.full_url) }}
                 {% endcall %}
             </li>
         </ul>
@@ -22,7 +22,7 @@
             <div class="post-commentaries-container"><strong>{{ illust.header }}:</strong>
                 {% call(commentary) items_block(illust.commentaries, 'commentaries', '<hr>') %}
                     <div class="post-commentaries-block">
-                        {{ helpers.base.convert_str_to_html(commentary.body) }}
+                        {{ helpers.base.convert_to_html(commentary.body) }}
                     </div>
                 {% endcall %}
             </div>

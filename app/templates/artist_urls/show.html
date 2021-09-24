@@ -6,11 +6,10 @@
 
 {% block content %}
     <div id="artist-url-form-heading" class="form-heading heading">
-        Artist URL: {{ helpers.base.show_link('artist', artist_url.artist_id) }}
+        Artist URL: {{ artist_url.artist_show_link }}
     </div>
     <div id="artist-url-content">
         <ul>
-            <li><strong>ID:</strong> {{ artist_url.id }}</li>
             <li><strong>URL:</strong> {{ helpers.base.url_link(artist_url.url) }}</li>
             <li><strong>Active:</strong> {{ artist_url.active | tojson }}</li>
         </ul>

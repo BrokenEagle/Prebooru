@@ -16,7 +16,7 @@
         <tbody>
             {% for booru in boorus.items %}
                 <tr id="booru-{{ booru.id }}">
-                    <td class="booru-id">{{ booru.show_link }} {{ helpers.base.general_link('&raquo;', helpers.booru.post_search(booru)) }}</td>
+                    <td class="booru-id">{{ booru.show_link }} {{ helpers.booru.post_search_link(booru) }}</td>
                     <td class="booru-info">
                         <span><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</span><br>
                         <span><strong>Current name:</strong> {{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span>

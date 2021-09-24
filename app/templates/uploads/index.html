@@ -2,7 +2,7 @@
 {% from 'layouts/_macros.html' import page_navigation %}
 {% from 'posts/_macros.html' import multi_post_preview %}
 
-{% block title %}Upload # {{ upload.id }}{% endblock %}
+{% block title %}Uploads{% endblock %}
 
 {% block content %}
     <table id="uploads-table" class="striped" width="100%">
@@ -22,7 +22,7 @@
                 <tr id="upload-{{ upload.id }}">
                     <td>{{ multi_post_preview(upload, 'upload') }}</td>
                     <td>
-                        <span><strong>{{ upload.show_link }} {{ helpers.base.general_link('&raquo;', helpers.upload.post_search(upload)) }}</strong></span><br>
+                        <span><strong>{{ upload.show_link }} {{ helpers.upload.post_search_link(upload) }}</strong></span><br>
                         <span><strong>Type:</strong> {{ upload.type }}</span><br>
                         <span><strong>Successes:</strong> {{ upload.successes }}</span><br>
                         <span><strong>Failures:</strong> {{ upload.failures }}</span>

@@ -78,7 +78,7 @@ class Post(JsonModel):
 
     # #### Relationships
     illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True, backref=DB.backref('post', uselist=False, lazy=True))
-    errors = DB.relationship(Error, secondary=PostErrors, lazy=True, cascade='all,delete')
+    errors = DB.relationship(Error, secondary=PostErrors, lazy=True, backref=DB.backref('post', uselist=False, lazy=True), cascade='all,delete')
     notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, backref=DB.backref('post', uselist=False, lazy=True), cascade='all,delete')
     _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False), cascade='all,delete')
     similarity_data = DB.relationship(SimilarityData, lazy=True, backref=DB.backref('post', lazy=True, uselist=False), cascade='all,delete')

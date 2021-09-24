@@ -1,16 +1,24 @@
-{% macro tag_list(tags) -%}
-    <ul>
-        {% for tag in tags %}
-            <li>{{ helpers.base.general_link(tag.name, tag.show_url) }}&emsp;<a href="{{ helpers.tag.post_search(tag) }}">&raquo;</a></li>
-        {% else %}
+{% macro tag_list(tags, force=False) -%}
+    {% for tag in tags %}
+        {% if loop.first %}
+            <ul>
+        {% endif %}
+        <li>{{ tag.name_link }}&emsp;{{ helpers.tag.post_search_link(tag) }}</li>
+        {% if loop.last %}
+            </ul>
+        {% endif %}
+    {% else %}
+        {% if force %}
             <li><em>none</em></li>
-        {% endfor %}
-    </ul>
+        {% else %}
+            <em>none</em>
+        {% endif %}
+    {% endfor %}
 {%- endmacro %}
 
 {% macro simple_tag_list(tags) -%}
         {% for tag in tags %}
-            {{ helpers.base.general_link(tag.name, tag.show_url) }}&emsp;<a href="{{ helpers.tag.post_search(tag) }}">&raquo;</a>
+            {{ tag.name_link }}&emsp;{{ helpers.tag.post_search_link(tag) }}
             {% if not loop.last %}
                 <br>
             {% endif %}

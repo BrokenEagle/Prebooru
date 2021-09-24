@@ -4,23 +4,21 @@
 {% from "illusts/_macros.html" import illusts_section %}
 
 <aside id="notation-sidebar">
-    {% if helpers.notation.has_append_item(notation) %}
-        {% with append_key, append_item = helpers.notation.append_key(notation) %}
-            {% if append_key == 'pool' %}
-                {{ pools_section(append_item, 'notation-pool') }}
-            {% elif append_key == 'artist' %}
-                {{ artists_section(append_item, 'notation-artist') }}
-            {% elif append_key == 'illust' %}
-                {{ illusts_section(append_item, 'notation-illust') }}
-            {% else %}
-                <section id="notation-{{ append_key }}">
-                    <h4>{{ append_key.title() }}</h4>
-                    <ul>
-                        <li>{{ helpers.notation.item_link(append_item) }}</li>
-                    </ul>
-                </section>
-            {% endif %}
-        {% endwith %}
+    {% if notation.append_item is not none %}
+        {% if notation.append_type == 'pool_element' %}
+            {{ pools_section(notation.append_item, 'notation-pool') }}
+        {% elif notation.append_type == 'artist' %}
+            {{ artists_section(notation.append_item, 'notation-artist') }}
+        {% elif notation.append_type == 'illust' %}
+            {{ illusts_section(notation.append_item, 'notation-illust') }}
+        {% else %}
+            <section id="notation-{{ notation.append_type }}">
+                <h4>{{ notation.append_type | title }}</h4>
+                <ul>
+                    <li>{{ notation.append_item.show_link }}</li>
+                </ul>
+            </section>
+        {% endif %}
     {% endif %}
     {{ timestamps_section(notation, 'notation-timestamps') }}
 </aside>

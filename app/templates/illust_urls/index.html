@@ -5,13 +5,14 @@
 {% block title %}Illust URLs{% endblock %}
 
 {% block content %}
-    <table id="illust-urls-table" class="striped" width="100%">
+    <table id="illust-urls-table" class="striped" width="80%">
         <thead>
             <tr>
                 <th width="1%">Post</th>
-                <th width="10%">Info</th>
+                <th width="15%">Info</th>
                 <th>Url</th>
                 <th width="10%">Dimensions</th>
+                <th width="5%">Order</th>
                 <th width="5%">Active</th>
             </tr>
         </thead>
@@ -22,10 +23,11 @@
                     <td>
                         <span><strong>{{ illust_url.show_link}}</strong></span><br>
                         <span><strong>Domain:</strong> {{ illust_url.site_domain }}</span><br><br>
-                        <span><strong>{{ illust_url.illust_show_link }}</strong></span>
+                        <span><strong>{{ illust_url.illust_show_link }}</strong></span><br><br>
                     </td>
                     <td>{{ helpers.base.url_link(illust_url.full_url) }}</td>
                     <td>({{ illust_url.width }} x {{ illust_url.height }})</td>
+                    <td>{{ illust_url.order }}</td>
                     <td>{{ illust_url.active | tojson }}</td>
                 </tr>
             {% endfor %}

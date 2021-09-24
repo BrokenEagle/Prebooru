@@ -75,7 +75,7 @@ class Upload(JsonModel):
     # #### Relationships
     image_urls = DB.relationship(UploadUrl, secondary=UploadUrls, lazy=True, uselist=True, backref=DB.backref('upload', lazy=True, uselist=False), cascade='all,delete')
     posts = DB.relationship(Post, secondary=UploadPosts, backref=DB.backref('uploads', lazy=True), lazy=True)
-    errors = DB.relationship(Error, secondary=UploadErrors, lazy=True, cascade='all,delete')
+    errors = DB.relationship(Error, secondary=UploadErrors, lazy=True, backref=DB.backref('upload', uselist=False, lazy=True), cascade='all,delete')
 
     # #### Association proxies
     post_ids = association_proxy('posts', 'id')

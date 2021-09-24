@@ -4,7 +4,7 @@
     {{ subnav_link_to("Listing", 'booru.index_html') }}
     {{ subnav_link_to("New", 'booru.new_html') }}
     |
-    {{ subnav_link_to("Create", 'booru.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return Booru.createFromId(this)'}) }}
+    {{ subnav_link_to("Create", 'booru.query_create_html', attrs={'class': 'nav-control', 'onclick': 'return Boorus.createFromId(this)'}) }}
     {% if booru.id != None %}
         {{ subnav_link_to("Show", 'booru.show_html', id=booru.id) }}
         {{ subnav_link_to("Edit", 'booru.edit_html', id=booru.id) }}

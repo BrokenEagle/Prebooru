@@ -42,16 +42,16 @@ class Notation(JsonModel):
 
     @property
     def append_item(self):
-        return self.pool or self.artist or self.illust or self.post
+        return self._pool or self.artist or self.illust or self.post
 
     @property
     def append_type(self):
-        return self.append_item.__table__.name if self.append_item is not None else None
+        return self.append_item.model_name if self.append_item is not None else None
 
     # #### Private
 
     @property
-    def _pools(self):
+    def _pools(self):           # All other pool elements are MtM, so there needs to be a plural property
         return [self._pool]
 
     # ## Class properties

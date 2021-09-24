@@ -9,8 +9,8 @@
     <section id="booru-options">
         <h4>Options</h4>
         <ul>
-            <li><a href="{{ url_for('booru.query_update_html', id=booru.id) }}" onclick="return Prebooru.linkPost(this)">Update from source</a></li>
-            <li><a href="{{ url_for('booru.check_artists_html', id=booru.id) }}" onclick="return Prebooru.linkPost(this)">Check for artists</a></li>
+            <li>{{ helpers.booru.query_update_link(booru) }}</li>
+            <li>{{ helpers.booru.check_artists_link(booru) }}</li>
         </ul>
     </section>
 </div>

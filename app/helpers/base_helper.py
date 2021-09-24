@@ -31,7 +31,11 @@ SITE_URL_DICT = {
 
 # #### Format functions
 
-def str_or_none(val):
+def html_kebab_case(text):
+    return text.lower().replace(" ", "-").replace("&raquo;", "").strip("-")
+
+
+def val_or_none(val):
     return Markup('<em>none</em>') if val is None else val
 
 
@@ -39,7 +43,7 @@ def format_timestamp(timeval):
     return datetime.datetime.isoformat(timeval) if timeval is not None else Markup('<em>none</em>')
 
 
-def format_timestamps(item):
+def format_timestamp_difference(item):
     text = format_timestamp(item.created)
     delta = item.updated - item.created
     if delta.days > 0 or delta.seconds > 3600:
@@ -65,14 +69,6 @@ def convert_to_html(text):
 
 # #### HTML functions
 
-def convert_str_to_html(text):
-    return Markup(re.sub('\r?\n', '<br>', html.escape(text)))
-
-
-def description_text(description):
-    return Markup('<span class="description">' + description + '</span>')
-
-
 def add_container(tagname, markup_text, classlist=[], **attrs):
     class_string = ' class="%s"' % ' '.join(classlist) if len(classlist) > 0 else ''
     attr_string = ' ' + ' '.join(['%s="%s"' % attr for attr in attrs.items()]) if len(attrs) else ''
@@ -86,12 +82,17 @@ def external_link(text, url, **addons):
     return general_link(text, url, **addons)
 
 
-def general_link(text, url, **addons):
+def general_link(text, url, method=None, **addons):
+    if method == "POST":
+        addons['onclick'] = "return Prebooru.linkPost(this)"
+    elif method == "DELETE":
+        addons['onclick'] = "return Prebooru.deleteConfirm(this)"
     attrs = ['%s="%s"' % (k, v) for (k, v) in addons.items()]
     return Markup('<a %s href="%s">%s</a>' % (' '.join(attrs), url, text))
 
 
 def show_link(model_type, model_id):
+    """Generate show link without having to load a relationship"""
     return general_link("%s #%d" % (model_type, model_id), url_for(model_type + '.show_html', id=model_id))
 
 
@@ -99,29 +100,34 @@ def url_link(url):
     return external_link(url, url)
 
 
+def page_link(text, endpoint, page):
+    return general_link(text, url_for_with_params(endpoint, page=page))
+
+
 # #### Form functions
 
 def form_iterator(form):
-    form_fields = [attr for attr in dir(form) if not attr.startswith('__') and issubclass(getattr(form, attr).__class__, Field)]
+    """Yield the field name and a callable function given the order of fields in the form class"""
+    form_fields = [attr for attr in dir(form) if not attr.startswith('__') and issubclass(getattr(form, attr).__class__, Field)]    # Get the names of all of the form fields
     for field in form:
-        field_name = next(filter(lambda x: getattr(form, x) == field, form_fields))
+        field_name = next(filter(lambda x: getattr(form, x) == field, form_fields))                                                 # Get the current field name
 
         def _builder(**kwargs):
             nonlocal field
             if type(field) is BooleanField:
-                built_markup = str(field.label) + field(value="1") + field(value="0", type="hidden")
+                built_markup = str(field.label) + field(value="1") + field(value="0", type="hidden")                                # Add a hidden field to get the value of 0 when the boolean field is not set
             elif type(field.widget) is HiddenInput:
-                return add_container('div', str(field), classlist=['input', 'hidden']) if field.data is not None else ""
+                return add_container('div', str(field), classlist=['input', 'hidden']) if field.data is not None else ""            # Hide inputs marked as hidden in the controller if they have data
             else:
                 built_markup = str(field.label)
                 if 'onclick' in kwargs:
-                    built_markup += field(onclick=kwargs['onclick'])
+                    built_markup += field(onclick=kwargs['onclick'])                                                                # Supports selection inputs that change the form depending on the value
                 else:
                     built_markup += field
             description = kwargs['description'] if 'description' in kwargs else field.description
             if description:
-                built_markup += description_text(description)
-            classlist = ['input'] + (kwargs['classlist'] if 'classlist' in kwargs else [])
+                built_markup += add_container('span', description, classlist=['description'])                                       # Add description if set in class definition or on template form
+            classlist = ['input'] + (kwargs['classlist'] if 'classlist' in kwargs else [])                                          # Allow classes to be set individually for any input
             return add_container('div', built_markup, classlist=classlist)
 
         yield field_name, _builder
@@ -130,25 +136,26 @@ def form_iterator(form):
 # #### URL functions
 
 def search_url_for(endpoint, **kwargs):
-    def _Recurse(current_key, arg_dict, url_args):
+    """Construct search URL for any endpoint given a dict of search parameters"""
+    def _recurse(current_key, arg_dict, url_args):
         for key in arg_dict:
             updated_key = current_key + '[' + key + ']'
             if type(arg_dict[key]) is dict:
-                _Recurse(updated_key, arg_dict[key], url_args)
+                _recurse(updated_key, arg_dict[key], url_args)
             else:
                 url_args[updated_key] = arg_dict[key]
     url_args = {}
-    _Recurse('search', kwargs, url_args)
+    _recurse('search', kwargs, url_args)
     return url_for(endpoint, **url_args)
 
 
-def url_for_with_args(endpoint, **kwargs):
+def url_for_with_params(endpoint, **kwargs):
+    """Construct URL given the current URL parameters"""
     url_args = {}
     for arg in kwargs:
         url_args[arg] = kwargs[arg]
-    for arg in request.args:
-        if arg not in kwargs:
-            url_args[arg] = request.args[arg]
+    for arg in (k for k in request.args if k not in kwargs):
+        url_args[arg] = request.args[arg]
     if request.endpoint.find('.show_html') >= 0:
         url_args['id'] = int(re.search(r'\d+$', request.path).group(0))
     return url_for(endpoint, **url_args)
@@ -160,13 +167,13 @@ def nav_link_to(text, endpoint):
     link_blueprint = endpoint.split('.')[0]
     request_blueprint = request.endpoint.split('.')[0]
     klass = 'current' if link_blueprint == request_blueprint else None
-    html_text = text.lower().replace(" ", "-")
+    html_text = html_kebab_case(text)
     return html_text, klass
 
 
-def subnav_link_to(text, endpoint, attrs=None, **kwargs):
-    attrs = attrs if attrs is not None else {}
-    html_text = text.lower().replace(" ", "-")
+def subnav_link_to(text, attrs):
+    html_text = html_kebab_case(text)
+    attrs['id'] = "subnav-" + html_text + "-link"
     return html_text, attrs
 
 

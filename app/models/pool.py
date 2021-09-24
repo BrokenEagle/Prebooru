@@ -1,6 +1,7 @@
 # APP/MODELS/POOL.PY
 
 # ## PYTHON IMPORTS
+from flask import Markup
 from dataclasses import dataclass
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -46,6 +47,10 @@ class Pool(JsonModel):
     # ## Property methods
 
     # #### Private
+
+    @property
+    def name_link(self):
+        return Markup('<a href="%s">%s</a>' % (self.show_url, self.name))
 
     @property
     def _element_query(self):

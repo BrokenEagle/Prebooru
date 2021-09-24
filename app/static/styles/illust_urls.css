@@ -26,6 +26,9 @@ table#illust-urls-table article.post {
     width: 204px;
     height: 204px;
 }
+table#illust-urls-table article.post.no-post {
+    height: 75px;
+}
 table#illust-urls-table article.post img {
     max-height: 200px;
     max-width: 200px;

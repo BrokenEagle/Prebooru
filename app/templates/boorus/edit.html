@@ -1,13 +1,11 @@
 {% extends 'boorus/_base.html' %}
 {% from 'layouts/_macros.html' import render_form %}
 
-{% block title %}Edit - {{ booru.shortlink.title() }}{% endblock %}
+{% block title %}Edit - {{ booru.header }}{% endblock %}
 
 {% block content %}
     <div class="heading booru-form-heading">
         Edit: {{ booru.show_link }}
     </div>
-    {% call(field_name, field_input) render_form(form, 'PUT', booru.update_url) %}
-        {{ field_input() }}
-    {% endcall %}
+    {{ render_form(form, 'PUT', booru.update_url) }}
 {% endblock %}

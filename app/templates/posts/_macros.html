@@ -1,5 +1,5 @@
 {% macro post_preview(post) -%}
-    <article class="post">
+    <article class="post {{ 'no-post' if post is none else ""}}">
         {% if post is not none %}
             <a href="{{ post.show_url }}">
                 <img src="{{ post.preview_url }}">
@@ -51,4 +51,22 @@
             <span class="explanation">There are no posts.</span>
         {% endfor %}
     </div>
+{%- endmacro %}
+
+{% macro related_posts(post) -%}
+    {% if post.related_posts | length > 0 %}
+        <div id="related-posts-heading" class="heading">
+            Related posts
+            {% if post_search_link is not none %}
+                {{ helpers.base.general_link("&raquo;", helpers.post.related_posts_search(post)) }}
+            {% endif %}
+        </div>
+        <div id="related-posts-container">
+             {% for post in post.related_posts %}
+                <div class="related-post-block">
+                    {{ post_preview(post) }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 {%- endmacro %}

@@ -1,12 +1,12 @@
-{% macro notations_block(notation) -%}
+{% macro notation_block(notation) -%}
     <strong>{{ notation.show_link }}</strong>
     <div class="notation-block">
         {{ helpers.base.convert_to_html(notation.body) }}<br><br>
-        <span class="muted-timestamp">{{ helpers.base.format_timestamps(notation) }}</span>
+        <span class="muted-timestamp">{{ helpers.base.format_timestamp_difference(notation) }}</span>
     </div>
 {%- endmacro %}
 
-{% macro notationlist(notations) -%}
+{% macro notations_list(notations) -%}
     <ul>
         {% for notation in notations %}
             <li>
@@ -23,7 +23,7 @@
             <div id="artist-notations-container">
                 <ul>
                     {% for notation in notations %}
-                        <li>{{ notations_block(notation) }}</li>
+                        <li>{{ notation_block(notation) }}</li>
                     {% endfor %}
                 </ul>
             </div>

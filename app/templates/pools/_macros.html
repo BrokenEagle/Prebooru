@@ -1,13 +1,11 @@
 {% from 'posts/_macros.html' import post_preview, multi_post_preview %}
-{% from 'notations/_macros.html' import notationlist %}
+{% from 'notations/_macros.html' import notations_list %}
 
-{% macro itemlist(item_ids, item_type) -%}
+{% macro item_list(items, link_key) -%}
     <ul>
-        {% for item_id in item_ids  %}
+        {% for item in items  %}
             <li>
-                <span class="thin-list">
-                    {{ helpers.base.general_link("%s #%d"|format(item_type, item_id), url_for( item_type + '.show_html', id=item_id)) }}
-                </span>
+                <span class="thin-list">{{ item[link_key] }}</span>
             </li>
         {% endfor %}
     </ul>
@@ -15,15 +13,15 @@
 
 {% macro pool_display_block(item) -%}
     <div class="pool-display-block">
-        {% if helpers.pool.item_is_of_type(item, 'post') %}
+        {% if item.model_name == 'post' %}
             {{ post_preview(item) }}
-        {% elif helpers.pool.item_is_of_type(item, 'illust') %}
+        {% elif item.model_name == 'illust' %}
             {% if item.type == 'image' %}
                 {{ multi_post_preview(item, 'illust') }}
             {% elif item.type == 'video' %}
                 {{ post_preview(item.video_illust_url.post) }}
             {% endif %}
-        {% elif helpers.pool.item_is_of_type(item, 'notation') %}
+        {% elif item.model_name == 'notation' %}
             <div class="pool-display-notation">{{ helpers.base.convert_to_html(item.body) }}</div>
         {% endif %}
     </div>
@@ -33,24 +31,24 @@
     <div class="pool-info-block">
         <div class="pool-relation-block">
             <div class="pool-artist-block">
-                <strong>Artists:</strong><br>
-                {% if helpers.pool.item_is_of_type(item, 'post') %}
-                    {{ itemlist(item.artist_ids, 'artist') }}
-                {% elif helpers.pool.item_is_of_type(item, 'illust') %}
-                    {{ itemlist([item.artist_id], 'artist') }}
+                <strong>{{ 'Artist' if item.model_name == 'illust' else 'Artists' }}:</strong><br>
+                {% if item.model_name == 'post' %}
+                    {{ item_list(item.illusts, 'artist_show_link') }}
+                {% elif item.model_name == 'illust' %}
+                    {{ item_list([item], 'artist_show_link') }}
                 {% endif %}
             </div>
-            {% if helpers.pool.item_is_of_type(item, 'post') %}
+            {% if item.model_name == 'post' %}
                 <div class="pool-illust-block">
                     <strong>Illusts:</strong>
-                    {{ itemlist(item.illust_ids, 'illust') }}
+                    {{ item_list(item.illust_urls, 'illust_show_link') }}
                 </div>
             {% endif %}
         </div>
         {% if item.notations | length > 0 %}
             <div class="pool-notation-block">
                 <strong>Notations:</strong><br>
-                {{ notationlist(item.notations) }}
+                {{ notations_list(item.notations) }}
             </div>
         {% endif %}
     </div>
@@ -71,17 +69,13 @@
                     {% for pool_element in pool_elements %}
                         <li class="{{ 'listless-item' if pool_element.pool.series else '' }}">
                             <strong>
-                                {% if pool_element.pool.series %}
-                                    {{ helpers.base.general_link('&laquo;', url_for('pool_element.previous_html', id=pool_element.id)) }}
-                                {% endif %}
-                                {{ helpers.base.general_link(pool_element.pool.name, pool_element.pool.show_url) }}
-                                {% if pool_element.pool.series %}
-                                    {{ helpers.base.general_link('&raquo;', url_for('pool_element.next_html', id=pool_element.id)) }}
-                                {% endif %}
-                                [{{ helpers.base.general_link("%d/%d"|format(pool_element.position1, pool_element.pool.element_count), pool_element.page_url) }}]
+                                {{ helpers.pool.prev_navigation(pool_element) }}
+                                {{ pool_element.pool.name_link }}
+                                {{ helpers.pool.next_navigation(pool_element) }}
+                                [{{ helpers.pool.page_navigation(pool_element) }}]
                             </strong>
                             <span class="delete-control">
-                                ( <a href="{{ pool_element.delete_url }}" onclick="return Prebooru.deletePool(this)">remove</a> )
+                                ( {{ helpers.pool.remove_pool_link(pool_element) }} )
                             </span>
                         </li>
                     {% endfor %}

@@ -8,7 +8,7 @@
         Edit {{ illust.header }}
     </div>
     <div id="illust-form-info">
-        For {{ illust.artist.show_link }}:
+        For {{ illust.artist_show_link }}:
     </div>
     {% call(field_name, field_input) render_form(form, 'PUT', illust.update_url, class=helpers.illust.form_class(form)) %}
         {% set classlist = [] %}

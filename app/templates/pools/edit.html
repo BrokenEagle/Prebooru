@@ -4,10 +4,6 @@
 {% block title %}Edit {{ pool.header }}{% endblock %}
 
 {% block content %}
-    <div id="pool-form-heading" class="form-heading heading">
-        Edit {{ pool.header }}</a>
-    </div>
-    {% call(field_name, field_input) render_form(form, 'PUT', pool.update_url) %}
-        {{ field_input() }}
-    {% endcall %}
+    <div id="pool-form-heading" class="form-heading heading">Edit {{ pool.header }}</div>
+    {{ render_form(form, 'PUT', pool.update_url) }}
 {% endblock %}

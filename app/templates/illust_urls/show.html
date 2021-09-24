@@ -12,7 +12,7 @@
     <div id="illust-url-content">
         {{ post_preview(illust_url.post) }}
         <ul>
-            <li><strong>{{ helpers.illust_url.illust_link(illust_url) }}</strong></li>
+            <li><strong>{{ illust_url.illust_show_link }}</strong></li>
             <li><strong>Domain:</strong> {{ illust_url.site_domain }}</li>
             <li><strong>URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}</li>
             <li><strong>Dimensions:</strong> ({{ illust_url.width }} x {{ illust_url.height }})</li>

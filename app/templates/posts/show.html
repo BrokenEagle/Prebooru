@@ -1,5 +1,6 @@
 {% extends 'posts/_base.html' %}
-{% from 'posts/_macros.html' import post_preview %}
+{% from 'posts/_macros.html' import related_posts  %}
+{% from 'similarity_pools/_macros.html' import similar_posts %}
 
 {% block linkscript %}
     {{ super() }}
@@ -20,18 +21,18 @@
             {% include "posts/_site_content.html" %}
         </div>
     </div>
-    {% with posts=post.related_posts, post_search_link=helpers.post.related_posts_search(post) %}
-        {% include "posts/_related_posts.html" %}
-    {% endwith %}
-    {% if post.similarity_pool is not none %}
-        {% include "posts/_similar_posts.html" %}
-    {% endif %}
+    <div id="related-posts">
+        {{ related_posts(post) }}
+    </div>
+    <div id="similar-posts">
+        {{ similar_posts(post) }}
+    </div>
 {% endblock %}
 
 {% block pagescript %}
-<script>
-function ResizeImage(obj) {
-    obj.classList.toggle('fullsize');
-}
-</script>
+    <script>
+        function ResizeImage(obj) {
+            obj.classList.toggle('fullsize');
+        }
+    </script>
 {% endblock %}
