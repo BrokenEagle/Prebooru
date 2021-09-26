@@ -62,6 +62,19 @@ def polymorphic_accessor_factory(collection_type, proxy):
     return getter, setter
 
 
+def relation_property_factory(model_key, table_name, relation_key):
+
+    def _shortlink(obj):
+        return "%s #%d" % (table_name, getattr(obj, relation_key)) if getattr(obj, relation_key) is not None else "new %s" % table_name
+
+    def _show_url(obj):
+        return url_for("%s.show_html" % table_name, id=getattr(obj, relation_key)) if getattr(obj, relation_key) is not None else None
+
+    def _show_link(obj):
+        return Markup('<a href="%s">%s</a>' % (getattr(obj, model_key + '_show_url'), getattr(obj, model_key + '_shortlink'))) if getattr(obj, relation_key) is not None else None
+
+    return _shortlink, _show_url, _show_link
+
 # ## CLASSES
 
 class JsonModel(DB.Model):
@@ -161,6 +174,7 @@ class JsonModel(DB.Model):
         for key in cls.fk_relations():
             table_name = getattr(cls, key).property.primaryjoin.left.table.name
             relation_key = getattr(cls, key).property.primaryjoin.right.name
-            setattr(cls, key + '_shortlink', property(lambda x: "%s #%d" % (table_name, getattr(x, relation_key)) if getattr(x, relation_key) is not None else "new %s" % table_name))
-            setattr(cls, key + '_show_url', property(lambda x: url_for("%s.show_html" % table_name, id=getattr(x, relation_key)) if getattr(x, relation_key) is not None else None))
-            setattr(cls, key + '_show_link', property(lambda x: Markup('<a href="%s">%s</a>' % (getattr(x, key + '_show_url'), getattr(x, key + '_shortlink'))) if getattr(x, relation_key) is not None else None))
+            _shortlink, _show_url, _show_link = relation_property_factory(key, table_name, relation_key)
+            setattr(cls, key + '_shortlink', property(_shortlink))
+            setattr(cls, key + '_show_url', property(_show_url))
+            setattr(cls, key + '_show_link', property(_show_link))
