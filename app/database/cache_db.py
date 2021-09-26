@@ -50,13 +50,6 @@ def save_api_data(network_data, id_key, site_id, type):
     SESSION.commit()
 
 
-def get_media_data(image_url, source):
-    media = MediaFile.query.filter_by(media_url=image_url).first()
-    if media is not None:
-        return media
-    return _create_new_media(image_url, source)
-
-
 # #### Private functions
 
 
@@ -69,17 +62,3 @@ def _get_api_data(data_ids, site_id, type):
         q = q.filter(ApiData.data_id.in_(data_ids))
     q = q.filter(ApiData.expires > get_current_time())
     return q.all()
-
-
-def _create_new_media(download_url, source):
-    buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
-    if type(buffer) is str:
-        return buffer
-    md5 = get_buffer_checksum(buffer)
-    extension = source.get_media_extension(download_url)
-    media = MediaFile(md5=md5, file_ext=extension, media_url=download_url, expires=days_from_now(1))
-    create_directory(media.file_path)
-    put_get_raw(media.file_path, 'wb', buffer)
-    SESSION.add(media)
-    SESSION.commit()
-    return media

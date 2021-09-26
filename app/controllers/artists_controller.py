@@ -10,8 +10,8 @@ from wtforms.validators import DataRequired
 from ..models import Artist, Booru
 from ..logical.sources.base import get_source_by_id, get_artist_required_params
 from ..logical.sources.danbooru import get_artists_by_url
-from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, update_artist_from_source, artist_append_booru,\
-    artist_delete_profile
+from ..logical.records.artist_rec import update_artist_from_source
+from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, artist_append_booru, artist_delete_profile
 from ..database.booru_db import create_booru_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate,\
     default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error, parse_array_parameter, check_param_requirements,\

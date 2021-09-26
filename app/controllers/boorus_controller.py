@@ -8,7 +8,8 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Booru
-from ..database.booru_db import create_booru_from_parameters, create_booru_from_id, update_booru_from_parameters, query_update_booru, check_artists_booru
+from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters
+from ..logical.records.booru_rec import create_booru_from_source, update_booru_from_source, update_booru_artists_from_source
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate, default_order, get_or_abort, get_or_error,\
     get_data_params, set_error, check_param_requirements, nullify_blanks, CustomNameForm, parse_array_parameter
 
@@ -132,7 +133,7 @@ def query_create():
     if check_booru is not None:
         retdata['item'] = check_booru.to_json()
         return set_error(retdata, "Booru already exists: booru #%d" % check_booru.id)
-    retdata.update(create_booru_from_id(params['danbooru_id']))
+    retdata.update(create_booru_from_source(params['danbooru_id']))
     return retdata
 
 
@@ -237,7 +238,7 @@ def query_create_html():
 @bp.route('/boorus/<int:id>/query_update', methods=['POST'])
 def query_update_html(id):
     booru = get_or_abort(Booru, id)
-    results = query_update_booru(booru)
+    results = update_booru_from_source(booru)
     if results['error']:
         flash(results['message'], 'error')
     else:
@@ -248,7 +249,7 @@ def query_update_html(id):
 @bp.route('/boorus/<int:id>/check_artists', methods=['POST'])
 def check_artists_html(id):
     booru = get_or_abort(Booru, id)
-    results = check_artists_booru(booru)
+    results = update_booru_artists_from_source(booru)
     if results['error']:
         flash(results['message'], 'error')
     else:

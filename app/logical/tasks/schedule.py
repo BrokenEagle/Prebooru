@@ -10,8 +10,10 @@ from ..utility import get_current_time, seconds_from_now_local, buffered_print
 from ..check.boorus import check_all_boorus
 from ..check.posts import check_all_posts_for_danbooru_id
 from ..check.booru_artists import check_all_artists_for_boorus
+from ..records.media_file_rec import batch_delete_media
 from ...models import Upload, ApiData, MediaFile
 from ...database.upload_db import set_upload_status
+from ...database.media_file_db import get_expired_media_files, batch_delete_media_files
 from ...database.error_db import create_and_append_error
 
 # ## GLOBAL VARIABLES
@@ -23,21 +25,15 @@ from ...database.error_db import create_and_append_error
 def expunge_cache_records_task():
     printer = buffered_print("Expunge Cache Records")
     printer("PID:", os.getpid())
-    api_delete_count = ApiData.query.filter(ApiData.expires < get_current_time()).count()
+    api_delete_count = ApiData.query.filter(ApiData.expires < get_current_time()).get_count()
     printer("API data records to delete:", api_delete_count)
     if api_delete_count > 0:
         ApiData.query.filter(ApiData.expires < get_current_time()).delete()
         SESSION.commit()
-    media_delete_count = MediaFile.query.filter(MediaFile.expires < get_current_time()).count()
-    printer("Media files to delete:", media_delete_count)
-    if media_delete_count > 0:
-        media_records = MediaFile.query.filter(MediaFile.expires < get_current_time()).all()
-        for media in media_records:
-            if os.path.exists(media.file_path):
-                os.remove(media.file_path)
-                time.sleep(0.2)  # Time to let the OS remove the file to prevent OS errors
-            SESSION.delete(media)
-        SESSION.commit()
+    expired_media_records = get_expired_media_files()
+    printer("Media files to delete:", len(expired_media_records))
+    if len(expired_media_records) > 0:
+        batch_delete_media(expired_media_records)
     printer.print()
 
 

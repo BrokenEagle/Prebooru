@@ -1,6 +1,6 @@
 from .. import SESSION
 from ..models import MediaFile
-from ..logical.utility import days_from_now
+from ..logical.utility import days_from_now, get_current_time
 from ..logical.file import delete_file
 from .base_db import update_column_attributes
 
@@ -27,15 +27,30 @@ def create_media_file_from_parameters(createparams):
     return media_file
 
 
-# ###### DELETE
+# ###### UPDATE
 
-def delete_media_file(media_file):
-    delete_file(media_file.file_path)
-    SESSION.delete(media_file)
+def update_media_file_expires(media_file):
+    media_file.expires = days_from_now(1)
     SESSION.commit()
 
 
-# #### Misc functions
+# ###### DELETE
+
+def batch_delete_media_files(media_files):
+    id_list = [media.id for media in media_files]
+    MediaFile.query.filter(MediaFile.id.in_(id_list)).delete()
+    SESSION.commit()
+
+
+# #### Query functions
+
+def get_expired_media_files():
+    return MediaFile.query.filter(MediaFile.expires < get_current_time()).all()
+
 
 def get_media_file_by_url(media_url):
     return MediaFile.query.filter_by(media_url=media_url).first()
+
+
+def get_media_files_by_md5s(md5_list):
+    return MediaFile.query.filter(MediaFile.md5.in_(md5_list)).all()

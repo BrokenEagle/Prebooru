@@ -7,7 +7,7 @@ import imagehash
 
 # ## LOCAL IMPORTS
 from ...models.similarity_data import SimilarityData, HASH_SIZE, TOTAL_BITS
-from ...database.media_file_db import create_media_file_from_parameters, delete_media_file, get_media_file_by_url
+from ...database.media_file_db import create_media_file_from_parameters, batch_delete_media_files, get_media_file_by_url
 from ..utility import get_buffer_checksum
 from ..file import create_directory, put_get_raw
 from ..network import get_http_file
@@ -67,26 +67,3 @@ def check_similarity_match_scores(similarity_results, image_hash, min_score):
             }
             found_results.append(data)
     return sorted(found_results, key=lambda x: x['score'], reverse=True)
-
-
-def create_media(download_url, source):
-    buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
-    if type(buffer) is str:
-        return buffer
-    md5 = get_buffer_checksum(buffer)
-    extension = source.get_media_extension(download_url)
-    media_file = create_media_file_from_parameters({'md5': md5, 'file_ext': extension, 'media_url': download_url})
-    try:
-        create_directory(media_file.file_path)
-        put_get_raw(media_file.file_path, 'wb', buffer)
-    except Exception as e:
-        delete_media_file(media_file)
-        return "Exception creating media file on disk: %s" % str(e)
-    return media_file
-
-
-def get_or_create_media(download_url, source):
-    media_file = get_media_file_by_url(download_url)
-    if media_file is None:
-        media_file = create_media(download_url, source)
-    return media_file
