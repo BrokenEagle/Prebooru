@@ -242,6 +242,10 @@ def get_illust_id(request_url):
         return int(image_match.group(2))
 
 
+def get_artist_id_url_id(artist_url):
+    return get_artist_id(artist_url)
+
+
 def normalize_image_url(image_url):
     image_url = urllib.parse.urlparse(image_url).path.replace('img-master', 'img-original')
     image_url = re.sub(r'_(?:master|square)1200', '', image_url)
