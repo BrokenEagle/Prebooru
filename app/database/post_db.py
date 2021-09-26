@@ -8,8 +8,9 @@ from .base_db import update_column_attributes
 
 # ##GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size']
+COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id']
 CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size']
+UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
 
 
 # ##FUNCTIONS
@@ -26,6 +27,18 @@ def create_post_from_parameters(createparams):
     update_column_attributes(post, update_columns, createparams)
     print("[%s]: created" % post.shortlink)
     return post
+
+
+# ###### Upadate
+
+def update_post_from_parameters(post, updateparams):
+    update_results = []
+    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
+    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
+    update_results.append(update_column_attributes(post, update_columns, updateparams))
+    if any(update_results):
+        print("[%s]: updated" % post.shortlink)
+        SESSION.commit()
 
 
 # #### Misc functions

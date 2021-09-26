@@ -12,6 +12,7 @@ from ..check.posts import check_all_posts_for_danbooru_id
 from ..check.booru_artists import check_all_artists_for_boorus
 from ..records.media_file_rec import batch_delete_media
 from ...models import Upload, ApiData, MediaFile
+from ...database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ...database.upload_db import set_upload_status
 from ...database.media_file_db import get_expired_media_files, batch_delete_media_files
 from ...database.error_db import create_and_append_error
@@ -25,11 +26,10 @@ from ...database.error_db import create_and_append_error
 def expunge_cache_records_task():
     printer = buffered_print("Expunge Cache Records")
     printer("PID:", os.getpid())
-    api_delete_count = ApiData.query.filter(ApiData.expires < get_current_time()).get_count()
+    api_delete_count = expired_api_data_count()
     printer("API data records to delete:", api_delete_count)
     if api_delete_count > 0:
-        ApiData.query.filter(ApiData.expires < get_current_time()).delete()
-        SESSION.commit()
+        delete_expired_api_data()
     expired_media_records = get_expired_media_files()
     printer("Media files to delete:", len(expired_media_records))
     if len(expired_media_records) > 0:

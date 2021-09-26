@@ -13,7 +13,7 @@ import datetime
 from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, decode_json, fixup_crlf
 from ..file import load_default, put_get_json
 from ...database.error_db import create_error, is_error
-from ...database.cache_db import get_api_artist, get_api_illust, save_api_data
+from ...database.api_data_db import get_api_artist, get_api_illust, save_api_data
 from ...database.illust_db import get_site_illust
 from ...config import DATA_DIRECTORY
 from ..sites import Site, get_site_domain, get_site_id

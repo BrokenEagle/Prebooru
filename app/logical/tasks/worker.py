@@ -15,6 +15,7 @@ from ..check.posts import check_posts_for_danbooru_id
 from ..check.booru_artists import check_artists_for_boorus
 from ..records.artist_rec import update_artist_from_source
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
+from ...database.post_db import get_posts_by_id
 from ...database.upload_db import set_upload_status, has_duplicate_posts
 from ...database.error_db import create_and_append_error, append_error
 from ..sources.base import get_post_source, get_source_by_id
@@ -65,7 +66,7 @@ def process_upload(upload_id):
 
 def process_similarity(post_ids):
     printer = buffered_print("Process Similarity")
-    posts = Post.query.filter(Post.id.in_(post_ids)).all()
+    posts = get_posts_by_id(post_ids)
     for post in posts:
         generate_post_similarity(post, printer=printer)
         populate_similarity_pools(post, printer=printer)
@@ -75,14 +76,14 @@ def process_similarity(post_ids):
 def check_for_matching_danbooru_posts(post_ids):
     printer = buffered_print("Check Danbooru Posts")
     printer("Posts to check:", len(post_ids))
-    posts = Post.query.filter(Post.id.in_(post_ids)).all()
+    posts = get_posts_by_id(post_ids)
     check_posts_for_danbooru_id(posts)
     printer.print()
 
 
 def check_for_new_artist_boorus(post_ids):
     printer = buffered_print("Check Artist Boorus")
-    posts = Post.query.filter(Post.id.in_(post_ids)).all()
+    posts = get_posts_by_id(post_ids)
     all_artists = unique_objects([*itertools.chain(*[post.artists for post in posts])])
     check_artists = [artist for artist in all_artists if artist.created > minutes_ago(1)]
     printer("Artists to check:", len(check_artists))
