@@ -32,6 +32,8 @@ class SimilarityPoolElement(JsonModel):
     # sibling <- SimilarityPoolElement (OtO)
 
 
-# INITIALIZATION
+# ## INITIALIZATION
 
-SimilarityPoolElement.sibling = DB.relationship(SimilarityPoolElement, uselist=False, lazy=True)
+def initialize():
+    SimilarityPoolElement.sibling = DB.relationship(SimilarityPoolElement, uselist=False, lazy=True)
+    SimilarityPoolElement.set_relation_properties()

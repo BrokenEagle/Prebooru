@@ -25,3 +25,9 @@ class ArtistUrl(JsonModel):
     basic_attributes = ['id', 'artist_id', 'url', 'active']
     relation_attributes = ['artist']
     searchable_attributes = basic_attributes + relation_attributes
+
+
+# ## INITIALIZATION
+
+def initialize():
+    ArtistUrl.set_relation_properties()

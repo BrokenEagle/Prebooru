@@ -148,9 +148,10 @@ class SimilarityData(JsonModel):
         return clause
 
 
-# INITIALIZATION
+# ## INITIALIZATION
 
-# Initialize chunk attributes, CHUNK00 - CHUNKXX
-for i in range(0, NUM_CHUNKS):
-    key = ChunkKey(i)
-    setattr(SimilarityData, key, DB.Column(DB.String(2), nullable=False))
+def initialize():
+    # Initialize chunk attributes, CHUNK00 - CHUNKXX
+    for i in range(0, NUM_CHUNKS):
+        key = chunk_key(i)
+        setattr(SimilarityData, key, DB.Column(DB.String(2), nullable=False))

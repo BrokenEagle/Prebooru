@@ -52,3 +52,11 @@ class IllustUrl(JsonModel):
     basic_attributes = ['id', 'site_id', 'url', 'width', 'height', 'order', 'illust_id', 'active']
     relation_attributes = ['illust', 'post']
     searchable_attributes = basic_attributes + relation_attributes
+
+
+# ## INITIALIZATION
+
+def initialize():
+    from .upload import Upload
+    IllustUrl.uploads = DB.relationship(Upload, backref=DB.backref('illust_url', lazy=True), lazy=True)
+    IllustUrl.set_relation_properties()

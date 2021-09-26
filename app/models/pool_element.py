@@ -144,3 +144,18 @@ class PoolNotation(PoolElement):
     __mapper_args__ = {
         'polymorphic_identity': 'pool_notation',
     }
+
+
+# ## INITIALIZATION
+
+def initialize():
+    PoolElement.polymorphic_columns = {
+        'post_id': PoolPost,
+        'illust_id': PoolIllust,
+        'notation_id': PoolNotation,
+    }
+    PoolElement.polymorphic_relations = {
+        'post': PoolPost,
+        'illust': PoolIllust,
+        'notation': PoolNotation,
+    }

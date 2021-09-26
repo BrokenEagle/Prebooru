@@ -1,5 +1,8 @@
 # APP/MODELS/__INIT__.PY
 
+# ## PYTHON IMPORTS
+from types import ModuleType
+
 # ## LOCAL IMPORTS
 from .. import DB
 
@@ -40,21 +43,12 @@ from .domain import Domain
 
 # ## INITIALIZATION
 
-IllustUrl.uploads = DB.relationship(Upload, backref=DB.backref('illust_url', lazy=True), lazy=True)
-PoolElement.polymorphic_columns = {
-    'post_id': PoolPost,
-    'illust_id': PoolIllust,
-    'notation_id': PoolNotation,
-}
-PoolElement.polymorphic_relations = {
-    'post': PoolPost,
-    'illust': PoolIllust,
-    'notation': PoolNotation,
-}
+def initialize():
+    modules = [m for (k, m) in globals().items() if type(m) is ModuleType and k != '__builtins__' and hasattr(m, 'initialize')]
+    for mod in modules:
+        mod.initialize()
 
-Illust.set_relation_properties()
-ArtistUrl.set_relation_properties()
-IllustUrl.set_relation_properties()
+initialize()
 
 # ## GLOBAL VARIABLES
 

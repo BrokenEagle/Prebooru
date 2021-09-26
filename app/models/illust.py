@@ -154,3 +154,9 @@ class Illust(JsonModel):
     basic_attributes = ['id', 'site_id', 'site_illust_id', 'site_created', 'artist_id', 'pages', 'score', 'active', 'created', 'updated', 'requery']
     relation_attributes = ['artist', 'urls', 'tags', 'commentaries', 'notations']
     searchable_attributes = basic_attributes + relation_attributes
+
+
+# ## INITIALIZATION
+
+def initialize():
+    Illust.set_relation_properties()
