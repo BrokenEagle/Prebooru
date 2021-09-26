@@ -86,7 +86,7 @@ class JsonModel(DB.Model):
 
     @property
     def model_name(self):
-        return self.__table__.name
+        return self._model_name()
 
     @property
     def shortlink(self):
@@ -178,3 +178,9 @@ class JsonModel(DB.Model):
             setattr(cls, key + '_shortlink', property(_shortlink))
             setattr(cls, key + '_show_url', property(_show_url))
             setattr(cls, key + '_show_link', property(_show_link))
+
+    # Private
+
+    @classmethod
+    def _model_name(cls):
+        return cls.__table__.name
