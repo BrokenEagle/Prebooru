@@ -18,7 +18,7 @@ def form_title_apellation(illust_url):
 # #### Link functions
 
 def check_pending_link(upload):
-    return general_link('pending', url_for('upload.upload_check_html', id=upload.id))
+    return general_link('pending', url_for('upload.upload_check_html', id=upload.id), method="POST")
 
 
 def post_search_link(upload):

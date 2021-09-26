@@ -274,7 +274,7 @@ def upload_select_html():
     return render_template("uploads/select.html", form=form, illust_urls=results['item'], upload=Upload())
 
 
-@bp.route('/uploads/<int:id>/check', methods=['GET'])
+@bp.route('/uploads/<int:id>/check', methods=['POST'])
 def upload_check_html(id):
     get_or_abort(Upload, id)
     SCHEDULER.add_job("process_upload-%d" % id, process_upload, args=(id,))
