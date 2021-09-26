@@ -191,7 +191,8 @@ def edit_html(id):
     pool = Pool.find(id)
     if pool is None:
         abort(404)
-    form = get_pool_form(name=pool.name)
+    editparams = pool.to_json()
+    form = get_pool_form(**editparams)
     return render_template("pools/edit.html", form=form, pool=pool)
 
 
