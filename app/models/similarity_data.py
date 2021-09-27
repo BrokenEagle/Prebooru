@@ -1,30 +1,30 @@
-# APP/SIMILARITY/SIMILARITY_DATA.PY
+# APP/MODELS/SIMILARITY_DATA.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
-# ###Constants####
+# #### Constants
 
 BITS_PER_NIBBLE = 4
 
 
-# ###Configurable####
+# #### Configurable
 
-HASH_SIZE = 16  # Must be a power of 2
+HASH_SIZE = 16            # Must be a power of 2
 CHARACTERS_PER_CHUNK = 2  # Must be a power of 2
 
 
-# ###Calculated####
+# #### Calculated
 
 BITS_PER_CHUNK = CHARACTERS_PER_CHUNK * BITS_PER_NIBBLE
 NUM_CHUNKS = (HASH_SIZE * HASH_SIZE) // BITS_PER_CHUNK
 TOTAL_BITS = HASH_SIZE * HASH_SIZE
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 def chunk_key(index):
     return 'chunk' + str(index).zfill(2)
@@ -91,7 +91,7 @@ class SimilarityData(JsonModel):
             # XX##
             chunk1 = i
             chunk2 = (i + 1) % NUM_CHUNKS
-            subclause = (getattr(cls, chunk_key(chunk1)) == hex_chunk(image_hash, chunk1)) & \
+            subclause = (getattr(cls, chunk_key(chunk1)) == hex_chunk(image_hash, chunk1)) &\
                         (getattr(cls, chunk_key(chunk2)) == hex_chunk(image_hash, chunk2))
             groupclause = subclause.self_group()
             clause = clause | groupclause if clause is not None else groupclause
@@ -107,7 +107,7 @@ class SimilarityData(JsonModel):
             # XX##
             chunk1 = i
             chunk2 = (i + 1) % NUM_CHUNKS
-            subclause = (getattr(cls, chunk_key(chunk1)) == hex_chunk(image_hash, chunk1)) & \
+            subclause = (getattr(cls, chunk_key(chunk1)) == hex_chunk(image_hash, chunk1)) &\
                         (getattr(cls, chunk_key(chunk2)) == hex_chunk(image_hash, chunk2))
             groupclause = subclause.self_group()
             clause = clause | groupclause if clause is not None else groupclause
@@ -116,7 +116,7 @@ class SimilarityData(JsonModel):
             # ##XX
             chunk1 = i * 2
             chunk2 = (chunk1 + 3) % NUM_CHUNKS
-            subclause = (getattr(cls, chunk_key(chunk1)) == hex_chunk(image_hash, chunk1)) & \
+            subclause = (getattr(cls, chunk_key(chunk1)) == hex_chunk(image_hash, chunk1)) &\
                         (getattr(cls, chunk_key(chunk2)) == hex_chunk(image_hash, chunk2))
             groupclause = subclause.self_group()
             clause |= groupclause
@@ -140,8 +140,8 @@ class SimilarityData(JsonModel):
                 chunk1 = i
                 chunk2 = (i + 1) % NUM_CHUNKS
                 chunk3 = (i + 4) % NUM_CHUNKS
-            subclause = (getattr(cls, chunk_key(chunk1)) == hex_chunk(image_hash, chunk1)) & \
-                        (getattr(cls, chunk_key(chunk2)) == hex_chunk(image_hash, chunk2)) & \
+            subclause = (getattr(cls, chunk_key(chunk1)) == hex_chunk(image_hash, chunk1)) &\
+                        (getattr(cls, chunk_key(chunk2)) == hex_chunk(image_hash, chunk2)) &\
                         (getattr(cls, chunk_key(chunk3)) == hex_chunk(image_hash, chunk3))
             groupclause = subclause.self_group()
             clause = clause | groupclause if clause is not None else groupclause

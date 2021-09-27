@@ -1,8 +1,8 @@
-# APP\CONTROLLERS\UPLOADS.PY
+# APP/CONTROLLERS/UPLOADS.PY
 
-# ## PYTHON IMPORTS
-from sqlalchemy.orm import selectinload
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
+from sqlalchemy.orm import selectinload
 from wtforms import StringField, IntegerField, TextAreaField
 
 # ## LOCAL IMPORTS
@@ -13,12 +13,12 @@ from ..logical.records.media_file_rec import get_or_create_media
 from ..models import Upload, Post, IllustUrl, Illust
 from ..logical.sources.base import get_post_source, get_preview_url
 from ..logical.database.upload_db import create_upload_from_parameters
-from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate, default_order, CustomNameForm, get_data_params,\
-    hide_input, parse_string_list, nullify_blanks, set_default, set_error, get_or_abort, referrer_check
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
+    get_params_value, paginate, default_order, CustomNameForm, get_data_params, hide_input, parse_string_list,\
+    nullify_blanks, set_default, set_error, get_or_abort, referrer_check
 
 
 # ## GLOBAL VARIABLES
-
 
 bp = Blueprint("upload", __name__)
 
@@ -47,16 +47,20 @@ JSON_OPTIONS = (
 )
 
 
-# #### Forms
+# ## CLASSES
 
 def get_upload_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class UploadForm(CustomNameForm):
         illust_url_id = IntegerField('Illust URL ID', id='upload-illust-url-id', custom_name='upload[illust_url_id]')
-        media_filepath = StringField('Media filepath', id='upload-media-filepath', custom_name='upload[media_filepath]')
-        sample_filepath = StringField('Sample filepath', id='upload-sample-filepath', custom_name='upload[sample_filepath]')
+        media_filepath = StringField('Media filepath', id='upload-media-filepath',
+                                     custom_name='upload[media_filepath]')
+        sample_filepath = StringField('Sample filepath', id='upload-sample-filepath',
+                                      custom_name='upload[sample_filepath]')
         request_url = StringField('Request URL', id='upload-request-url', custom_name='upload[request_url]')
-        image_url_string = TextAreaField('Image URLs', id='upload-image-url-string', custom_name='upload[image_url_string]', description="Separated by carriage returns.")
+        image_url_string = TextAreaField('Image URLs', id='upload-image-url-string',
+                                         custom_name='upload[image_url_string]',
+                                         description="Separated by carriage returns.")
     return UploadForm(**kwargs)
 
 
@@ -135,7 +139,8 @@ def create(get_request=False):
     if createparams['request_url']:
         source = get_post_source(createparams['request_url'])
         if source is None:
-            return set_error(retdata, "Upload source currently not handled for request url: %s" % createparams['request_url'])
+            msg = "Upload source currently not handled for request url: %s" % createparams['request_url']
+            return set_error(retdata, msg)
         createparams['image_urls'] = [url for url in createparams['image_urls'] if source.is_image_url(url)]
         createparams['type'] = 'post'
     elif createparams['illust_url_id']:
@@ -155,7 +160,8 @@ def upload_select():
         return set_error(retdata, '\n'.join(errors))
     source = get_post_source(selectparams['request_url'])
     if source is None:
-        return set_error(retdata, "Upload source currently not handled for request url: %s" % selectparams['request_url'])
+        msg = "Upload source currently not handled for request url: %s" % selectparams['request_url']
+        return set_error(retdata, msg)
     site_illust_id = source.get_illust_id(selectparams['request_url'])
     illust_data = source.get_illust_data(site_illust_id)
     for url_data in illust_data['illust_urls']:

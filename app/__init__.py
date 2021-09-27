@@ -1,4 +1,4 @@
-# APP\__INIT__.PY
+# APP/__INIT__.PY
 
 # ## PYTHON IMPORTS
 import os
@@ -6,11 +6,13 @@ import sys
 import logging
 from io import BytesIO
 from types import SimpleNamespace
+
+# ## EXTERNAL IMPORTS
+from flask import Flask
+from sqlalchemy import event, MetaData
+from flask_sqlalchemy import SQLAlchemy
 from flask_apscheduler import APScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from sqlalchemy import event, MetaData
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.wsgi import get_input_stream
 from werkzeug.formparser import parse_form_data
 
@@ -18,7 +20,8 @@ from werkzeug.formparser import parse_form_data
 from .logical import query_extensions
 from .config import DB_PATH, JOBS_PATH, DEBUG_MODE
 
-# #### Python Check
+
+# ## VALIDATION
 
 if sys.version_info.major == 3 and sys.version_info.minor < 7:
     print("Python version must be at least 3.7 to run this application.")
@@ -94,7 +97,8 @@ class MethodRewriteMiddleware(object):
 
 # ## INITIALIZATION
 
-SCHEDULER_JOBSTORES = SQLAlchemyJobStore(url=SCHEDULER_DB_URL + "?check_same_thread=true", engine_options={'isolation_level': "AUTOCOMMIT"})
+SCHEDULER_JOBSTORES = SQLAlchemyJobStore(url=SCHEDULER_DB_URL + "?check_same_thread=true",
+                                         engine_options={'isolation_level': "AUTOCOMMIT"})
 
 PREBOORU_APP = Flask("", template_folder=os.path.join('app', 'templates'), static_folder=os.path.join('app', 'static'))
 PREBOORU_APP.config.from_mapping(
@@ -129,7 +133,5 @@ PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
 # Scheduled tasks must be added only after everything else has been initialized
 from .logical.tasks import schedule  # noqa: E402, F401
 
-
 # #### Extend Python imports
-
 query_extensions.initialize()

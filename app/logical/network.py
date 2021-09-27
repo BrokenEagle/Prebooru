@@ -1,6 +1,6 @@
 # APP/LOGICAL/NETWORK.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import time
 import requests
 

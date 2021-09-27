@@ -1,6 +1,6 @@
-# APP/MODELS/ARTISTS_HELPER.PY
+# APP/HELPERS/ARTISTS_HELPER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
@@ -58,7 +58,8 @@ def site_id_link(artist):
 
 
 def delete_profile_link(artist, profile):
-    return general_link("remove", url_for('artist.delete_profile_html', id=artist.id, description_id=profile.id), method="DELETE", **{'class': 'warning-link'})
+    return general_link("remove", url_for('artist.delete_profile_html', id=artist.id, description_id=profile.id),
+                        method="DELETE", **{'class': 'warning-link'})
 
 
 # ###### GENERAL

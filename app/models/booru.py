@@ -1,24 +1,25 @@
 # APP/MODELS/BOORU.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import datetime
 from typing import List
 from dataclasses import dataclass
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel
 from .artist import Artist
 from .illust import Illust
 from .illust_url import IllustUrl
 from .post import Post
 from .label import Label
+from .base import JsonModel
 
 
-# ##GLOBAL VARIABLES
-
+# ## GLOBAL VARIABLES
 
 BooruNames = DB.Table(
     'booru_names',
@@ -32,6 +33,8 @@ BooruArtists = DB.Table(
     DB.Column('booru_id', DB.Integer, DB.ForeignKey('booru.id'), primary_key=True),
 )
 
+
+# ## CLASSES
 
 @dataclass
 class Booru(JsonModel):
@@ -83,7 +86,8 @@ class Booru(JsonModel):
 
     @memoized_property
     def _post_query(self):
-        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist).join(Booru, Artist.boorus).filter(Booru.id == self.id)
+        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)\
+                   .join(Booru, Artist.boorus).filter(Booru.id == self.id)
 
     # ## Methods
 

@@ -1,12 +1,12 @@
-# APP\CONTROLLERS\ERRORS_CONTROLLER.PY
+# APP/CONTROLLERS/ERRORS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template
 
 # ## LOCAL IMPORTS
 from ..models import Error
-from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response, search_filter, default_order, paginate,\
-    get_or_abort
+from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
+    search_filter, default_order, paginate, get_or_abort
 
 
 # ## GLOBAL VARIABLES

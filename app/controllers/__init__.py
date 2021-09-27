@@ -1,5 +1,7 @@
 # APP/CONTROLLERS/__INIT__.PY
 
+"""Directly interacts with routes."""
+
 # ## LOCAL_IMPORTS
 from ..config import HAS_EXTERNAL_IMAGE_SERVER
 

@@ -2,13 +2,12 @@
 
 # ##LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time
 from ...models import Booru, Label
+from ..utility import get_current_time
 from .base_db import update_column_attributes, update_relationship_collections
 
 
 # ##GLOBAL VARIABLES
-
 
 COLUMN_ATTRIBUTES = ['danbooru_id', 'current_name']
 UPDATE_SCALAR_RELATIONSHIPS = [('names', 'name', Label)]
@@ -44,7 +43,7 @@ def create_booru_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(booru, update_columns, createparams)
-    create_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    create_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_relationship_collections(booru, create_relationships, createparams)
     print("[%s]: created" % booru.shortlink)
     return booru
@@ -59,7 +58,7 @@ def update_booru_from_parameters(booru, updateparams):
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(booru, update_columns, updateparams))
-    update_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    update_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_results.append(update_relationship_collections(booru, update_relationships, updateparams))
     if any(update_results):
         print("[%s]: updated" % booru.shortlink)

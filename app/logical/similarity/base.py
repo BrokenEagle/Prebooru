@@ -1,7 +1,9 @@
-# APP\LOGICAL\SIMILARITY\BASE.PY
+# APP/LOGICAL/SIMILARITY/BASE.PY
 
 # ## PYTHON IMPORTS
 from PIL import Image
+
+# ## EXTERNAL IMPORTS
 import distance
 import imagehash
 

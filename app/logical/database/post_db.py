@@ -1,20 +1,20 @@
 # APP/LOGICAL/DATABASE/POST_DB.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time
 from ...models import Post
+from ..utility import get_current_time
 from .base_db import update_column_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id']
 CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size']
 UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### Route DB functions
 
@@ -45,7 +45,8 @@ def update_post_from_parameters(post, updateparams):
 # #### Misc functions
 
 def create_post(width, height, file_ext, md5, size):
-    return create_post_from_parameters({'width': width, 'height': height, 'file_ext': file_ext, 'md5': md5, 'size': size})
+    params = {'width': width, 'height': height, 'file_ext': file_ext, 'md5': md5, 'size': size}
+    return create_post_from_parameters(params)
 
 
 def post_append_illust_url(post, illust_url):

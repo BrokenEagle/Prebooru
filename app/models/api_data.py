@@ -1,4 +1,4 @@
-# APP/CACHE/API_DATA.PY
+# APP/MODELS/API_DATA.PY
 
 # ## LOCAL IMPORTS
 from .. import DB

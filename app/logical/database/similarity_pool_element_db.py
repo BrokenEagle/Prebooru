@@ -6,7 +6,7 @@ from ..utility import unique_objects
 from ...models import SimilarityPoolElement
 from .base_db import update_column_attributes
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['pool_id', 'post_id', 'score']
 
@@ -56,9 +56,13 @@ def delete_similarity_pool_element(similarity_pool_element):
 
 
 def batch_delete_similarity_pool_element(similarity_pool_elements):
+    if len(similarity_pool_elements) == 0:
+        return
+    # Get all of the affected pools to update their counts. This could maybe be done better
+    sibling_pools = [element.sibling.pool for element in similarity_pool_elements if element.sibling_id is not None]
+    similarity_pools = unique_objects([similarity_pool_elements[0].pool] + sibling_pools)
     pool_element_ids = [element.id for element in similarity_pool_elements]
     pool_element_ids += [element.sibling_id for element in similarity_pool_elements if element.sibling_id is not None]
-    similarity_pools = unique_objects(similarity_pool_elements + [element.sibling.pool for element in similarity_pool_elements if element.sibling_id is not None])  # This could maybe be done better
     SimilarityPoolElement.query.filter(SimilarityPoolElement.id.in_(pool_element_ids)).update({'sibling_id': None})
     SESSION.commit()
     SimilarityPoolElement.query.filter(SimilarityPoolElement.id.in_(pool_element_ids)).delete()

@@ -1,24 +1,24 @@
-# APP/LOGICAL/UNSHORTEN_LINK.PY
+# APP/LOGICAL/SEARCHABLE.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import re
 from sqlalchemy import and_, not_, func
-import sqlalchemy.sql.sqltypes as sqltypes
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.relationships import RelationshipProperty
-from sqlalchemy import func as sqlfuncs
+import sqlalchemy.sql.sqltypes as sqltypes
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .utility import is_truthy, is_falsey, process_utc_timestring
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 TEXT_COMPARISON_TYPES = ['eq', 'ne', 'like', 'ilike', 'not_like', 'not_ilike', 'regex', 'not_regex']
 
 COMMA_ARRAY_TYPES = ['comma', 'lower_comma', 'not_comma', 'not_lower_comma']
 SPACE_ARRAY_TYPES = ['space', 'lower_space', 'not_space', 'not_lower_space']
-LOWER_ARRAY_TYPES = ['lower_array', 'lower_comma', 'lower_space', 'not_lower_array', 'not_lower_comma', 'not_lower_space']
+LOWER_ARRAY_TYPES = ['lower_array', 'lower_comma', 'lower_space', 'not_lower_array', 'not_lower_comma',
+                     'not_lower_space']
 NOT_ARRAY_TYPES = ['not_array', 'not_comma', 'not_space', 'not_lower_array', 'not_lower_comma', 'not_lower_space']
 ALL_ARRAY_TYPES = ['array', 'comma', 'space', 'not_array', 'not_comma', 'not_space', 'lower_array', 'lower_comma',
                    'lower_space', 'not_lower_array', 'not_lower_comma', 'not_lower_space']
@@ -132,7 +132,8 @@ def relationship_attribute_filters(query, model, attribute, params):
     filters = ()
     if ('has_' + attribute) in params:
         primaryjoin = relation.property.primaryjoin
-        subquery = model.query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right).filter(primaryjoin.left == primaryjoin.right).with_entities(model.id)
+        subquery = model.query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)\
+                        .filter(primaryjoin.left == primaryjoin.right).with_entities(model.id)
         subclause = model.id.in_(subquery)
         if is_truthy(params['has_' + attribute]):
             filters += (subclause,)
@@ -145,7 +146,8 @@ def relationship_attribute_filters(query, model, attribute, params):
         value = params['count_' + attribute]
         count_clause = relationship_count(model, primaryjoin, value)
         if count_clause is not None:
-            query = query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right).group_by(model).having(count_clause)
+            query = query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right).group_by(model)\
+                         .having(count_clause)
         else:
             raise Exception("%s - invalid value: %s" % ('count_' + attribute, value))
     if attribute in params:
@@ -309,9 +311,9 @@ def text_array_matching(model, columnname, value, array_type):
     if array_type in NOT_ARRAY_TYPES and array_type not in LOWER_ARRAY_TYPES:
         return not_(getattr(model, columnname).in_(value_array))
     if array_type not in NOT_ARRAY_TYPES and array_type in LOWER_ARRAY_TYPES:
-        return sqlfuncs.lower(getattr(model, columnname)).in_(value_array)
+        return func.lower(getattr(model, columnname)).in_(value_array)
     if array_type in NOT_ARRAY_TYPES and array_type in LOWER_ARRAY_TYPES:
-        return not_(sqlfuncs.lower(getattr(model, columnname)).in_(value_array))
+        return not_(func.lower(getattr(model, columnname)).in_(value_array))
 
 
 def boolean_matching(model, columnname, value):

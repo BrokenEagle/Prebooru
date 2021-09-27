@@ -14,8 +14,10 @@ def batch_delete_media(media_files):
     md5_list = [media.md5 for media in media_files]
     matching_records = get_media_files_by_md5s(md5_list)
     for media in media_files:
-        delete_count = sum(1 for _ in filter(lambda x: x.md5 == media.md5, media_files))        # Multiple media file records can map to the same MD5 hash
-        usage_count = sum(1 for _ in filter(lambda x: x.md5 == media.md5, matching_records))    # so only delete if the records being deleted matches the total count
+        # Multiple media file records can map to the same MD5 hash so only delete if the records
+        # being deleted matches the total count
+        delete_count = sum(1 for _ in filter(lambda x: x.md5 == media.md5, media_files))
+        usage_count = sum(1 for _ in filter(lambda x: x.md5 == media.md5, matching_records))
         if delete_count == usage_count:
             delete_file(media.file_path)
     batch_delete_media_files(media_files)

@@ -1,16 +1,16 @@
-# APP/SOURCES/BASE.PY
+# APP/LOGICAL/SOURCES/BASE.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import urllib
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ..sites import get_site_key, get_site_id, get_site_domain
 from ..sources import SOURCES, SOURCEDICT
 from ..utility import get_http_filename, get_file_extension, set_error
 from ..database.error_db import is_error
 
 
-# #### Classes
+# ## CLASSES
 
 class NoSource():
     """These mirror the functions in the other source files, for when a source is not found"""
@@ -30,7 +30,7 @@ class NoSource():
         return get_file_extension(get_http_filename(url)).replace('jpeg', 'jpg')
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### Utility functions
 

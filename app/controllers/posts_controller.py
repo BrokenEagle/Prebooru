@@ -1,6 +1,6 @@
-# APP\CONTROLLERS\POSTS_CONTROLLER.PY
+# APP/CONTROLLERS/POSTS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template
 from sqlalchemy import not_, or_
 from sqlalchemy.orm import lazyload, selectinload
@@ -8,8 +8,8 @@ from sqlalchemy.orm import lazyload, selectinload
 # ## LOCAL IMPORTS
 from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust
 from ..logical.utility import eval_bool_string, is_falsey
-from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate,\
-    default_order, get_or_abort
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
+    get_params_value, paginate, default_order, get_or_abort
 
 
 # ## GLOBAL VARIABLES
@@ -17,9 +17,12 @@ from .base_controller import show_json_response, index_json_response, search_fil
 bp = Blueprint("post", __name__)
 
 POST_POOLS_SUBQUERY = Post.query.join(PoolPost, Post._pools).filter(Post.id == PoolPost.post_id).with_entities(Post.id)
-ILLUST_POOLS_SUBQUERY = Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(PoolIllust, Illust._pools).filter(Illust.id == PoolIllust.illust_id).with_entities(Post.id)
+ILLUST_POOLS_SUBQUERY = Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust)\
+                            .join(PoolIllust, Illust._pools).filter(Illust.id == PoolIllust.illust_id)\
+                            .with_entities(Post.id)
 
 POOL_SEARCH_KEYS = ['has_pools', 'has_post_pools', 'has_illust_pools']
+
 
 # #### Load options
 
@@ -28,7 +31,8 @@ SHOW_HTML_OPTIONS = (
         selectinload(Illust.tags),
         selectinload(Illust.commentaries),
         selectinload(Illust.artist).selectinload(Artist.boorus),
-        selectinload(Illust.urls).selectinload(IllustUrl.post).lazyload('*'),  # Eager load all posts underneath the same illust(s)
+        # Eager load all posts underneath the same illust(s)
+        selectinload(Illust.urls).selectinload(IllustUrl.post).lazyload('*'),
     ),
     selectinload(Post.notations),
     selectinload(Post.errors),

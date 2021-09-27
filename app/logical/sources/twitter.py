@@ -1,21 +1,23 @@
-# APP/SOURCES/TWITTER.PY
+# APP/LOGICAL/SOURCES/TWITTER.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import os
 import re
 import time
 import json
 import urllib
-import requests
 import datetime
 
-# ##LOCAL IMPORTS
+# ## EXTERNAL IMPORTS
+import requests
+
+# ## LOCAL IMPORTS
+from ...config import DATA_DIRECTORY
 from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, decode_json, fixup_crlf
 from ..file import load_default, put_get_json
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
 from ..database.illust_db import get_site_illust
-from ...config import DATA_DIRECTORY
 from ..sites import Site, get_site_domain, get_site_id
 
 
@@ -165,7 +167,8 @@ REQUEST_METHODS = {
     'POST': requests.post
 }
 
-TWITTER_GUEST_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
+TWITTER_GUEST_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
+                     "Zz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
 
 TWITTER_SEARCH_PARAMS = {
     "tweet_search_mode": "live",
@@ -344,7 +347,8 @@ def normalized_image_url(image_url):
 
 
 def get_media_url(illust_url):
-    return illust_url.url if illust_url.site_id == 0 else 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
+    return illust_url.url if illust_url.site_id == 0\
+           else 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
 
 
 def get_post_url(illust):
@@ -589,7 +593,9 @@ def get_twitter_illust_timeline(illust_id):
 
 def get_twitter_illust(illust_id):
     print("Getting twitter #%d" % illust_id)
-    data = twitter_request('https://api.twitter.com/1.1/statuses/lookup.json?id=%d&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true' % illust_id)
+    request_url = 'https://api.twitter.com/1.1/statuses/lookup.json?id=%d' % illust_id +\
+                  '&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true'
+    data = twitter_request(request_url)
     if data['error']:
         return create_error('logical.sources.twitter.get_twitter_illust', data['message'])
     if len(data['body']) == 0:
@@ -604,7 +610,9 @@ def get_twitter_user_id(account):
         'withHighlightedLabel': False
     }
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    data = twitter_request('https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/UserByScreenNameWithoutResults?%s' % urladdons)
+    request_url = 'https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
+                  'UserByScreenNameWithoutResults?%s' % urladdons
+    data = twitter_request(request_url)
     if data['error']:
         return create_error('logical.sources.twitter.GetUserID', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
@@ -617,15 +625,19 @@ def get_twitter_artist(artist_id):
         'withHighlightedLabel': False,
     }
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    data = twitter_request('https://twitter.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/UserByRestIdWithoutResults?%s' % urladdons)
+    request_url = 'https://twitter.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
+                  'UserByRestIdWithoutResults?%s' % urladdons
+    data = twitter_request(request_url)
     if data['error']:
         return create_error('logical.sources.twitter.get_twitter_artist', data['message'])
     twitterdata = data['body']
     if 'errors' in twitterdata and len(twitterdata['errors']):
-        return create_error('logical.sources.twitter.get_twitter_artist', 'Twitter error: ' + '; '.join([error['message'] for error in twitterdata['errors']]))
+        msg = 'Twitter error: ' + '; '.join([error['message'] for error in twitterdata['errors']])
+        return create_error('logical.sources.twitter.get_twitter_artist', msg)
     userdata = safe_get(twitterdata, 'data', 'user')
     if userdata is None or 'rest_id' not in userdata or 'legacy' not in userdata:
-        return create_error('logical.sources.twitter.get_twitter_artist', "Error parsing data: %s" % json.dumps(twitterdata))
+        msg = "Error parsing data: %s" % json.dumps(twitterdata)
+        return create_error('logical.sources.twitter.get_twitter_artist', msg)
     retdata = userdata['legacy']
     retdata['id_str'] = userdata['rest_id']
     return retdata

@@ -1,6 +1,6 @@
 # APP/LOGICAL/RECORDS/BOORU_REC.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ..sources.base import get_artist_id_source
 from ..sources.danbooru import get_artist_by_id
 from ..database.artist_db import get_site_artist

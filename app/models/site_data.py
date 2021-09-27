@@ -1,16 +1,17 @@
 # APP/MODELS/SITE_DATA.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 from dataclasses import dataclass
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy.orm import declared_attr
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel, date_time_or_null, int_or_none
 
 
-# ##GLOBAL VARIABLES
-
+# ## CLASSES
 
 @dataclass
 class SiteData(JsonModel):

@@ -1,15 +1,16 @@
 # APP/MODELS/ARTIST.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import datetime
 from typing import List
 from dataclasses import dataclass
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from ..logical.sites import get_site_domain, get_site_key
-from .base import JsonModel, remove_keys, date_time_or_null, int_or_none, str_or_none
 from .artist_url import ArtistUrl
 from .illust import Illust
 from .label import Label
@@ -17,9 +18,10 @@ from .description import Description
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
+from .base import JsonModel, remove_keys, date_time_or_null, int_or_none, str_or_none
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 ArtistNames = DB.Table(
     'artist_names',
@@ -46,7 +48,7 @@ ArtistNotations = DB.Table(
 )
 
 
-# ##CLASSES
+# ## CLASSES
 
 @dataclass
 class Artist(JsonModel):
@@ -84,7 +86,8 @@ class Artist(JsonModel):
     profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True)
     illusts = DB.relationship(Illust, lazy=True, backref=DB.backref('artist', lazy=True), cascade="all, delete")
     webpages = DB.relationship(ArtistUrl, backref='artist', lazy=True, cascade="all, delete")
-    notations = DB.relationship(Notation, secondary=ArtistNotations, lazy=True, backref=DB.backref('artist', uselist=False, lazy=True))
+    notations = DB.relationship(Notation, secondary=ArtistNotations, lazy=True,
+                                backref=DB.backref('artist', uselist=False, lazy=True))
     # boorus <- Booru (MtM)
 
     # #### Association proxies
@@ -132,7 +135,8 @@ class Artist(JsonModel):
 
     @property
     def _post_query(self):
-        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).filter(Illust.artist_id == self.id)
+        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust)\
+                   .filter(Illust.artist_id == self.id)
 
     @memoized_property
     def _source(self):
@@ -151,6 +155,7 @@ class Artist(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'site_id', 'site_artist_id', 'site_created', 'current_site_account', 'active', 'created', 'updated', 'requery']
+    basic_attributes = ['id', 'site_id', 'site_artist_id', 'site_created', 'current_site_account', 'active',
+                        'created', 'updated', 'requery']
     relation_attributes = ['names', 'site_accounts', 'profiles', 'webpages', 'illusts', 'boorus']
     searchable_attributes = basic_attributes + relation_attributes

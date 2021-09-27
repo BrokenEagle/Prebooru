@@ -15,7 +15,8 @@ from .base_db import update_column_attributes, update_relationship_collections
 COLUMN_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'type', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('image_urls', 'url', UploadUrl)]
 
-CREATE_ALLOWED_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'type', 'active', 'image_urls']
+CREATE_ALLOWED_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'type', 'active',
+                             'image_urls']
 
 
 # ## FUNCTIONS
@@ -36,14 +37,13 @@ def create_upload_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(upload, update_columns, createparams)
-    create_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    create_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_relationship_collections(upload, create_relationships, createparams)
     print("[%s]: created" % upload.shortlink)
     return upload
 
 
 # #### Misc functions
-
 
 def has_duplicate_posts(upload):
     return any(re.match(r'Image already uploaded on post #\d+', error.message) for error in upload.errors)

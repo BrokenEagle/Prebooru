@@ -1,4 +1,4 @@
-# APP/CACHE/DOMAIN.PY
+# APP/MODELS/DOMAIN.PY
 
 # ##LOCAL IMPORTS
 from .. import DB

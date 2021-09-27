@@ -2,8 +2,10 @@
 
 # flake8: noqa
 
+# ## PYTHON IMPORTS
 import os
 
+# ## LOCAL IMPORTS
 from .default_config import *
 
 try:
@@ -13,7 +15,9 @@ except ImportError:
     print("Create an 'app\\local_config.py' file to overwrite the default config.\nUseful for placing information that shouldn't be tracked (e.g. passwords)")
 
 
-# Environment variables
+# ## GLOBAL VARIABLES
+
+# #### Environment-settable variables
 
 WORKING_DIRECTORY = os.environ.get('WORKING_DIRECTORY', WORKING_DIRECTORY)
 DATA_FILEPATH = os.environ.get('DATA_FILEPATH', DATA_FILEPATH)
@@ -28,7 +32,7 @@ IMAGE_PORT = int(os.environ.get('IMAGE_PORT', IMAGE_PORT))
 HAS_EXTERNAL_IMAGE_SERVER = bool(os.environ.get('HAS_EXTERNAL_IMAGE_SERVER', HAS_EXTERNAL_IMAGE_SERVER))
 DEBUG_MODE = bool(os.environ.get('DEBUG_MODE', DEBUG_MODE))
 
-# Constructed config variables
+# #### Constructed config variables
 
 IMAGE_DIRECTORY = os.path.join(WORKING_DIRECTORY, IMAGE_FILEPATH)
 DATA_DIRECTORY = os.path.join(WORKING_DIRECTORY, DATA_FILEPATH)

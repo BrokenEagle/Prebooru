@@ -1,8 +1,10 @@
-# APP\CONTROLLERS\PROXY_CONTROLLER.PY
+# APP/CONTROLLERS/PROXY_CONTROLLER.PY
 
 # ## PYTHON IMPORTS
 import requests
 from bs4 import BeautifulSoup
+
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, Markup, jsonify
 
 # ## LOCAL IMPORTS
@@ -45,9 +47,11 @@ def check_preprocess(post):
         'search[uploader_name]': DANBOORU_USERNAME,
         'search[md5]': post.md5,
     }
-    danbooru_resp = requests.get(DANBOORU_HOSTNAME + '/uploads.json', params=params, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY))
+    danbooru_resp = requests.get(DANBOORU_HOSTNAME + '/uploads.json', params=params,
+                                 auth=(DANBOORU_USERNAME, DANBOORU_APIKEY))
     if danbooru_resp.status_code != 200:
-        return "HTTP %d: %s; Unable to query Danbooru for existing upload: %s - %s" % (danbooru_resp.status_code, danbooru_resp.reason, DANBOORU_USERNAME, post.md5)
+        return "HTTP %d: %s; Unable to query Danbooru for existing upload: %s - %s"\
+               % (danbooru_resp.status_code, danbooru_resp.reason, DANBOORU_USERNAME, post.md5)
     data = danbooru_resp.json()
     return len(data)
 
@@ -60,7 +64,8 @@ def preprocess_post(post):
         'upload[file]': (filename, buffer, mimetype)
     }
     try:
-        danbooru_resp = requests.post(DANBOORU_HOSTNAME + '/uploads/preprocess', files=files, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY), timeout=30)
+        danbooru_resp = requests.post(DANBOORU_HOSTNAME + '/uploads/preprocess', files=files,
+                                      auth=(DANBOORU_USERNAME, DANBOORU_APIKEY), timeout=30)
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
         return "Connection error: %s" % e
     if danbooru_resp.status_code != 200:
@@ -95,7 +100,9 @@ def danbooru_upload_data():
     illust_commentaries = source.illust_commentaries_dtext(illust)
     tags = source.BAD_ID_TAGS.copy() if not illust.active else []
     tags += list(set([booru.current_name for booru in illust.artist.boorus]))
-    return _cors_json({'error': False, 'post_url': post_url, 'tags': tags, 'post': post.to_json(), 'profile_urls': profile_urls, 'illust_commentaries': illust_commentaries, 'illust': illust.to_json(), 'artist': illust.artist.to_json()})
+    return _cors_json({'error': False, 'post_url': post_url, 'tags': tags, 'post': post.to_json(),
+                       'profile_urls': profile_urls, 'illust_commentaries': illust_commentaries,
+                       'illust': illust.to_json(), 'artist': illust.artist.to_json()})
 
 
 @bp.route('/proxy/danbooru_preprocess_upload.json', methods=['POST'])

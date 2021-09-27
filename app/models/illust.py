@@ -1,25 +1,27 @@
 # APP/MODELS/ILLUST.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import datetime
 from typing import List
 from dataclasses import dataclass
+
+# ## EXTERNAL LINKS
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
-# ##LOCAL IMPORTS
+# ##L OCAL IMPORTS
 from .. import DB
 from ..logical.sites import get_site_domain, get_site_key
-from .base import JsonModel, date_time_or_null, remove_keys, int_or_none, polymorphic_accessor_factory
 from .tag import Tag
 from .illust_url import IllustUrl
 from .site_data import SiteData
 from .description import Description
 from .notation import Notation
 from .pool_element import PoolIllust
+from .base import JsonModel, date_time_or_null, remove_keys, int_or_none, polymorphic_accessor_factory
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 # Many-to-many tables
 
@@ -42,7 +44,7 @@ IllustNotations = DB.Table(
 )
 
 
-# CLASSES
+# ## CLASSES
 
 @dataclass
 class Illust(JsonModel):
@@ -79,12 +81,16 @@ class Illust(JsonModel):
     updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
 
     # #### Relationships
-    commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True, backref=DB.backref('illusts', lazy=True))
+    commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True,
+                                   backref=DB.backref('illusts', lazy=True))
     tags = DB.relationship(Tag, secondary=IllustTags, lazy=True, backref=DB.backref('illusts', lazy=True))
-    urls = DB.relationship(IllustUrl, backref=DB.backref('illust', lazy=True, uselist=False), lazy=True, cascade="all, delete")
+    urls = DB.relationship(IllustUrl, backref=DB.backref('illust', lazy=True, uselist=False), lazy=True,
+                           cascade="all, delete")
     site_data = DB.relationship(SiteData, lazy=True, uselist=False, cascade="all, delete")
-    notations = DB.relationship(Notation, secondary=IllustNotations, lazy=True, backref=DB.backref('illust', uselist=False, lazy=True), cascade='all,delete')
-    _pools = DB.relationship(PoolIllust, lazy=True, backref=DB.backref('item', lazy=True, uselist=False), cascade='all,delete')
+    notations = DB.relationship(Notation, secondary=IllustNotations, lazy=True,
+                                backref=DB.backref('illust', uselist=False, lazy=True), cascade='all,delete')
+    _pools = DB.relationship(PoolIllust, lazy=True, backref=DB.backref('item', lazy=True, uselist=False),
+                             cascade='all,delete')
     # artist <- Artist (OtO)
 
     # #### Association proxies
@@ -151,7 +157,8 @@ class Illust(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'site_id', 'site_illust_id', 'site_created', 'artist_id', 'pages', 'score', 'active', 'created', 'updated', 'requery']
+    basic_attributes = ['id', 'site_id', 'site_illust_id', 'site_created', 'artist_id', 'pages', 'score', 'active',
+                        'created', 'updated', 'requery']
     relation_attributes = ['artist', 'urls', 'tags', 'commentaries', 'notations']
     searchable_attributes = basic_attributes + relation_attributes
 

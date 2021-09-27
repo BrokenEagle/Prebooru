@@ -1,9 +1,9 @@
 # APP/HELPERS/UPLOADS_HELPER.PY
 
-# ##PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Markup, url_for
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .base_helper import search_url_for, general_link
 
 
@@ -12,7 +12,10 @@ from .base_helper import search_url_for, general_link
 # #### Form functions
 
 def form_title_apellation(illust_url):
-    return Markup(': <a href="%s">illust #%d</a>' % (url_for('illust.show_html', id=illust_url.illust_id), illust_url.illust_id)) if illust_url is not None else ""
+    if illust_url is None:
+        return ""
+    url = url_for('illust.show_html', id=illust_url.illust_id)
+    return Markup(': <a href="%s">illust #%d</a>' % (url, illust_url.illust_id))
 
 
 # #### Link functions

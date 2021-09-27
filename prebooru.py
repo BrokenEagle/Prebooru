@@ -13,7 +13,7 @@ from app import controllers
 from app import helpers
 from app.logical.file import load_default, put_get_json
 from app.logical.validate import validate_version, validate_integrity
-from app.config import WORKING_DIRECTORY, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
+from app.config import DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
 
 # ## GLOBAL VARIABLES
 
@@ -138,10 +138,15 @@ PREBOORU_APP.jinja_env.add_extension('jinja2.ext.loopcontrols')
 if __name__ == '__main__':
     parser = ArgumentParser(description="Server to process network requests.")
     parser.add_argument('type', choices=['init', 'server'])
-    parser.add_argument('--new', required=False, default=False, action="store_true", help="Start with a new database file.")
-    parser.add_argument('--extension', required=False, default=False, action="store_true", help="Enable Chrome extension.")
-    parser.add_argument('--logging', required=False, default=False, action="store_true", help="Display the SQL commands.")
-    parser.add_argument('--title', required=False, default=False, action="store_true", help="Adds server title to console window.")
-    parser.add_argument('--public', required=False, default=False, action="store_true", help="Makes the server visible to other computers.")
+    parser.add_argument('--new', required=False, default=False, action="store_true",
+                        help="Start with a new database file.")
+    parser.add_argument('--extension', required=False, default=False, action="store_true",
+                        help="Enable Chrome extension.")
+    parser.add_argument('--logging', required=False, default=False, action="store_true",
+                        help="Display the SQL commands.")
+    parser.add_argument('--title', required=False, default=False, action="store_true",
+                        help="Adds server title to console window.")
+    parser.add_argument('--public', required=False, default=False, action="store_true",
+                        help="Makes the server visible to other computers.")
     args = parser.parse_args()
     main(args)

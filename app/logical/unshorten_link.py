@@ -1,6 +1,6 @@
 # APP/LOGICAL/UNSHORTEN_LINK.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import re
 import requests
 import urllib.parse
@@ -35,7 +35,8 @@ def initialize_shortlinks():
     all_domains = Domain.query.all()
     SHORTLINK_DOMAINS += [domain.name for domain in all_domains if domain.redirector]
     NONSHORTLINK_DOMAINS += [domain.name for domain in all_domains if not domain.redirector]
-    SHORTLINK_DOMAIN_RG = re.compile(r'https?://(?:%s)/' % ('|'.join([re.escape(domain) for domain in SHORTLINK_DOMAINS])))
+    domain_re = '|'.join([re.escape(domain) for domain in SHORTLINK_DOMAINS])
+    SHORTLINK_DOMAIN_RG = re.compile(r'https?://(?:%s)/' % (domain_re))
 
 
 def get_known_domains():
@@ -111,10 +112,16 @@ def get_redirect(link, level=0):
 
 @check_initialization
 def find_short_domains():  # Unused
+
+    def _find_short_domain(acc, text):
+        return acc + re.findall(r'http://\w{3,5}\.\w{2,4}/\w{3,6}', text)
+
     artist_urls = ArtistUrl.query.filter(ArtistUrl.url.regexp_match('^' + SHORTURL_RG.pattern + '$')).all()
-    shortlinks = set(reduce(lambda acc, x: acc + re.findall(r'http://\w{3,5}\.\w{2,4}/\w{3,6}', x.url), artist_urls, []))
+    urls = [url.url for url in artist_urls]
+    shortlinks = set(reduce(_find_short_domain, urls, []))
     descriptions = Description.query.filter(Description.body.regexp_match(SHORTURL_RG.pattern)).all()
-    shortlinks = shortlinks.union(reduce(lambda acc, x: acc + re.findall(r'http://\w{3,5}\.\w{2,4}/\w{3,6}', x.body), descriptions, []))
+    descrs = [descr.body for descr in descriptions]
+    shortlinks = shortlinks.union(reduce(_find_short_domain, descrs, []))
     added_domains = []
     known_domains = get_known_domains()
     while True:
@@ -165,7 +172,8 @@ def is_short_link(link):
 def is_schema_change_only(original_link, redirect_link):
     original_parse = urllib.parse.urlparse(original_link)
     redirect_parse = urllib.parse.urlparse(redirect_link)
-    return (original_parse.scheme != redirect_parse.scheme) and (original_parse.netloc == redirect_parse.netloc) and (original_parse.path == redirect_parse.path)
+    return (original_parse.scheme != redirect_parse.scheme) and (original_parse.netloc == redirect_parse.netloc) and\
+           (original_parse.path == redirect_parse.path)
 
 
 # T.CO -- Twitter

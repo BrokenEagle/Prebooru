@@ -22,7 +22,8 @@ from ..database.error_db import create_error, create_and_append_error, extend_er
 def convert_video_upload(illust, upload, source, create_video_func):
     video_illust_url, thumb_illust_url = source.VideoIllustDownloadUrls(illust)
     if thumb_illust_url is None:
-        create_and_append_error('logical.downloader.convert_video_upload', "Did not find thumbnail for video on illust #%d" % illust.id, upload)
+        msg = "Did not find thumbnail for video on illust #%d" % illust.id
+        create_and_append_error('logical.downloader.convert_video_upload', msg, upload)
         return False
     else:
         post = create_video_func(video_illust_url, thumb_illust_url, upload, source)
@@ -83,35 +84,46 @@ def check_filetype(buffer, file_ext, post_errors):
     try:
         guess = filetype.guess(buffer)
     except Exception as e:
-        create_post_error('logical.downloader.base.check_filetype', "Error reading file headers: %s" % repr(e), post_errors)
+        msg = "Error reading file headers: %s" % repr(e)
+        create_post_error('logical.downloader.base.check_filetype', msg, post_errors)
         return file_ext
     if guess.extension != file_ext:
-        create_post_error('logical.downloader.base.check_filetype', "Mismatching file extensions: Reported - %s, Actual - %s" % (file_ext, guess.extension), post_errors)
+        msg = "Mismatching file extensions: Reported - %s, Actual - %s" % (file_ext, guess.extension)
+        create_post_error('logical.downloader.base.check_filetype', msg, post_errors)
         file_ext = guess.extension
     return file_ext
 
 
-def check_image_dimensions(image, image_illust_url, post_errors):
-    if (image_illust_url.width and image.width != image_illust_url.width) or (image_illust_url.height and image.height != image_illust_url.height):
-        create_post_error('logical.downloader.base.save_image', "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" % (image_illust_url.width, image_illust_url.height, image.width, image.height), post_errors)
+def check_image_dimensions(image, illust_url, post_errors):
+    if (illust_url.width and image.width != illust_url.width) or\
+       (illust_url.height and image.height != illust_url.height):
+        msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
+              (illust_url.width, illust_url.height, image.width, image.height)
+        create_post_error('logical.downloader.base.save_image', msg, post_errors)
     return image.width, image.height
 
 
-def check_video_dimensions(post, video_illust_url, post_errors):
+def check_video_dimensions(post, illust_url, post_errors):
     try:
         probe = ffmpeg.probe(post.file_path)
     except FileNotFoundError:
-        create_post_error('logical.downloader.base.check_video_dimensions', "Must install ffprobe.exe. See Github page for details.", post_errors)
-        return video_illust_url.width, video_illust_url.height
+        msg = "Must install ffprobe.exe. See Github page for details."
+        create_post_error('logical.downloader.base.check_video_dimensions', msg, post_errors)
+        return illust_url.width, illust_url.height
     except Exception as e:
-        create_post_error('logical.downloader.base.check_video_dimensions', "Error reading video metadata: %s" % e, post_errors)
-        return video_illust_url.width, video_illust_url.height
+        msg = "Error reading video metadata: %s" % repr(e)
+        create_post_error('logical.downloader.base.check_video_dimensions', msg, post_errors)
+        return illust_url.width, illust_url.height
     video_stream = next(filter(lambda x: x['codec_type'] == 'video', probe['streams']), None)
     if video_stream is None:
-        create_post_error('logical.downloader.base.check_video_dimensions', "No video streams found: %e" % video_illust_url.url, post_errors)
-        return video_illust_url.width, video_illust_url.height
-    if (video_illust_url.width and video_stream['width'] != video_illust_url.width) or (video_illust_url.height and video_stream['height'] != video_illust_url.height):
-        create_post_error('logical.downloader.base.check_video_dimensions', "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" % (video_illust_url.width, video_illust_url.height, video_stream['width'], video_stream['height']), post_errors)
+        msg = "No video streams found: %e" % illust_url.url
+        create_post_error('logical.downloader.base.check_video_dimensions', msg, post_errors)
+        return illust_url.width, illust_url.height
+    if (illust_url.width and video_stream['width'] != illust_url.width) or\
+       (illust_url.height and video_stream['height'] != illust_url.height):
+        msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
+              (illust_url.width, illust_url.height, video_stream['width'], video_stream['height'])
+        create_post_error('logical.downloader.base.check_video_dimensions', msg, post_errors)
     return video_stream['width'], video_stream['height']
 
 
@@ -155,7 +167,8 @@ def save_image(buffer, image, post, post_errors):
     try:
         create_data(buffer, post)
     except Exception as e:
-        create_post_error('logical.downloader.base.save_image', "Error saving image to disk: %s" % repr(e), post_errors)
+        msg = "Error saving image to disk: %s" % repr(e)
+        create_post_error('logical.downloader.base.save_image', msg, post_errors)
         return False
     if post.has_preview:
         error = create_preview(image, post)

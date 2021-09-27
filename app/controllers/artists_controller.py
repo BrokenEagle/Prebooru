@@ -1,6 +1,6 @@
-# APP\CONTROLLERS\ARTISTS_CONTROLLER.PY
+# APP/CONTROLLERS/ARTISTS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, StringField
@@ -11,11 +11,13 @@ from ..models import Artist, Booru
 from ..logical.sources.base import get_source_by_id, get_artist_required_params
 from ..logical.sources.danbooru import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source
-from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters, artist_append_booru, artist_delete_profile
+from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
+    artist_append_booru, artist_delete_profile
 from ..logical.database.booru_db import create_booru_from_parameters
-from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate,\
-    default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error, parse_array_parameter, check_param_requirements,\
-    int_or_blank, nullify_blanks, set_default, parse_bool_parameter, hide_input
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
+    get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error,\
+    parse_array_parameter, check_param_requirements, int_or_blank, nullify_blanks, set_default, parse_bool_parameter,\
+    hide_input
 
 
 # ## GLOBAL VARIABLES
@@ -62,18 +64,27 @@ JSON_OPTIONS = (
 )
 
 
-# #### Forms
+# ## CLASSES
 
 def get_artist_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class ArtistForm(CustomNameForm):
-        site_id = SelectField('Site', choices=[("", ""), (1, 'Pixiv'), (3, 'Twitter')], id='artist-site-id', custom_name='artist[site_id]', validators=[DataRequired()], coerce=int_or_blank)
-        site_artist_id = IntegerField('Site Artist ID', id='artist-site-artist-id', custom_name='artist[site_artist_id]', validators=[DataRequired()])
-        current_site_account = StringField('Current Site Account', id='artist-current-site-account', custom_name='artist[current_site_account]')
-        site_created = StringField('Site Created', id='artist-site-created', custom_name='artist[site_created]', description='Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).')
-        site_account_string = TextAreaField('Site Accounts', id='artist-site-account-string', custom_name='artist[site_account_string]', description="Separated by whitespace.")
-        name_string = TextAreaField('Site Names', id='artist-name-string', custom_name='artist[name_string]', description="Separated by carriage returns.")
-        webpage_string = TextAreaField('Webpages', id='artist-webpage-string', custom_name='artist[webpage_string]', description="Separated by carriage returns. Prepend with '-' to mark as inactive.")
+        site_id = SelectField('Site', choices=[("", ""), (1, 'Pixiv'), (3, 'Twitter')], id='artist-site-id',
+                              custom_name='artist[site_id]', validators=[DataRequired()], coerce=int_or_blank)
+        site_artist_id = IntegerField('Site Artist ID', id='artist-site-artist-id',
+                                      custom_name='artist[site_artist_id]', validators=[DataRequired()])
+        current_site_account = StringField('Current Site Account', id='artist-current-site-account',
+                                           custom_name='artist[current_site_account]')
+        site_created = StringField('Site Created', id='artist-site-created', custom_name='artist[site_created]',
+                                   description='Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).')
+        site_account_string = TextAreaField('Site Accounts', id='artist-site-account-string',
+                                            custom_name='artist[site_account_string]',
+                                            description="Separated by whitespace.")
+        name_string = TextAreaField('Site Names', id='artist-name-string', custom_name='artist[name_string]',
+                                    description="Separated by carriage returns.")
+        webpage_string = TextAreaField('Webpages', id='artist-webpage-string', custom_name='artist[webpage_string]',
+                                       description="Separated by carriage returns. " +
+                                       "Prepend with '-' to mark as inactive.")
         profile = TextAreaField('Profile', id='artist-profile', custom_name='artist[profile]')
         active = BooleanField('Active', id='artist-active', custom_name='artist[active]', default=True)
     return ArtistForm(**kwargs)
@@ -181,10 +192,10 @@ def query_booru(artist):
     if artist_data['error']:
         return artist_data
     existing_booru_ids = [booru.id for booru in artist.boorus]
-    for danbooru_artist in artist_data['artists']:
-        booru = Booru.query.filter_by(danbooru_id=danbooru_artist['id']).first()
+    for data in artist_data['artists']:
+        booru = Booru.query.filter_by(danbooru_id=data['id']).first()
         if booru is None:
-            booru = create_booru_from_parameters({'danbooru_id': danbooru_artist['id'], 'current_name': danbooru_artist['name']})
+            booru = create_booru_from_parameters({'danbooru_id': data['id'], 'current_name': data['name']})
         if booru.id not in existing_booru_ids:
             artist_append_booru(artist, booru)
     return {'error': False, 'artist': artist, 'boorus': artist.boorus}
@@ -263,7 +274,8 @@ def edit_html(id):
     editparams = artist.to_json()
     editparams['site_account_string'] = '\r\n'.join(site_account.name for site_account in artist.site_accounts)
     editparams['name_string'] = '\r\n'.join(artist_name.name for artist_name in artist.names)
-    editparams['webpage_string'] = '\r\n'.join((('' if webpage.active else '-') + webpage.url) for webpage in artist.webpages)
+    marked_urls = ((('' if webpage.active else '-') + webpage.url) for webpage in artist.webpages)
+    editparams['webpage_string'] = '\r\n'.join(marked_urls)
     form = get_artist_form(**editparams)
     if artist.illust_count > 0:
         # Artists with illusts cannot have their critical identifiers changed

@@ -20,7 +20,8 @@ def initialize():
 def main(args):
     if args.missing:
         primaryjoin = Post.similarity_data.property.primaryjoin
-        subquery = Post.query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right).filter(primaryjoin.left == primaryjoin.right).with_entities(Post.id)
+        subquery = Post.query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)\
+                       .filter(primaryjoin.left == primaryjoin.right).with_entities(Post.id)
         subclause = Post.id.in_(subquery)
         page = Post.query.filter(not_(subclause)).count_paginate(per_page=100)
     else:
@@ -44,8 +45,10 @@ def main(args):
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Fix script to generate similarity data.")
-    parser.add_argument('--expunge', required=False, default=False, action="store_true", help="Expunge all similarity data records.")
-    parser.add_argument('--missing', required=False, default=False, action="store_true", help="Generate similarity data missing on posts.")
+    parser.add_argument('--expunge', required=False, default=False, action="store_true",
+                        help="Expunge all similarity data records.")
+    parser.add_argument('--missing', required=False, default=False, action="store_true",
+                        help="Generate similarity data missing on posts.")
     args = parser.parse_args()
 
     initialize()

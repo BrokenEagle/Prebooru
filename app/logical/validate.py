@@ -1,8 +1,10 @@
-# APP/MODELS/TAGS_HELPER.PY
+# APP/LOGICAL/VALIDATE.PY
 
 # ## PYTHON IMPORTS
 import logging
 import itertools
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy import MetaData, Table, Column, String, select
 
 # ## LOCAL IMPORTS

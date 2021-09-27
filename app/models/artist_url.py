@@ -8,8 +8,7 @@ from .. import DB
 from .base import JsonModel
 
 
-# ##GLOBAL VARIABLES
-
+# ## CLASSES
 
 @dataclass
 class ArtistUrl(JsonModel):

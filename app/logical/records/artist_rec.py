@@ -7,17 +7,17 @@ from ..database.artist_db import create_artist_from_parameters, update_artist_fr
 # ## FUNCTIONS
 
 def create_artist_from_source(site_artist_id, source):
-    createparams = source.get_artist_data(site_artist_id)
-    if not createparams['active']:
+    params = source.get_artist_data(site_artist_id)
+    if not params['active']:
         return
-    return create_artist_from_parameters(createparams)
+    return create_artist_from_parameters(params)
 
 
 def update_artist_from_source(artist, source):
-    updateparams = source.get_artist_data(artist.site_artist_id)
-    if updateparams['active']:
+    params = source.get_artist_data(artist.site_artist_id)
+    if params['active']:
         # These are only removable through the HTML/JSON UPDATE routes
-        updateparams['webpages'] += ['-' + webpage.url for webpage in artist.webpages if webpage.url not in updateparams['webpages']]
-        updateparams['names'] += [artist_name.name for artist_name in artist.names if artist_name.name not in updateparams['names']]
-        updateparams['site_accounts'] += [site_account.name for site_account in artist.site_accounts if site_account.name not in updateparams['site_accounts']]
-    update_artist_from_parameters(artist, updateparams)
+        params['webpages'] += ['-' + w.url for w in artist.webpages if w.url not in params['webpages']]
+        params['names'] += [an.name for an in artist.names if an.name not in params['names']]
+        params['site_accounts'] += [sa.name for sa in artist.site_accounts if sa.name not in params['site_accounts']]
+    update_artist_from_parameters(artist, params)

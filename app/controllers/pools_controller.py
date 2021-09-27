@@ -1,6 +1,6 @@
-# APP\CONTROLLERS\POOLS_CONTROLLER.PY
+# APP/CONTROLLERS/POOLS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, abort, url_for, flash, redirect
 from sqlalchemy.orm import selectinload
 from wtforms import StringField, BooleanField
@@ -11,9 +11,9 @@ from wtforms.validators import DataRequired
 from ..models import Pool, Post, Illust, IllustUrl, PoolPost, PoolIllust, PoolNotation
 from ..logical.database.pool_db import create_pool_from_parameters, update_pool_from_parameters
 from ..logical.searchable import numeric_matching
-from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate,\
-    default_order, get_data_params, CustomNameForm, get_page, get_limit, get_or_abort, get_or_error, check_param_requirements,\
-    nullify_blanks, set_error, parse_bool_parameter, set_default
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
+    get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_page, get_limit, get_or_abort,\
+    get_or_error, check_param_requirements, nullify_blanks, set_error, parse_bool_parameter, set_default
 
 
 # ## GLOBAL VARIABLES
@@ -38,13 +38,14 @@ SHOW_HTML_POST_OPTIONS = (
 )
 
 
-# #### Forms
+# ## CLASSES
 
 def get_pool_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class PoolForm(CustomNameForm):
         name = StringField('Name', id='pool-name', custom_name='pool[name]', validators=[DataRequired()])
-        series = BooleanField('Series', id='pool-series', custom_name='pool[series]', description="Enables pool navigation.")
+        series = BooleanField('Series', id='pool-series', custom_name='pool[series]',
+                              description="Enables pool navigation.")
     return PoolForm(**kwargs)
 
 
@@ -142,7 +143,9 @@ def show_json(id):
 @bp.route('/pools/<int:id>', methods=['GET'])
 def show_html(id):
     pool = get_or_abort(Pool, id)
-    elements = pool.element_paginate(page=get_page(request), per_page=get_limit(request), illust_options=SHOW_HTML_ILLUST_OPTIONS, post_options=SHOW_HTML_POST_OPTIONS)
+    elements = pool.element_paginate(page=get_page(request), per_page=get_limit(request),
+                                     illust_options=SHOW_HTML_ILLUST_OPTIONS,
+                                     post_options=SHOW_HTML_POST_OPTIONS)
     return render_template("pools/show.html", pool=pool, elements=elements)
 
 

@@ -1,6 +1,6 @@
 # APP/LOGICAL/UTILITY.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import logging
 import re
 import json
@@ -10,7 +10,7 @@ import datetime
 import pathlib
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 def safe_print(*args, **kwargs):
     temp = ''

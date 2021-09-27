@@ -1,8 +1,8 @@
-# APP\CONTROLLERS\ILLUST_URLS_CONTROLLER.PY
+# APP/CONTROLLERS/ILLUST_URLS_CONTROLLER.PY
 
 # ## PYTHON IMPORTS
-from sqlalchemy.orm import selectinload
 from flask import Blueprint, request, render_template, redirect, url_for, flash
+from sqlalchemy.orm import selectinload
 from wtforms import IntegerField, BooleanField, StringField
 from wtforms.validators import DataRequired
 
@@ -10,9 +10,9 @@ from wtforms.validators import DataRequired
 from ..models import Illust, IllustUrl
 from ..logical.sources.base import get_image_site_id, get_media_source
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
-from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response, search_filter, default_order, paginate,\
-    get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error, nullify_blanks, check_param_requirements, hide_input, set_default,\
-    parse_bool_parameter
+from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
+    search_filter, default_order, paginate, get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error,\
+    nullify_blanks, check_param_requirements, hide_input, set_default, parse_bool_parameter
 
 
 # ## GLOBAL VARIABLES
@@ -36,12 +36,13 @@ INDEX_HTML_OPTIONS = (
 )
 
 
-# Forms
+# ## CLASSES
 
 def get_illust_url_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class IllustUrlForm(CustomNameForm):
-        illust_id = IntegerField('Illust ID', id='illust-url-illust_id', custom_name='illust_url[illust_id]', validators=[DataRequired()])
+        illust_id = IntegerField('Illust ID', id='illust-url-illust_id', custom_name='illust_url[illust_id]',
+                                 validators=[DataRequired()])
         url = StringField('URL', id='illust-url-url', custom_name='illust_url[url]', validators=[DataRequired()])
         width = IntegerField('Width', id='illust-url-width', custom_name='illust_url[width]')
         height = IntegerField('Height', id='illust-url-height', custom_name='illust_url[height]')

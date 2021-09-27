@@ -1,9 +1,9 @@
 # APP/HELPERS/ILLUST_URLS_HELPERS.PY
 
-# ##PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Markup, url_for
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .base_helper import general_link
 
 

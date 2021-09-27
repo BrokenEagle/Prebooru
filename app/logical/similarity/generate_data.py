@@ -1,4 +1,4 @@
-# APP\LOGICAL\SIMILARITY\GENERATE_DATA.PY
+# APP/LOGICAL/SIMILARITY/GENERATE_DATA.PY
 
 # ## LOCAL IMPORTS
 from ..database.similarity_data_db import create_similarity_data_from_parameters

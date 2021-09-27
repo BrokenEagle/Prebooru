@@ -1,19 +1,19 @@
 # APP/LOGICAL/DATABASE/SIMILARITY_DATA_DB.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import SimilarityData
 from .base_db import update_column_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['post_id', 'ratio', 'image_hash']
 
 CREATE_ALLOWED_ATTRIBUTES = ['post_id', 'ratio', 'image_hash']
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### DB functions
 

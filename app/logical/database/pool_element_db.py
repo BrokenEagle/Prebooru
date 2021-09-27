@@ -1,12 +1,12 @@
 # APP/LOGICAL/DATABASE/POOL_ELEMENT_DB.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time
 from ...models import Illust, Post, Notation
+from ..utility import get_current_time, set_error
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'width', 'height', 'order', 'active']
 
@@ -50,15 +50,17 @@ def create_pool_element_for_item(pool, id_key, dataparams):
     itemtype = itemclass.__table__.name
     id = dataparams[id_key]
     item = itemclass.find(id)
+    retdata = {'error': False, 'dataparams': dataparams}
     if item is None:
-        return {'error': True, 'message': "%s not found." % itemtype, 'dataparams': dataparams}
+        return set_error(retdata, "%s not found." % itemtype)
     pool_ids = [pool.id for pool in item.pools]
     if pool.id in pool_ids:
-        return {'error': True, 'message': "%s #%d already added to pool #%d." % (itemtype, item.id, pool.id), 'dataparams': dataparams}
+        return set_error(retdata, "%s #%d already added to pool #%d." % (itemtype, item.id, pool.id))
     pool.updated = get_current_time()
     pool.elements.append(item)
     SESSION.commit()
     pool.element_count = pool._get_element_count()
     SESSION.commit()
     pool_ids += [pool.id]
-    return {'error': False, 'pool': pool.to_json(), 'type': itemtype, 'item': item.to_json(), 'data': pool_ids, 'dataparams': dataparams}
+    retdata.update({'pool': pool.to_json(), 'type': itemtype, 'item': item.to_json(), 'data': pool_ids})
+    return retdata

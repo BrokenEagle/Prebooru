@@ -1,7 +1,9 @@
-# APP\CONTROLLERS\SIMILARITY_CONTROLLER.PY
+# APP/CONTROLLERS/SIMILARITY_CONTROLLER.PY
 
 # ## PYTHON IMPORTS
 from types import SimpleNamespace
+
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, flash, redirect
 from wtforms import TextAreaField, BooleanField, FloatField
 from wtforms.validators import DataRequired
@@ -15,8 +17,8 @@ from ..logical.database.similarity_pool_db import delete_similarity_pool_by_post
 from ..logical.similarity.check_image import check_all_image_urls_similarity
 from ..logical.similarity.generate_data import generate_post_similarity
 from ..logical.similarity.populate_pools import populate_similarity_pools
-from .base_controller import process_request_values, CustomNameForm, parse_type, parse_bool_parameter, parse_string_list, nullify_blanks,\
-    set_default, check_param_requirements, set_error, eval_bool_string
+from .base_controller import process_request_values, CustomNameForm, parse_type, parse_bool_parameter,\
+    parse_string_list, nullify_blanks, set_default, check_param_requirements, set_error, eval_bool_string
 
 
 # ## GLOBAL VARIABLES
@@ -29,9 +31,12 @@ bp = Blueprint("similarity", __name__)
 def get_similarity_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class SimilarityForm(CustomNameForm):
-        urls_string = TextAreaField('URLs', id='similarity-urls', custom_name='urls_string', description="Separated by carriage returns.", validators=[DataRequired()])
-        score = FloatField('Score', id='similarity-score', description="Lowest score of results to return. Default is 90.0.")
-        use_original = BooleanField('Use Original', id='similarity-use-original', description="Uses the original image URL instead of the small version.")
+        urls_string = TextAreaField('URLs', id='similarity-urls', custom_name='urls_string',
+                                    description="Separated by carriage returns.", validators=[DataRequired()])
+        score = FloatField('Score', id='similarity-score',
+                           description="Lowest score of results to return. Default is 90.0.")
+        use_original = BooleanField('Use Original', id='similarity-use-original',
+                                    description="Uses the original image URL instead of the small version.")
     return SimilarityForm(**kwargs)
 
 
@@ -65,7 +70,8 @@ def check(include_posts):
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
     dataparams['url_string'] = '\r\n'.join(dataparams['urls'])
-    similar_results = check_all_image_urls_similarity(dataparams['urls'], dataparams['score'], dataparams['use_original'], include_posts)
+    similar_results = check_all_image_urls_similarity(dataparams['urls'], dataparams['score'],
+                                                      dataparams['use_original'], include_posts)
     if type(similar_results) is str:
         return set_error(retdata, similar_results)
     retdata['similar_results'] = similar_results
@@ -104,8 +110,9 @@ def check_html():
         return render_template("similarity/check.html", similar_results=None, form=form)
     similar_results = []
     for json_result in results['similar_results']:
-        similarity_result = SimpleNamespace(**json_result)
-        similarity_result.post_results = [SimpleNamespace(**post_result) for post_result in similarity_result.post_results]
+        post_results = [SimpleNamespace(**post_result) for post_result in json_result['post_results']]
+        del json_result['post_results']
+        similarity_result = SimpleNamespace(post_results=post_results, **json_result)
         post_ids = [post_result.post_id for post_result in similarity_result.post_results]
         posts = get_posts_by_id(post_ids)
         for post_result in similarity_result.post_results:

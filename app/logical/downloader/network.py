@@ -31,7 +31,8 @@ def download_media(illust_url, source):
     download_url = source.get_full_url(illust_url)
     file_ext = source.get_media_extension(download_url)
     if file_ext not in ['jpg', 'png', 'mp4']:
-        return create_error('logical.downloader.network.download_media', "Unsupported file format: %s" % file_ext), None
+        msg = "Unsupported file format: %s" % file_ext
+        return create_error('logical.downloader.network.download_media', msg), None
     print("Downloading", download_url)
     buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
     if type(buffer) is str:
@@ -41,11 +42,11 @@ def download_media(illust_url, source):
 
 # #### Post creation functions
 
-def create_image_post(image_illust_url, upload, source):
-    buffer, file_ext = download_media(image_illust_url, source)
+def create_image_post(illust_url, upload, source):
+    buffer, file_ext = download_media(illust_url, source)
     if is_error(buffer):
         return [buffer]
-    md5 = check_existing(buffer, image_illust_url)
+    md5 = check_existing(buffer, illust_url)
     if is_error(md5):
         return [md5]
     post_errors = []
@@ -53,21 +54,21 @@ def create_image_post(image_illust_url, upload, source):
     image = load_image(buffer)
     if is_error(image):
         return post_errors + [image]
-    image_width, image_height = check_image_dimensions(image, image_illust_url, post_errors)
+    image_width, image_height = check_image_dimensions(image, illust_url, post_errors)
     temppost = Post(md5=md5, file_ext=image_file_ext, width=image_width, height=image_height)
     if not save_image(buffer, image, temppost, post_errors):
         return post_errors
-    post = create_post_and_add_illust_url(image_illust_url, image_width, image_height, image_file_ext, md5, len(buffer))
+    post = create_post_and_add_illust_url(illust_url, image_width, image_height, image_file_ext, md5, len(buffer))
     if len(post_errors):
         extend_errors(post, post_errors)
     return post
 
 
-def create_video_post(video_illust_url, thumb_illust_url, upload, source):
-    buffer, file_ext = download_media(video_illust_url, source)
+def create_video_post(illust_url, thumb_illust_url, upload, source):
+    buffer, file_ext = download_media(illust_url, source)
     if is_error(buffer):
         return [buffer]
-    md5 = check_existing(buffer, video_illust_url)
+    md5 = check_existing(buffer, illust_url)
     if is_error(md5):
         return [md5]
     post_errors = []
@@ -76,12 +77,12 @@ def create_video_post(video_illust_url, thumb_illust_url, upload, source):
     error = save_video(buffer, temppost)
     if error is not None:
         return post_errors + [error]
-    video_width, video_height = check_video_dimensions(temppost, video_illust_url, post_errors)
+    video_width, video_height = check_video_dimensions(temppost, illust_url, post_errors)
     thumb_binary, _ = download_media(thumb_illust_url, source)
     if is_error(thumb_binary):
         return post_errors + [thumb_binary]
     save_thumb(thumb_binary, temppost, post_errors)
-    post = create_post_and_add_illust_url(video_illust_url, video_width, video_height, video_file_ext, md5, len(buffer))
+    post = create_post_and_add_illust_url(illust_url, video_width, video_height, video_file_ext, md5, len(buffer))
     if len(post_errors):
         extend_errors(post, post_errors)
     return post

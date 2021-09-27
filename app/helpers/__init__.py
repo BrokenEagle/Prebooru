@@ -1,5 +1,7 @@
 # APP/HELPERS/__INIT__.PY
 
+"""Directly interacts with templates."""
+
 # ## COLLATION IMPORTS
 from . import base_helper as base  # noqa: F401
 from . import posts_helper as post  # noqa: F401

@@ -1,20 +1,20 @@
 # APP/LOGICAL/DATABASE/ERROR_DB.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time
 from ...models import Error
+from ..utility import get_current_time
 from .base_db import update_column_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['module', 'message']
 
 CREATE_ALLOWED_ATTRIBUTES = ['module', 'message']
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### DB functions
 

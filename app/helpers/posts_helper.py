@@ -1,13 +1,15 @@
 # APP/HELPERS/POSTS_HELPER.PY
 
-# ##PYTHON IMPORTS
-from flask import Markup, url_for
+# ## PYTHON IMPORTS
 import urllib.parse
+
+# ## EXTERNAL IMPORTS
+from flask import Markup, url_for
 
 # ##LOCAL IMPORTS
 from ..logical.sources.base import get_source_by_id
-from .base_helper import search_url_for, general_link, external_link
 from ..config import DANBOORU_HOSTNAME
+from .base_helper import search_url_for, general_link, external_link
 
 
 # ## FUNCTIONS
@@ -85,11 +87,14 @@ def danbooru_post_bookmarklet_links(post):
 
 
 def regenerate_similarity_link(post):
-    return general_link("Regenerate similarity", url_for('similarity.regenerate_html', post_id=post.id), **{'onclick': "return Posts.regenerateSimilarity(this)"})
+    url = url_for('similarity.regenerate_html', post_id=post.id)
+    addons = {'onclick': "return Posts.regenerateSimilarity(this)"}
+    return general_link("Regenerate similarity", url, **addons)
 
 
 def disk_file_link(post):
-    return general_link("Copy file link", "#", **{'onclick': 'return Posts.copyFileLink(this)', 'data-file-path': post.file_path})
+    addons = {'onclick': 'return Posts.copyFileLink(this)', 'data-file-path': post.file_path}
+    return general_link("Copy file link", "#", **addons)
 
 
 def add_notation_link(post):
@@ -97,8 +102,11 @@ def add_notation_link(post):
 
 
 def add_to_pool_link(post):
-    return general_link("Add to pool", url_for('pool_element.create_html'), **{'onclick': "return Prebooru.createPool(this, 'post')", 'data-post-id': post.id})
+    addons = {'onclick': "return Prebooru.createPool(this, 'post')", 'data-post-id': post.id}
+    return general_link("Add to pool", url_for('pool_element.create_html'), **addons)
 
 
 def danbooru_post_link(post):
-    return external_link('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id) if post.danbooru_id is not None else Markup('<em>N/A</em>')
+    if post.danbooru_id is not None:
+        return external_link('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id)
+    return Markup('<em>N/A</em>')

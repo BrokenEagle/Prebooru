@@ -1,10 +1,12 @@
 # APP/HELPERS/BOORUS_HELPER.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import urllib.parse
+
+# ## EXTERNAL IMPORTS
 from flask import url_for
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ..config import DANBOORU_HOSTNAME
 from .base_helper import search_url_for, general_link, external_link
 

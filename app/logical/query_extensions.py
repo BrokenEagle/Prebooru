@@ -1,14 +1,16 @@
-# APP/LOGICAL/UNSHORTENLINK.PY
+# APP/LOGICAL/QUERY_EXTENSIONS.PY
 
-# ##PYTHON IMPORTS
-import sqlalchemy.orm
+# ## PYTHON IMPORTS
 from sqlalchemy import func
+import sqlalchemy.orm
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 INIT = False
 
+
+# ## CLASSES
 
 class CountPaginate():
     def __init__(self, query=None, page=1, per_page=20):
@@ -46,11 +48,14 @@ class CountPaginate():
         return self.query.limit(self.per_page).offset(self.offset).all()
 
     def _GetCount(self):
-        self._count_query = self.query.filter()  # Easy way to get an exact copy of a query
+        # Easy way to get an exact copy of a query
+        self._count_query = self.query.filter()
         if len(self._count_query._where_criteria) == 0:
             model = self._count_query.column_descriptions[0]['entity']
-            self._count_query = self._count_query.filter(model.id)  # Queries with no where criteria do not work correctly
-        self._count_query._with_options = ()  # Using function count with scalar does not like loader options
+            # Queries with no where criteria do not work correctly
+            self._count_query = self._count_query.filter(model.id)
+        # Using function count with scalar does not like loader options
+        self._count_query._with_options = ()
         return self._count_query.get_count()
 
 

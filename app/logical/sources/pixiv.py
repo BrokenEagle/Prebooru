@@ -1,21 +1,24 @@
-# APP/SOURCES/PIXIV.PY
+# APP/LOGICAL/SOURCES/PIXIV.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import re
 import time
 import urllib
-import requests
 import datetime
 
-# ##LOCAL IMPORTS
-from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, fixup_crlf, process_utc_timestring
+# ## EXTERNAL IMPORTS
+import requests
+
+# ## LOCAL IMPORTS
+from ...config import PIXIV_PHPSESSID
+from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, fixup_crlf,\
+    process_utc_timestring
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, get_api_data, save_api_data
-from ...config import PIXIV_PHPSESSID
 from ..sites import Site, get_site_domain, get_site_id
 
 
-# ###GLOBAL VARIABLES
+# ### GLOBAL VARIABLES
 
 # #### Module variables
 
@@ -84,9 +87,9 @@ API_JAR.set('PHPSESSID', PIXIV_PHPSESSID, domain='.pixiv.net', path='/', expires
 IMAGE_SERVER = 'https://i.pximg.net'
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
-#   AUXILIARY
+# #### Auxiliary functions
 
 def has_artist_urls(artist):
     return (artist.current_site_account is not None) or (len(artist.site_accounts) == 1)
@@ -134,7 +137,9 @@ def is_post_url(url):
 
 
 def get_media_url(illust_url):
-    return illust_url.url if illust_url.site_id == 0 else 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
+    if illust_url.site_id == 0:
+        return illust_url.url
+    return 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
 
 
 def get_post_url(illust):
@@ -371,7 +376,10 @@ def get_illust_urls_from_page(page_data):
 
 def get_illust_parameters_from_artwork(artwork, page_data):
     site_illust_id = int(artwork['illustId'])
-    illust_urls = get_illust_urls_from_page(page_data) if page_data is not None else get_illust_urls_from_artwork(artwork)
+    if page_data is None:
+        illust_urls = get_illust_urls_from_artwork(artwork)
+    else:
+        illust_urls = get_illust_urls_from_page(page_data)
     sub_data = artwork['userIllusts'][str(site_illust_id)]
     return {
         'site_id': SITE_ID,

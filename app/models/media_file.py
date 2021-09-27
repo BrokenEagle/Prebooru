@@ -1,12 +1,12 @@
-# APP/CACHE/MEDIA_FILE.PY
+# APP/MODELS/MEDIA_FILE.PY
 
 # ## PYTHON IMPORTS
 import os
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, image_server_url
 from ..config import IMAGE_DIRECTORY
+from .base import JsonModel, image_server_url
 
 
 # ## GLOBAL VARIABLES

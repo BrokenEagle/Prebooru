@@ -1,4 +1,4 @@
-# APP\LOGICAL\SIMILARITY\CHECK_IMAGE.PY
+# APP/LOGICAL/SIMILARITY/CHECK_IMAGE.PY
 
 # ## LOCAL IMPORTS
 from ..database.post_db import get_posts_by_id

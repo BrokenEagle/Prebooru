@@ -1,17 +1,19 @@
-# APP/SIMILARITY/SIMILARITY_POOL.PY
+# APP/MODELS/SIMILARITY_POOL.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import datetime
 from dataclasses import dataclass
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload, lazyload
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
 from .similarity_pool_element import SimilarityPoolElement
 
 
-# ##CLASSES
+# ## CLASSES
 
 @dataclass
 class SimilarityPool(JsonModel):
@@ -32,7 +34,8 @@ class SimilarityPool(JsonModel):
     updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
 
     # #### Relationships
-    elements = DB.relationship(SimilarityPoolElement, lazy=True, backref=DB.backref('pool', lazy=True, uselist=False), cascade="all, delete")
+    elements = DB.relationship(SimilarityPoolElement, lazy=True, cascade="all, delete",
+                               backref=DB.backref('pool', lazy=True, uselist=False))
 
     # ## Property methods
 
@@ -46,7 +49,8 @@ class SimilarityPool(JsonModel):
 
     def element_paginate(self, page=None, per_page=None, post_options=lazyload('*')):
         q = self._element_query
-        q = q.options(selectinload(SimilarityPoolElement.post), selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
+        q = q.options(selectinload(SimilarityPoolElement.post),
+                      selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
         q = q.order_by(SimilarityPoolElement.score.desc())
         page = q.count_paginate(per_page=per_page, page=page)
         return page

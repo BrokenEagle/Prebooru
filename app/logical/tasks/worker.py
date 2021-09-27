@@ -1,4 +1,4 @@
-# APP\LOGICAL\TASKS\WORKER.PY
+# APP/LOGICAL/TASKS/WORKER.PY
 
 # ## PYTHON IMPORTS
 import itertools
@@ -21,9 +21,6 @@ from ..database.error_db import create_and_append_error, append_error
 from ..sources.base import get_post_source, get_source_by_id
 from ..downloader.network import convert_network_upload
 from ..downloader.file import convert_file_upload
-
-
-# ## GLOBAL VARIABLES
 
 
 # ## FUNCTIONS
@@ -107,7 +104,8 @@ def process_network_upload(upload):
         illust = create_illust_from_source(site_illust_id, source)
         if illust is None:
             set_upload_status(upload, 'error')
-            create_and_append_error('logical.worker_tasks.process_network_upload', "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id), upload)
+            msg = "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id)
+            create_and_append_error('logical.worker_tasks.process_network_upload', msg, upload)
             return
     elif check_requery(illust):
         update_illust_from_source(illust, source)

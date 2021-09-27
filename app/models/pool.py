@@ -1,11 +1,13 @@
 # APP/MODELS/POOL.PY
 
 # ## PYTHON IMPORTS
-from flask import Markup
 from dataclasses import dataclass
+from flask import Markup
+
+# ## EXTERNAL IMPORTS
+from sqlalchemy.orm import lazyload, selectin_polymorphic
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import lazyload, selectin_polymorphic
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -39,7 +41,8 @@ class Pool(JsonModel):
     updated = DB.Column(DB.DateTime(timezone=False), nullable=True)
 
     # #### Relationships
-    _elements = DB.relationship(PoolElement, backref='pool', order_by=PoolElement.position, collection_class=ordering_list('position'), cascade='all,delete', lazy=True)
+    _elements = DB.relationship(PoolElement, backref='pool', order_by=PoolElement.position, lazy=True,
+                                collection_class=ordering_list('position'), cascade='all,delete')
 
     # #### Association proxies
     elements = association_proxy('_elements', 'item', creator=lambda item: pool_element_create(item))
@@ -66,7 +69,13 @@ class Pool(JsonModel):
         element_position = pool_element.position
         self.elements.insert(element_position, insert_item)
 
-    def element_paginate(self, page=None, per_page=None, post_options=lazyload('*'), illust_options=lazyload('*'), notation_options=lazyload('*')):
+    def element_paginate(self, page=None, per_page=None, post_options=None, illust_options=None, notation_options=None):
+        def _get_options(options):
+            if options is None:
+                return (lazyload('*'),)
+            if type(options) is tuple:
+                return options
+            return (options,)
         q = self._element_query
         q = q.options(selectin_polymorphic(PoolElement, [PoolIllust, PoolPost, PoolNotation]))
         q = q.order_by(PoolElement.position)
@@ -74,12 +83,12 @@ class Pool(JsonModel):
         post_ids = [element.post_id for element in page.items if element.type == 'pool_post']
         illust_ids = [element.illust_id for element in page.items if element.type == 'pool_illust']
         notation_ids = [element.notation_id for element in page.items if element.type == 'pool_notation']
-        post_options = post_options if type(post_options) is tuple else (post_options,)
-        posts = Post.query.options(*post_options).filter(Post.id.in_(post_ids)).all() if len(post_ids) else []
-        illust_options = illust_options if type(illust_options) is tuple else (illust_options,)
-        illusts = Illust.query.options(*illust_options).filter(Illust.id.in_(illust_ids)).all() if len(illust_ids) else []
-        notation_options = notation_options if type(notation_options) is tuple else (notation_options,)
-        notations = Notation.query.options(*notation_options).filter(Notation.id.in_(notation_ids)).all() if len(notation_ids) else []
+        posts = Post.query.options(*_get_options(post_options)).filter(Post.id.in_(post_ids))\
+                    .all() if len(post_ids) else []
+        illusts = Illust.query.options(*_get_options(illust_options)).filter(Illust.id.in_(illust_ids))\
+                        .all() if len(illust_ids) else []
+        notations = Notation.query.options(*_get_options(notation_options)).filter(Notation.id.in_(notation_ids))\
+                            .all() if len(notation_ids) else []
         for i in range(0, len(page.items)):
             page_item = page.items[i]
             if page_item.type == 'pool_post':

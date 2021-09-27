@@ -1,19 +1,22 @@
 # APP/MODELS/UPLOAD.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import datetime
 from typing import List
 from dataclasses import dataclass
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from ..logical.utility import unique_objects
-from .base import JsonModel, int_or_none, str_or_none
 from .upload_url import UploadUrl
 from .post import Post
 from .error import Error
+from .base import JsonModel, int_or_none, str_or_none
+
 
 # ##GLOBAL VARIABLES
 
@@ -36,8 +39,7 @@ UploadPosts = DB.Table(
 )
 
 
-# Classes
-
+# ## CLASSES
 
 @dataclass
 class Upload(JsonModel):
@@ -73,9 +75,11 @@ class Upload(JsonModel):
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
 
     # #### Relationships
-    image_urls = DB.relationship(UploadUrl, secondary=UploadUrls, lazy=True, uselist=True, backref=DB.backref('upload', lazy=True, uselist=False), cascade='all,delete')
-    posts = DB.relationship(Post, secondary=UploadPosts, backref=DB.backref('uploads', lazy=True), lazy=True)
-    errors = DB.relationship(Error, secondary=UploadErrors, lazy=True, backref=DB.backref('upload', uselist=False, lazy=True), cascade='all,delete')
+    image_urls = DB.relationship(UploadUrl, secondary=UploadUrls, lazy=True, uselist=True, cascade='all,delete',
+                                 backref=DB.backref('upload', lazy=True, uselist=False))
+    posts = DB.relationship(Post, secondary=UploadPosts, lazy=True, backref=DB.backref('uploads', lazy=True))
+    errors = DB.relationship(Error, secondary=UploadErrors, lazy=True, cascade='all,delete',
+                             backref=DB.backref('upload', uselist=False, lazy=True))
 
     # #### Association proxies
     post_ids = association_proxy('posts', 'id')
@@ -99,7 +103,8 @@ class Upload(JsonModel):
         if len(self.posts) == 0:
             return None
         illusts = unique_objects(sum([post.illusts for post in self.posts], []))
-        return next(filter(lambda x: (x.site_id == self.site_id) and (x.site_illust_id == self.site_illust_id), illusts), None)
+        return next(filter(lambda x: (x.site_id == self.site_id) and (x.site_illust_id == self.site_illust_id),
+                           illusts), None)
 
     @memoized_property
     def artist(self):
@@ -118,6 +123,7 @@ class Upload(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'successes', 'failures', 'subscription_id', 'illust_url_id', 'request_url', 'type', 'status', 'media_filepath', 'sample_filepath', 'created']
+    basic_attributes = ['id', 'successes', 'failures', 'subscription_id', 'illust_url_id', 'request_url', 'type',
+                        'status', 'media_filepath', 'sample_filepath', 'created']
     relation_attributes = ['image_urls', 'posts', 'errors']
     searchable_attributes = basic_attributes + relation_attributes

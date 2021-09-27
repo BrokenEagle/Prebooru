@@ -1,17 +1,19 @@
 # APP/MODELS/NOTATION.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import datetime
 from dataclasses import dataclass
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy.ext.associationproxy import association_proxy
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
 from .pool_element import PoolNotation
 
 
-# ##GLOBAL VARIABLES
+# ## CLASSES
 
 @dataclass
 class Notation(JsonModel):
@@ -30,7 +32,8 @@ class Notation(JsonModel):
     updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
 
     # #### Relationships
-    _pool = DB.relationship(PoolNotation, lazy=True, uselist=False, cascade='all,delete', backref=DB.backref('item', lazy=True, uselist=False))
+    _pool = DB.relationship(PoolNotation, lazy=True, uselist=False, cascade='all,delete',
+                            backref=DB.backref('item', lazy=True, uselist=False))
     # artist <- Artist (MtO)
     # illust <- Illust (MtO)
     # post <- Post (MtO)

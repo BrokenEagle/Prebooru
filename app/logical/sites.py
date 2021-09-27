@@ -1,10 +1,10 @@
-# APP/SITES.PY
+# APP/LOGICAL/SITES.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 from enum import Enum, auto
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 SITES = {
     'PIXIV': 'www.pixiv.net',
@@ -17,6 +17,8 @@ SITES = {
 DOMAINS = {v: k for k, v in SITES.items()}
 
 
+# ## CLASSES
+
 class Site(Enum):
     PIXIV = auto()
     PXIMG = auto()
@@ -26,7 +28,6 @@ class Site(Enum):
 
 
 # ##FUNCTIONS
-
 
 def get_site_id(domain):
     if domain in DOMAINS:

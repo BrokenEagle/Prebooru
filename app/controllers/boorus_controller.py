@@ -1,6 +1,6 @@
-# APP\CONTROLLERS\BOORUS_CONTROLLER.PY
+# APP/CONTROLLERS/BOORUS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField, StringField
@@ -9,9 +9,11 @@ from wtforms.validators import DataRequired
 # ## LOCAL IMPORTS
 from ..models import Booru
 from ..logical.database.booru_db import create_booru_from_parameters, update_booru_from_parameters
-from ..logical.records.booru_rec import create_booru_from_source, update_booru_from_source, update_booru_artists_from_source
-from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate, default_order, get_or_abort, get_or_error,\
-    get_data_params, set_error, check_param_requirements, nullify_blanks, CustomNameForm, parse_array_parameter
+from ..logical.records.booru_rec import create_booru_from_source, update_booru_from_source,\
+    update_booru_artists_from_source
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
+    get_params_value, paginate, default_order, get_or_abort, get_or_error, get_data_params, set_error,\
+    check_param_requirements, nullify_blanks, CustomNameForm, parse_array_parameter
 
 
 # ## GLOBAL VARIABLES
@@ -44,14 +46,17 @@ JSON_OPTIONS = (
 )
 
 
-# #### Forms
+# ## CLASSES
 
 def get_booru_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
     class BooruForm(CustomNameForm):
-        danbooru_id = IntegerField('Danbooru ID', id='booru-danbooru-id', custom_name='booru[danbooru_id]', validators=[DataRequired()])
-        current_name = StringField('Current Name', id='booru-current-name', custom_name='booru[current_name]', validators=[DataRequired()])
-        name_string = TextAreaField('Names', id='booru-name-string', custom_name='booru[name_string]', description="Separated by whitespace.")
+        danbooru_id = IntegerField('Danbooru ID', id='booru-danbooru-id', custom_name='booru[danbooru_id]',
+                                   validators=[DataRequired()])
+        current_name = StringField('Current Name', id='booru-current-name', custom_name='booru[current_name]',
+                                   validators=[DataRequired()])
+        name_string = TextAreaField('Names', id='booru-name-string', custom_name='booru[name_string]',
+                                    description="Separated by whitespace.")
     return BooruForm(**kwargs)
 
 

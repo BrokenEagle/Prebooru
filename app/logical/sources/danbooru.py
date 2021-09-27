@@ -1,15 +1,17 @@
-# APP/SOURCES/TWITTER.PY
+# APP/LOGICAL/SOURCES/DANBOORU.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import time
+
+# ## EXTERNAL IMPORTS
 import requests
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ...config import DANBOORU_HOSTNAME
 from ..utility import add_dict_entry
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 def danbooru_request(url, params=None, long=False):
     send_method = requests.post if long else requests.get

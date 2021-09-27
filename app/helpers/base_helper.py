@@ -1,21 +1,24 @@
-# APP/HELPERS/ILLUSTS_HELPERS.PY
+# APP/HELPERS/BASE_HELPER.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import re
 import html
 import datetime
+
+# ## EXTERNAL IMPORTS
 from flask import Markup, request, url_for
 from wtforms import Field, BooleanField
 from wtforms.widgets import HiddenInput
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ..logical.utility import time_ago
 from ..logical.sources import pixiv, twitter
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
-HTTP_RG = re.compile(r'(\b(?:http|https)(?::\/{2}[\w]+)(?:[\/|\.]?)(?:[^\s<>\uff08\uff09\u3011\u3000"\[\]]*))', re.IGNORECASE | re.ASCII)
+HTTP_RG = re.compile(r'(\b(?:http|https)(?::\/{2}[\w]+)(?:[\/|\.]?)(?:[^\s<>\uff08\uff09\u3011\u3000"\[\]]*))',
+                     re.IGNORECASE | re.ASCII)
 LOCAL_SHORTLINK_RG = re.compile(r'\b(booru|artist|illust|post|upload|pool|notation) #(\d+)\b', re.IGNORECASE)
 SITE_SHORTLINK_RG = re.compile(r'\b(pixiv|pxuser|twitter|twuser) #(\d+)\b', re.IGNORECASE)
 
@@ -27,7 +30,7 @@ SITE_URL_DICT = {
 }
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### Format functions
 
@@ -108,26 +111,34 @@ def page_link(text, endpoint, page):
 
 def form_iterator(form):
     """Yield the field name and a callable function given the order of fields in the form class"""
-    form_fields = [attr for attr in dir(form) if not attr.startswith('__') and issubclass(getattr(form, attr).__class__, Field)]    # Get the names of all of the form fields
+    # Get the names of all of the form fields
+    form_fields = [attr for attr in dir(form) if _is_field(attr, form)]
     for field in form:
-        field_name = next(filter(lambda x: getattr(form, x) == field, form_fields))                                                 # Get the current field name
+        # Get the current field name
+        field_name = next(filter(lambda x: getattr(form, x) == field, form_fields))
 
         def _builder(**kwargs):
             nonlocal field
             if type(field) is BooleanField:
-                built_markup = str(field.label) + field(value="1") + field(value="0", type="hidden")                                # Add a hidden field to get the value of 0 when the boolean field is not set
+                # Add a hidden field to get the value of 0 when the boolean field is not set
+                built_markup = str(field.label) + field(value="1") + field(value="0", type="hidden")
             elif type(field.widget) is HiddenInput:
-                return add_container('div', str(field), classlist=['input', 'hidden']) if field.data is not None else ""            # Hide inputs marked as hidden in the controller if they have data
+                # Hide inputs marked as hidden in the controller if they have data
+                classlist = ['input', 'hidden']
+                return add_container('div', str(field), classlist=classlist) if field.data is not None else ""
             else:
                 built_markup = str(field.label)
                 if 'onclick' in kwargs:
-                    built_markup += field(onclick=kwargs['onclick'])                                                                # Supports selection inputs that change the form depending on the value
+                    # Supports selection inputs that change the form depending on the value
+                    built_markup += field(onclick=kwargs['onclick'])
                 else:
                     built_markup += field
             description = kwargs['description'] if 'description' in kwargs else field.description
             if description:
-                built_markup += add_container('span', description, classlist=['description'])                                       # Add description if set in class definition or on template form
-            classlist = ['input'] + (kwargs['classlist'] if 'classlist' in kwargs else [])                                          # Allow classes to be set individually for any input
+                # Add description if set in class definition or on template form
+                built_markup += add_container('span', description, classlist=['description'])
+            # Allow classes to be set individually for any input
+            classlist = ['input'] + (kwargs['classlist'] if 'classlist' in kwargs else [])
             return add_container('div', built_markup, classlist=classlist)
 
         yield field_name, _builder
@@ -207,6 +218,10 @@ def has_error_messages(messages):
 
 
 # #### Private functions
+
+def _is_field(form, attr):
+    return not attr.startswith('__') and issubclass(getattr(form, attr).__class__, Field)
+
 
 def _convert_local_short_links(text):
     position = 0

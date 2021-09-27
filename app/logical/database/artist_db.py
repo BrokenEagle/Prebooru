@@ -1,21 +1,26 @@
 # APP/LOGICAL/DATABASE/ARTIST_DB.PY
 
+# ## PYTHON IMPORTS
 import datetime
 
+# ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time, set_error
 from ...models import Artist, ArtistUrl, Label, Description
-from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections, set_timesvalue
+from ..utility import get_current_time, set_error
+from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
+    set_timesvalue
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('site_accounts', 'name', Label), ('names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = [('profiles', 'body', Description)]
 
-CREATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'site_accounts', 'names', 'profiles']
-UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'site_accounts', 'names', 'profiles']
+CREATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active',
+                             'site_accounts', 'names', 'profiles']
+UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active',
+                             'site_accounts', 'names', 'profiles']
 
 
 # ## FUNCTIONS
@@ -39,9 +44,9 @@ def create_artist_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(artist, update_columns, createparams)
-    create_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    create_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_relationship_collections(artist, create_relationships, createparams)
-    append_relationships = [relationship for relationship in APPEND_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     append_relationship_collections(artist, append_relationships, createparams)
     if 'webpages' in createparams:
         update_artist_webpages(artist, createparams['webpages'])
@@ -59,9 +64,9 @@ def update_artist_from_parameters(artist, updateparams):
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(artist, update_columns, updateparams))
-    update_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    update_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_results.append(update_relationship_collections(artist, update_relationships, updateparams))
-    append_relationships = [relationship for relationship in APPEND_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_results.append(append_relationship_collections(artist, append_relationships, updateparams))
     if 'webpages' in updateparams:
         update_results.append(update_artist_webpages(artist, updateparams['webpages']))
@@ -121,7 +126,8 @@ def artist_delete_profile(artist, description_id):
     retdata = {'error': False, 'descriptions': [profile.to_json() for profile in artist.profiles]}
     remove_profile = next((profile for profile in artist.profiles if profile.id == description_id), None)
     if remove_profile is None:
-        return set_error(retdata, "Profile with description #%d does not exist on artist #%d." % (description_id, artist.id))
+        msg = "Profile with description #%d does not exist on artist #%d." % (description_id, artist.id)
+        return set_error(retdata, msg)
     artist.profiles.remove(remove_profile)
     SESSION.commit()
     retdata['item'] = artist.to_json()

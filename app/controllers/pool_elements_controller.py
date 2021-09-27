@@ -1,13 +1,14 @@
-# APP\CONTROLLERS\POOL_ELEMENTS_CONTROLLER.PY
+# APP/CONTROLLERS/POOL_ELEMENTS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, url_for, flash, redirect
 
 # ## LOCAL IMPORTS
 from ..models import Pool, PoolElement
 from ..logical.database.pool_element_db import create_pool_element_from_parameters, delete_pool_element
-from .base_controller import get_data_params, get_or_abort, get_or_error, check_param_requirements, set_error, index_json_response, show_json_response,\
-    process_request_values, get_params_value, search_filter, default_order, parse_type
+from .base_controller import get_data_params, get_or_abort, get_or_error, check_param_requirements, set_error,\
+    index_json_response, show_json_response, process_request_values, get_params_value, search_filter, default_order,\
+    parse_type
 
 
 # ## GLOBAL VARIABLES
@@ -129,7 +130,9 @@ def delete_json(id):
 @bp.route('/pool_elements/<int:id>/previous', methods=['GET'])
 def previous_html(id):
     pool_element = get_or_abort(PoolElement, id)
-    previous_element = PoolElement.query.filter(PoolElement.pool_id == pool_element.pool_id, PoolElement.position < pool_element.position).order_by(PoolElement.position.desc()).first()
+    previous_element = PoolElement.query.filter(PoolElement.pool_id == pool_element.pool_id,
+                                                PoolElement.position < pool_element.position)\
+                                  .order_by(PoolElement.position.desc()).first()
     if previous_element is None:
         return redirect(request.referrer)
     return redirect(previous_element.item.show_url)
@@ -138,7 +141,9 @@ def previous_html(id):
 @bp.route('/pool_elements/<int:id>/next', methods=['GET'])
 def next_html(id):
     pool_element = get_or_abort(PoolElement, id)
-    next_element = PoolElement.query.filter(PoolElement.pool_id == pool_element.pool_id, PoolElement.position > pool_element.position).order_by(PoolElement.position.asc()).first()
+    next_element = PoolElement.query.filter(PoolElement.pool_id == pool_element.pool_id,
+                                            PoolElement.position > pool_element.position)\
+                              .order_by(PoolElement.position.asc()).first()
     if next_element is None:
         return redirect(request.referrer)
     return redirect(next_element.item.show_url)

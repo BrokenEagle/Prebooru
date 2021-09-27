@@ -1,6 +1,6 @@
 # APP/MODELS/TAGS_HELPER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Markup
 
 # ## LOCAL IMPORTS
@@ -27,4 +27,6 @@ def post_search_link(tag):
 
 
 def tag_search_links(tag):
-    return Markup(' | ').join([external_link(source.NAME.title(), source.tag_search_url(tag)) for source in SOURCES if source.HAS_TAG_SEARCH])
+    links = [external_link(source.NAME.title(), source.tag_search_url(tag))
+             for source in SOURCES if source.HAS_TAG_SEARCH]
+    return Markup(' | ').join(links)

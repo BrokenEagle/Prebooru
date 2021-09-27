@@ -1,6 +1,6 @@
-# APP\CONTROLLERS\NOTATIONS_CONTROLLER.PY
+# APP/CONTROLLERS/NOTATIONS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy import not_
 from sqlalchemy.orm import selectinload
@@ -10,9 +10,11 @@ from wtforms.validators import DataRequired
 # ## LOCAL IMPORTS
 from ..models import Notation, Pool, Artist, Illust, Post, PoolNotation
 from ..logical.utility import eval_bool_string, is_falsey
-from ..logical.database.notation_db import create_notation_from_parameters, update_notation_from_parameters, append_notation_to_item, delete_notation
-from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate, default_order, get_data_params, CustomNameForm,\
-    get_or_abort, hide_input, nullify_blanks, check_param_requirements, set_error
+from ..logical.database.notation_db import create_notation_from_parameters, update_notation_from_parameters,\
+    append_notation_to_item, delete_notation
+from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
+    get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_or_abort, hide_input,\
+    nullify_blanks, check_param_requirements, set_error
 
 
 # ## GLOBAL VARIABLES
@@ -27,7 +29,8 @@ VALUES_MAP = {
     **{k: k for k in APPEND_KEYS},
 }
 
-NOTATION_POOLS_SUBQUERY = Notation.query.join(PoolNotation, Notation._pool).filter(Notation.id == PoolNotation.notation_id).with_entities(Notation.id)
+NOTATION_POOLS_SUBQUERY = Notation.query.join(PoolNotation, Notation._pool)\
+    .filter(Notation.id == PoolNotation.notation_id).with_entities(Notation.id)
 
 APPEND_KEYS = ['pool_id', 'artist_id', 'illust_id', 'post_id']
 
@@ -76,7 +79,8 @@ def append_new_items(notation, dataparams):
     retdata = {'error': False}
     append_key = [key for key in APPEND_KEYS if key in dataparams and dataparams[key] is not None]
     if len(append_key) > 1:
-        return set_error(retdata, "May only append using the ID of a single entity; multiple values found: %s" % append_key)
+        msg = "May only append using the ID of a single entity; multiple values found: %s" % append_key
+        return set_error(retdata, msg)
     if len(append_key) == 1:
         return append_notation_to_item(notation, append_key[0], dataparams)
     return retdata

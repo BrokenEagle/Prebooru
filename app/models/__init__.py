@@ -1,5 +1,7 @@
 # APP/MODELS/__INIT__.PY
 
+"""Defines the columns, relationships, properties, and methods on the models."""
+
 # ## PYTHON IMPORTS
 from types import ModuleType
 
@@ -46,7 +48,11 @@ NONCE = None
 # ## FUNCTIONS
 
 def initialize():
-    modules = [m for (k, m) in globals().items() if type(m) is ModuleType and k != '__builtins__' and hasattr(m, 'initialize')]
+
+    def _is_initialize_module(name, value):
+        return type(value) is ModuleType and name != '__builtins__' and hasattr(value, 'initialize')
+
+    modules = [value for (name, value) in globals().items() if _is_initialize_module(name, value)]
     for mod in modules:
         mod.initialize()
 

@@ -1,19 +1,21 @@
 # APP/MODELS/ILLUST_URL.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 from dataclasses import dataclass
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from ..logical.sites import get_site_domain, get_site_key
 from .base import JsonModel, int_or_none
 
 
-# ##GLOBAL VARIABLES
-
+# ## CLASSES
 
 @dataclass
 class IllustUrl(JsonModel):
+    # ## Declarations
+
+    # #### JSON format
     id: int
     site_id: int
     url: str
@@ -22,6 +24,8 @@ class IllustUrl(JsonModel):
     order: int
     illust_id: int
     active: bool
+
+    # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     site_id = DB.Column(DB.Integer, nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
@@ -30,6 +34,8 @@ class IllustUrl(JsonModel):
     order = DB.Column(DB.Integer, nullable=False)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)
+
+    # ## Property methods
 
     @property
     def full_url(self):
@@ -48,6 +54,8 @@ class IllustUrl(JsonModel):
     @property
     def site_domain(self):
         return get_site_domain(self.site_id)
+
+    # ## Class properties
 
     basic_attributes = ['id', 'site_id', 'url', 'width', 'height', 'order', 'illust_id', 'active']
     relation_attributes = ['illust', 'post']

@@ -1,11 +1,13 @@
 # APP/MODELS/TAG.PY
 
 # ##PYTHON IMPORTS
-from flask import Markup
 from dataclasses import dataclass
+
+# ## EXTERNAL IMPORTS
+from flask import Markup
 from sqlalchemy.util import memoized_property
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
 
@@ -58,7 +60,8 @@ class Tag(JsonModel):
         from .post import Post
         from .illust_url import IllustUrl
         from .illust import Illust
-        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust.tags).filter(Tag.id == self.id)
+        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust.tags)\
+                   .filter(Tag.id == self.id)
 
     # ## Class properties
 

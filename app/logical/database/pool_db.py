@@ -1,13 +1,13 @@
 # APP/LOGICAL/DATABASE/POOL_DB.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time
 from ...models import Pool
+from ..utility import get_current_time
 from .base_db import update_column_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['name', 'series']
 

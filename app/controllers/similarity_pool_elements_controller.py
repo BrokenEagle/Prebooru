@@ -1,12 +1,12 @@
-# APP\CONTROLLERS\POOL_ELEMENTS_CONTROLLER.PY
+# APP/CONTROLLERS/SIMILARITY_POOL_ELEMENTS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
+# ## EXTERNAL IMPORTS
 from flask import Blueprint, request, flash, redirect
-
 
 # ## LOCAL IMPORTS
 from ..models import SimilarityPoolElement
-from ..logical.database.similarity_pool_element_db import delete_similarity_pool_element, batch_delete_similarity_pool_element
+from ..logical.database.similarity_pool_element_db import delete_similarity_pool_element,\
+    batch_delete_similarity_pool_element
 from .base_controller import get_data_params, get_or_abort, parse_list_type
 
 

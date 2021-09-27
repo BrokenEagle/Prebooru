@@ -1,11 +1,11 @@
 # APP/LOGICAL/DATABASE/ILLUST_URL_DB.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ...models import IllustUrl
 from .base_db import update_column_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'width', 'height', 'order', 'active']
 

@@ -18,7 +18,6 @@ ERROR_LOG_FILE = os.path.join(DATA_DIRECTORY, 'error_log.json')
 
 # ##FUNCTIONS
 
-
 def log_error(module, message):
     all_errors = load_default(ERROR_LOG_FILE, [])
     exc_type, exc_value, exc_tb = sys.exc_info()

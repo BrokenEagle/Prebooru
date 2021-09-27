@@ -1,9 +1,11 @@
-# APP\CONTROLLERS\BASE_CONTROLLER.PY
+# APP/CONTROLLERS/BASE_CONTROLLER.PY
 
 # ## PYTHON IMPORTS
 import re
 import urllib
 from functools import reduce
+
+# ## EXTERNAL IMPORTS
 from flask import jsonify, abort, url_for
 from sqlalchemy import not_
 from sqlalchemy.sql.expression import case
@@ -16,10 +18,7 @@ from ..logical.utility import eval_bool_string, merge_dicts
 from ..logical.searchable import search_attributes
 
 
-# ## GLOBAL VARIABLES
-
-# #### Classes
-
+# ## CLASSES
 
 class BindNameMeta(DefaultMeta):
     def bind_field(self, form, unbound_field, options):
@@ -34,9 +33,7 @@ class CustomNameForm(Form):
 
 # ## FUNCTIONS
 
-
 # #### Route helpers
-
 
 def referrer_check(endpoint, request):
     return urllib.parse.urlparse(request.referrer).path == url_for(endpoint)
@@ -83,7 +80,6 @@ def paginate(query, request):
 
 # #### ID helpers
 
-
 def get_or_abort(model, id, options=None):
     options = options if options is not None else {}
     if len(options):
@@ -108,7 +104,6 @@ def get_or_error(model, id, options=None):
 
 # #### Form helpers
 
-
 def hide_input(form, attr, value=None):
     field = getattr(form, attr)
     if value is not None:
@@ -118,7 +113,6 @@ def hide_input(form, attr, value=None):
 
 
 # #### Param helpers
-
 
 def get_page(request):
     return int(request.args['page']) if 'page' in request.args else 1
@@ -221,7 +215,13 @@ def parse_list_type(params, key, parser):
 
 
 def check_param_requirements(params, requirements):
-    return reduce(lambda acc, x: acc + (["%s not present or invalid." % x] if params[x] is None else []), requirements, [])
+
+    def _check_param(acc, key):
+        if params[key] is None:
+            return acc + ["%s not present or invalid." % key]
+        return acc
+
+    return reduce(_check_param, requirements, [])
 
 
 def int_or_blank(data):

@@ -1,6 +1,6 @@
 # APP/LOGICAL/DATABASE/SITE_DATA_DB.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
 from ..sites import Site, get_site_key
 from ...models import TwitterData, PixivData
@@ -8,7 +8,6 @@ from .base_db import update_column_attributes
 
 
 # ##GLOBAL VARIABLES
-
 
 TWITTER_COLUMN_ATTRIBUTES = ['retweets', 'replies', 'quotes']
 PIXIV_COLUMN_ATTRIBUTES = ['title', 'bookmarks', 'replies', 'views', 'site_updated', 'site_uploaded']

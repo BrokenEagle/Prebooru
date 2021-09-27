@@ -1,15 +1,16 @@
 # APP/LOGICAL/DATABASE/ILLUST_DB.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import datetime
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time, set_error
 from ...models import Illust, IllustUrl, Tag, Description
-from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections, set_timesvalue
+from ..utility import get_current_time, set_error
 from .illust_url_db import update_illust_url_from_parameters
 from .site_data_db import update_site_data_from_parameters
+from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
+    set_timesvalue
 
 
 # ##GLOBAL VARIABLES
@@ -18,8 +19,10 @@ COLUMN_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', '
 UPDATE_SCALAR_RELATIONSHIPS = [('tags', 'name', Tag)]
 APPEND_SCALAR_RELATIONSHIPS = [('commentaries', 'body', Description)]
 
-CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', 'tags', 'commentaries']
-UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', 'tags', 'commentaries']
+CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active',
+                             'tags', 'commentaries']
+UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', 'tags',
+                             'commentaries']
 
 
 # ## FUNCTIONS
@@ -64,9 +67,9 @@ def create_illust_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(illust, update_columns, createparams)
-    create_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    create_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_relationship_collections(illust, create_relationships, createparams)
-    append_relationships = [relationship for relationship in APPEND_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     append_relationship_collections(illust, append_relationships, createparams)
     update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id, createparams)
     if 'illust_urls' in createparams:
@@ -83,9 +86,9 @@ def update_illust_from_parameters(illust, updateparams):
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(illust, update_columns, updateparams))
-    update_relationships = [relationship for relationship in UPDATE_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    update_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_results.append(update_relationship_collections(illust, update_relationships, updateparams))
-    append_relationships = [relationship for relationship in APPEND_SCALAR_RELATIONSHIPS if relationship[0] in settable_keylist]
+    append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_results.append(append_relationship_collections(illust, append_relationships, updateparams))
     update_results.append(update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id, updateparams))
     if 'illust_urls' in updateparams:
@@ -103,9 +106,10 @@ def update_illust_from_parameters(illust, updateparams):
 
 def illust_delete_commentary(illust, description_id):
     retdata = {'error': False, 'descriptions': [commentary.to_json() for commentary in illust.commentaries]}
-    remove_commentary = next((commentary for commentary in illust.commentaries if commentary.id == description_id), None)
+    remove_commentary = next((comm for comm in illust.commentaries if comm.id == description_id), None)
     if remove_commentary is None:
-        return set_error(retdata, "Commentary with description #%d does not exist on illust #%d." % (description_id, illust.id))
+        msg = "Commentary with description #%d does not exist on illust #%d." % (description_id, illust.id)
+        return set_error(retdata, msg)
     illust.commentaries.remove(remove_commentary)
     SESSION.commit()
     retdata['item'] = illust.to_json()

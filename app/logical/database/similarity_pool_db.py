@@ -1,14 +1,14 @@
 # APP/LOGICAL/DATABASE/SIMILARITY_POOL_DB.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import SimilarityPool
 from ..utility import get_current_time
-from .base_db import update_column_attributes
 from .similarity_pool_element_db import batch_delete_similarity_pool_element
+from .base_db import update_column_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['post_id', 'element_count']
 

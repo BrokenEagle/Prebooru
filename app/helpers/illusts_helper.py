@@ -1,15 +1,17 @@
 # APP/HELPERS/ILLUSTS_HELPERS.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import urllib.parse
+
+# ## EXTERNAL IMPORTS
 from flask import url_for
 
 # ##LOCAL IMPORTS
 from ..logical.sites import get_site_key
 from ..logical.sources import SOURCEDICT
 from ..logical.sources.base import get_source_by_id
-from .base_helper import search_url_for, external_link, general_link
 from ..config import DANBOORU_HOSTNAME
+from .base_helper import search_url_for, external_link, general_link
 
 
 # ##GLOBAL VARIABLES
@@ -88,7 +90,9 @@ def danbooru_upload_link(illust):
 
 
 def update_from_source_link(illust):
-    return general_link("Update from source", url_for('illust.query_update_html', id=illust.id), **{'onclick': "return Prebooru.linkPost(this)"})
+    url = url_for('illust.query_update_html', id=illust.id)
+    addons = {'onclick': "return Prebooru.linkPost(this)"}
+    return general_link("Update from source", url, **addons)
 
 
 def add_media_url_link(illust):
@@ -100,11 +104,14 @@ def add_notation_link(illust):
 
 
 def add_pool_link(illust):
-    return general_link("Add pool", url_for('pool_element.create_html'), **{'onclick': "return Prebooru.createPool(this, 'illust')", 'data-illust-id': illust.id})
+    url = url_for('pool_element.create_html')
+    addons = {'onclick': "return Prebooru.createPool(this, 'illust')", 'data-illust-id': illust.id}
+    return general_link("Add pool", url, **addons)
 
 
 def delete_commentary_link(illust, commentary):
-    return general_link("remove", url_for('illust.delete_commentary_html', id=illust.id, description_id=commentary.id), method="DELETE", **{'class': 'warning-link'})
+    url = url_for('illust.delete_commentary_html', id=illust.id, description_id=commentary.id)
+    return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})
 
 
 # ###### GENERAL

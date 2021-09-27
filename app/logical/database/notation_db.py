@@ -1,13 +1,13 @@
 # APP/LOGICAL/DATABASE/NOTATION_DB.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time
 from ...models import Notation, Pool, Artist, Illust, Post
+from ..utility import get_current_time
 from .base_db import update_column_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['body']
 
@@ -69,7 +69,8 @@ def append_notation_to_item(notation, append_key, dataparams):
     item = model.find(dataparams[append_key])
     table_name = model.__table__.name
     if item is None:
-        return {'error': True, 'message': 'Unable to add to %s; %s #%d does not exist.' % (dataparams[append_key], table_name, table_name)}
+        msg = "Unable to add to %s; %s #%d does not exist." % (dataparams[append_key], table_name, table_name)
+        return {'error': True, 'message': msg}
     if table_name == 'pool':
         item.elements.append(notation)
     else:

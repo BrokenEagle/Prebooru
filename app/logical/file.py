@@ -11,7 +11,6 @@ from .utility import get_directory_path, decode_unicode, decode_json
 
 # ##FUNCTIONS
 
-
 def create_directory(filepath):
     """Create the directory path if it doesn't already exist"""
     directory = get_directory_path(filepath)
@@ -68,4 +67,5 @@ def load_default(filepath, defaultvalue, binary=False, unicode=False):
 def delete_file(filepath):
     if os.path.exists(filepath):
         os.remove(filepath)
-        time.sleep(0.2)                         # Time to let the OS remove the file to prevent OS errors
+        # Time to let the OS remove the file to prevent OS errors
+        time.sleep(0.2)

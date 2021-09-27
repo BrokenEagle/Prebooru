@@ -10,7 +10,6 @@ from .base import JsonModel
 
 # ## CLASSES
 
-
 @dataclass
 class Label(JsonModel):
     # ## Declarations

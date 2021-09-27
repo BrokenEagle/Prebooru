@@ -1,20 +1,21 @@
 # APP/MODELS/POST.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import os
 import itertools
 import datetime
 from typing import List
 from dataclasses import dataclass
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from ..config import IMAGE_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from ..logical.utility import unique_objects
-from .base import JsonModel, remove_keys, image_server_url
 from .error import Error
 from .illust_url import IllustUrl
 from .notation import Notation
@@ -22,7 +23,10 @@ from .pool_element import PoolPost, pool_element_delete
 from .similarity_data import SimilarityData
 from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
+from .base import JsonModel, remove_keys, image_server_url
 
+
+# ## GLOBAL VARIABLES
 
 # Many-to-many tables
 
@@ -76,13 +80,21 @@ class Post(JsonModel):
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
 
     # #### Relationships
-    illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True, backref=DB.backref('post', uselist=False, lazy=True))
-    errors = DB.relationship(Error, secondary=PostErrors, lazy=True, backref=DB.backref('post', uselist=False, lazy=True), cascade='all,delete')
-    notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, backref=DB.backref('post', uselist=False, lazy=True), cascade='all,delete')
-    _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False), cascade='all,delete')
-    similarity_data = DB.relationship(SimilarityData, lazy=True, backref=DB.backref('post', lazy=True, uselist=False), cascade='all,delete')
-    similarity_pool = DB.relationship(SimilarityPool, lazy=True, uselist=False, backref=DB.backref('post', lazy=True, uselist=False))                           # Similarity pools and elements must be deleted
-    similarity_elements = DB.relationship(SimilarityPoolElement, lazy=True, backref=DB.backref('post', lazy=True, uselist=False))                               # specially because of sibling relationships
+    illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True,
+                                  backref=DB.backref('post', uselist=False, lazy=True))
+    errors = DB.relationship(Error, secondary=PostErrors, lazy=True, cascade='all,delete',
+                             backref=DB.backref('post', uselist=False, lazy=True))
+    notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, cascade='all,delete',
+                                backref=DB.backref('post', uselist=False, lazy=True))
+    _pools = DB.relationship(PoolPost, lazy=True, cascade='all,delete',
+                             backref=DB.backref('item', lazy=True, uselist=False))
+    similarity_data = DB.relationship(SimilarityData, lazy=True, cascade='all,delete',
+                                      backref=DB.backref('post', lazy=True, uselist=False))
+    # Similarity pools and elements must be deleted specially because of sibling relationships
+    similarity_pool = DB.relationship(SimilarityPool, lazy=True, uselist=False,
+                                      backref=DB.backref('post', lazy=True, uselist=False))
+    similarity_elements = DB.relationship(SimilarityPoolElement, lazy=True,
+                                          backref=DB.backref('post', lazy=True, uselist=False))
     # uploads <- Upload (MtM)
 
     # #### Association proxies
@@ -92,7 +104,8 @@ class Post(JsonModel):
 
     @memoized_property
     def has_sample(self):
-        return self.width > SAMPLE_DIMENSIONS[0] or self.height > SAMPLE_DIMENSIONS[1] or self.file_ext not in ['jpg', 'png', 'gif']
+        return self.width > SAMPLE_DIMENSIONS[0] or self.height > SAMPLE_DIMENSIONS[1]\
+               or self.file_ext not in ['jpg', 'png', 'gif']
 
     @memoized_property
     def has_preview(self):
@@ -116,11 +129,13 @@ class Post(JsonModel):
 
     @property
     def sample_path(self):
-        return os.path.join(IMAGE_DIRECTORY, 'sample', self._partial_file_path + 'jpg') if self.has_sample else self.file_path
+        return os.path.join(IMAGE_DIRECTORY, 'sample', self._partial_file_path + 'jpg')\
+               if self.has_sample else self.file_path
 
     @property
     def preview_path(self):
-        return os.path.join(IMAGE_DIRECTORY, 'preview', self._partial_file_path + 'jpg') if self.has_preview else self.file_path
+        return os.path.join(IMAGE_DIRECTORY, 'preview', self._partial_file_path + 'jpg')\
+               if self.has_preview else self.file_path
 
     @memoized_property
     def related_posts(self):
@@ -155,7 +170,8 @@ class Post(JsonModel):
     @memoized_property
     def similar_posts(self):
         query = self._similar_pool_element_query
-        query = query.options(selectinload(SimilarityPoolElement.post), selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
+        query = query.options(selectinload(SimilarityPoolElement.post),
+                              selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
         query = query.order_by(SimilarityPoolElement.score.desc())
         return query.limit(10).all()
 
@@ -194,5 +210,6 @@ class Post(JsonModel):
     # ## Class properties
 
     basic_attributes = ['id', 'width', 'height', 'size', 'file_ext', 'md5', 'danbooru_id', 'created']
-    relation_attributes = ['illust_urls', 'uploads', 'notations', 'errors', 'similarity_data', 'similarity_pool', 'similarity_elements']
+    relation_attributes = ['illust_urls', 'uploads', 'notations', 'errors', 'similarity_data', 'similarity_pool',
+                           'similarity_elements']
     searchable_attributes = basic_attributes + relation_attributes
