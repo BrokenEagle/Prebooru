@@ -12,7 +12,7 @@ from ..logical.tasks.worker import process_upload
 from ..logical.records.media_file_rec import get_or_create_media
 from ..models import Upload, Post, IllustUrl, Illust
 from ..logical.sources.base import get_post_source, get_preview_url
-from ..database.upload_db import create_upload_from_parameters
+from ..logical.database.upload_db import create_upload_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate, default_order, CustomNameForm, get_data_params,\
     hide_input, parse_string_list, nullify_blanks, set_default, set_error, get_or_abort, referrer_check
 

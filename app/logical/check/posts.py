@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...models import Post
-from ...database.post_db import update_post_from_parameters
+from ..database.post_db import update_post_from_parameters
 from ..sources.danbooru import get_posts_by_md5s
 
 

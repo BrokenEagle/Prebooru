@@ -1,7 +1,7 @@
 # APP\LOGICAL\SIMILARITY\GENERATE_DATA.PY
 
 # ## LOCAL IMPORTS
-from ...database.similarity_data_db import create_similarity_data_from_parameters
+from ..database.similarity_data_db import create_similarity_data_from_parameters
 from .base import get_image, get_image_hash, check_similarity_match_scores
 
 

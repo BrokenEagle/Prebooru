@@ -1,10 +1,11 @@
-# APP/DATABASE/BOORU_DB.PY
+# APP/LOGICAL/DATABASE/BOORU_DB.PY
 
 # ##LOCAL IMPORTS
-from .. import models, SESSION
-from ..logical.utility import get_current_time
-from ..logical.sources.base import get_artist_id_source
-from ..logical.sources.danbooru import get_artist_by_id
+from ... import SESSION
+from ..utility import get_current_time
+from ..sources.base import get_artist_id_source
+from ..sources.danbooru import get_artist_by_id
+from ...models import Booru, Label
 from .base_db import update_column_attributes, update_relationship_collections
 
 
@@ -12,7 +13,7 @@ from .base_db import update_column_attributes, update_relationship_collections
 
 
 COLUMN_ATTRIBUTES = ['danbooru_id', 'current_name']
-UPDATE_SCALAR_RELATIONSHIPS = [('names', 'name', models.Label)]
+UPDATE_SCALAR_RELATIONSHIPS = [('names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = []
 
 CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'names']
@@ -41,7 +42,7 @@ def set_all_names(params, booru):
 def create_booru_from_parameters(createparams):
     current_time = get_current_time()
     set_all_names(createparams, None)
-    booru = models.Booru(created=current_time, updated=current_time)
+    booru = Booru(created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(booru, update_columns, createparams)

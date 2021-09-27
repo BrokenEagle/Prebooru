@@ -1,8 +1,8 @@
-# APP/DATABASE/SIMILARITY_DATA_DB.PY
+# APP/LOGICAL/DATABASE/SIMILARITY_DATA_DB.PY
 
 # ##LOCAL IMPORTS
-from .. import SESSION
-from ..models import SimilarityData
+from ... import SESSION
+from ...models import SimilarityData
 from .base_db import update_column_attributes
 
 

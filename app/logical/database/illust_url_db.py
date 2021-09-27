@@ -1,7 +1,7 @@
-# APP/DATABASE/ILLUST_URL_DB.PY
+# APP/LOGICAL/DATABASE/ILLUST_URL_DB.PY
 
 # ##LOCAL IMPORTS
-from .. import models
+from ...models import IllustUrl
 from .base_db import update_column_attributes
 
 
@@ -16,7 +16,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'url', 'width', 'height', 'order', 'acti
 # ## FUNCTIONS
 
 def create_illust_url_from_parameters(createparams):
-    illust_url = models.IllustUrl()
+    illust_url = IllustUrl()
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(illust_url, update_columns, createparams)

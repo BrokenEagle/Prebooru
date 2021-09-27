@@ -1,8 +1,9 @@
-# APP/DATABASE/LOCAL.PY
+# APP/LOGICAL/DATABASE/POST_DB.PY
 
 # ##LOCAL IMPORTS
-from .. import models, SESSION
-from ..logical.utility import get_current_time
+from ... import SESSION
+from ..utility import get_current_time
+from ...models import Post
 from .base_db import update_column_attributes
 
 
@@ -21,7 +22,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
 
 def create_post_from_parameters(createparams):
     current_time = get_current_time()
-    post = models.Post(created=current_time)
+    post = Post(created=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(post, update_columns, createparams)
@@ -64,9 +65,9 @@ def get_posts_by_id(ids):
     posts = []
     for i in range(0, len(ids), 100):
         sublist = ids[i: i + 100]
-        posts += models.Post.query.filter(models.Post.id.in_(sublist)).all()
+        posts += Post.query.filter(Post.id.in_(sublist)).all()
     return posts
 
 
 def get_post_by_md5(md5):
-    return models.Post.query.filter_by(md5=md5).first()
+    return Post.query.filter_by(md5=md5).first()

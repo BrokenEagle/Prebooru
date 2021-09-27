@@ -9,7 +9,7 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Pool, Post, Illust, IllustUrl, PoolPost, PoolIllust, PoolNotation
-from ..database.pool_db import create_pool_from_parameters, update_pool_from_parameters
+from ..logical.database.pool_db import create_pool_from_parameters, update_pool_from_parameters
 from ..logical.searchable import numeric_matching
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values, get_params_value, paginate,\
     default_order, get_data_params, CustomNameForm, get_page, get_limit, get_or_abort, get_or_error, check_param_requirements,\

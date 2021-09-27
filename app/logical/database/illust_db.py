@@ -1,11 +1,12 @@
-# APP/DATABASE/ARTIST_DB.PY
+# APP/LOGICAL/DATABASE/ILLUST_DB.PY
 
 # ##PYTHON IMPORTS
 import datetime
 
 # ##LOCAL IMPORTS
-from .. import models, SESSION
-from ..logical.utility import get_current_time, set_error
+from ... import SESSION
+from ..utility import get_current_time, set_error
+from ...models import Illust, IllustUrl, Tag, Description
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections, set_timesvalue
 from .illust_url_db import update_illust_url_from_parameters
 from .site_data_db import update_site_data_from_parameters
@@ -14,8 +15,8 @@ from .site_data_db import update_site_data_from_parameters
 # ##GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active']
-UPDATE_SCALAR_RELATIONSHIPS = [('tags', 'name', models.Tag)]
-APPEND_SCALAR_RELATIONSHIPS = [('commentaries', 'body', models.Description)]
+UPDATE_SCALAR_RELATIONSHIPS = [('tags', 'name', Tag)]
+APPEND_SCALAR_RELATIONSHIPS = [('commentaries', 'body', Description)]
 
 CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', 'tags', 'commentaries']
 UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', 'tags', 'commentaries']
@@ -40,7 +41,7 @@ def update_illust_urls(illust, params):
     for url_data in params:
         illust_url = next(filter(lambda x: x.url == url_data['url'], illust.urls), None)
         if illust_url is None:
-            illust_url = models.IllustUrl(illust_id=illust.id)
+            illust_url = IllustUrl(illust_id=illust.id)
         update_results.append(update_illust_url_from_parameters(illust_url, url_data))
         current_urls.append(url_data['url'])
     removed_urls = set(existing_urls).difference(current_urls)
@@ -59,7 +60,7 @@ def update_illust_urls(illust, params):
 def create_illust_from_parameters(createparams):
     current_time = get_current_time()
     set_timesvalues(createparams)
-    illust = models.Illust(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
+    illust = Illust(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(illust, update_columns, createparams)
@@ -114,4 +115,4 @@ def illust_delete_commentary(illust, description_id):
 # #### Query functions
 
 def get_site_illust(site_illust_id, site_id):
-    return models.Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).first()
+    return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).first()

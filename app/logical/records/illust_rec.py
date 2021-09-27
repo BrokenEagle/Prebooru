@@ -5,8 +5,8 @@ import datetime
 
 # ##LOCAL IMPORTS
 from .artist_rec import create_artist_from_source
-from ...database.artist_db import get_site_artist
-from ...database.illust_db import create_illust_from_parameters, update_illust_from_parameters
+from ..database.artist_db import get_site_artist
+from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 
 
 # ## FUNCTIONS

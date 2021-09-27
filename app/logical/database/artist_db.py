@@ -1,17 +1,18 @@
-# APP/DATABASE/ARTIST_DB.PY
+# APP/LOGICAL/DATABASE/ARTIST_DB.PY
 
 import datetime
 
-from .. import models, SESSION
-from ..logical.utility import get_current_time, process_utc_timestring, set_error
+from ... import SESSION
+from ..utility import get_current_time, process_utc_timestring, set_error
+from ...models import Artist, ArtistUrl, Label, Description
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections, set_timesvalue
 
 
 # ##GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active']
-UPDATE_SCALAR_RELATIONSHIPS = [('site_accounts', 'name', models.Label), ('names', 'name', models.Label)]
-APPEND_SCALAR_RELATIONSHIPS = [('profiles', 'body', models.Description)]
+UPDATE_SCALAR_RELATIONSHIPS = [('site_accounts', 'name', Label), ('names', 'name', Label)]
+APPEND_SCALAR_RELATIONSHIPS = [('profiles', 'body', Description)]
 
 CREATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'site_accounts', 'names', 'profiles']
 UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'site_accounts', 'names', 'profiles']
@@ -34,7 +35,7 @@ def create_artist_from_parameters(createparams):
     current_time = get_current_time()
     set_timesvalue(createparams, 'site_created')
     set_all_site_accounts(createparams)
-    artist = models.Artist(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
+    artist = Artist(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(artist, update_columns, createparams)
@@ -90,7 +91,7 @@ def update_artist_webpages(artist, params):
                 'url': url,
                 'active': is_active,
             }
-            artist_url = models.ArtistUrl(**data)
+            artist_url = ArtistUrl(**data)
             SESSION.add(artist_url)
             is_dirty = True
         elif artist_url.active != is_active:
@@ -130,4 +131,4 @@ def artist_delete_profile(artist, description_id):
 # #### Query functions
 
 def get_site_artist(site_artist_id, site_id):
-    return models.Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).first()
+    return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).first()

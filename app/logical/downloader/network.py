@@ -3,8 +3,8 @@
 # ## LOCAL IMPORTS
 from ..network import get_http_file
 from ...models import Post
-from ...database.post_db import create_post_and_add_illust_url
-from ...database.error_db import create_error, create_and_append_error, extend_errors, is_error
+from ..database.post_db import create_post_and_add_illust_url
+from ..database.error_db import create_error, create_and_append_error, extend_errors, is_error
 from .base import convert_image_upload, convert_video_upload, load_image, check_existing, check_filetype,\
     check_image_dimensions, check_video_dimensions, save_image, save_video, save_thumb
 

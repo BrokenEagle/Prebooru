@@ -7,7 +7,7 @@ import imagehash
 
 # ## LOCAL IMPORTS
 from ...models.similarity_data import SimilarityData, HASH_SIZE, TOTAL_BITS
-from ...database.media_file_db import create_media_file_from_parameters, batch_delete_media_files, get_media_file_by_url
+from ..database.media_file_db import create_media_file_from_parameters, batch_delete_media_files, get_media_file_by_url
 from ..utility import get_buffer_checksum
 from ..file import create_directory, put_get_raw
 from ..network import get_http_file

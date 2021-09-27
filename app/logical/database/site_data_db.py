@@ -1,8 +1,9 @@
-# APP/DATABASE/SITE_DATA_DB.PY
+# APP/LOGICAL/DATABASE/SITE_DATA_DB.PY
 
 # ##LOCAL IMPORTS
-from .. import models, SESSION
-from ..logical.sites import Site, get_site_key
+from ... import SESSION
+from ..sites import Site, get_site_key
+from ...models import TwitterData, PixivData
 from .base_db import update_column_attributes
 
 
@@ -37,7 +38,7 @@ def update_site_data_from_parameters(site_data, illust_id, site_id, params):
 
 def update_twitter_site_data(site_data, illust_id, params):
     if site_data is None:
-        site_data = models.TwitterData(illust_id=illust_id)
+        site_data = TwitterData(illust_id=illust_id)
         SESSION.add(site_data)
         SESSION.commit()
     update_columns = set(params.keys()).intersection(TWITTER_COLUMN_ATTRIBUTES)
@@ -46,7 +47,7 @@ def update_twitter_site_data(site_data, illust_id, params):
 
 def update_pixiv_site_data(site_data, illust_id, params):
     if site_data is None:
-        site_data = models.PixivData(illust_id=illust_id)
+        site_data = PixivData(illust_id=illust_id)
         SESSION.add(site_data)
         SESSION.commit()
     update_columns = set(params.keys()).intersection(PIXIV_COLUMN_ATTRIBUTES)

@@ -5,10 +5,10 @@ from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
 from ...models import SimilarityPool
-from ...database.similarity_data_db import get_similarity_data_by_post_id
-from ...database.similarity_pool_db import update_similarity_pool_element_count, get_or_create_similarity_pool,\
+from ..database.similarity_data_db import get_similarity_data_by_post_id
+from ..database.similarity_pool_db import update_similarity_pool_element_count, get_or_create_similarity_pool,\
     get_similarity_pools_by_ids
-from ...database.similarity_pool_element_db import create_similarity_pool_element_from_parameters,\
+from ..database.similarity_pool_element_db import create_similarity_pool_element_from_parameters,\
     update_similarity_pool_element_pairing
 from .base import get_similarity_data_matches, check_similarity_match_scores, filter_score_results
 

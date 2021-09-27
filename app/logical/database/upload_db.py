@@ -1,18 +1,19 @@
-# APP/DATABASE/UPLOAD_DB.PY
+# APP/LOGICAL/DATABASE/UPLOAD_DB.PY
 
 # ## PYTHON IMPORTS
 import re
 
 # ## LOCAL IMPORTS
-from .. import models, SESSION
-from ..logical.utility import get_current_time
+from ... import SESSION
+from ..utility import get_current_time
+from ...models import Upload, UploadUrl
 from .base_db import update_column_attributes, update_relationship_collections
 
 
 # ##GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'type', 'active']
-UPDATE_SCALAR_RELATIONSHIPS = [('image_urls', 'url', models.UploadUrl)]
+UPDATE_SCALAR_RELATIONSHIPS = [('image_urls', 'url', UploadUrl)]
 
 CREATE_ALLOWED_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'type', 'active', 'image_urls']
 
@@ -31,7 +32,7 @@ def create_upload_from_parameters(createparams):
         'subscription_id': None,
         'created': get_current_time(),
     }
-    upload = models.Upload(**data)
+    upload = Upload(**data)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(upload, update_columns, createparams)

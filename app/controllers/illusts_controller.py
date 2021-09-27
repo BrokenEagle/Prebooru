@@ -12,7 +12,7 @@ from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, Pool
 from ..logical.utility import eval_bool_string, is_falsey
 from ..logical.sources.base import get_source_by_id, get_illust_required_params
 from ..logical.records.illust_rec import update_illust_from_source
-from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, illust_delete_commentary
+from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters, illust_delete_commentary
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response, search_filter, default_order,\
     paginate, get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error, hide_input, int_or_blank,\
     nullify_blanks, set_default, check_param_requirements, parse_array_parameter, parse_bool_parameter

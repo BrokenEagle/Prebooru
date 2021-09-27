@@ -1,8 +1,9 @@
-# APP/DATABASE/POOL_DB.PY
+# APP/LOGICAL/DATABASE/POOL_DB.PY
 
 # ##LOCAL IMPORTS
-from .. import models, SESSION
-from ..logical.utility import get_current_time
+from ... import SESSION
+from ..utility import get_current_time
+from ...models import Pool
 from .base_db import update_column_attributes
 
 
@@ -22,7 +23,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['name', 'series']
 
 def create_pool_from_parameters(createparams):
     current_time = get_current_time()
-    pool = models.Pool(created=current_time, updated=current_time, element_count=0)
+    pool = Pool(created=current_time, updated=current_time, element_count=0)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(pool, update_columns, createparams)

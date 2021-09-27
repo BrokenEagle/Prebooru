@@ -5,7 +5,7 @@ from flask import Blueprint, request, url_for, flash, redirect
 
 # ## LOCAL IMPORTS
 from ..models import Pool, PoolElement
-from ..database.pool_element_db import create_pool_element_from_parameters, delete_pool_element
+from ..logical.database.pool_element_db import create_pool_element_from_parameters, delete_pool_element
 from .base_controller import get_data_params, get_or_abort, get_or_error, check_param_requirements, set_error, index_json_response, show_json_response,\
     process_request_values, get_params_value, search_filter, default_order, parse_type
 

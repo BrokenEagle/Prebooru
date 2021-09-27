@@ -1,8 +1,9 @@
-# APP/DATABASE/POOL_ELEMENT_DB.PY
+# APP/LOGICAL/DATABASE/POOL_ELEMENT_DB.PY
 
 # ##LOCAL IMPORTS
-from .. import models, SESSION
-from ..logical.utility import get_current_time
+from ... import SESSION
+from ..utility import get_current_time
+from ...models import Illust, Post, Notation
 
 
 # ##GLOBAL VARIABLES
@@ -13,9 +14,9 @@ CREATE_ALLOWED_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'width', 'height', '
 UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'url', 'width', 'height', 'order', 'active']
 
 ID_MODEL_DICT = {
-    'illust_id': models.Illust,
-    'post_id': models.Post,
-    'notation_id': models.Post,
+    'illust_id': Illust,
+    'post_id': Post,
+    'notation_id': Notation,
 }
 
 

@@ -1,7 +1,7 @@
 # APP/LOGICAL/RECORDS/ARTIST_REC.PY
 
 # ## LOCAL IMPORTS
-from ...database.artist_db import create_artist_from_parameters, update_artist_from_parameters
+from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters
 
 
 # ## FUNCTIONS

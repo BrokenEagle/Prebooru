@@ -7,7 +7,7 @@ import urllib
 from ..sites import get_site_key, get_site_id, get_site_domain
 from ..sources import SOURCES, SOURCEDICT
 from ..utility import get_http_filename, get_file_extension, set_error
-from ...database.error_db import is_error
+from ..database.error_db import is_error
 
 
 # #### Classes

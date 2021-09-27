@@ -1,7 +1,9 @@
-from .. import SESSION
-from ..models import MediaFile
-from ..logical.utility import days_from_now, get_current_time
-from ..logical.file import delete_file
+# APP/LOGICAL/DATABASE/MEDIA_FILE_DB.PY
+
+from ... import SESSION
+from ...models import MediaFile
+from ..utility import days_from_now, get_current_time
+from ..file import delete_file
 from .base_db import update_column_attributes
 
 

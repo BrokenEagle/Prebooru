@@ -1,9 +1,9 @@
-# APP/DATABASE/SIMILARITY_POOL_ELEMENT_DB.PY
+# APP/LOGICAL/DATABASE/SIMILARITY_POOL_ELEMENT_DB.PY
 
 # ## LOCAL IMPORTS
-from .. import SESSION
-from ..logical.utility import unique_objects
-from ..models import SimilarityPoolElement
+from ... import SESSION
+from ..utility import unique_objects
+from ...models import SimilarityPoolElement
 from .base_db import update_column_attributes
 
 # ##GLOBAL VARIABLES

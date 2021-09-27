@@ -9,9 +9,9 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Post
-from ..database.post_db import get_posts_by_id
-from ..database.similarity_data_db import delete_similarity_data_by_post_id
-from ..database.similarity_pool_db import delete_similarity_pool_by_post_id
+from ..logical.database.post_db import get_posts_by_id
+from ..logical.database.similarity_data_db import delete_similarity_data_by_post_id
+from ..logical.database.similarity_pool_db import delete_similarity_pool_by_post_id
 from ..logical.similarity.check_image import check_all_image_urls_similarity
 from ..logical.similarity.generate_data import generate_post_similarity
 from ..logical.similarity.populate_pools import populate_similarity_pools

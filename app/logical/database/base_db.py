@@ -1,9 +1,9 @@
-# APP/DATABASE/BASE_DB.PY
+# APP/LOGICAL/DATABASE/BASE_DB.PY
 
 import datetime
 
-from .. import SESSION
-from ..logical.utility import process_utc_timestring, safe_print
+from ... import SESSION
+from ..utility import process_utc_timestring, safe_print
 
 
 # ##GLOBAL VARIABLES

@@ -4,7 +4,7 @@
 from ..utility import get_buffer_checksum
 from ..network import get_http_file
 from ..file import create_directory, put_get_raw, delete_file
-from ...database.media_file_db import create_media_file_from_parameters, batch_delete_media_files,\
+from ..database.media_file_db import create_media_file_from_parameters, batch_delete_media_files,\
     get_media_file_by_url, get_media_files_by_md5s, update_media_file_expires
 
 

@@ -1,8 +1,9 @@
-# APP/DATABASE/ERROR_DB.PY
+# APP/LOGICAL/DATABASE/ERROR_DB.PY
 
 # ##LOCAL IMPORTS
-from .. import models, SESSION
-from ..logical.utility import get_current_time
+from ... import SESSION
+from ..utility import get_current_time
+from ...models import Error
 from .base_db import update_column_attributes
 
 
@@ -21,7 +22,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['module', 'message']
 
 def create_error_from_parameters(createparams):
     current_time = get_current_time()
-    error = models.Error(created=current_time)
+    error = Error(created=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(error, update_columns, createparams)
@@ -58,4 +59,4 @@ def append_error(instance, error):
 # ###### Test
 
 def is_error(instance):
-    return isinstance(instance, models.Error)
+    return isinstance(instance, Error)

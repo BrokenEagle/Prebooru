@@ -1,8 +1,9 @@
-# APP/DATABASE/ARTIST_DB.PY
+# APP/LOGICAL/DATABASE/NOTATION_DB.PY
 
 # ##LOCAL IMPORTS
-from .. import models, SESSION
-from ..logical.utility import get_current_time
+from ... import SESSION
+from ..utility import get_current_time
+from ...models import Notation, Pool, Artist, Illust, Post
 from .base_db import update_column_attributes
 
 
@@ -14,10 +15,10 @@ CREATE_ALLOWED_ATTRIBUTES = ['body']
 UPDATE_ALLOWED_ATTRIBUTES = ['body']
 
 ID_MODEL_DICT = {
-    'pool_id': models.Pool,
-    'artist_id': models.Artist,
-    'illust_id': models.Illust,
-    'post_id': models.Post,
+    'pool_id': Pool,
+    'artist_id': Artist,
+    'illust_id': Illust,
+    'post_id': Post,
 }
 
 
@@ -29,7 +30,7 @@ ID_MODEL_DICT = {
 
 def create_notation_from_parameters(createparams):
     current_time = get_current_time()
-    notation = models.Notation(created=current_time, updated=current_time)
+    notation = Notation(created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(notation, update_columns, createparams)
