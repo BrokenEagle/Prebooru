@@ -1,10 +1,15 @@
-import os
+# APP/MODELS/TAGS_HELPER.PY
+
+# ## PYTHON IMPORTS
 import logging
 import itertools
-from sqlalchemy import event, MetaData, Table, Column, String, select
+from sqlalchemy import MetaData, Table, Column, String, select
 
+# ## LOCAL IMPORTS
 from .. import DB, DATABASE_VERSION
-from ..config import DB_PATH, JOBS_PATH, DEBUG_MODE
+
+
+# ## FUNCTIONS
 
 def validate_version():
     t_alembic_version = Table('alembic_version', MetaData(), Column('version_num', String))

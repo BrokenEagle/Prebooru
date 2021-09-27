@@ -1,8 +1,5 @@
 # APP\HELPERS\SIMILARITY_POOLS_HELPER.PY
 
-# ## PYTHON IMPORTS
-from flask import url_for
-
 # ## LOCAL IMPORTS
 from .base_helper import general_link
 

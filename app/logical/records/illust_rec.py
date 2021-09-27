@@ -1,8 +1,5 @@
 # APP/LOGICAL/RECORDS/ILLUST_REC.PY
 
-# ##PYTHON IMPORTS
-import datetime
-
 # ##LOCAL IMPORTS
 from .artist_rec import create_artist_from_source
 from ..database.artist_db import get_site_artist

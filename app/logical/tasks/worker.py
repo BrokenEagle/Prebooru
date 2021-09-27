@@ -10,7 +10,7 @@ from ..utility import get_current_time, minutes_ago, unique_objects, buffered_pr
 from ..logger import log_error
 from ..similarity.generate_data import generate_post_similarity
 from ..similarity.populate_pools import populate_similarity_pools
-from ...models import Upload, Post, Illust
+from ...models import Upload, Illust
 from ..check.posts import check_posts_for_danbooru_id
 from ..check.booru_artists import check_artists_for_boorus
 from ..records.artist_rec import update_artist_from_source

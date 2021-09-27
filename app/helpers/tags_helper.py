@@ -28,4 +28,3 @@ def post_search_link(tag):
 
 def tag_search_links(tag):
     return Markup(' | ').join([external_link(source.NAME.title(), source.tag_search_url(tag)) for source in SOURCES if source.HAS_TAG_SEARCH])
-

@@ -3,7 +3,7 @@
 import datetime
 
 from ... import SESSION
-from ..utility import get_current_time, process_utc_timestring, set_error
+from ..utility import get_current_time, set_error
 from ...models import Artist, ArtistUrl, Label, Description
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections, set_timesvalue
 

@@ -5,10 +5,10 @@ import urllib.parse
 from flask import url_for
 
 # ##LOCAL IMPORTS
-from ..logical.sites import get_site_domain, get_site_key
+from ..logical.sites import get_site_key
 from ..logical.sources import SOURCEDICT
 from ..logical.sources.base import get_source_by_id
-from .base_helper import search_url_for, external_link, url_link, general_link
+from .base_helper import search_url_for, external_link, general_link
 from ..config import DANBOORU_HOSTNAME
 
 

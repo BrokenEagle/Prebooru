@@ -4,8 +4,7 @@
 import datetime
 from typing import List, _GenericAlias
 from flask import url_for, Markup
-from sqlalchemy.orm import RelationshipProperty, reconstructor
-from sqlalchemy.util import memoized_property
+from sqlalchemy.orm import RelationshipProperty
 
 # ## LOCAL IMPORTS
 from .. import DB, SERVER_INFO
@@ -74,6 +73,7 @@ def relation_property_factory(model_key, table_name, relation_key):
         return Markup('<a href="%s">%s</a>' % (getattr(obj, model_key + '_show_url'), getattr(obj, model_key + '_shortlink'))) if getattr(obj, relation_key) is not None else None
 
     return _shortlink, _show_url, _show_link
+
 
 # ## CLASSES
 

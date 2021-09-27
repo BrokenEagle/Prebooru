@@ -32,7 +32,6 @@ def check_posts_for_danbooru_id(posts, progress=False):
         print(results['message'])
         return False
     if len(results['posts']) > 0:
-        dirty = False
         for post in posts:
             danbooru_post = next(filter(lambda x: x['md5'] == post.md5, results['posts']), None)
             if danbooru_post is None:

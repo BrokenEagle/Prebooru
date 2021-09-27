@@ -1,7 +1,7 @@
 # APP/MODELS/TAG.PY
 
 # ##PYTHON IMPORTS
-from flask import url_for, Markup
+from flask import Markup
 from dataclasses import dataclass
 from sqlalchemy.util import memoized_property
 

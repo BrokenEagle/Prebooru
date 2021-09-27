@@ -1,7 +1,7 @@
 # APP\HELPERS\POOLS_HELPER.PY
 
 # ##PYTHON IMPORTS
-from flask import Markup, url_for
+from flask import url_for
 
 # ##LOCAL IMPORTS
 from .base_helper import general_link

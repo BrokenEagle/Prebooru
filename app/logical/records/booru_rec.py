@@ -45,7 +45,7 @@ def update_booru_artists_from_source(booru):
             continue
         site_artist_id = int(source.get_artist_id_url_id(artist_url['url']))
         site_id = source.SITE_ID
-        artist  = get_site_artist(site_artist_id, site_id)
+        artist = get_site_artist(site_artist_id, site_id)
         if artist is None or artist.id in existing_artist_ids:
             continue
         booru_append_artist(booru, artist)

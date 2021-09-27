@@ -3,8 +3,6 @@
 # ##LOCAL IMPORTS
 from ... import SESSION
 from ..utility import get_current_time
-from ..sources.base import get_artist_id_source
-from ..sources.danbooru import get_artist_by_id
 from ...models import Booru, Label
 from .base_db import update_column_attributes, update_relationship_collections
 

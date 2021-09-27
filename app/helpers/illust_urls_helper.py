@@ -24,4 +24,3 @@ def edit_video_links(video_illust_url, sample_illust_url):
 
 def upload_media_link(text, illust_url):
     return general_link(text, url_for('upload.new_html', illust_url_id=illust_url.id))
-

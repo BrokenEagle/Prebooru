@@ -4,7 +4,6 @@
 import os
 import itertools
 import datetime
-from types import SimpleNamespace
 from typing import List
 from dataclasses import dataclass
 from sqlalchemy.orm import selectinload

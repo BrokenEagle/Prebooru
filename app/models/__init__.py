@@ -3,9 +3,6 @@
 # ## PYTHON IMPORTS
 from types import ModuleType
 
-# ## LOCAL IMPORTS
-from .. import DB
-
 
 # ## COLLATION IMPORTS
 
@@ -31,25 +28,29 @@ from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation  # noq
 from .subscription import Subscription  # noqa: F401
 
 # #### Similarity data
-from .similarity_data import SimilarityData
-from .similarity_pool import SimilarityPool
-from .similarity_pool_element import SimilarityPoolElement
+from .similarity_data import SimilarityData  # noqa: F401
+from .similarity_pool import SimilarityPool  # noqa: F401
+from .similarity_pool_element import SimilarityPoolElement  # noqa: F401
 
 # #### Cache data
-from .api_data import ApiData
-from .media_file import MediaFile
-from .domain import Domain
+from .api_data import ApiData  # noqa: F401
+from .media_file import MediaFile  # noqa: F401
+from .domain import Domain  # noqa: F401
 
 
-# ## INITIALIZATION
+# ## GLOBAL VARIABLES
+
+NONCE = None
+
+
+# ## FUNCTIONS
 
 def initialize():
     modules = [m for (k, m) in globals().items() if type(m) is ModuleType and k != '__builtins__' and hasattr(m, 'initialize')]
     for mod in modules:
         mod.initialize()
 
+
+# ## INITIALIZATION
+
 initialize()
-
-# ## GLOBAL VARIABLES
-
-NONCE = None

@@ -102,4 +102,3 @@ def add_to_pool_link(post):
 
 def danbooru_post_link(post):
     return external_link('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id) if post.danbooru_id is not None else Markup('<em>N/A</em>')
-

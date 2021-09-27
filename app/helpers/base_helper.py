@@ -4,7 +4,7 @@
 import re
 import html
 import datetime
-from flask import Markup, request, render_template, url_for
+from flask import Markup, request, url_for
 from wtforms import Field, BooleanField
 from wtforms.widgets import HiddenInput
 

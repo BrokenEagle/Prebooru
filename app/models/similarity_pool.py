@@ -2,7 +2,6 @@
 
 # ##PYTHON IMPORTS
 import datetime
-from types import SimpleNamespace
 from dataclasses import dataclass
 from sqlalchemy.orm import selectinload, lazyload
 
@@ -46,7 +45,6 @@ class SimilarityPool(JsonModel):
     # ## Methods
 
     def element_paginate(self, page=None, per_page=None, post_options=lazyload('*')):
-        from ..models import Post
         q = self._element_query
         q = q.options(selectinload(SimilarityPoolElement.post), selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
         q = q.order_by(SimilarityPoolElement.score.desc())

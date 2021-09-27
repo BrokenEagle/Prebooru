@@ -8,7 +8,7 @@ from io import BytesIO
 from types import SimpleNamespace
 from flask_apscheduler import APScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from sqlalchemy import event, MetaData, Table, Column, String, select
+from sqlalchemy import event, MetaData
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.wsgi import get_input_stream
