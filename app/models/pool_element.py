@@ -5,11 +5,10 @@ import math
 
 # ## EXTERNAL IMPORTS
 from flask import url_for
-from dataclasses import dataclass
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
-from .base import JsonModel, int_or_none
+from .base import JsonModel
 
 
 # ## FUNCTIONS
@@ -39,7 +38,6 @@ def pool_element_delete(pool_id, item):
 
 # ## CLASSES
 
-@dataclass
 class PoolElement(JsonModel):
     # ## Declarations
 
@@ -73,6 +71,8 @@ class PoolElement(JsonModel):
     # ## Class properties
 
     searchable_attributes = ['id', 'pool_id', 'position', 'type', 'post_id', 'illust_id', 'notation_id']
+    basic_attributes = ['id', 'pool_id', 'position', 'type']
+    json_attributes = basic_attributes
 
     # #### Private
     __tablename__ = 'pool_element'
@@ -82,12 +82,8 @@ class PoolElement(JsonModel):
     }
 
 
-@dataclass
 class PoolPost(PoolElement):
     # ## Declarations
-
-    # #### JSON format
-    post_id: int_or_none
 
     # #### Columns
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
@@ -97,6 +93,9 @@ class PoolPost(PoolElement):
 
     # ## Class properties
 
+    basic_attributes = PoolElement.basic_attributes + ['post_id']
+    json_attributes = basic_attributes
+
     # #### Private
     __tablename__ = 'pool_post'
     __mapper_args__ = {
@@ -104,12 +103,8 @@ class PoolPost(PoolElement):
     }
 
 
-@dataclass
 class PoolIllust(PoolElement):
     # ## Declarations
-
-    # #### JSON format
-    illust_id: int_or_none
 
     # #### Columns
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
@@ -119,6 +114,9 @@ class PoolIllust(PoolElement):
 
     # ## Class properties
 
+    basic_attributes = PoolElement.basic_attributes + ['illust_id']
+    json_attributes = basic_attributes
+
     # #### Private
     __tablename__ = 'pool_illust'
     __mapper_args__ = {
@@ -126,12 +124,8 @@ class PoolIllust(PoolElement):
     }
 
 
-@dataclass
 class PoolNotation(PoolElement):
     # ## Declarations
-
-    # #### JSON format
-    notation_id: int_or_none
 
     # #### Columns
     notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
@@ -140,6 +134,9 @@ class PoolNotation(PoolElement):
     # item <- Notation (OtO)
 
     # ## Class properties
+
+    basic_attributes = PoolElement.basic_attributes + ['notation_id']
+    json_attributes = basic_attributes
 
     # #### Private
     __tablename__ = 'pool_notation'

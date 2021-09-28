@@ -28,7 +28,7 @@
         </section>
         <section id="illust-tags">
             <h4>Tags</h4>
-            {{ tag_list(illust.tags, True) }}
+            {{ tag_list(illust._tags, True) }}
         </section>
     </div>
     <div id="illust-site-content-2">
@@ -41,7 +41,7 @@
         <section id ="illust-commentaries">
             <h4>Commentaries</h4>
             <div id="illust-commentaries-container">
-                {% call(commentary) items_block(illust.commentaries, 'commentaries') %}
+                {% call(commentary) items_block(illust._commentaries, '_commentaries') %}
                     <div class="illust-commentaries-block">
                         <span class="illust-commentary-delete">
                             (&thinsp;{{ helpers.illust.delete_commentary_link(illust, commentary) }}&thinsp;)

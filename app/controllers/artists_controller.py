@@ -41,25 +41,25 @@ VALUES_MAP = {
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(Artist.site_accounts),
-    selectinload(Artist.names),
-    selectinload(Artist.profiles),
+    selectinload(Artist._site_accounts),
+    selectinload(Artist._names),
+    selectinload(Artist._profiles),
     selectinload(Artist.webpages),
     selectinload(Artist.notations),
     selectinload(Artist.boorus),
 )
 
 INDEX_HTML_OPTIONS = (
-    selectinload(Artist.site_accounts),
-    selectinload(Artist.names),
+    selectinload(Artist._site_accounts),
+    selectinload(Artist._names),
     selectinload(Artist.webpages),
     selectinload(Artist.notations),
 )
 
 JSON_OPTIONS = (
-    selectinload(Artist.site_accounts),
-    selectinload(Artist.names),
-    selectinload(Artist.profiles),
+    selectinload(Artist._site_accounts),
+    selectinload(Artist._names),
+    selectinload(Artist._profiles),
     selectinload(Artist.webpages),
 )
 
@@ -272,8 +272,8 @@ def edit_html(id):
     """HTML access point to update function."""
     artist = get_or_abort(Artist, id)
     editparams = artist.to_json()
-    editparams['site_account_string'] = '\r\n'.join(site_account.name for site_account in artist.site_accounts)
-    editparams['name_string'] = '\r\n'.join(artist_name.name for artist_name in artist.names)
+    editparams['site_account_string'] = '\r\n'.join(artist.site_accounts)
+    editparams['name_string'] = '\r\n'.join(artist.names)
     marked_urls = ((('' if webpage.active else '-') + webpage.url) for webpage in artist.webpages)
     editparams['webpage_string'] = '\r\n'.join(marked_urls)
     form = get_artist_form(**editparams)

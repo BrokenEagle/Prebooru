@@ -18,6 +18,13 @@ def set_timesvalue(params, key):
             params[key] = None
 
 
+def set_association_attributes(params, associations):
+    for key in associations:
+        if key in params and params[key]:
+            association_key = '_' + key
+            params[association_key] = params[key]
+
+
 def update_column_attributes(item, attrs, dataparams):
     """For updating column attributes with scalar values"""
     is_dirty = False

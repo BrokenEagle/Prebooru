@@ -21,7 +21,7 @@
                         <span><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</span><br>
                         <span><strong>Current name:</strong> {{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span>
                     </td>
-                    <td class="booru-names">{{ simple_list(booru.names, 'name') }}</td>
+                    <td class="booru-names">{{ simple_list(booru._names, 'name') }}</td>
                     <td class="booru-timestamps">
                         <strong>Created:</strong> {{ helpers.base.format_timestamp(booru.created) }}<br>
                         <strong>Updated:</strong> {{ helpers.base.format_timestamp(booru.updated) }}

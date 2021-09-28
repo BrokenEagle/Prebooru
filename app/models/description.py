@@ -1,8 +1,5 @@
 # APP/MODELS/DESCRIPTION.PY
 
-# ## PYTHON IMPORTS
-from dataclasses import dataclass
-
 # ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
@@ -10,13 +7,8 @@ from .base import JsonModel
 
 # ## CLASSES
 
-@dataclass
 class Description(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    body: str
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -24,4 +16,6 @@ class Description(JsonModel):
 
     # ## Class properties
 
-    searchable_attributes = ['id', 'body']
+    basic_attributes = ['id', 'body']
+    searchable_attributes = basic_attributes
+    json_attributes = basic_attributes

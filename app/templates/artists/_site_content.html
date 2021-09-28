@@ -18,8 +18,8 @@
         <section id="artist-labels">
             <h4>Labels</h4>
             <ul>
-                <li><strong>Names:</strong> {{ items_list(artist.names, 'name') }}</li>
-                <li><strong>Accounts:</strong> {{ items_list(artist.site_accounts, 'name') }}</li>
+                <li><strong>Names:</strong> {{ items_list(artist._names, 'name') }}</li>
+                <li><strong>Accounts:</strong> {{ items_list(artist._site_accounts, 'name') }}</li>
             </ul>
         </section>
         <section id="artist-webpages">
@@ -35,7 +35,7 @@
         <section id="artist-profiles">
             <h4>Profiles</h4>
             <div id="artist-profiles-container">
-                {% call(profile) items_block(artist.profiles, 'profiles') %}
+                {% call(profile) items_block(artist._profiles, '_profiles') %}
                     <div class="artist-profiles-block">
                         <span class="artist-profile-delete">
                             (&thinsp;{{ helpers.artist.delete_profile_link(artist, profile) }}&thinsp;)

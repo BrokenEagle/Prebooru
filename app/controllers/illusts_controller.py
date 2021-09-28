@@ -46,8 +46,8 @@ POOL_SEARCH_KEYS = ['has_pools', 'has_post_pools', 'has_illust_pools']
 
 SHOW_HTML_OPTIONS = (
     selectinload(Illust.site_data),
-    selectinload(Illust.tags),
-    selectinload(Illust.commentaries),
+    selectinload(Illust._tags),
+    selectinload(Illust._commentaries),
     selectinload(Illust.artist).selectinload(Artist.boorus),
     selectinload(Illust.notations),
     selectinload(Illust._pools).selectinload(PoolIllust.pool),
@@ -56,14 +56,14 @@ SHOW_HTML_OPTIONS = (
 )
 
 INDEX_HTML_OPTIONS = (
-    selectinload(Illust.tags),
+    selectinload(Illust._tags),
     selectinload(Illust.urls).selectinload(IllustUrl.post).lazyload('*'),
 )
 
 JSON_OPTIONS = (
     selectinload(Illust.site_data),  # Must be included separately, otherwise the selectin polymorphic doesn't work
-    selectinload(Illust.tags),
-    selectinload(Illust.commentaries),
+    selectinload(Illust._tags),
+    selectinload(Illust._commentaries),
     selectin_polymorphic(Illust.site_data, [TwitterData, PixivData]),
     selectinload(Illust.urls).lazyload('*'),
 )
@@ -306,7 +306,7 @@ def edit_html(id):
     """HTML access point to update function."""
     illust = get_or_abort(Illust, id)
     editparams = illust.to_json()
-    editparams['tag_string'] = '\r\n'.join(tag.name for tag in illust.tags)
+    editparams['tag_string'] = '\r\n'.join(illust.tags)
     editparams.update({k: v for (k, v) in illust.site_data.to_json().items() if k not in ['id', 'illust_id', 'type']})
     form = get_illust_form(**editparams)
     hide_input(form, 'artist_id', illust.id)

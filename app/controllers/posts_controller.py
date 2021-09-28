@@ -28,8 +28,8 @@ POOL_SEARCH_KEYS = ['has_pools', 'has_post_pools', 'has_illust_pools']
 
 SHOW_HTML_OPTIONS = (
     selectinload(Post.illust_urls).selectinload(IllustUrl.illust).options(
-        selectinload(Illust.tags),
-        selectinload(Illust.commentaries),
+        selectinload(Illust._tags),
+        selectinload(Illust._commentaries),
         selectinload(Illust.artist).selectinload(Artist.boorus),
         # Eager load all posts underneath the same illust(s)
         selectinload(Illust.urls).selectinload(IllustUrl.post).lazyload('*'),

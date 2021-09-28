@@ -32,16 +32,16 @@ VALUES_MAP = {
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(Booru.names),
+    selectinload(Booru._names),
     selectinload(Booru.artists),
 )
 
 INDEX_HTML_OPTIONS = (
-    selectinload(Booru.names),
+    selectinload(Booru._names),
 )
 
 JSON_OPTIONS = (
-    selectinload(Booru.names),
+    selectinload(Booru._names),
     selectinload(Booru.artists),
 )
 
@@ -204,7 +204,7 @@ def edit_html(id):
     """HTML access point to update function."""
     booru = get_or_abort(Booru, id)
     editparams = booru.to_json()
-    editparams['name_string'] = '\r\n'.join(booru_name.name for booru_name in booru.names)
+    editparams['name_string'] = '\r\n'.join(booru.names)
     form = get_booru_form(**editparams)
     return render_template("boorus/edit.html", form=form, booru=booru)
 

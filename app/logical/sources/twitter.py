@@ -373,13 +373,13 @@ def has_artist_urls(artist):
 
 
 def artist_screen_name(artist):
-    return artist.current_site_account if artist.current_site_account is not None else artist.site_accounts[0].name
+    return artist.current_site_account if artist.current_site_account is not None else artist.site_accounts[0]
 
 
 def artist_profile_urls(artist):
     profile_urls = ['https://twitter.com/intent/user?user_id=%d' % artist.site_artist_id]
     for site_account in artist.site_accounts:
-        profile_urls += ['https://twitter.com/%s' % site_account.name]
+        profile_urls += ['https://twitter.com/%s' % site_account]
     return profile_urls
 
 
@@ -390,10 +390,10 @@ def artist_booru_search_url(artist):
 def illust_commentaries_dtext(illust):
     if len(illust.commentaries) == 0:
         return []
-    commentary = illust.commentaries[0].body  # Twitter commentaries are unchangable.
+    commentary = illust.commentaries[0]  # Twitter commentaries are unchangable.
     for tag in illust.tags:
-        hashtag = '#' + tag.name
-        hashtag_link = r'"%s":[https://twitter.com/hashtag/%s]' % (hashtag, tag.name)
+        hashtag = '#' + tag
+        hashtag_link = r'"%s":[https://twitter.com/hashtag/%s]' % (hashtag, tag)
         commentary = re.sub(r'%s(?=$|\s)' % hashtag, hashtag_link, commentary)
     return [commentary]
 

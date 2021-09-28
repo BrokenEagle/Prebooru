@@ -3,9 +3,6 @@
 # ## PYTHON IMPORTS
 import os
 import itertools
-import datetime
-from typing import List
-from dataclasses import dataclass
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
@@ -23,7 +20,7 @@ from .pool_element import PoolPost, pool_element_delete
 from .similarity_data import SimilarityData
 from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
-from .base import JsonModel, remove_keys, image_server_url
+from .base import JsonModel, image_server_url
 
 
 # ## GLOBAL VARIABLES
@@ -51,23 +48,8 @@ PostNotations = DB.Table(
 
 # ## CLASSES
 
-@dataclass
 class Post(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    width: int
-    height: int
-    file_ext: str
-    md5: str
-    size: int
-    illust_urls: List[lambda x: remove_keys(x, ['height', 'width'])]
-    file_url: str
-    sample_url: str
-    preview_url: str
-    errors: List
-    created: datetime.datetime.isoformat
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -213,3 +195,4 @@ class Post(JsonModel):
     relation_attributes = ['illust_urls', 'uploads', 'notations', 'errors', 'similarity_data', 'similarity_pool',
                            'similarity_elements']
     searchable_attributes = basic_attributes + relation_attributes
+    json_attributes = basic_attributes + ['preview_url', 'sample_url', 'file_url', 'illust_urls', 'errors']

@@ -112,7 +112,7 @@ def page_link(text, endpoint, page):
 def form_iterator(form):
     """Yield the field name and a callable function given the order of fields in the form class"""
     # Get the names of all of the form fields
-    form_fields = [attr for attr in dir(form) if _is_field(attr, form)]
+    form_fields = [attr for attr in dir(form) if _is_field(form, attr)]
     for field in form:
         # Get the current field name
         field_name = next(filter(lambda x: getattr(form, x) == field, form_fields))

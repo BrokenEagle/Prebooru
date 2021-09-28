@@ -1,7 +1,6 @@
 # APP/MODELS/POOL.PY
 
 # ## PYTHON IMPORTS
-from dataclasses import dataclass
 from flask import Markup
 
 # ## EXTERNAL IMPORTS
@@ -11,26 +10,17 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, date_time_or_null
 from .post import Post
 from .illust import Illust
 from .notation import Notation
 from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation, pool_element_create, pool_element_delete
+from .base import JsonModel
 
 
 # ## CLASSES
 
-@dataclass
 class Pool(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    name: str
-    element_count: int
-    series: bool
-    created: date_time_or_null
-    updated: date_time_or_null
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -112,4 +102,6 @@ class Pool(JsonModel):
 
     # ## Class properties
 
-    searchable_attributes = ['id', 'name', 'series', 'created', 'updated']
+    basic_attributes = ['id', 'name', 'series', 'created', 'updated', 'element_count']
+    searchable_attributes = basic_attributes
+    json_attributes = basic_attributes

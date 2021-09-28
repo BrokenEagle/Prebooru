@@ -1,30 +1,18 @@
 # APP/MODELS/SIMILARITY_POOL.PY
 
-# ## PYTHON IMPORTS
-import datetime
-from dataclasses import dataclass
-
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload, lazyload
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel
 from .similarity_pool_element import SimilarityPoolElement
+from .base import JsonModel
 
 
 # ## CLASSES
 
-@dataclass
 class SimilarityPool(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    post_id: int
-    element_count: int
-    created: datetime.datetime.isoformat
-    updated: datetime.datetime.isoformat
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -77,3 +65,8 @@ class SimilarityPool(JsonModel):
         else:
             element.score = score
         return element
+
+    # ## Class properties
+
+    basic_attributes = ['id', 'post_id', 'element_count', 'created', 'updated']
+    json_attributes = basic_attributes

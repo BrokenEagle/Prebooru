@@ -1,8 +1,5 @@
 # APP/MODELS/LABEL.PY
 
-# ## PYTHON IMPORTS
-from dataclasses import dataclass
-
 # ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
@@ -10,13 +7,8 @@ from .base import JsonModel
 
 # ## CLASSES
 
-@dataclass
 class Label(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    name: str
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -24,4 +16,6 @@ class Label(JsonModel):
 
     # ## Class properties
 
-    searchable_attributes = ['id', 'name']
+    basic_attributes = ['id', 'name']
+    searchable_attributes = basic_attributes
+    json_attributes = basic_attributes

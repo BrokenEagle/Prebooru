@@ -1,10 +1,5 @@
 # APP/MODELS/UPLOAD.PY
 
-# ## PYTHON IMPORTS
-import datetime
-from typing import List
-from dataclasses import dataclass
-
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -15,7 +10,7 @@ from ..logical.utility import unique_objects
 from .upload_url import UploadUrl
 from .post import Post
 from .error import Error
-from .base import JsonModel, int_or_none, str_or_none
+from .base import JsonModel
 
 
 # ##GLOBAL VARIABLES
@@ -41,25 +36,8 @@ UploadPosts = DB.Table(
 
 # ## CLASSES
 
-@dataclass
 class Upload(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    subscription_id: int_or_none
-    request_url: str_or_none
-    media_filepath: str_or_none
-    sample_filepath: str_or_none
-    illust_url_id: int_or_none
-    type: str
-    status: str
-    successes: int
-    failures: int
-    image_urls: List
-    post_ids: List[int]
-    errors: List
-    created: datetime.datetime.isoformat
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -127,3 +105,4 @@ class Upload(JsonModel):
                         'status', 'media_filepath', 'sample_filepath', 'created']
     relation_attributes = ['image_urls', 'posts', 'errors']
     searchable_attributes = basic_attributes + relation_attributes
+    json_attributes = basic_attributes + ['image_urls', 'post_ids', 'errors']

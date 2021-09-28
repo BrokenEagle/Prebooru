@@ -43,3 +43,7 @@ class MediaFile(JsonModel):
     @property
     def _partial_file_path(self):
         return '%s.%s' % (self.md5, self.file_ext)
+
+    basic_attributes = ['id', 'md5', 'file_ext', 'media_url', 'expires']
+    searchable_attributes = basic_attributes
+    json_attributes = basic_attributes + ['file_url']

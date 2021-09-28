@@ -8,27 +8,30 @@ from ... import SESSION
 from ...models import Artist, ArtistUrl, Label, Description
 from ..utility import get_current_time, set_error
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
-    set_timesvalue
+    set_timesvalue, set_association_attributes
 
 
 # ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active']
-UPDATE_SCALAR_RELATIONSHIPS = [('site_accounts', 'name', Label), ('names', 'name', Label)]
-APPEND_SCALAR_RELATIONSHIPS = [('profiles', 'body', Description)]
+UPDATE_SCALAR_RELATIONSHIPS = [('_site_accounts', 'name', Label), ('_names', 'name', Label)]
+APPEND_SCALAR_RELATIONSHIPS = [('_profiles', 'body', Description)]
+ASSOCIATION_ATTRIBUTES = ['site_accounts', 'names', 'profiles']
 
 CREATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active',
-                             'site_accounts', 'names', 'profiles']
+                             '_site_accounts', '_names', '_profiles']
 UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active',
-                             'site_accounts', 'names', 'profiles']
+                             '_site_accounts', '_names', '_profiles']
 
 
 # ## FUNCTIONS
 
 # #### Helper functions
 
-def set_all_site_accounts(params):
+def set_all_site_accounts(params, artist):
     if 'current_site_account' in params and params['current_site_account']:
+        artist_accounts = list(artist.site_accounts) if artist is not None else []
+        params['site_accounts'] = params['site_accounts'] if 'site_accounts' in params else artist_accounts
         params['site_accounts'] = list(set(params['site_accounts'] + [params['current_site_account']]))
 
 
@@ -39,7 +42,8 @@ def set_all_site_accounts(params):
 def create_artist_from_parameters(createparams):
     current_time = get_current_time()
     set_timesvalue(createparams, 'site_created')
-    set_all_site_accounts(createparams)
+    set_all_site_accounts(createparams, None)
+    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
     artist = Artist(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
@@ -60,7 +64,8 @@ def create_artist_from_parameters(createparams):
 def update_artist_from_parameters(artist, updateparams):
     update_results = []
     set_timesvalue(updateparams, 'site_created')
-    set_all_site_accounts(updateparams)
+    set_all_site_accounts(updateparams, artist)
+    set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(artist, update_columns, updateparams))
@@ -123,12 +128,12 @@ def artist_append_booru(artist, booru):
 
 
 def artist_delete_profile(artist, description_id):
-    retdata = {'error': False, 'descriptions': [profile.to_json() for profile in artist.profiles]}
-    remove_profile = next((profile for profile in artist.profiles if profile.id == description_id), None)
+    retdata = {'error': False, 'descriptions': [profile.to_json() for profile in artist._profiles]}
+    remove_profile = next((profile for profile in artist._profiles if profile.id == description_id), None)
     if remove_profile is None:
         msg = "Profile with description #%d does not exist on artist #%d." % (description_id, artist.id)
         return set_error(retdata, msg)
-    artist.profiles.remove(remove_profile)
+    artist._profiles.remove(remove_profile)
     SESSION.commit()
     retdata['item'] = artist.to_json()
     return retdata

@@ -1,29 +1,18 @@
 # APP/MODELS/NOTATION.PY
 
-# ## PYTHON IMPORTS
-import datetime
-from dataclasses import dataclass
-
 # ## EXTERNAL IMPORTS
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel
 from .pool_element import PoolNotation
+from .base import JsonModel
 
 
 # ## CLASSES
 
-@dataclass
 class Notation(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    body: str
-    created: datetime.datetime.isoformat
-    updated: datetime.datetime.isoformat
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -59,4 +48,7 @@ class Notation(JsonModel):
 
     # ## Class properties
 
-    searchable_attributes = ['id', 'body', 'created', 'updated', 'artist', 'illust', 'post']
+    basic_attributes = ['id', 'body', 'created', 'updated']
+    relation_attributes = ['artist', 'illust', 'post']
+    searchable_attributes = basic_attributes + relation_attributes
+    json_attributes = basic_attributes

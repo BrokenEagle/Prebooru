@@ -10,19 +10,20 @@ from ..utility import get_current_time, set_error
 from .illust_url_db import update_illust_url_from_parameters
 from .site_data_db import update_site_data_from_parameters
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
-    set_timesvalue
+    set_timesvalue, set_association_attributes
 
 
 # ##GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active']
-UPDATE_SCALAR_RELATIONSHIPS = [('tags', 'name', Tag)]
-APPEND_SCALAR_RELATIONSHIPS = [('commentaries', 'body', Description)]
+UPDATE_SCALAR_RELATIONSHIPS = [('_tags', 'name', Tag)]
+APPEND_SCALAR_RELATIONSHIPS = [('_commentaries', 'body', Description)]
+ASSOCIATION_ATTRIBUTES = ['tags', 'commentaries']
 
 CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active',
-                             'tags', 'commentaries']
-UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', 'tags',
-                             'commentaries']
+                             '_tags', '_commentaries']
+UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', '_tags',
+                             '_commentaries']
 
 
 # ## FUNCTIONS
@@ -63,6 +64,7 @@ def update_illust_urls(illust, params):
 def create_illust_from_parameters(createparams):
     current_time = get_current_time()
     set_timesvalues(createparams)
+    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
     illust = Illust(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
@@ -83,6 +85,7 @@ def create_illust_from_parameters(createparams):
 def update_illust_from_parameters(illust, updateparams):
     update_results = []
     set_timesvalues(updateparams)
+    set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(illust, update_columns, updateparams))
@@ -105,12 +108,12 @@ def update_illust_from_parameters(illust, updateparams):
 # ###### Misc
 
 def illust_delete_commentary(illust, description_id):
-    retdata = {'error': False, 'descriptions': [commentary.to_json() for commentary in illust.commentaries]}
-    remove_commentary = next((comm for comm in illust.commentaries if comm.id == description_id), None)
+    retdata = {'error': False, 'descriptions': [commentary.to_json() for commentary in illust._commentaries]}
+    remove_commentary = next((comm for comm in illust._commentaries if comm.id == description_id), None)
     if remove_commentary is None:
         msg = "Commentary with description #%d does not exist on illust #%d." % (description_id, illust.id)
         return set_error(retdata, msg)
-    illust.commentaries.remove(remove_commentary)
+    illust._commentaries.remove(remove_commentary)
     SESSION.commit()
     retdata['item'] = illust.to_json()
     return retdata

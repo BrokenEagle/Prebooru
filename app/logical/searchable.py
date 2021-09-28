@@ -5,6 +5,7 @@ import re
 from sqlalchemy import and_, not_, func
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.relationships import RelationshipProperty
+from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance
 import sqlalchemy.sql.sqltypes as sqltypes
 
 # ## LOCAL IMPORTS
@@ -31,16 +32,25 @@ TEXT_ARRAY_RE = '%%s_(%s)' % '|'.join(ALL_ARRAY_TYPES)
 
 # #### Test functions
 
+def get_attribute(model, columnname):
+    if hasattr(model, columnname):
+        value = getattr(model, columnname)
+        if type(value) is ColumnAssociationProxyInstance:
+            value = value.attr[0]
+        return value
+
+
 def is_relationship(model, columnname):
-    return hasattr(model, columnname) and type(getattr(model, columnname).property) is RelationshipProperty
+    attr = get_attribute(model, columnname)
+    return attr and type(attr.property) is RelationshipProperty
 
 
 def relationship_model(model, attribute):
-    return getattr(model, attribute).property.mapper.class_
+    return get_attribute(model, attribute).property.mapper.class_
 
 
 def is_polymorphic(model, attribute):
-    return getattr(model, attribute).property.mapper.polymorphic_on is not None
+    return get_attribute(model, attribute).property.mapper.polymorphic_on is not None
 
 
 def is_column(model, columnname):
@@ -128,7 +138,7 @@ def basic_attribute_filters(model, columnname, params):
 def relationship_attribute_filters(query, model, attribute, params):
     if is_polymorphic(model, attribute):
         raise Exception("%s - polymorphic relationships are currently unhandled" % attribute)
-    relation = getattr(model, attribute)
+    relation = get_attribute(model, attribute)
     filters = ()
     if ('has_' + attribute) in params:
         primaryjoin = relation.property.primaryjoin

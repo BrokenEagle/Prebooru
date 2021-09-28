@@ -1,9 +1,5 @@
 # APP/MODELS/ERROR.PY
 
-# ## PYTHON IMPORTS
-import datetime
-from dataclasses import dataclass
-
 # ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
@@ -11,15 +7,8 @@ from .base import JsonModel
 
 # ## CLASSES
 
-@dataclass
 class Error(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    module: str
-    message: str
-    created: datetime.datetime.isoformat
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -29,4 +18,6 @@ class Error(JsonModel):
 
     # ## Class properties
 
-    searchable_attributes = ['id', 'module', 'message', 'created']
+    basic_attributes = ['id', 'module', 'message', 'created']
+    searchable_attributes = basic_attributes
+    json_attributes = basic_attributes

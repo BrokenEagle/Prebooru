@@ -1,8 +1,5 @@
 # APP/MODELS/UPLOAD_URL.PY
 
-# ## PYTHON IMPORTS
-from dataclasses import dataclass
-
 # ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
@@ -10,13 +7,8 @@ from .base import JsonModel
 
 # ## CLASSES
 
-@dataclass
 class UploadUrl(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    url: str
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -24,4 +16,6 @@ class UploadUrl(JsonModel):
 
     # ## Class properties
 
-    searchable_attributes = ['id', 'url']
+    basic_attributes = ['id', 'url']
+    searchable_attributes = basic_attributes
+    json_attributes = basic_attributes

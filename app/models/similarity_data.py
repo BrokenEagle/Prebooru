@@ -147,6 +147,11 @@ class SimilarityData(JsonModel):
             clause = clause | groupclause if clause is not None else groupclause
         return clause
 
+    # ## Class properties
+
+    basic_attributes = ['id', 'post_id', 'ratio']
+    json_attributes = basic_attributes + ['image_hash']
+
 
 # ## INITIALIZATION
 

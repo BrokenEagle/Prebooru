@@ -2,11 +2,13 @@
 
 # ## PYTHON IMPORTS
 import datetime
-from typing import List, _GenericAlias
+from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
 from flask import url_for, Markup
 from sqlalchemy.orm import RelationshipProperty
+from sqlalchemy.orm.collections import InstrumentedList
+from sqlalchemy.ext.associationproxy import _AssociationList
 
 # ## LOCAL IMPORTS
 from .. import DB, SERVER_INFO
@@ -19,18 +21,6 @@ from ..config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 
 def date_time_or_null(value):
     return value if value is None else datetime.datetime.isoformat(value)
-
-
-def int_or_none(data):
-    return data if data is None else int(data)
-
-
-def str_or_none(data):
-    return data if data is None else str(data)
-
-
-def remove_keys(data, keylist):
-    return {k: data[k] for k in data if k not in keylist}
 
 
 # #### Network functions
@@ -135,22 +125,19 @@ class JsonModel(DB.Model):
         return {k: getattr(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
 
     def to_json(self):
-        fields = self.__dataclass_fields__
         data = {}
-        for key in fields:
-            value = getattr(self, key)
-            type_func = fields[key].type
-            if type_func is None:
-                data[key] = None
-            elif 'to_json' in dir(type_func):
-                data[key] = value.to_json()
-            elif type_func == List:
-                data[key] = [t.to_json() for t in value]
-            elif isinstance(type_func, _GenericAlias):
-                subtype_func = type_func.__args__[0]
-                data[key] = [(subtype_func(t.to_json()) if 'to_json' in dir(t) else subtype_func(t)) for t in value]
+        for attr in self.json_attributes:
+            value = getattr(self, attr)
+            if type(value) is datetime.datetime:
+                data[attr] = date_time_or_null(value)
+            elif type(value) is _AssociationList:
+                data[attr] = list(value)
+            elif type(value) is InstrumentedList:
+                data[attr] = [t.to_json() for t in value]
+            elif hasattr(value, 'to_json'):
+                data[attr] = value.to_json()
             else:
-                data[key] = type_func(value)
+                data[attr] = value
         return data
 
     @classmethod
@@ -187,6 +174,12 @@ class JsonModel(DB.Model):
             setattr(cls, key + '_show_link', property(_show_link))
 
     # Private
+
+    def __repr__(self):
+        data = {}
+        for attr in self.basic_attributes:
+            data[attr] = getattr(self, attr)
+        return self.model_name.title() + repr(SimpleNamespace(**data))[9:]
 
     @classmethod
     def _model_name(cls):

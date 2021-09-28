@@ -1,8 +1,5 @@
 # APP/MODELS/TAG.PY
 
-# ##PYTHON IMPORTS
-from dataclasses import dataclass
-
 # ## EXTERNAL IMPORTS
 from flask import Markup
 from sqlalchemy.util import memoized_property
@@ -14,13 +11,8 @@ from .base import JsonModel
 
 # ##CLASSES
 
-@dataclass
 class Tag(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    name: str
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -53,16 +45,18 @@ class Tag(JsonModel):
     @property
     def _illust_query(self):
         from .illust import Illust
-        return Illust.query.join(Tag, Illust.tags).filter(Tag.id == self.id)
+        return Illust.query.join(Tag, Illust._tags).filter(Tag.id == self.id)
 
     @property
     def _post_query(self):
         from .post import Post
         from .illust_url import IllustUrl
         from .illust import Illust
-        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust.tags)\
+        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust._tags)\
                    .filter(Tag.id == self.id)
 
     # ## Class properties
 
-    searchable_attributes = ['id', 'name']
+    basic_attributes = ['id', 'name']
+    searchable_attributes = basic_attributes
+    json_attributes = basic_attributes

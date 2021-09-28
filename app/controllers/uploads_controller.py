@@ -27,7 +27,7 @@ bp = Blueprint("upload", __name__)
 
 SHOW_HTML_OPTIONS = (
     selectinload(Upload.posts).selectinload(Post.illust_urls).selectinload(IllustUrl.illust).options(
-        selectinload(Illust.tags),
+        selectinload(Illust._tags),
         selectinload(Illust.artist),
     ),
     selectinload(Upload.image_urls),

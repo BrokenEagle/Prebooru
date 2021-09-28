@@ -1,10 +1,5 @@
 # APP/MODELS/BOORU.PY
 
-# ## PYTHON IMPORTS
-import datetime
-from typing import List
-from dataclasses import dataclass
-
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -36,18 +31,8 @@ BooruArtists = DB.Table(
 
 # ## CLASSES
 
-@dataclass
 class Booru(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    danbooru_id: int
-    current_name: str
-    names: List[lambda x: x['name']]
-    artist_ids: List[int]
-    created: datetime.datetime.isoformat
-    updated: datetime.datetime.isoformat
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -57,10 +42,11 @@ class Booru(JsonModel):
     updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
 
     # #### Relationships
-    names = DB.relationship(Label, secondary=BooruNames, lazy=True)
+    _names = DB.relationship(Label, secondary=BooruNames, lazy=True)
     artists = DB.relationship(Artist, secondary=BooruArtists, lazy=True, backref=DB.backref('boorus', lazy=True))
 
     # #### Association proxies
+    names = association_proxy('_names', 'name')
     artist_ids = association_proxy('artists', 'id')
 
     # ## Property methods
@@ -92,7 +78,7 @@ class Booru(JsonModel):
     # ## Methods
 
     def delete(self):
-        self.names.clear()
+        self._names.clear()
         self.artists.clear()
         DB.session.delete(self)
         DB.session.commit()
@@ -102,3 +88,4 @@ class Booru(JsonModel):
     basic_attributes = ['id', 'danbooru_id', 'current_name', 'names', 'created', 'updated']
     relation_attributes = ['names', 'artists']
     searchable_attributes = basic_attributes + relation_attributes
+    json_attributes = basic_attributes + ['names']

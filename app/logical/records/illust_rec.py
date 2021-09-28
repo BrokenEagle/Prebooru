@@ -25,5 +25,5 @@ def update_illust_from_source(illust, source):
     updateparams = source.get_illust_data(illust.site_illust_id)
     if updateparams['active']:
         # These are only removable through the HTML/JSON UPDATE routes
-        updateparams['tags'] += [tag.name for tag in illust.tags if tag.name not in updateparams['tags']]
+        updateparams['tags'] += [tag for tag in illust.tags if tag not in updateparams['tags']]
     update_illust_from_parameters(illust, updateparams)

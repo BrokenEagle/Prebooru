@@ -1,12 +1,8 @@
 # APP/MODELS/ARTIST.PY
 
-# ## PYTHON IMPORTS
-import datetime
-from typing import List
-from dataclasses import dataclass
-
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
+from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -18,7 +14,7 @@ from .description import Description
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel, remove_keys, date_time_or_null, int_or_none, str_or_none
+from .base import JsonModel
 
 
 # ## GLOBAL VARIABLES
@@ -50,24 +46,8 @@ ArtistNotations = DB.Table(
 
 # ## CLASSES
 
-@dataclass
 class Artist(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    site_id: int
-    site_artist_id: int_or_none
-    current_site_account: str_or_none
-    site_created: date_time_or_null
-    site_accounts: List[lambda x: x['name']]
-    names: List[lambda x: x['name']]
-    profiles: List[lambda x: x['body']]
-    webpages: List[lambda x: remove_keys(x, ['artist_id'])]
-    active: bool
-    requery: date_time_or_null
-    created: datetime.datetime.isoformat
-    updated: datetime.datetime.isoformat
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -81,9 +61,9 @@ class Artist(JsonModel):
     updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
 
     # #### Relationships
-    site_accounts = DB.relationship(Label, secondary=ArtistSiteAccounts, lazy=True)
-    names = DB.relationship(Label, secondary=ArtistNames, lazy=True)
-    profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True)
+    _site_accounts = DB.relationship(Label, secondary=ArtistSiteAccounts, lazy=True)
+    _names = DB.relationship(Label, secondary=ArtistNames, lazy=True)
+    _profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True)
     illusts = DB.relationship(Illust, lazy=True, backref=DB.backref('artist', lazy=True), cascade="all, delete")
     webpages = DB.relationship(ArtistUrl, backref='artist', lazy=True, cascade="all, delete")
     notations = DB.relationship(Notation, secondary=ArtistNotations, lazy=True,
@@ -91,7 +71,9 @@ class Artist(JsonModel):
     # boorus <- Booru (MtM)
 
     # #### Association proxies
-    # TO-DO: Add names, site accounts, and profiles
+    site_accounts = association_proxy('_site_accounts', 'name')
+    names = association_proxy('_names', 'name')
+    profiles = association_proxy('_profiles', 'body')
 
     # ## Property methods
 
@@ -147,9 +129,9 @@ class Artist(JsonModel):
     # ## Methods
 
     def delete(self):
-        self.names.clear()
-        self.profiles.clear()
-        self.site_accounts.clear()
+        self._names.clear()
+        self._profiles.clear()
+        self._site_accounts.clear()
         DB.session.delete(self)
         DB.session.commit()
 
@@ -159,3 +141,4 @@ class Artist(JsonModel):
                         'created', 'updated', 'requery']
     relation_attributes = ['names', 'site_accounts', 'profiles', 'webpages', 'illusts', 'boorus']
     searchable_attributes = basic_attributes + relation_attributes
+    json_attributes = basic_attributes + ['site_accounts', 'names', 'webpages', 'profiles']

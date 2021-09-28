@@ -20,7 +20,7 @@
         <h4><u>Commentaries</u></h4>
         {% for illust in post.illusts %}
             <div class="post-commentaries-container"><strong>{{ illust.header }}:</strong>
-                {% call(commentary) items_block(illust.commentaries, 'commentaries', '<hr>') %}
+                {% call(commentary) items_block(illust._commentaries, '_commentaries', '<hr>') %}
                     <div class="post-commentaries-block">
                         {{ helpers.base.convert_to_html(commentary.body) }}
                     </div>

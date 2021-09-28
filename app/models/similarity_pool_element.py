@@ -1,8 +1,5 @@
 # APP/MODELS/SIMILARITY_POOL.PY
 
-# ## PYTHON IMPORTS
-from dataclasses import dataclass
-
 # ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
@@ -10,15 +7,8 @@ from .base import JsonModel
 
 # ## CLASSES
 
-@dataclass
 class SimilarityPoolElement(JsonModel):
     # ## Declarations
-
-    # #### JSON format
-    id: int
-    pool_id: int
-    post_id: int
-    score: float
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
@@ -30,6 +20,11 @@ class SimilarityPoolElement(JsonModel):
     # #### Relationships
     # pool <- SimilarityPool (MtO)
     # sibling <- SimilarityPoolElement (OtO)
+
+    # ## Class properties
+
+    basic_attributes = ['id', 'pool_id', 'sibling_id', 'post_id', 'score']
+    json_attributes = basic_attributes
 
 
 # ## INITIALIZATION

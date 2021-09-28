@@ -4,30 +4,28 @@
 from ... import SESSION
 from ...models import Booru, Label
 from ..utility import get_current_time
-from .base_db import update_column_attributes, update_relationship_collections
+from .base_db import update_column_attributes, update_relationship_collections, set_association_attributes
 
 
 # ##GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['danbooru_id', 'current_name']
-UPDATE_SCALAR_RELATIONSHIPS = [('names', 'name', Label)]
+UPDATE_SCALAR_RELATIONSHIPS = [('_names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = []
+ASSOCIATION_ATTRIBUTES = ['names']
 
-CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'names']
-UPDATE_ALLOWED_ATTRIBUTES = ['current_name', 'names']
+CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', '_names']
+UPDATE_ALLOWED_ATTRIBUTES = ['current_name', '_names']
 
 
 # ## FUNCTIONS
 
 # #### Helper functions
 
-
 def set_all_names(params, booru):
-    if 'current_name' in params:
-        if booru is not None:
-            params['names'] = params['names'] if 'names' in params else [booru_name.name for booru_name in booru.names]
-        else:
-            params['names'] = params['names'] if 'names' in params else []
+    if 'current_name' in params and params['current_name']:
+        booru_names = list(booru.names) if booru is not None else []
+        params['names'] = params['names'] if 'names' in params else booru_names
         params['names'] = list(set(params['names'] + [params['current_name']]))
 
 
@@ -35,10 +33,10 @@ def set_all_names(params, booru):
 
 # ###### Create
 
-
 def create_booru_from_parameters(createparams):
     current_time = get_current_time()
     set_all_names(createparams, None)
+    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
     booru = Booru(created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
@@ -51,10 +49,10 @@ def create_booru_from_parameters(createparams):
 
 # ###### Update
 
-
 def update_booru_from_parameters(booru, updateparams):
     update_results = []
     set_all_names(updateparams, booru)
+    set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(booru, update_columns, updateparams))
