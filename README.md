@@ -1,6 +1,6 @@
 # Prebooru
 
-Repository for downloading and storing artist data and images prior to being uploaded to a booru.
+Repository for downloading and storing artist data and images prior to being uploaded to a booru or for personal use.
 
 # Installation
 
@@ -14,25 +14,31 @@ Repository for downloading and storing artist data and images prior to being upl
 
     **Note:** This can be done in a virtual Python environment in order to keep this install from conflicting with other projects.
 
-3. Setup the local config file.
+3. Setup the configuration.
 
-    Using the `app\default_config.py` as a reference, create `app\local_config.py` with the configuration specific to the user and machine.
+    - A. Create a local config file.
 
-    **Note:** The`default_config.py` is tracked by Git, but if that is not a concern, then it can be modified directly instead.
+      Using the `app\default_config.py` as a reference, create `app\local_config.py` with the configuration specific to the user and machine.
+
+      **Note:** The`default_config.py` is tracked by Git, but if that is not a concern, then it can be modified directly instead.
+
+    - B. Set environment variables.
+
+        Configuration can also be set via environment variables. Refer to `app\config.py` for the list of configuration variables currently suppported.
 
 4. Initialize the database.
 
     `prebooru.py init`
 
-5. Start all of the servers.
+5. Start the server.
 
-    `server.py startall`
+    `prebooru.py server`
 
 6. Install FFMPEG binaries (optional)
 
-Go to https://www.gyan.dev/ffmpeg/builds/ and download `ffmpeg-git-essentials.7z`. Copy the `ffprobe.exe` to the root directory.
+    Go to https://www.gyan.dev/ffmpeg/builds/ and download `ffmpeg-git-essentials.7z`. Copy the `ffprobe.exe` to the root directory.
 
-This allows the downloader to verify the dimensions and streams of MP4 videos before saving them to disk.
+    This allows the downloader to verify the dimensions and streams of MP4 videos before saving them to disk.
 
 # Supported sites
 
@@ -51,7 +57,7 @@ Prebooru has two landing pages which support uploading directly with a source UR
 
 ## All
 
-Will upload all images from the site post.
+Will upload all images from a site post.
 
 ```
 javascript:window.open('http://127.0.0.1:5000/uploads/all?upload[request_url]='+encodeURIComponent(location.href),'_blank');false;
@@ -59,7 +65,7 @@ javascript:window.open('http://127.0.0.1:5000/uploads/all?upload[request_url]='+
 
 ## Select
 
-Will go to a page with all of the preview images from the post displayed, allowing one to select which images to upload from the site post.
+Will go to a page with all of the preview images from a site post displayed, allowing one to select which images to upload.
 
 ```
 javascript:window.open('http://127.0.0.1:5000/uploads/select?upload[request_url]='+encodeURIComponent(location.href),'_blank');false;
@@ -72,6 +78,7 @@ As the application gets developed, the database schema may get adjusted as neede
 1. Set the necessary environment variables
 
     `set FLASK_APP=prebooru`
+
     `set FLASK_ENV=development`
 
     Setting these allows one to use the `flask` command with the application, which is how the database commands are accessed.
@@ -96,7 +103,7 @@ An example batch file is present under the **misc\\** folder for backing up the 
 
 ### `initialize.bat`
 
-A batch file for quickly setting the environment variables necessary to use the `flask` command from the command line.
+A batch file for quickly setting the environment variables necessary to use the `flask` command from the command line. By default it sets the environment to `production`. To set the environment to `development` call the batch file with the argument `development`.
 
 # External resources
 
@@ -152,15 +159,31 @@ There is a branch of NTISAS under development which adds support for uploading a
 7. Generalized query parameter which would use query arguments parameterized by logical operators instead of being hamstrung by URL arguments.
 8. Add automatic artist webpage URL unshortening.
 9. Pool elements, similarity pool elements, similarity pools, similarity data index page(s).
-10. Drop unused columns or those used mostly for testing.
+10. Drop unused columns or those used mostly for testing. (\*\*PARTIALLY DONE\*\*)
 11. Server status page and ping functions.
 12. Network upload link for unuploaded illust URLs.
-13. Add series column and navigation to pools.
-14. Add full URL to illust URL JSON.
+13. Add series column and navigation to pools. (\*\*DONE\*\*)
+14. Add full URL to illust URL JSON. (\*\*DONE\*\*)
 15. Subscribe to artists.
     - Mandator recheck interval.
     - Optional expiration, with either hard deletion or archiving.
     - Posts created with subscriptions will be segregated from those created via user interaction.
 16. Archive posts/illusts/artists.
+17. Add `parent_id` and `updated` column to posts.
+   - To allow parent/child relationships.
+18. On uploads select, have an asynchronous process download all of the images.
+    - Currently the user is forced to wait until all of the previews have been downloaded.
+19. Have pagination for uploads/illusts, since some Pixiv artworks can have well over 10 images.
+20. Add `banned` column to boorus which will match the artist's status on Danbooru.
+21. Backup/export/import the DB from the script itself.
+22. Add delete method to more types.
+    - Save JSON of data in a separate table when this is done to allow for delete operations to be undone.
+    - Have a configuratble expiration time for when the data will be purged, to include immediate or never.
+23. Add support for Pixiv ugoiras.
+24. Use video container for MP4 videos and run them in a loop.
+25. Add helper script to generate NTISAS/NPISAS import files to quickly populate the data.
+26. Add include and only parameters for json endpoints.
+    - Includes will chain include relationship models.
+    - Only will limit the values returned.
 
 *And much, much, more...*
