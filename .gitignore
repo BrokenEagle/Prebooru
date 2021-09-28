@@ -4,16 +4,13 @@ __pycache__/
 *$py.class
 
 app/local_config.py
-old/
 db/
 temp/
 junk/
 ffprobe.exe
 sqlite3.exe
-prebooru-install/
-/pythonsave.bat
-/projectsave.bat
 /databasesave.bat
 /datasave.bat
 /datasave.log
-/datasave.sql
+
+# For local ignores, add lines to /.git/info/exclude
