@@ -146,4 +146,7 @@ class Illust(JsonModel):
 # ## INITIALIZATION
 
 def initialize():
+    from .artist import Artist
+    # Access the opposite side of the relationship to force the back reference to be generated
+    Artist.illusts.property._configure_started
     Illust.set_relation_properties()

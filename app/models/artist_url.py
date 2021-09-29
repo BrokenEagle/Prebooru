@@ -27,4 +27,7 @@ class ArtistUrl(JsonModel):
 # ## INITIALIZATION
 
 def initialize():
+    from .artist import Artist
+    # Access the opposite side of the relationship to force the back reference to be generated
+    Artist.webpages.property._configure_started
     ArtistUrl.set_relation_properties()
