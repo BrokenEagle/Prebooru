@@ -46,6 +46,8 @@ NAMING_CONVENTION = {
 
 SERVER_INFO = SimpleNamespace(addr="127.0.0.1")
 
+MAIN_PROCESS = False
+
 
 # ## FUNCTIONS
 
@@ -129,9 +131,6 @@ event.listen(DB.engine, 'connect', _fk_pragma_on_connect)
 event.listen(SCHEDULER_JOBSTORES.engine, 'connect', _fk_pragma_on_connect)
 
 PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
-
-# Scheduled tasks must be added only after everything else has been initialized
-from .logical.tasks import schedule  # noqa: E402, F401
 
 # #### Extend Python imports
 query_extensions.initialize()
