@@ -119,7 +119,7 @@ def check_all_boorus_task():
         return
     printer = buffered_print("Check All Boorus")
     printer("PID:", os.getpid())
-    check_all_boorus(printer=printer)
+    check_all_boorus()
     printer.print()
     _free_db_semaphore('check_all_boorus')
 
