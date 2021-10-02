@@ -1,12 +1,17 @@
 {% from 'posts/_macros.html' import post_preview, multi_post_preview %}
 {% from 'notations/_macros.html' import notations_list %}
 
-{% macro item_list(items, link_key) -%}
+{% macro pool_item_list(items, link_key) -%}
     <ul>
+        {% set seenlist = [] %}
         {% for item in items  %}
+            {% if (item[link_key]) in seenlist %}
+                {% continue %}
+            {% endif %}
             <li>
                 <span class="thin-list">{{ item[link_key] }}</span>
             </li>
+            {% do seenlist.append(item[link_key]) %}
         {% endfor %}
     </ul>
 {%- endmacro %}
@@ -33,15 +38,15 @@
             <div class="pool-artist-block">
                 <strong>{{ 'Artist' if item.model_name == 'illust' else 'Artists' }}:</strong><br>
                 {% if item.model_name == 'post' %}
-                    {{ item_list(item.illusts, 'artist_show_link') }}
+                    {{ pool_item_list(item.illusts, 'artist_show_link') }}
                 {% elif item.model_name == 'illust' %}
-                    {{ item_list([item], 'artist_show_link') }}
+                    {{ pool_item_list([item], 'artist_show_link') }}
                 {% endif %}
             </div>
             {% if item.model_name == 'post' %}
                 <div class="pool-illust-block">
                     <strong>Illusts:</strong>
-                    {{ item_list(item.illust_urls, 'illust_show_link') }}
+                    {{ pool_item_list(item.illust_urls, 'illust_show_link') }}
                 </div>
             {% endif %}
         </div>
