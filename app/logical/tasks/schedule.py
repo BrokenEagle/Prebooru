@@ -88,6 +88,7 @@ def initialize():
 
 
 if MAIN_PROCESS:
+    # Initialization must take place first, so that the job dictionary can be used to intialize tasks
     initialize()
 
 
