@@ -72,8 +72,6 @@ def check(include_posts):
     dataparams['url_string'] = '\r\n'.join(dataparams['urls'])
     similar_results = check_all_image_urls_similarity(dataparams['urls'], dataparams['score'],
                                                       dataparams['use_original'], include_posts)
-    if type(similar_results) is str:
-        return set_error(retdata, similar_results)
     retdata['similar_results'] = similar_results
     return retdata
 
@@ -109,7 +107,11 @@ def check_html():
         flash(results['message'], 'error')
         return render_template("similarity/check.html", similar_results=None, form=form)
     similar_results = []
-    for json_result in results['similar_results']:
+    for i in range(len(results['similar_results'])):
+        json_result = results['similar_results'][i]
+        if type(json_result) is str:
+            flash("%s - %s" % (json_result, results['data']['urls'][i]), 'error')
+            continue
         post_results = [SimpleNamespace(**post_result) for post_result in json_result['post_results']]
         del json_result['post_results']
         similarity_result = SimpleNamespace(post_results=post_results, **json_result)
