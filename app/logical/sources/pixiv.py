@@ -57,14 +57,15 @@ USERS_RG = re.compile(r"""
 """, re.X | re.IGNORECASE)
 
 IMAGE_RG = re.compile(r"""
-^https?://[^.]+\.pximg\.net             # Hostname
-(?:/c/\w+)?                             # Size 1
-/img-(?:original|master)/img            # Path
-/(\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2})  # Date
-/(\d+)_                                 # ID
-p(\d+)                                  # Order
-(?:_(?:master|square)1200)?             # Size 2
-\.(jpg|png|gif|mp4|zip)                 # Extension
+^https?://[^.]+\.pximg\.net                 # Hostname
+(?:/c/\w+)?                                 # Size 1
+/(?:img-original|img-master|custom-thumb)   # Path
+/img
+/(\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2})      # Date
+/(\d+)_                                     # ID
+p(\d+)                                      # Order
+(?:_(?:master|square|custom)1200)?          # Size 2
+\.(jpg|png|gif|mp4|zip)                     # Extension
 """, re.X | re.IGNORECASE)
 
 
