@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import os
+import random
 import datetime
 
 # ## LOCAL IMPORTS
@@ -79,8 +80,13 @@ def initialize():
     for key in JOB_CONFIG:
         if key == 'check_jobs_run_time':
             continue
-        if key in times and times[key] > datetime.datetime.now():
-            JOB_CONFIG[key]['next_run_time'] = times[key]
+        if key in times:
+            if times[key] > datetime.datetime.now():
+                JOB_CONFIG[key]['next_run_time'] = times[key]
+            else:
+                print("Task Scheduler - Missed job:", key)
+                next_run_time = max(JOB_CONFIG[key]['jitter'] * random.random(), JOB_LEEWAY[key])
+                JOB_CONFIG[key]['next_run_time'] = datetime.datetime.now() + datetime.timedelta(seconds=next_run_time)
         if key not in locks.keys():
             create_job_lock(key)
         else:
