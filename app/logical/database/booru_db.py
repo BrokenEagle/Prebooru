@@ -67,7 +67,7 @@ def update_booru_from_parameters(booru, updateparams):
 # #### Misc functions
 
 def booru_append_artist(booru, artist):
-    print("[%s]: Adding %s", (booru.shortlink, artist.shortlink))
+    print("[%s]: Adding %s" % (booru.shortlink, artist.shortlink))
     booru.artists.append(artist)
     booru.updated = get_current_time()
     SESSION.commit()
