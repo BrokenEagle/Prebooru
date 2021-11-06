@@ -8,6 +8,20 @@ import uuid
 import hashlib
 import datetime
 import pathlib
+import threading
+import traceback
+
+
+# ## CLASS
+
+class RepeatTimer(threading.Timer):
+    def run(self):
+        while not self.finished.wait(self.interval):
+            try:
+                self.function(*self.args, **self.kwargs)
+            except Exception as e:
+                print(repr(e))
+                traceback.print_tb(e.__traceback__)
 
 
 # ## FUNCTIONS
