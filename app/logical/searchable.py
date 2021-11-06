@@ -173,28 +173,25 @@ def relationship_attribute_filters(query, model, attribute, params):
 
 def numeric_filters(model, columnname, params):
     type = column_type(model, columnname)
-
-    def parser(value):
-        nonlocal type
-        return parse_cast(value, type)
-
     filters = ()
     if columnname in params:
         filters += (numeric_matching(model, columnname, params[columnname]),)
     if (columnname + '_not') in params:
         filters += (not_(numeric_matching(model, columnname, params[columnname + '_not'])),)
     if (columnname + '_eq') in params:
-        filters += (getattr(model, columnname) == parser(params[columnname + '_eq']),)
+        filters += (getattr(model, columnname) == parse_cast(params[columnname + '_eq'], type),)
     if (columnname + '_ne') in params:
-        filters += (getattr(model, columnname) != parser(params[columnname + '_ne']),)
+        filters += (getattr(model, columnname) != parse_cast(params[columnname + '_ne'], type),)
     if (columnname + '_gt') in params:
-        filters += (getattr(model, columnname) > parser(params[columnname + '_gt']),)
+        filters += (getattr(model, columnname) > parse_cast(params[columnname + '_gt'], type),)
     if (columnname + '_ge') in params:
-        filters += (getattr(model, columnname) >= parser(params[columnname + '_ge']),)
+        filters += (getattr(model, columnname) >= parse_cast(params[columnname + '_ge'], type),)
     if (columnname + '_lt') in params:
-        filters += (getattr(model, columnname) < parser(params[columnname + '_lt']),)
+        filters += (getattr(model, columnname) < parse_cast(params[columnname + '_lt'], type),)
     if (columnname + '_le') in params:
-        filters += (getattr(model, columnname) <= parser(params[columnname + '_le']),)
+        filters += (getattr(model, columnname) <= parse_cast(params[columnname + '_le'], type),)
+    if (columnname + '_exists') in params:
+        filters += (existence_matching(model, columnname, params[columnname + '_exists']),)
     return filters
 
 
@@ -209,7 +206,7 @@ def text_filters(model, columnname, params):
         param_key = columnname + '_' + cmp_type
         filters += (text_comparion_matching(model, columnname, params[param_key], cmp_type),)
     if (columnname + '_exists') in params:
-        filters += (text_existence_matching(model, columnname, params[columnname + '_exists']),)
+        filters += (existence_matching(model, columnname, params[columnname + '_exists']),)
     array_regex = re.compile(TEXT_ARRAY_RE % columnname)
     array_matches = [array_regex.match(key) for key in params.keys()]
     array_types = [match.group(1) for match in array_matches if match is not None]
@@ -298,7 +295,7 @@ def text_comparion_matching(model, columnname, value, cmp_type):
         return not_(getattr(model, columnname).regexp_match(value))
 
 
-def text_existence_matching(model, columnname, value):
+def existence_matching(model, columnname, value):
     if is_truthy(value):
         return getattr(model, columnname).__ne__(None)
     elif is_falsey(value):
