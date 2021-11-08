@@ -33,7 +33,7 @@
                         </div>
                         <div class="similar-post-controls">
                             <strong>{{ helpers.similarity_pool.sibling_pool_link(similarity_element) }}</strong>&nbsp;
-                            (&thinsp;{{ helpers.post.delete_similarity_element_link(similarity_element) }}&thinsp;)
+                            (&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element) }}&thinsp;)
                         </div>
                         {{ post_preview(similarity_element.post) }}
                         <div><strong>Score:</strong> {{ similarity_element.score }}</div>
