@@ -567,7 +567,8 @@ def get_graphql_timeline_entries(data, found_tweets):
             found_tweets.append(data[key])
         elif type(data[key]) is list:
             for i in range(len(data[key])):
-                found_tweets = get_graphql_timeline_entries(data[key][i], found_tweets)
+                if type(data[key][i]) is dict:
+                    found_tweets = get_graphql_timeline_entries(data[key][i], found_tweets)
         elif type(data[key]) is dict:
             found_tweets = get_graphql_timeline_entries(data[key], found_tweets)
     return found_tweets
