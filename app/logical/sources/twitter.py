@@ -584,17 +584,17 @@ def get_twitter_illust_timeline(illust_id):
     data = twitter_request("https://twitter.com/i/api/graphql/uvk82Jn4z84yUPI1rViRsg/TweetDetail?%s" % urladdons)
     try:
         if data['error']:
-            return create_error('logical.sources.twitter.GetTwitterTimelineIllust', data['message'])
+            return create_error('logical.sources.twitter.get_twitter_illust_timeline', data['message'])
         found_tweets = get_graphql_timeline_entries(data['body'], [])
     except Exception as e:
         put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         msg = "Error parsing Twitter data: %s" % str(e)
         return create_error('logical.sources.twitter.get_twitter_illust_timeline', msg)
     if len(found_tweets) == 0:
-        return create_error('logical.sources.twitter.GetTwitterTimelineIllust', "No tweets found in data.")
+        return create_error('logical.sources.twitter.get_twitter_illust_timeline', "No tweets found in data.")
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
     if illust_id_str not in tweet_ids:
-        return create_error('logical.sources.twitter.GetTwitterTimelineIllust', "Tweet not found: %d" % illust_id)
+        return create_error('logical.sources.twitter.get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
     return found_tweets
 
 
@@ -621,7 +621,7 @@ def get_twitter_user_id(account):
                   'UserByScreenNameWithoutResults?%s' % urladdons
     data = twitter_request(request_url)
     if data['error']:
-        return create_error('logical.sources.twitter.GetUserID', data['message'])
+        return create_error('logical.sources.twitter.get_user_id', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
 
 
