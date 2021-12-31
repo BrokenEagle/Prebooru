@@ -198,6 +198,7 @@ IMAGE_SERVER = 'https://pbs.twimg.com'
 TWITTER_SIZES = [':orig', ':large', ':medium', ':small']
 
 TOKEN_FILE = os.path.join(DATA_DIRECTORY, 'twittertoken.txt')
+ERROR_TWEET_FILE = os.path.join(DATA_DIRECTORY, 'twittererror.json')
 
 
 # ##FUNCTIONS
@@ -581,9 +582,14 @@ def get_twitter_illust_timeline(illust_id):
     jsondata['focalTweetId'] = illust_id_str
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     data = twitter_request("https://twitter.com/i/api/graphql/uvk82Jn4z84yUPI1rViRsg/TweetDetail?%s" % urladdons)
-    if data['error']:
-        return create_error('logical.sources.twitter.GetTwitterTimelineIllust', data['message'])
-    found_tweets = get_graphql_timeline_entries(data['body'], [])
+    try:
+        if data['error']:
+            return create_error('logical.sources.twitter.GetTwitterTimelineIllust', data['message'])
+        found_tweets = get_graphql_timeline_entries(data['body'], [])
+    except Exception as e:
+        put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
+        msg = "Error parsing Twitter data: %s" % str(e)
+        return create_error('logical.sources.twitter.get_twitter_illust_timeline', msg)
     if len(found_tweets) == 0:
         return create_error('logical.sources.twitter.GetTwitterTimelineIllust', "No tweets found in data.")
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
