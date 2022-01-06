@@ -58,7 +58,9 @@ def delete_notation(notation):
     SESSION.delete(notation)
     SESSION.commit()
     if pool is not None:
+        pool.updated = get_current_time()
         pool._elements.reorder()
+        pool.element_count = pool._get_element_count()
         SESSION.commit()
 
 
@@ -73,6 +75,10 @@ def append_notation_to_item(notation, append_key, dataparams):
         return {'error': True, 'message': msg}
     if table_name == 'pool':
         item.elements.append(notation)
+        item.updated = get_current_time()
+        SESSION.commit()
+        item.element_count = item._get_element_count()
+        SESSION.commit()
     else:
         item.notations.append(notation)
     SESSION.commit()
