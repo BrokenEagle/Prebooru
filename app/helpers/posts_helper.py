@@ -30,7 +30,8 @@ def similar_search_links(post, format_url, proxy_url=None):
     for i in range(0, len(post.illust_urls)):
         illust_url = post.illust_urls[i]
         illust = illust_url.illust
-        if not illust.active:
+        artist = illust.artist
+        if not illust.active or not artist.active:
             continue
         source = get_source_by_id(illust_url.site_id)
         media_url = source.get_media_url(illust_url)
@@ -73,7 +74,8 @@ def danbooru_post_bookmarklet_links(post):
     for i in range(0, len(post.illust_urls)):
         illust_url = post.illust_urls[i]
         illust = illust_url.illust
-        if not illust.active:
+        artist = illust.artist
+        if not illust.active or not artist.active:
             continue
         source = get_source_by_id(illust_url.site_id)
         media_url = source.get_media_url(illust_url)
