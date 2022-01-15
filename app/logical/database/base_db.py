@@ -5,6 +5,7 @@ import datetime
 
 # ## LOCAL IMPORTS
 from ... import SESSION
+from ..logger import log_error
 from ..utility import process_utc_timestring, safe_print
 
 
@@ -36,7 +37,7 @@ def update_column_attributes(item, attrs, dataparams):
     if item.id is None:
         SESSION.add(item)
     if is_dirty:
-        SESSION.commit()
+        _safe_db_commit(item, 'base_db.update_column_attributes', "Error on record create/update")
     return is_dirty
 
 
@@ -64,7 +65,7 @@ def update_relationship_collections(item, relationships, updateparams):
             collection.remove(remove_item)
             is_dirty = True
     if is_dirty:
-        SESSION.commit()
+        _safe_db_commit(item, 'base_db.update_relationship_collections', "Error on adding/removing collection values")
     return is_dirty
 
 
@@ -86,5 +87,19 @@ def append_relationship_collections(item, relationships, updateparams):
             collection.append(add_item)
             is_dirty = True
     if is_dirty:
-        SESSION.commit()
+        _safe_db_commit(item, 'base_db.append_relationship_collections', "Error on adding collection value")
     return is_dirty
+
+
+# #### Private functions
+
+def _safe_db_commit(item, func_name, message):
+    try:
+        SESSION.commit()
+    except Exception as e:
+        error_message = (message + ' : %s\n\t%s') % (e, str(item))
+        safe_print("\a%s : %s" % (func_name, error_message))
+        print("Unlocking the database...")
+        log_error(func_name, error_message)
+        SESSION.rollback()
+        raise
