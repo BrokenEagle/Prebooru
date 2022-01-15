@@ -28,5 +28,6 @@ def check_boorus(boorus):
         return False
     for data in results['artists']:
         booru = next(filter(lambda x: x.danbooru_id == data['id'], boorus))
-        update_booru_from_parameters(booru, {'current_name': data['name']})
+        updates = {'current_name': data['name'], 'deleted': data['is_deleted'], 'banned': data['is_banned']}
+        update_booru_from_parameters(booru, updates)
     return True

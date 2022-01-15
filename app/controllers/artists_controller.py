@@ -195,7 +195,13 @@ def query_booru(artist):
     for data in artist_data['artists']:
         booru = Booru.query.filter_by(danbooru_id=data['id']).first()
         if booru is None:
-            booru = create_booru_from_parameters({'danbooru_id': data['id'], 'current_name': data['name']})
+            params = {
+                'danbooru_id': data['id'],
+                'current_name': data['name'],
+                'banned': data['is_banned'],
+                'deleted': data['is_deleted'],
+                }
+            booru = create_booru_from_parameters(params)
         if booru.id not in existing_booru_ids:
             artist_append_booru(artist, booru)
     return {'error': False, 'artist': artist, 'boorus': artist.boorus}

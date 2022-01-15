@@ -5,6 +5,8 @@
             <ul>
                 <li><span class="heading">{{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span></li>
                 <li><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</li>
+                <li><strong>Banned:</strong> {{ booru.banned | tojson }}</li>
+                <li><strong>Deleted:</strong> {{ booru.deleted | tojson }}</li>
             </ul>
         </section>
         <section id="booru-names">

@@ -37,7 +37,7 @@ def danbooru_request(url, params=None, long=False):
 
 
 def get_artist_by_id(id, include_urls=False):
-    params = {'only': 'name,urls'} if include_urls else None
+    params = {'only': 'name,urls,is_banned,is_deleted'} if include_urls else None
     request_url = '/artists/%d.json' % id
     data = danbooru_request(request_url, params)
     if data['error']:

@@ -55,9 +55,14 @@ def check_artists_for_boorus(artists):
 
 def add_danbooru_artists(url, danbooru_artists, db_boorus, db_artists):
     artist = next(filter(lambda x: x.booru_search_url == url, db_artists))
-    for danbooru_artist in danbooru_artists:
-        booru = next(filter(lambda x: x.danbooru_id == danbooru_artist['id'], db_boorus), None)
+    for data in danbooru_artists:
+        booru = next(filter(lambda x: x.danbooru_id == data['id'], db_boorus), None)
         if booru is None:
-            params = {'danbooru_id': danbooru_artist['id'], 'current_name': danbooru_artist['name']}
+            params = {
+                'danbooru_id': data['id'],
+                'current_name': data['name'],
+                'banned': data['is_banned'],
+                'deleted': data['is_deleted'],
+                }
             booru = create_booru_from_parameters(params)
         booru_append_artist(booru, artist)

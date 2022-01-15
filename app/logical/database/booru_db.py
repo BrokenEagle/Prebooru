@@ -9,13 +9,13 @@ from .base_db import update_column_attributes, update_relationship_collections, 
 
 # ##GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['danbooru_id', 'current_name']
+COLUMN_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted']
 UPDATE_SCALAR_RELATIONSHIPS = [('_names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = []
 ASSOCIATION_ATTRIBUTES = ['names']
 
-CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', '_names']
-UPDATE_ALLOWED_ATTRIBUTES = ['current_name', '_names']
+CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
+UPDATE_ALLOWED_ATTRIBUTES = ['current_name', 'banned', 'deleted', '_names']
 
 
 # ## FUNCTIONS

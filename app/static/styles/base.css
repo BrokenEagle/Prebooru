@@ -216,6 +216,17 @@ div#image-select-controls {
     font-size: 20px;
     margin-top: 1em;
 }
+li.booru-banned,
+li.booru-deleted {
+    border: 2px solid;
+    padding: 5px;
+}
+li.booru-banned {
+    border-color: red;
+}
+li.booru-deleted {
+    border-color: black;
+}
 div.paginator {
     display: flex;
     align-items: center;

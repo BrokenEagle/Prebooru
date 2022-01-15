@@ -38,6 +38,8 @@ class Booru(JsonModel):
     id = DB.Column(DB.Integer, primary_key=True)
     danbooru_id = DB.Column(DB.Integer, nullable=False)
     current_name = DB.Column(DB.String(255), nullable=False)
+    banned = DB.Column(DB.Boolean, nullable=False)
+    deleted = DB.Column(DB.Boolean, nullable=False)
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
     updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
 

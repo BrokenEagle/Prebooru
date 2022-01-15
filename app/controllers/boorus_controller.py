@@ -3,7 +3,7 @@
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy.orm import selectinload
-from wtforms import TextAreaField, IntegerField, StringField
+from wtforms import TextAreaField, IntegerField, StringField, BooleanField
 from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
@@ -13,7 +13,8 @@ from ..logical.records.booru_rec import create_booru_from_source, update_booru_f
     update_booru_artists_from_source
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, get_data_params, set_error,\
-    check_param_requirements, nullify_blanks, CustomNameForm, parse_array_parameter
+    check_param_requirements, nullify_blanks, CustomNameForm, parse_array_parameter, parse_bool_parameter,\
+    set_default
 
 
 # ## GLOBAL VARIABLES
@@ -21,7 +22,7 @@ from .base_controller import show_json_response, index_json_response, search_fil
 bp = Blueprint("booru", __name__)
 
 
-CREATE_REQUIRED_PARAMS = ['danbooru_id', 'current_name']
+CREATE_REQUIRED_PARAMS = ['danbooru_id', 'current_name', 'deleted', 'banned']
 VALUES_MAP = {
     'names': 'names',
     'name_string': 'names',
@@ -55,6 +56,10 @@ def get_booru_form(**kwargs):
                                    validators=[DataRequired()])
         current_name = StringField('Current Name', id='booru-current-name', custom_name='booru[current_name]',
                                    validators=[DataRequired()])
+        banned = BooleanField('Banned', id='booru-banned', custom_name='booru[banned]',
+                              validators=[DataRequired()])
+        deleted = BooleanField('Deleted', id='booru-deleted', custom_name='booru[deleted]',
+                               validators=[DataRequired()])
         name_string = TextAreaField('Names', id='booru-name-string', custom_name='booru[name_string]',
                                     description="Separated by whitespace.")
     return BooruForm(**kwargs)
@@ -74,12 +79,17 @@ def convert_data_params(dataparams):
     params = get_booru_form(**dataparams).data
     params['names'] = [name.lower() for name in parse_array_parameter(dataparams, 'names', 'name_string', r'\s')]
     params['current_name'] = params['current_name'].lower()
+    params['banned'] = parse_bool_parameter(dataparams, 'banned')
+    params['deleted'] = parse_bool_parameter(dataparams, 'deleted')
     params = nullify_blanks(params)
     return params
 
 
 def convert_create_params(dataparams):
-    return convert_data_params(dataparams)
+    createparams = convert_data_params(dataparams)
+    set_default(createparams, 'banned', False)
+    set_default(createparams, 'deleted', False)
+    return createparams
 
 
 def convert_update_params(dataparams):
