@@ -9,7 +9,7 @@ from ..logger import log_error
 from ..utility import process_utc_timestring, safe_print
 
 
-# ##GLOBAL VARIABLES
+# ## FUNCTIONS
 
 def set_timesvalue(params, key):
     if key in params:
