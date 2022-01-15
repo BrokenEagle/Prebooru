@@ -217,6 +217,10 @@ def has_error_messages(messages):
     return any((category, message) for (category, message) in messages if category == 'error')
 
 
+def break_period(text):
+    return Markup(text.replace('.', '.<wbr>'))
+
+
 # #### Private functions
 
 def _is_field(form, attr):
