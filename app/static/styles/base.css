@@ -217,14 +217,16 @@ div#image-select-controls {
     margin-top: 1em;
 }
 li.booru-banned,
-li.booru-deleted {
+li.booru-deleted,
+li.artist-deleted {
     border: 2px solid;
     padding: 5px;
 }
 li.booru-banned {
     border-color: red;
 }
-li.booru-deleted {
+li.booru-deleted,
+li.artist-deleted {
     border-color: black;
 }
 div.paginator {
