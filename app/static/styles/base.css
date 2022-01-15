@@ -136,6 +136,10 @@ li.listless-item {
     list-style-type: none;
     margin-left: -1.05em;
 }
+li.hanging-indent {
+    text-indent: -1em;
+    padding-left: 1em;
+}
 div#notice {
     position: fixed;
     top: 1em;
