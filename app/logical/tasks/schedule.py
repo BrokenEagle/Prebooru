@@ -2,17 +2,20 @@
 
 # ## PYTHON IMPORTS
 import os
+import re
 import atexit
 
 # ## LOCAL IMPORTS
 from ... import DB, SCHEDULER, MAIN_PROCESS
+from ...models.media_file import CACHE_DATA_DIRECTORY
 from ..utility import buffered_print, RepeatTimer
+from ..file import get_directory_listing, delete_file
 from ..check.boorus import check_all_boorus
 from ..check.posts import check_all_posts_for_danbooru_id
 from ..check.booru_artists import check_all_artists_for_boorus
 from ..records.media_file_rec import batch_delete_media
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
-from ..database.media_file_db import get_expired_media_files
+from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.jobs_db import update_job_lock_status, get_job_lock_status
 from .initialize import initialize_scheduler, recheck_schedule_interval
 
@@ -39,6 +42,11 @@ JOB_CONFIG = {
         'days': 1,
         'jitter': 3600,
     },
+    'delete_orphan_images': {
+        'id': 'delete_orphan_images',
+        'weeks': 1,
+        'jitter': 3600,
+    },
     'vacuum_analyze_database': {
         'id': 'vacuum_analyze_database',
         'weeks': 1,
@@ -51,6 +59,7 @@ JOB_LEEWAY = {
     'check_all_boorus': 300,
     'check_all_artists_for_boorus': 300,
     'check_all_posts_for_danbooru_id': 300,
+    'delete_orphan_images': 300,
     'vacuum_analyze_database': 300,
 }
 
@@ -122,6 +131,30 @@ def check_all_posts_for_danbooru_id_task():
     check_all_posts_for_danbooru_id()
     printer.print()
     _free_db_semaphore('check_all_posts_for_danbooru_id')
+
+
+@SCHEDULER.task("interval", **JOB_CONFIG['delete_orphan_images'])
+def delete_orphan_images_task():
+    if not _set_db_semaphore('delete_orphan_images'):
+        print("Task scheduler - Delete Orphan Images: already running")
+        return
+    printer = buffered_print("Delete Orphan Images")
+    printer("PID:", os.getpid())
+    dir_listing = get_directory_listing(CACHE_DATA_DIRECTORY)
+    dir_md5s = [re.match(r'[0-9a-f]+', x).group(0) for x in dir_listing if re.match(r'[0-9a-f]+\.(jpg|png|gif)', x)]
+    cache_md5s = [item.md5 for item in get_all_media_files()]
+    bad_md5s = set(dir_md5s).difference(cache_md5s)
+    files_deleted = 0
+    for filename in dir_listing:
+        match = re.match(r'[0-9a-f]+', filename)
+        if not match or match.group(0) not in bad_md5s:
+            continue
+        print("Deleting file:", filename)
+        delete_file(os.path.join(CACHE_DATA_DIRECTORY, filename))
+        files_deleted += 1
+    printer("Files deleted:", files_deleted)
+    printer.print()
+    _free_db_semaphore('delete_orphan_images')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['vacuum_analyze_database'])

@@ -11,6 +11,14 @@ from .utility import get_directory_path, decode_unicode, decode_json
 
 # ##FUNCTIONS
 
+def get_directory_listing(directory):
+    try:
+        return [filename for filename in next(os.walk(directory))[2]]
+    except Exception as e:
+        print("Error with directory listing:", directory, e)
+        raise
+
+
 def create_directory(filepath):
     """Create the directory path if it doesn't already exist"""
     directory = get_directory_path(filepath)

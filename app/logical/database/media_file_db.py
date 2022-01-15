@@ -46,6 +46,10 @@ def batch_delete_media_files(media_files):
 
 # #### Query functions
 
+def get_all_media_files():
+    return MediaFile.query.all()
+
+
 def get_expired_media_files():
     return MediaFile.query.filter(MediaFile.expires < get_current_time()).all()
 
