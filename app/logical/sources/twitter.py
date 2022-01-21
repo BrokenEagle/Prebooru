@@ -12,7 +12,7 @@ import datetime
 import requests
 
 # ## LOCAL IMPORTS
-from ...config import DATA_DIRECTORY
+from ...config import DATA_DIRECTORY, DEBUG_MODE
 from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, decode_json, fixup_crlf
 from ..file import load_default, put_get_json
 from ..database.error_db import create_error, is_error
@@ -587,13 +587,18 @@ def get_twitter_illust_timeline(illust_id):
             return create_error('logical.sources.twitter.get_twitter_illust_timeline', data['message'])
         found_tweets = get_graphql_timeline_entries(data['body'], [])
     except Exception as e:
-        put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
+        if DEBUG_MODE:
+            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         msg = "Error parsing Twitter data: %s" % str(e)
         return create_error('logical.sources.twitter.get_twitter_illust_timeline', msg)
     if len(found_tweets) == 0:
+        if DEBUG_MODE:
+            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         return create_error('logical.sources.twitter.get_twitter_illust_timeline', "No tweets found in data.")
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
     if illust_id_str not in tweet_ids:
+        if DEBUG_MODE:
+            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         return create_error('logical.sources.twitter.get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
     return found_tweets
 
