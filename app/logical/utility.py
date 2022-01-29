@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import logging
+import os
 import re
 import json
 import uuid
@@ -231,3 +232,8 @@ def set_error(retdata, message):
 
 def fixup_crlf(text):
     return re.sub(r'(?<!\r)\n', '\r\n', text)
+
+
+def get_environment_variable(key, default, parser=str):
+    value = os.environ.get(key)
+    return default if value is None else parser(value)
