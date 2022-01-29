@@ -11,6 +11,7 @@ from ..database.archive_data_db import process_archive_data, ARCHIVE_DATA_DIRECT
 from .post_rec import reinstantiate_archived_post, relink_archived_post
 from .illust_rec import recreate_archived_illust, relink_archived_illust
 from .artist_rec import recreate_archived_artist, relink_archived_artist
+from .booru_rec import recreate_archived_booru
 
 
 # ## FUNCTIONS
@@ -25,6 +26,8 @@ def reinstantiate_archive_data_item(archive_data):
         return recreate_archived_illust(data)
     elif archive_data.type == 'artist':
         return recreate_archived_artist(data)
+    elif archive_data.type == 'booru':
+        return recreate_archived_booru(data)
     else:
         return set_error(retdata, "Recreating %s not handled yet." % archive_data.type)
 

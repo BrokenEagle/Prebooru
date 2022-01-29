@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired
 from ..models import Booru
 from ..logical.database.booru_db import create_booru_from_parameters, update_booru_from_parameters
 from ..logical.records.booru_rec import create_booru_from_source, update_booru_from_source,\
-    update_booru_artists_from_source
+    update_booru_artists_from_source, archive_booru_for_deletion
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, get_data_params, set_error,\
     check_param_requirements, nullify_blanks, CustomNameForm, parse_array_parameter, parse_bool_parameter,\
@@ -235,6 +235,19 @@ def update_json(id):
     if type(booru) is dict:
         return booru
     return update(booru)
+
+
+# ###### DELETE
+
+@bp.route('/boorus/<int:id>', methods=['DELETE'])
+def delete_html(id):
+    booru = get_or_abort(Booru, id)
+    results = archive_booru_for_deletion(booru)
+    if results['error']:
+        flash(results['message'], 'error')
+        return redirect(request.referrer)
+    flash("Booru deleted.")
+    return redirect(url_for('booru.index_html'))
 
 
 # ###### MISC

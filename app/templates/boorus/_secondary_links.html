@@ -8,5 +8,6 @@
     {% if booru.id != None %}
         {{ subnav_link_to("Show", 'booru.show_html', id=booru.id) }}
         {{ subnav_link_to("Edit", 'booru.edit_html', id=booru.id) }}
+        {{ subnav_link_to("Delete", 'booru.delete_html', id=booru.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
     {% endif %}
 </menu>

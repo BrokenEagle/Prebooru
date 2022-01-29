@@ -12,7 +12,9 @@ from .base_db import update_column_attributes, update_relationship_collections, 
 COLUMN_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted']
 UPDATE_SCALAR_RELATIONSHIPS = [('_names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = []
+RECREATE_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['names']
+NORMALIZED_ASSOCIATE_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
 
 CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
 UPDATE_ALLOWED_ATTRIBUTES = ['current_name', 'banned', 'deleted', '_names']
@@ -47,6 +49,18 @@ def create_booru_from_parameters(createparams):
     return booru
 
 
+def create_booru_from_raw_parameters(createparams):
+    booru = Booru()
+    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
+    update_columns = set(createparams.keys()).intersection(Booru.all_columns)
+    update_column_attributes(booru, update_columns, createparams)
+    settable_keylist = set(createparams.keys()).intersection(NORMALIZED_ASSOCIATE_ATTRIBUTES)
+    create_relationships = [rel for rel in RECREATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
+    update_relationship_collections(booru, create_relationships, createparams)
+    print("[%s]: created" % booru.shortlink)
+    return booru
+
+
 # ###### Update
 
 def update_booru_from_parameters(booru, updateparams):
@@ -64,6 +78,13 @@ def update_booru_from_parameters(booru, updateparams):
         SESSION.commit()
 
 
+# ###### Delete
+
+def delete_booru(booru):
+    SESSION.delete(booru)
+    SESSION.commit()
+
+
 # #### Misc functions
 
 def booru_append_artist(booru, artist):
@@ -71,3 +92,9 @@ def booru_append_artist(booru, artist):
     booru.artists.append(artist)
     booru.updated = get_current_time()
     SESSION.commit()
+
+
+# #### Query functions
+
+def get_booru(danbooru_id):
+    return Booru.query.filter_by(danbooru_id=danbooru_id).first()
