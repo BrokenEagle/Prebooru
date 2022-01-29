@@ -38,6 +38,14 @@ def create_notation_from_parameters(createparams):
     return notation
 
 
+def create_notation_from_raw_parameters(createparams):
+    notation = Notation()
+    update_columns = set(createparams.keys()).intersection(Notation.archive_columns)
+    update_column_attributes(notation, update_columns, createparams)
+    print("[%s]: created" % notation.shortlink)
+    return notation
+
+
 # ###### Update
 
 def update_notation_from_parameters(notation, updateparams):
