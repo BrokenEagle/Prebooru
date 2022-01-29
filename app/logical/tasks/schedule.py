@@ -16,6 +16,7 @@ from ..check.booru_artists import check_all_artists_for_boorus
 from ..records.media_file_rec import batch_delete_media
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
+from ..database.archive_data_db import expired_archive_data_count, delete_expired_archive_data
 from ..database.jobs_db import update_job_lock_status, get_job_lock_status
 from .initialize import initialize_scheduler, recheck_schedule_interval
 
@@ -26,6 +27,11 @@ JOB_CONFIG = {
         'id': 'expunge_cache_records',
         'hours': 1,
         'jitter': 300,
+    },
+    'expunge_archive_records': {
+        'id': 'expunge_archive_records',
+        'hours': 12,
+        'jitter': 3600,
     },
     'check_all_boorus': {
         'id': 'check_all_boorus',
@@ -56,6 +62,7 @@ JOB_CONFIG = {
 
 JOB_LEEWAY = {
     'expunge_cache_records': 60,
+    'expunge_archive_records': 180,
     'check_all_boorus': 300,
     'check_all_artists_for_boorus': 300,
     'check_all_posts_for_danbooru_id': 300,
@@ -95,6 +102,21 @@ def expunge_cache_records_task():
         batch_delete_media(expired_media_records)
     printer.print()
     _free_db_semaphore('expunge_cache_records')
+
+
+@SCHEDULER.task("interval", **JOB_CONFIG['expunge_archive_records'])
+def expunge_archive_records_task():
+    if not _set_db_semaphore('expunge_archive_records'):
+        print("Task scheduler - Expunge Archive Records: already running")
+        return
+    printer = buffered_print("Expunge Archive Records")
+    printer("PID:", os.getpid())
+    archive_delete_count = expired_archive_data_count()
+    printer("API data records to delete:", archive_delete_count)
+    if archive_delete_count > 0:
+        delete_expired_archive_data()
+    printer.print()
+    _free_db_semaphore('expunge_archive_records')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_boorus'])
