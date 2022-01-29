@@ -108,6 +108,12 @@ code {
     font-family: monospace;
     background-color: lightgrey;
 }
+div.json-data {
+    white-space: pre;
+    font-family: monospace;
+    background-color: #EEE;
+    padding: 5px;
+}
 div.form-heading {
     font-size: 28px;
     margin-top: 1em;

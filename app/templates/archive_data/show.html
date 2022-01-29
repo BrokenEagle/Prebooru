@@ -1,0 +1,15 @@
+{% extends 'archive_data/_base.html' %}
+
+{% block title %}{{ archive_datum.header }}{% endblock %}
+
+{% block content %}
+    <div id="archive_data-heading" class="heading">{{ archive_datum.header }}</div>
+    <div id="archive_data-content">
+        <ul>
+            <li><strong>Type:</strong> {{ archive_datum.type | title }}</li>
+            <li><strong>Data Key:</strong> {{ archive_datum.data_key }}</li>
+            <li><strong>Expires:</strong> {{ helpers.base.format_timestamp(archive_datum.expires) }}</li>
+            <li><strong>Data:</strong><br><div class="json-data">{{ archive_datum.data | tojson(indent=4) }}</div></li>
+        </ul>
+    </div>
+{% endblock %}

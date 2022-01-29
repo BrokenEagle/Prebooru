@@ -25,6 +25,7 @@ from . import notations_controller as notation  # noqa: F401
 from . import errors_controller as error  # noqa: F401
 
 # #### Other DB data
+from . import archive_data_controller as archive_data  # noqa: F401
 from . import similarity_controller as similarity  # noqa: F401
 from . import similarity_pools_controller as similarity_pool  # noqa: F401
 from . import similarity_pool_elements_controller as similarity_pool_element  # noqa: F401

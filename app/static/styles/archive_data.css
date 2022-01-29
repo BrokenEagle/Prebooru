@@ -1,0 +1,14 @@
+/****SHOW Page****/
+div#archive-data-heading {
+    font-size: 28px;
+    margin-top: 1em;
+}
+div#archive-data-content {
+    font-size: 16px;
+    margin-top: 1em;
+}
+/****INDEX Page****/
+div.json-data {
+    max-width: 60em;
+    overflow-x: auto;
+}
