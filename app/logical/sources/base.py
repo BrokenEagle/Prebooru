@@ -103,6 +103,13 @@ def get_illust_required_params(url):
     return retdata
 
 
+def get_illust_url_params(media_url):
+    source = get_media_source(media_url)
+    site_id = get_image_site_id(media_url)
+    partial_url = source.partial_media_url(media_url)
+    return site_id, partial_url
+
+
 # #### Other
 
 def get_preview_url(url, site_id):

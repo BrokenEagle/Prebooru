@@ -15,6 +15,8 @@ UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'url', 'width', 'height', 'order', 'acti
 
 # ## FUNCTIONS
 
+# #### Create
+
 def create_illust_url_from_parameters(createparams):
     illust_url = IllustUrl()
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
@@ -24,8 +26,21 @@ def create_illust_url_from_parameters(createparams):
     return illust_url
 
 
+# #### Update
+
 def update_illust_url_from_parameters(illust_url, updateparams):
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     if update_column_attributes(illust_url, update_columns, updateparams):
         print("[%s]: updated" % illust_url.shortlink)
+
+
+# #### Query
+
+def get_illust_url_by_url(site_id=None, partial_url=None, full_url=None):
+    from ..sources.base import get_illust_url_params
+    if (site_id is None or partial_url is None):
+        if full_url is None:
+            return
+        site_id, partial_url = get_illust_url_params(full_url)
+    return IllustUrl.query.filter_by(site_id=site_id, url=partial_url).first()

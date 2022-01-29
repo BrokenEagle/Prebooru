@@ -9,5 +9,6 @@
     {% if illust.id != None %}
         {{ subnav_link_to("Show", 'illust.show_html', illust.id) }}
         {{ subnav_link_to("Edit", 'illust.edit_html', illust.id) }}
+        {{ subnav_link_to("Delete", 'illust.delete_html', id=illust.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
     {% endif %}
 </menu>

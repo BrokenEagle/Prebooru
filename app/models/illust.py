@@ -66,8 +66,8 @@ class Illust(JsonModel):
     site_data = DB.relationship(SiteData, lazy=True, uselist=False, cascade="all, delete")
     notations = DB.relationship(Notation, secondary=IllustNotations, lazy=True,
                                 backref=DB.backref('illust', uselist=False, lazy=True), cascade='all,delete')
-    _pools = DB.relationship(PoolIllust, lazy=True, backref=DB.backref('item', lazy=True, uselist=False),
-                             cascade='all,delete')
+    # Pool elements must be deleted individually, since pools will need to be reordered/recounted
+    _pools = DB.relationship(PoolIllust, lazy=True, backref=DB.backref('item', lazy=True, uselist=False))
     # artist <- Artist (OtO)
 
     # #### Association proxies

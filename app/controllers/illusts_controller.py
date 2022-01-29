@@ -11,7 +11,7 @@ from wtforms.validators import DataRequired
 from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
 from ..logical.utility import eval_bool_string, is_falsey
 from ..logical.sources.base import get_source_by_id, get_illust_required_params
-from ..logical.records.illust_rec import update_illust_from_source
+from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
     illust_delete_commentary
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
@@ -330,6 +330,19 @@ def update_json(id):
     if type(illust) is dict:
         return illust
     return update(illust)
+
+
+# ###### DELETE
+
+@bp.route('/illusts/<int:id>', methods=['DELETE'])
+def delete_html(id):
+    illust = get_or_abort(Illust, id)
+    results = archive_illust_for_deletion(illust)
+    if results['error']:
+        flash(results['message'], 'error')
+        return redirect(request.referrer)
+    flash("Illust deleted.")
+    return redirect(url_for('illust.index_html'))
 
 
 # ###### Misc
