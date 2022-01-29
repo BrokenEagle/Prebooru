@@ -16,7 +16,9 @@ from .base_db import update_column_attributes, update_relationship_collections, 
 COLUMN_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('_site_accounts', 'name', Label), ('_names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = [('_profiles', 'body', Description)]
+RECREATE_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['site_accounts', 'names', 'profiles']
+NORMALIZED_ASSOCIATE_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
 
 CREATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active',
                              '_site_accounts', '_names', '_profiles']
@@ -52,6 +54,20 @@ def create_artist_from_parameters(createparams):
     update_relationship_collections(artist, create_relationships, createparams)
     append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     append_relationship_collections(artist, append_relationships, createparams)
+    if 'webpages' in createparams:
+        update_artist_webpages(artist, createparams['webpages'])
+    print("[%s]: created" % artist.shortlink)
+    return artist
+
+
+def create_artist_from_raw_parameters(createparams):
+    artist = Artist()
+    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
+    update_columns = set(createparams.keys()).intersection(Artist.all_columns)
+    update_column_attributes(artist, update_columns, createparams)
+    settable_keylist = set(createparams.keys()).intersection(NORMALIZED_ASSOCIATE_ATTRIBUTES)
+    create_relationships = [rel for rel in RECREATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
+    update_relationship_collections(artist, create_relationships, createparams)
     if 'webpages' in createparams:
         update_artist_webpages(artist, createparams['webpages'])
     print("[%s]: created" % artist.shortlink)
@@ -117,6 +133,16 @@ def update_artist_webpages(artist, params):
     if is_dirty:
         SESSION.commit()
     return is_dirty
+
+
+# ###### Delete
+
+def delete_artist(artist):
+    from ..records.illust_rec import archive_illust_for_deletion
+    for illust in artist.illusts:
+        archive_illust_for_deletion(illust)
+    SESSION.delete(artist)
+    SESSION.commit()
 
 
 # ###### Misc

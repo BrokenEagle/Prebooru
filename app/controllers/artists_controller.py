@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired
 from ..models import Artist, Booru
 from ..logical.sources.base import get_source_by_id, get_artist_required_params
 from ..logical.sources.danbooru import get_artists_by_url
-from ..logical.records.artist_rec import update_artist_from_source
+from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion
 from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
     artist_append_booru, artist_delete_profile
 from ..logical.database.booru_db import create_booru_from_parameters
@@ -308,7 +308,21 @@ def update_json(id):
     return update(artist)
 
 
+# ###### DELETE
+
+@bp.route('/artists/<int:id>', methods=['DELETE'])
+def delete_html(id):
+    artist = get_or_abort(Artist, id)
+    results = archive_artist_for_deletion(artist)
+    if results['error']:
+        flash(results['message'], 'error')
+        return redirect(request.referrer)
+    flash("Artist deleted.")
+    return redirect(url_for('artist.index_html'))
+
+
 # ###### MISC
+
 
 @bp.route('/artists/query_create', methods=['POST'])
 def query_create_html():

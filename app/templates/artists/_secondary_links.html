@@ -9,5 +9,6 @@
     {% if artist.id is not none %}
         {{ subnav_link_to("Show", 'artist.show_html', id=artist.id) }}
         {{ subnav_link_to("Edit", 'artist.edit_html', id=artist.id) }}
+        {{ subnav_link_to("Delete", 'artist.delete_html', id=artist.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
     {% endif %}
 </menu>
