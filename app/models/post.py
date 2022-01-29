@@ -68,8 +68,8 @@ class Post(JsonModel):
                              backref=DB.backref('post', uselist=False, lazy=True))
     notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, cascade='all,delete',
                                 backref=DB.backref('post', uselist=False, lazy=True))
-    _pools = DB.relationship(PoolPost, lazy=True, cascade='all,delete',
-                             backref=DB.backref('item', lazy=True, uselist=False))
+    # Pool elements must be deleted individually, since pools will need to be reordered/recounted
+    _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False))
     similarity_data = DB.relationship(SimilarityData, lazy=True, cascade='all,delete',
                                       backref=DB.backref('post', lazy=True, uselist=False))
     # Similarity pools and elements must be deleted specially because of sibling relationships

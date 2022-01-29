@@ -6,5 +6,6 @@
     | {{ subnav_link_to("Upload", 'upload.create_html', attrs={'class': 'nav-control', 'onclick': 'return Posts.createUpload(this)'}) }}
     {% if post.id is not none %}
         {{ subnav_link_to("Show", 'post.show_html', post.id) }}
+        {{ subnav_link_to("Delete", 'post.delete_html', id=post.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
     {% endif %}
 </menu>

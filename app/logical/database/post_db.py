@@ -5,11 +5,13 @@ from ... import SESSION
 from ...models import Post
 from ..utility import get_current_time
 from .base_db import update_column_attributes
+from .pool_element_db import delete_pool_element
+from .similarity_pool_db import delete_similarity_pool_by_post_id
 
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id']
+COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created']
 CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size']
 UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
 
@@ -30,7 +32,15 @@ def create_post_from_parameters(createparams):
     return post
 
 
-# ###### Upadate
+def create_post_from_raw_parameters(createparams):
+    post = Post()
+    update_columns = set(createparams.keys()).intersection(Post.archive_columns)
+    update_column_attributes(post, update_columns, createparams)
+    print("[%s]: created" % post.shortlink)
+    return post
+
+
+# ###### Update
 
 def update_post_from_parameters(post, updateparams):
     update_results = []
@@ -40,6 +50,16 @@ def update_post_from_parameters(post, updateparams):
     if any(update_results):
         print("[%s]: updated" % post.shortlink)
         SESSION.commit()
+
+
+# ###### Delete
+
+def delete_post(post):
+    delete_similarity_pool_by_post_id(post.id)
+    for pool_element in post._pools:
+        delete_pool_element(pool_element)
+    SESSION.delete(post)
+    SESSION.commit()
 
 
 # #### Misc functions

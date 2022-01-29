@@ -8,7 +8,7 @@ from sqlalchemy.orm import lazyload, selectinload
 # ## LOCAL IMPORTS
 from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust
 from ..logical.utility import eval_bool_string, is_falsey
-from ..logical.records.post_rec import create_sample_preview_files
+from ..logical.records.post_rec import create_sample_preview_files, archive_post_for_deletion
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort
 
@@ -115,6 +115,21 @@ def index_html():
     q = q.options(INDEX_HTML_OPTIONS)
     posts = paginate(q, request)
     return render_template("posts/index.html", posts=posts, post=Post())
+
+
+# ###### DELETE
+
+@bp.route('/posts/<int:id>', methods=['DELETE'])
+def delete_html(id):
+    post = get_or_abort(Post, id)
+    results = archive_post_for_deletion(post)
+    if results['error']:
+        flash(results['message'], 'error')
+        if not results['is_deleted']:
+            return redirect(request.referrer)
+    if results['is_deleted']:
+        flash("Post deleted.")
+    return redirect(url_for('post.index_html'))
 
 
 # ###### MISC

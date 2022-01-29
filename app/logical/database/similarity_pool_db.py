@@ -57,6 +57,7 @@ def delete_similarity_pool_by_post_id(post_id):
         return
     batch_delete_similarity_pool_element(similarity_pool.elements)
     SESSION.delete(similarity_pool)
+    SESSION.commit()
 
 
 # #### Misc functions
