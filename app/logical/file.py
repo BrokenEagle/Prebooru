@@ -72,6 +72,13 @@ def load_default(filepath, defaultvalue, binary=False, unicode=False):
     return defaultvalue
 
 
+def move_file(old_filepath, new_filepath):
+    if os.path.exists(old_filepath):
+        os.rename(old_filepath, new_filepath)
+        # Time to let the OS move the file to prevent OS errors
+        time.sleep(0.2)
+
+
 def delete_file(filepath):
     if os.path.exists(filepath):
         os.remove(filepath)
