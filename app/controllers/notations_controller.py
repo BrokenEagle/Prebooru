@@ -32,8 +32,6 @@ VALUES_MAP = {
 NOTATION_POOLS_SUBQUERY = Notation.query.join(PoolNotation, Notation._pool)\
     .filter(Notation.id == PoolNotation.notation_id).with_entities(Notation.id)
 
-APPEND_KEYS = ['pool_id', 'artist_id', 'illust_id', 'post_id']
-
 
 # #### Load options
 
