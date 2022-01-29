@@ -72,7 +72,29 @@ def relation_property_factory(model_key, table_name, relation_key):
     return _shortlink, _show_url, _show_link
 
 
+def classproperty(cached=False):
+    def _decorator(function):
+        return CacheClassProperty(function, cached)
+    return _decorator
+
+
 # ## CLASSES
+
+class CacheClassProperty:
+    """Decorator for a Class property with optional caching.
+       Must be used with classproperty if the cached is used.
+    """
+    def __init__(self, func, cached=False):
+        self.func = func
+        self.cached = cached
+
+    def __get__(self, owner_self, owner_cls):
+        val = self.func(owner_cls)
+        if self.cached:
+            # Overwrites the class method with the value
+            setattr(owner_cls, self.func.__name__, val)
+        return val
+
 
 class JsonModel(DB.Model):
     __abstract__ = True
@@ -124,6 +146,9 @@ class JsonModel(DB.Model):
     def column_dict(self):
         return {k: getattr(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
 
+    def archive_dict(self):
+        return {k: getattr(self, k) for k in self.archive_columns if hasattr(self, k)}
+
     def to_json(self):
         data = {}
         for attr in self.json_attributes:
@@ -172,6 +197,26 @@ class JsonModel(DB.Model):
             setattr(cls, key + '_shortlink', property(_shortlink))
             setattr(cls, key + '_show_url', property(_show_url))
             setattr(cls, key + '_show_link', property(_show_link))
+
+    @classproperty(cached=False)
+    def columns(cls):
+        return cls.__table__.c
+
+    @classproperty(cached=True)
+    def all_columns(cls):
+        return cls.columns.keys()
+
+    @classproperty(cached=True)
+    def base_columns(cls):
+        return [k for k in cls.all_columns if len(getattr(cls.columns, k).foreign_keys) == 0]
+
+    @classproperty(cached=True)
+    def fk_columns(cls):
+        return [k for k in cls.all_columns if len(getattr(cls.columns, k).foreign_keys) > 0]
+
+    @classproperty(cached=True)
+    def archive_columns(cls):
+        return [k for k in cls.base_columns if k != 'id']
 
     # Private
 
