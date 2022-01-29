@@ -18,6 +18,8 @@ except ImportError:
 
 # ## GLOBAL VARIABLES
 
+VERSION = '2.3.1'
+
 # #### Environment-settable variables
 
 WORKING_DIRECTORY = get_environment_variable('WORKING_DIRECTORY', WORKING_DIRECTORY)
