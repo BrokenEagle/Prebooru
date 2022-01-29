@@ -59,6 +59,11 @@ def buffered_print(name, safe=False, sep=" ", end="\n"):
     return accumulator
 
 
+def error_print(error):
+    print(repr(error))
+    traceback.print_tb(error.__traceback__)
+
+
 def process_utc_timestring(timestring):
     try:
         return datetime.datetime.fromisoformat(timestring.replace('Z', '+00:00')).replace(tzinfo=None)
