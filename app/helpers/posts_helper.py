@@ -88,6 +88,12 @@ def danbooru_post_bookmarklet_links(post):
     return Markup(' | ').join(image_links)
 
 
+def regenerate_previews_link(post):
+    url = url_for('post.regenerate_previews_html', id=post.id)
+    addons = {'onclick': "return Posts.regeneratePreviews(this)"}
+    return general_link("Regenerate previews", url, **addons)
+
+
 def regenerate_similarity_link(post):
     url = url_for('similarity.regenerate_html', post_id=post.id)
     addons = {'onclick': "return Posts.regenerateSimilarity(this)"}

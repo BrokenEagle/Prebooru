@@ -1,13 +1,14 @@
 # APP/CONTROLLERS/POSTS_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy import not_, or_
 from sqlalchemy.orm import lazyload, selectinload
 
 # ## LOCAL IMPORTS
 from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust
 from ..logical.utility import eval_bool_string, is_falsey
+from ..logical.records.post_rec import create_sample_preview_files
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort
 
@@ -114,3 +115,16 @@ def index_html():
     q = q.options(INDEX_HTML_OPTIONS)
     posts = paginate(q, request)
     return render_template("posts/index.html", posts=posts, post=Post())
+
+
+# ###### MISC
+
+@bp.route('/posts/<int:id>/regenerate_previews', methods=['POST'])
+def regenerate_previews_html(id):
+    post = get_or_abort(Post, id)
+    results = create_sample_preview_files(post)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash("Previews regenerated.")
+    return redirect(url_for('post.show_html', id=post.id))

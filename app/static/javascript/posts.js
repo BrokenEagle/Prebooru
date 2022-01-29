@@ -8,6 +8,13 @@ Posts.createUpload = function(obj) {
     return false;
 };
 
+Posts.regeneratePreviews = function(obj) {
+    if (confirm("Regenerate sample and preview images?")) {
+        Prebooru.postRequest(obj.href);
+    }
+    return false;
+};
+
 Posts.regenerateSimilarity = function(obj) {
     if (confirm("Regenerate similarity data and pools?")) {
         Prebooru.postRequest(obj.href);
