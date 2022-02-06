@@ -195,20 +195,21 @@ def set_precision(number, precision):
 
 def time_ago(timeval, precision=2):
     delta = get_current_time() - timeval
+    precision_str = "%%.%df " % precision
     if delta.days == 0:
         if delta.seconds < 60:
             return "%d seconds ago" % delta.seconds
         if delta.seconds < 3600:
-            return "%f minutes ago" % set_precision(delta.seconds / 60, 2)
-        return "%f hours ago" % set_precision(delta.seconds / 3600, 2)
+            return (precision_str + "minutes ago") % set_precision(delta.seconds / 60, precision)
+        return (precision_str + "hours ago") % set_precision(delta.seconds / 3600, precision)
     days = delta.days + (delta.seconds / 86400)
     if days < 7:
-        return "%f days ago" % set_precision(days, 2)
+        return (precision_str + "days ago") % set_precision(days, precision)
     if days < 30:
-        return "%f weeks ago" % set_precision(days / 7, 2)
+        return (precision_str + "weeks ago") % set_precision(days / 7, precision)
     if days < 365:
-        return "%f months ago" % set_precision(days / 30, 2)
-    return "%f years ago" % set_precision(days / 365, 2)
+        return (precision_str + "months ago") % set_precision(days / 30, precision)
+    return (precision_str + "years ago") % set_precision(days / 365, precision)
 
 
 def add_dict_entry(indict, key, entry):
