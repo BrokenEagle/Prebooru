@@ -4,6 +4,7 @@
 
 # ## PYTHON IMPORTS
 import os
+import dotenv
 import logging
 
 # ## LOCAL IMPORTS
@@ -28,6 +29,13 @@ except ImportError:
 
 # #### Load .env file into environment variables if set
 
+dotenv_logger = logging.getLogger('dotenv.main')
+dotenv_logger.setLevel(logging.INFO)
+dotenv_logger.addHandler(logging.StreamHandler())
+DOTENV_FILEPATH = get_environment_variable('DOTENV_FILEPATH', DOTENV_FILEPATH)
+if DOTENV_FILEPATH is not None or True:
+    logger.info("\n[PID %d] Loading DOTENV file: %s" % (os.getpid(), DOTENV_FILEPATH))
+    dotenv.load_dotenv(dotenv_path=DOTENV_FILEPATH, override=True, verbose=True)
 
 # #### Environment-settable variables
 

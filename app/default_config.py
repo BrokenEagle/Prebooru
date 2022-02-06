@@ -21,6 +21,8 @@ WORKING_DIRECTORY = "/tmp/"
 DATA_FILEPATH = "data"
 IMAGE_FILEPATH = "pictures"
 
+"""Path for loading the .env to load environment variables from. Can either be a relative or an absolute path"""
+DOTENV_FILEPATH = None
 
 # ## IMAGE VARIABLES
 """Maximum dimensions of width x height for preview and sample size images"""

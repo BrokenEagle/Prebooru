@@ -20,3 +20,5 @@ ffmpeg-python==0.2.0
 filetype==1.0.7
 
 colorama==0.4.4
+
+python-dotenv==0.19.2
