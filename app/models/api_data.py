@@ -17,3 +17,8 @@ class ApiData(JsonModel):
     data_id = DB.Column(DB.Integer, nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
     expires = DB.Column(DB.DateTime(timezone=False), nullable=False)
+
+    basic_attributes = ['id', 'type', 'site_id', 'data_id', 'expires']
+    relation_attributes = []
+    searchable_attributes = basic_attributes + relation_attributes
+    json_attributes = basic_attributes + ['data']
