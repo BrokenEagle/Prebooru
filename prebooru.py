@@ -1,5 +1,8 @@
 # PREBOORU.PY
 
+import logging
+logging.root.setLevel(logging.INFO)
+
 # ## PYTHON IMPORTS
 import os
 import atexit

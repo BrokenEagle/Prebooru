@@ -4,21 +4,30 @@
 
 # ## PYTHON IMPORTS
 import os
+import logging
 
 # ## LOCAL IMPORTS
 from .default_config import *
 from .logical.utility import get_environment_variable, eval_bool_string
 
+# ## GLOBAL VARIABLES
+
+VERSION = '2.3.1'
+
+# ## INTITIALIZATION
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
+
 try:
     if not get_environment_variable('DEFAULT_CONFIG', False):
         from .local_config import *
 except ImportError:
-    print("Create an 'app\\local_config.py' file to overwrite the default config.\nUseful for placing information that shouldn't be tracked (e.g. passwords)")
+    logger.warning("Unable to load 'app\\local_config.py , using default config instead.")
 
+# #### Load .env file into environment variables if set
 
-# ## GLOBAL VARIABLES
-
-VERSION = '2.3.1'
 
 # #### Environment-settable variables
 
