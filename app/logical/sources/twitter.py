@@ -14,6 +14,7 @@ import requests
 # ## LOCAL IMPORTS
 from ...config import DATA_DIRECTORY, DEBUG_MODE
 from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, decode_json, fixup_crlf
+from ..logger import log_network_error
 from ..file import load_default, put_get_json
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
@@ -554,6 +555,8 @@ def twitter_request(url, method='GET'):
             reauthenticated = True
         else:
             print("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, response.reason, response.text))
+            if DEBUG_MODE:
+                log_network_error('sources.twitter.twitter_request', response)
             return {'error': True, 'message': "HTTP %d - %s" % (response.status_code, response.reason)}
     try:
         data = response.json()
