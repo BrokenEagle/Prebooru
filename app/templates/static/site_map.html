@@ -41,12 +41,6 @@
                     <li><a href="{{ url_for('pool.new_html') }}">New</a></li>
                 </ul>
             </section>
-            <section id="static-errors">
-                <h4>Errors</h4>
-                <ul>
-                    <li><a href="{{ url_for('error.index_html') }}">Listing</a></li>
-                </ul>
-            </section>
         </div>
         <div id="static-site-data">
             <h3>Site data</h3>
@@ -95,10 +89,19 @@
                     <li><a href="{{ url_for('upload.upload_select_html', show_form='true') }}">Upload Select</a></li>
                 </ul>
             </section>
-            <section id="static-illust-urls">
+            <section id="static-tools">
                 <h4>Tools</h4>
                 <ul>
                     <li><a href="{{ url_for('similarity.check_html', show_form='true') }}">Check Similarity</a></li>
+                </ul>
+            </section>
+            <section id="static-data">
+                <h4>Misc Data</h4>
+                <ul>
+                    <li><a href="{{ url_for('error.index_html') }}">Errors</a></li>
+                    <li><a href="{{ url_for('archive_data.index_html') }}">Archive Data</a></li>
+                    <li><a href="{{ url_for('api_data.index_html') }}">API Data</a></li>
+                    <li><a href="{{ url_for('media_file.index_html') }}">Media Files</a></li>
                 </ul>
             </section>
         </div>

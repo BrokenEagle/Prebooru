@@ -1,6 +1,7 @@
 /****SITE MAP Page****/
 div#site-map {
     display: flex;
+    font-size: 1.5em;
 }
 div#site-map > div {
     margin: 1em 6em;
