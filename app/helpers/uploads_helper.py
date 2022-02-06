@@ -24,5 +24,9 @@ def check_pending_link(upload):
     return general_link('pending', url_for('upload.upload_check_html', id=upload.id), method="POST")
 
 
+def resubmit_link(upload):
+    return general_link('error', url_for('upload.resubmit_html', id=upload.id), method="POST")
+
+
 def post_search_link(upload):
     return general_link('&raquo;', search_url_for('post.index_html', uploads={'id': upload.id}))

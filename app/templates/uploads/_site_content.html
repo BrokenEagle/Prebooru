@@ -7,6 +7,8 @@
             <li><strong>Status:</strong>
                 {% if upload.status == 'pending' %}
                     {{ helpers.upload.check_pending_link(upload) }}
+                {% elif upload.status == 'error' %}
+                    {{ helpers.upload.resubmit_link(upload) }}
                 {% else %}
                     {{ upload.status }}
                 {% endif %}
