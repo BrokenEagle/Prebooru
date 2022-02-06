@@ -1,0 +1,36 @@
+{% extends 'media_files/_base.html' %}
+{% from 'layouts/_macros.html' import page_navigation %}
+
+{% block title %}Media Files{% endblock %}
+
+{% block content %}
+    <table id="media-file-table" class="striped" width="100%">
+        <thead>
+            <tr>
+                <th width="10%">ID</th>
+                <th width="35%">Info</th>
+                <th width="45%">Media</th>
+                <th width="10%">Expires</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for media_file in media_files.items %}
+                <tr id="media-file-{{ media_file.id }}">
+                    <td>{{ media_file.show_link }}</td>
+                    <td>
+                        <strong>MD5:</strong> {{ media_file.md5 }}<br>
+                        <strong>URL:</strong> {{ helpers.base.url_link(media_file.media_url) }}
+                    </td>
+                    <td>
+                        <article class="media-file">
+                            <img src="{{ media_file.file_url }}">
+                        </article>
+                    </td>
+                    <td>{{ helpers.base.format_timestamp(media_file.expires) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(media_files) }}{% endblock %}

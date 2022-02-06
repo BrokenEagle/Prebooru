@@ -1,0 +1,16 @@
+/****INDEX Page****/
+section.a-index article.media-file img {
+    max-width: 300px;
+    max-height: 300px;
+    width: auto;
+    height: auto;
+}
+/****SHOW Page****/
+div#media-file-heading {
+    font-size: 28px;
+    margin-top: 1em;
+}
+div#media-file-content {
+    font-size: 16px;
+    margin-top: 1em;
+}
