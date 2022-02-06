@@ -75,7 +75,7 @@ JOB_LEEWAY = {
 
 if MAIN_PROCESS:
     # Initialization must take place first, so that the job dictionary can be used to intialize tasks
-    print("MAIN_PROCESS", os.getpid())
+    print("\nMAIN_PROCESS", os.getpid())
     initialize_scheduler(JOB_CONFIG, JOB_LEEWAY)
     recheck_schedule_interval(JOB_CONFIG, JOB_LEEWAY, False)
     RECHECK = RepeatTimer(300, recheck_schedule_interval, args=(JOB_CONFIG, JOB_LEEWAY, True))
@@ -112,7 +112,7 @@ def expunge_archive_records_task():
     printer = buffered_print("Expunge Archive Records")
     printer("PID:", os.getpid())
     archive_delete_count = expired_archive_data_count()
-    printer("API data records to delete:", archive_delete_count)
+    printer("Archive data records to delete:", archive_delete_count)
     if archive_delete_count > 0:
         delete_expired_archive_data()
     printer.print()

@@ -84,7 +84,7 @@ class MethodRewriteMiddleware(object):
 
     def __call__(self, environ, start_response):
         SERVER_INFO.addr = environ['HTTP_HOST'].split(':')[0]
-        print("Server addr:", SERVER_INFO.addr)
+        print("Server addr: %s" % SERVER_INFO.addr, flush=True)
         if environ['REQUEST_METHOD'] == 'POST':
             environ['wsgi.input'] = stream = BytesIO(get_input_stream(environ).read())
             _, form, _ = parse_form_data(environ)
