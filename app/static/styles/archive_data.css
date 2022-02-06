@@ -8,7 +8,8 @@ div#archive-data-content {
     margin-top: 1em;
 }
 /****INDEX Page****/
-div.json-data {
-    max-width: 60em;
-    overflow-x: auto;
+section.a-index div.json-data {
+    max-width: 70em;
+    max-height: 50em;
+    overflow: auto;
 }
