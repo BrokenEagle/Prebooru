@@ -289,7 +289,7 @@ def upload_check_html(id):
 
 @bp.route('/uploads/<int:id>/resubmit', methods=['POST'])
 def resubmit_html(id):
-    get_or_abort(Upload, id)
+    upload = get_or_abort(Upload, id)
     set_upload_status(upload, 'pending')
     SCHEDULER.add_job("process_upload-%d" % id, process_upload, args=(id,))
     return redirect(request.referrer)
