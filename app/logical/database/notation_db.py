@@ -4,6 +4,7 @@
 from ... import SESSION
 from ...models import Notation, Pool, Artist, Illust, Post
 from ..utility import get_current_time
+from .pool_element_db import delete_pool_element
 from .base_db import update_column_attributes
 
 
@@ -62,14 +63,10 @@ def update_notation_from_parameters(notation, updateparams):
 # ###### Delete
 
 def delete_notation(notation):
-    pool = notation.pool
+    if notation._pool is not None:
+        delete_pool_element(notation._pool)
     SESSION.delete(notation)
     SESSION.commit()
-    if pool is not None:
-        pool.updated = get_current_time()
-        pool._elements.reorder()
-        pool.element_count = pool._get_element_count()
-        SESSION.commit()
 
 
 # #### Misc functions
