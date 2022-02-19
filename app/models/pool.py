@@ -82,11 +82,13 @@ class Pool(JsonModel):
         for i in range(0, len(page.items)):
             page_item = page.items[i]
             if page_item.type == 'pool_post':
-                page.items[i] = next(filter(lambda x: x.id == page_item.post_id, posts))
+                page.items[i] = next(filter(lambda x: x.id == page_item.post_id, posts), None)
             elif page_item.type == 'pool_illust':
-                page.items[i] = next(filter(lambda x: x.id == page_item.illust_id, illusts))
+                page.items[i] = next(filter(lambda x: x.id == page_item.illust_id, illusts), None)
             elif page_item.type == 'pool_notation':
-                page.items[i] = next(filter(lambda x: x.id == page_item.notation_id, notations))
+                page.items[i] = next(filter(lambda x: x.id == page_item.notation_id, notations), None)
+            if page.items[i] is None:
+                raise Exception("Missing pool element item: %s" % repr(page_item))
         return page
 
     # #### Private
