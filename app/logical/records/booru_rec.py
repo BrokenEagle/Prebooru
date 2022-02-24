@@ -21,8 +21,8 @@ def create_booru_from_source(danbooru_id):
         'danbooru_id': danbooru_id,
         'current_name': data['artist']['name'],
         'names': [data['artist']['name']],
-        'banned': data['is_banned'],
-        'deleted': data['is_deleted'],
+        'banned': data['artist']['is_banned'],
+        'deleted': data['artist']['is_deleted'],
     }
     booru = create_booru_from_parameters(createparams)
     return {'error': False, 'data': createparams, 'item': booru.to_json()}
