@@ -44,7 +44,7 @@ NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s"
 }
 
-SERVER_INFO = SimpleNamespace(addr="127.0.0.1")
+SERVER_INFO = SimpleNamespace(addr="127.0.0.1", allow_requests=True, active_requests=0, unique_id=None)
 
 MAIN_PROCESS = False
 
@@ -62,6 +62,21 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record):
         if mode != ('wal',):
             logging.error("Unable to set journal mode to WAL")
     cursor.close()
+
+
+def _before_request():
+    msg = f"\nBefore request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
+    print(msg, end="", flush=True)
+    SERVER_INFO.active_requests += 1
+    return None if SERVER_INFO.allow_requests else ""
+
+
+def _teardown_request(error=None):
+    if error is not None:
+        print(f"\nRequest error: {error}\n")
+    msg = f"\nAfter request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
+    print(msg, end="", flush=True)
+    SERVER_INFO.active_requests = max(SERVER_INFO.active_requests - 1, 0)
 
 
 # ## CLASSES
@@ -131,6 +146,8 @@ event.listen(DB.engine, 'connect', _fk_pragma_on_connect)
 event.listen(SCHEDULER_JOBSTORES.engine, 'connect', _fk_pragma_on_connect)
 
 PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
+PREBOORU_APP.before_request(_before_request)
+PREBOORU_APP.teardown_request(_teardown_request)
 
 # #### Extend Python imports
 query_extensions.initialize()

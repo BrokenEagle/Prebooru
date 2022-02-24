@@ -2,20 +2,27 @@
 
 # ## PYTHON IMPORTS
 import os
+import time
+
+# ## GLOBAL VARIABLES
+
+MAX_MEMORY_MB = 800
+POLLING_INTERVAL = 5
+SHUTDOWN_ERROR_FILE = 'prebooru-shutdown-error.txt'
 
 
 # ## FUNCTIONS
 
 # #### Initialization functions
 
-def initialize_server():
+def initialize_server(args):
     global PREBOORU_APP, SCHEDULER, load_default, put_get_json, validate_version, validate_integrity
     from app import PREBOORU_APP, SCHEDULER
     from app.logical.validate import validate_version, validate_integrity
     initialize_environment()
     initialize_controllers()
     initialize_helpers()
-    initialize_server_callbacks()
+    initialize_server_callbacks(args)
 
 
 def initialize_environment():
@@ -57,21 +64,43 @@ def initialize_controllers():
         PREBOORU_APP.register_blueprint(controllers.images.bp)
 
 
-def initialize_server_callbacks():
+def initialize_server_callbacks(args):
     import atexit
+    from flask import request
+    from app import SERVER_INFO
 
     @atexit.register
-    def cleanup():
+    def cleanup(expected_requests=0):
         if SERVER_PID is not None:
             put_get_json(SERVER_PID_FILE, 'w', [])
         if SCHEDULER.running:
+            print("Shutting down scheduler...")
             SCHEDULER.shutdown()
+        # Wait some to allow current requests to complete
+        print("Checking active requests...")
+        iterations = 0
+        while True:
+            if SERVER_INFO.active_requests <= expected_requests or iterations >= 8:
+                return
+            print("Waiting for active requests to complete.")
+            iterations += 1
+            time.sleep(1)
 
-    @PREBOORU_APP.route('/shutdown')
-    def shutdown():
-        print("Shutting down...");
-        cleanup()
-        return ""
+    if args.unique_id is not None:
+        SERVER_INFO.unique_id = args.unique_id
+
+        @PREBOORU_APP.route('/shutdown', methods=['POST'])
+        def shutdown():
+            uid = request.args.get('uid')
+            # Only allow shutdowns from localhost
+            if SERVER_INFO.addr == '127.0.0.1' and uid == SERVER_INFO.unique_id:
+                print("Shutting down...")
+                SERVER_INFO.allow_requests = False
+                cleanup(1)
+                return {'error': False}
+            else:
+                print("Invalid shutdown request.")
+                return {'error': True, 'message': "This route is only available from the watchdog."}
 
 
 def initialize_migrate():
@@ -95,7 +124,7 @@ def start_server(args):
     if SERVER_PID is not None:
         print("Server process already running: %d" % SERVER_PID)
         exit(-1)
-    initialize_server()
+    initialize_server(args)
     if args.extension:
         try:
             from flask_flaskwork import Flaskwork
@@ -147,47 +176,20 @@ def init_db(args):
 
     print("Setting current migration to HEAD")
     from flask_migrate import stamp
+    initialize_migrate()
     PREOBOORU_MIGRATE.init_app(PREBOORU_APP)
     with PREBOORU_APP.app_context():
         stamp()
 
 
 def server_watchdog(args):
-    import sys
-    import time
-    import psutil
-    import subprocess
-    from werkzeug._reloader import _get_args_for_reloading
-
-    WERKZEUG_RESTART_CODE = 3
-    MAX_MEMORY = int(os.environ.get('PREBOORU_MAX_MEMORY', 800 * (1024 * 1024)))
-    new_environ = os.environ.copy()
-    errorcode = WERKZEUG_RESTART_CODE
-    last_checked = time.time()
-    while True:
-        if errorcode == WERKZEUG_RESTART_CODE:
-            process_arguments = [sys.executable, 'prebooru.py', 'server'] + _get_args_for_reloading()[3:]
-            process_flags = subprocess.CREATE_NEW_PROCESS_GROUP
-            p = subprocess.Popen(process_arguments, env=new_environ, close_fds=False, creationflags=process_flags)
-            proc = psutil.Process(p.pid)
-        elif errorcode is not None:
-            exit(errorcode)
-        errorcode = p.returncode and (p.returncode if (p.returncode < (1 << 31)) else (p.returncode - (1 << 32)))
-        try:
-            p.wait(timeout=5)  # This blocks keyboard input, so check every 5 seconds to be responsive
-        except KeyboardInterrupt:
-            print("Exiting program")
-            shutdown_server(proc)
-            exit(-1)
-        except subprocess.TimeoutExpired:
-            if ((time.time() - last_checked) < (300)):  # Only check the memory every 5 minutes
-                continue
-            private_memory = proc.memory_info().private
-            if (private_memory > MAX_MEMORY):
-                print("Server has exceded the allowed maximum memory... restarting.")
-                shutdown_server(proc)
-                errorcode = WERKZEUG_RESTART_CODE
-            last_checked = time.time()
+    watchdog_info = {}
+    try:
+        watchdog_loop(watchdog_info)
+    except KeyboardInterrupt:
+        print("Exiting program")
+        shutdown_server(watchdog_info['proc'], watchdog_info['unique_id'])
+        exit(-1)
 
 
 def kill_server(args):
@@ -204,6 +206,7 @@ def kill_server(args):
     except psutil.NoSuchProcess:
         print(f"No server found with PID {SERVER_PID}.")
     else:
+        print("Killing server...")
         shutdown_server(proc)
     finally:
         put_get_json(SERVER_PID_FILE, 'w', [])
@@ -211,19 +214,66 @@ def kill_server(args):
 
 # #### Auxiliary functions
 
+def watchdog_loop(watchdog_info):
+    import sys
+    import uuid
+    import psutil
+    import subprocess
+    from werkzeug._reloader import _get_args_for_reloading
+
+    WERKZEUG_RESTART_CODE = 3
+    MAX_MEMORY = int(os.environ.get('PREBOORU_MAX_MEMORY', MAX_MEMORY_MB * (1024 * 1024)))
+    new_environ = os.environ.copy()
+    errorcode = WERKZEUG_RESTART_CODE
+    last_checked = time.time()
+    while True:
+        if errorcode == WERKZEUG_RESTART_CODE:
+            unique_id = watchdog_info['unique_id'] = str(uuid.uuid4())
+            process_arguments = [sys.executable, 'prebooru.py', 'server', '--unique-id', unique_id] +\
+                _get_args_for_reloading()[3:]
+            process_flags = subprocess.CREATE_NEW_PROCESS_GROUP
+            p = subprocess.Popen(process_arguments, env=new_environ, close_fds=False, creationflags=process_flags)
+            watchdog_info['proc'] = proc = psutil.Process(p.pid)
+        elif errorcode is not None:
+            exit(errorcode)
+        errorcode = p.returncode and (p.returncode if (p.returncode < (1 << 31)) else (p.returncode - (1 << 32)))
+        time.sleep(POLLING_INTERVAL)
+        if ((time.time() - last_checked) < 300):  # Only check the memory every 5 minutes
+            continue
+        private_memory = proc.memory_info().private
+        if (private_memory > MAX_MEMORY):
+            print("Server has exceded the allowed maximum memory... restarting.")
+            shutdown_server(proc, unique_id)
+            errorcode = WERKZEUG_RESTART_CODE
+        last_checked = time.time()
+
+
 def kill_proc_tree(proc):
     for child in proc.children():
         kill_proc_tree(child)
     proc.kill()
 
 
-def shutdown_server(proc):
+def shutdown_server(proc, unique_id=None):
+    import json
     import requests
-    from app.config import PREBOORU_PORT
-    try:
-        requests.get('http://127.0.0.1:' + str(PREBOORU_PORT) + '/shutdown', timeout=2)
-    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
-        return f"Connection error: {repr(e)}"
+    from app.config import PREBOORU_PORT, DATA_DIRECTORY
+    from app.logical.file import put_get_raw
+    if proc is None:
+        return
+    if unique_id is not None:
+        try:
+            resp = requests.post(f'http://127.0.0.1:{PREBOORU_PORT}/shutdown?uid={unique_id}', timeout=30)
+            data = resp.json()
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
+            print(f"Connection error: {repr(e)}")
+        except json.decoder.JSONDecodeError as e:
+            print(f"Data error: {repr(e)}")
+            put_get_raw(os.path.join(DATA_DIRECTORY, SHUTDOWN_ERROR_FILE), 'w', resp.text)
+        else:
+            if data['error']:
+                print(f"Error with shutdown: {data['message']}",)
+    print("Killing server...")
     kill_proc_tree(proc)
 
 
@@ -269,6 +319,7 @@ if __name__ == '__main__':
                         help="Adds server title to console window.")
     parser.add_argument('--public', required=False, default=False, action="store_true",
                         help="Makes the server visible to other computers.")
+    parser.add_argument('--unique-id', required=False, help="Unique identifier required to access admin routes.")
     args = parser.parse_args()
     main(args)
 else:
