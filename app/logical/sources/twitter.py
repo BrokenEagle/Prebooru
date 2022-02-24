@@ -37,7 +37,7 @@ ARTIST_SHORTLINK = 'twuser #%d'
 
 ILLUST_HREFURL = 'https://twitter.com/i/web/status/%d'
 ARTIST_HREFURL = 'https://twitter.com/i/user/%d'
-TAG_SEARCH_HREFURL = 'https://twitter.com/hashtag/%s'
+TAG_SEARCH_HREFURL = 'https://twitter.com/hashtag/%s?src=hashtag_click&f=live'
 
 SITE_ID = Site.TWITTER.value
 
