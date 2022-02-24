@@ -75,7 +75,8 @@ def danbooru_post_bookmarklet_links(post):
         illust = illust_url.illust
         artist = illust.artist
         if not illust.active or not artist.active:
-            image_links.append(external_link(f'file #{illust.id}', DANBOORU_HOSTNAME + f'/uploads/new?prebooru_post_id={post.id}&prebooru_illust_id={illust.id}'))
+            url = DANBOORU_HOSTNAME + f'/uploads/new?prebooru_post_id={post.id}&prebooru_illust_id={illust.id}'
+            image_links.append(external_link(f'file #{illust.id}', url))
             continue
         source = get_source_by_id(illust_url.site_id)
         media_url = source.get_media_url(illust_url)

@@ -1,7 +1,7 @@
 # APP/CONTROLLERS/MEDIA_FILES_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
-from flask import Blueprint, request, render_template, url_for, redirect, flash
+from flask import Blueprint, request, render_template
 
 # ## LOCAL IMPORTS
 from ..models import MediaFile
