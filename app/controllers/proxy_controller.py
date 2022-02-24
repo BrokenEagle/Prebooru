@@ -11,6 +11,7 @@ from flask import Blueprint, request, Markup, jsonify
 from ..models import Post
 from ..logical.file import put_get_raw
 from ..logical.sources.base import get_source_by_id
+from ..logical.sources.danbooru import get_uploads_by_md5, create_upload_from_buffer
 from ..config import DANBOORU_USERNAME, DANBOORU_APIKEY, DANBOORU_HOSTNAME
 
 
@@ -42,34 +43,14 @@ def error_resp(message):
 
 # #### Auxiliary functions
 
-def check_preprocess(post):
-    params = {
-        'search[uploader_name]': DANBOORU_USERNAME,
-        'search[md5]': post.md5,
-    }
-    danbooru_resp = requests.get(DANBOORU_HOSTNAME + '/uploads.json', params=params,
-                                 auth=(DANBOORU_USERNAME, DANBOORU_APIKEY))
-    if danbooru_resp.status_code != 200:
-        return "HTTP %d: %s; Unable to query Danbooru for existing upload: %s - %s"\
-               % (danbooru_resp.status_code, danbooru_resp.reason, DANBOORU_USERNAME, post.md5)
-    data = danbooru_resp.json()
-    return len(data)
-
-
-def preprocess_post(post):
+def create_upload(post):
     buffer = put_get_raw(post.file_path, 'rb')
     filename = post.md5 + '.' + post.file_ext
     mimetype = MIMETYPES[post.file_ext]
-    files = {
-        'upload[file]': (filename, buffer, mimetype)
-    }
-    try:
-        danbooru_resp = requests.post(DANBOORU_HOSTNAME + '/uploads/preprocess', files=files,
-                                      auth=(DANBOORU_USERNAME, DANBOORU_APIKEY), timeout=30)
-    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
-        return "Connection error: %s" % e
-    if danbooru_resp.status_code != 200:
-        return "HTTP %d - %s" % (danbooru_resp.status_code, danbooru_resp.reason)
+    data = create_upload_from_buffer(buffer, filename, mimetype)
+    if data['error']:
+        return data
+    return {'error': False, 'uploads': [data['upload']]}
 
 
 # #### Route functions
@@ -114,14 +95,17 @@ def danbooru_preprocess_upload():
     post = Post.find(post_id)
     if post is None:
         return error_resp("Post #d not found." % post_id)
-    check = check_preprocess(post)
-    if type(check) is str:
-        return error_resp(check)
-    if not check:
-        preprocess = preprocess_post(post)
-        if type(preprocess) is str:
-            return error_resp(preprocess)
-    return _cors_json({'error': False})
+    upload_ret = get_uploads_by_md5(post.md5)
+    if upload_ret['error']:
+        return error_resp(upload_ret)
+    if len(upload_ret['uploads']) == 0:
+        upload_ret = create_upload(post)
+        if upload_ret['error']:
+            return error_resp(upload_ret)
+    # Preference for uploads created via file upload
+    upload = next(filter(lambda x: x['source'] is None, upload_ret['uploads']), None)
+    upload = upload or upload_ret['uploads'][0]
+    return _cors_json({'error': False, 'upload': upload})
 
 
 # ###### Similarity sites proxy

@@ -7,22 +7,32 @@ import time
 import requests
 
 # ## LOCAL IMPORTS
-from ...config import DANBOORU_HOSTNAME
+from ...config import DANBOORU_USERNAME, DANBOORU_APIKEY, DANBOORU_HOSTNAME
 from ..utility import add_dict_entry
+
+
+# ## GLOBAL VARIABLES
+
+DATA_FUNCTIONS = ['post']
+REQUEST_METHODS = {
+    'get': requests.get,
+    'post': requests.post,
+}
 
 
 # ## FUNCTIONS
 
-def danbooru_request(url, params=None, long=False):
-    send_method = requests.post if long else requests.get
-    send_data = params if long else None
-    params = None if long else params
+def danbooru_request(url, params=None, files=None, long=False, method='get'):
+    method = 'post' if long else method
+    data = params if method in DATA_FUNCTIONS else None
+    params = params if method not in DATA_FUNCTIONS else None
     if long:
-        send_data = send_data or {}
-        send_data['_method'] = 'get'
+        data = data or {}
+        data['_method'] = 'get'
     for i in range(3):
         try:
-            response = send_method(DANBOORU_HOSTNAME + url, params=params, data=send_data, timeout=10)
+            response = REQUEST_METHODS[method](DANBOORU_HOSTNAME + url, params=params, data=data, files=files,
+                                               timeout=10, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY))
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
             print("Pausing for network timeout...")
             time.sleep(5)
@@ -30,7 +40,7 @@ def danbooru_request(url, params=None, long=False):
         break
     else:
         return {'error': True, 'message': "Connection errors exceeded."}
-    if response.status_code == 200:
+    if response.status_code in [200, 201]:
         return {'error': False, 'json': response.json()}
     else:
         return {'error': True, 'message': "HTTP %d: %s" % (response.status_code, response.reason)}
@@ -97,3 +107,29 @@ def get_posts_by_md5s(md5_list):
     if data['error']:
         return data
     return {'error': False, 'posts': [post for post in data['json'] if 'md5' in post]}
+
+
+def get_uploads_by_md5(md5):
+    request_url = '/uploads.json'
+    params = {
+        'search[uploader_name]': DANBOORU_USERNAME,
+        'search[media_assets][md5]': md5,
+        'only': 'id,source,media_assets[md5]',
+    }
+    data = danbooru_request(request_url, params)
+    if data['error']:
+        return data
+    uploads = [upload for upload in data['json'] if
+               any(asset for asset in upload['media_assets'] if asset['md5'] == md5)]
+    return {'error': False, 'uploads': uploads}
+
+
+def create_upload_from_buffer(buffer, filename, mimetype):
+    request_url = '/uploads.json'
+    files = {
+        'upload[file]': (filename, buffer, mimetype)
+    }
+    data = danbooru_request(request_url, files=files, method='post')
+    if data['error']:
+        return data
+    return {'error': False, 'upload': data['json']}
