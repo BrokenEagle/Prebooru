@@ -32,7 +32,7 @@
         <h4>Options</h4>
         <ul>
             <li>{{ helpers.base.general_link("Original file", post.file_url) }}</li>
-            <li>{{ helpers.post.disk_file_link(post) }}</li>
+            <li>{{ helpers.base.file_link(post.file_path, "Copy file link") }}</li>
             <li>{{ helpers.post.add_to_pool_link(post) }}</li>
             <li>{{ helpers.post.add_notation_link(post) }}</li>
             <li>{{ helpers.post.regenerate_previews_link(post) }}</li>

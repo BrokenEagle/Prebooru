@@ -73,3 +73,8 @@ Prebooru.selectInvert = function(classname) {
         input.checked = !input.checked;
     });
 };
+
+Prebooru.copyFileLink = function(obj) {
+    prompt('Copy file link:', obj.dataset.filePath);
+    return false;
+};

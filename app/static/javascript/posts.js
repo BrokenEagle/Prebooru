@@ -21,9 +21,3 @@ Posts.regenerateSimilarity = function(obj) {
     }
     return false;
 };
-
-Posts.copyFileLink = function(obj) {
-    console.log(obj);
-    prompt('Copy file link:', obj.dataset.filePath);
-    return false;
-};

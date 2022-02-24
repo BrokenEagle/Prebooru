@@ -22,9 +22,9 @@
     <section id="upload-sources">
         <h4>Sources</h4>
         <ul>
-            <li><strong>Media filepath:</strong> {{ helpers.base.val_or_none(upload.media_filepath) }}</li>
-            <li><strong>Sample filepath:</strong> {{ helpers.base.val_or_none(upload.sample_filepath) }}</li>
-            <li><strong>Request:</strong> {{ helpers.base.val_or_none(upload.request_url) }}</li>
+            <li><strong>Media filepath:</strong> {{ helpers.base.file_link(upload.media_filepath) }}</li>
+            <li><strong>Sample filepath:</strong> {{ helpers.base.file_link(upload.sample_filepath) }}</li>
+            <li><strong>Request url:</strong> {{ helpers.base.url_link(upload.request_url) }}</li>
             <li><strong>Image urls:</strong> {{ items_list(upload.image_urls, 'url') }}</li>
         </ul>
     </section>

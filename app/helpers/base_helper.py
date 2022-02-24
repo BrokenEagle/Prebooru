@@ -86,6 +86,8 @@ def external_link(text, url, **addons):
 
 
 def general_link(text, url, method=None, **addons):
+    if text is None or url is None:
+        return Markup('<em>none</em>')
     if method == "POST":
         addons['onclick'] = "return Prebooru.linkPost(this)"
     elif method == "DELETE":
@@ -105,6 +107,12 @@ def url_link(url):
 
 def page_link(text, endpoint, page):
     return general_link(text, url_for_with_params(endpoint, page=page))
+
+
+def file_link(file_path, link_text=None):
+    addons = {'onclick': 'return Prebooru.copyFileLink(this)', 'data-file-path': file_path}
+    link_text = file_path if link_text is None else link_text
+    return general_link(link_text, "javascript:void(0)", **addons)
 
 
 # #### Form functions
