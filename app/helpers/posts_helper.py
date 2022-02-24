@@ -32,6 +32,10 @@ def similar_search_links(post, format_url, proxy_url=None):
         illust = illust_url.illust
         artist = illust.artist
         if not illust.active or not artist.active:
+            if proxy_url is not None:
+                image_links.append(external_link(f'file #{illust.id}', proxy_url + '?post_id=' + str(post.id)))
+            else:
+                image_links.append('N/A')
             continue
         source = get_source_by_id(illust_url.site_id)
         media_url = source.get_media_url(illust_url)
@@ -43,11 +47,6 @@ def similar_search_links(post, format_url, proxy_url=None):
         encoded_url = urllib.parse.quote_plus(small_url)
         href_url = format_url + encoded_url
         image_links.append(external_link(illust.shortlink, href_url))
-    if len(image_links) == 0:
-        if proxy_url is not None:
-            image_links.append(external_link('file', proxy_url + '?post_id=' + str(post.id)))
-        else:
-            image_links.append('N/A')
     return Markup(' | ').join(image_links)
 
 
@@ -76,6 +75,7 @@ def danbooru_post_bookmarklet_links(post):
         illust = illust_url.illust
         artist = illust.artist
         if not illust.active or not artist.active:
+            image_links.append(external_link(f'file #{illust.id}', DANBOORU_HOSTNAME + f'/uploads/new?prebooru_post_id={post.id}&prebooru_illust_id={illust.id}'))
             continue
         source = get_source_by_id(illust_url.site_id)
         media_url = source.get_media_url(illust_url)
@@ -83,8 +83,6 @@ def danbooru_post_bookmarklet_links(post):
         query_string = urllib.parse.urlencode({'url': media_url, 'ref': post_url})
         href_url = DANBOORU_HOSTNAME + '/uploads/new?' + query_string
         image_links.append(external_link(illust.shortlink, href_url))
-    if len(image_links) == 0:
-        image_links.append(external_link('file', DANBOORU_HOSTNAME + '/uploads/new?prebooru_post_id=%d' % post.id))
     return Markup(' | ').join(image_links)
 
 
