@@ -13,7 +13,7 @@ from .logical.utility import get_environment_variable, eval_bool_string
 
 # ## GLOBAL VARIABLES
 
-VERSION = '2.4.0'
+VERSION = '2.5.0'
 
 # ## INTITIALIZATION
 
