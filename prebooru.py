@@ -70,6 +70,7 @@ def initialize_server_callbacks(args):
     from utility.data import eval_bool_string
     from utility.time import  minutes_ago
     from app import SERVER_INFO
+    from app.logical.database.server_info_db import get_last_activity
 
     @atexit.register
     def cleanup(expected_requests=0):
@@ -94,12 +95,16 @@ def initialize_server_callbacks(args):
         @PREBOORU_APP.route('/shutdown', methods=['POST'])
         def shutdown():
             uid = request.args.get('uid')
+            wait = request.args.get('wait', type=eval_bool_string)
             # Only allow shutdowns from localhost
             if SERVER_INFO.addr == '127.0.0.1' and uid == SERVER_INFO.unique_id:
+                last_activity = get_last_activity()
+                if wait and (last_activity > minutes_ago(15)):
+                    return {'error': False, 'wait': True}
                 print("Shutting down...")
                 SERVER_INFO.allow_requests = False
                 cleanup(1)
-                return {'error': False}
+                return {'error': False, 'wait': False}
             else:
                 print("Invalid shutdown request.")
                 return {'error': True, 'message': "This route is only available from the watchdog."}
@@ -146,6 +151,8 @@ def start_server(args):
         app.MAIN_PROCESS = True
         # Scheduled tasks must be added only after everything else has been initialized
         from app.logical.tasks import schedule  # noqa: F401
+        from app.logical.database.server_info_db import update_last_activity
+        update_last_activity()
         validate_version()
         validate_integrity()
         print("\n========== Starting server - Prebooru-%s ==========" % VERSION)
@@ -242,12 +249,22 @@ def watchdog_loop(watchdog_info):
         time.sleep(POLLING_INTERVAL)
         if ((time.time() - last_checked) < 300):  # Only check the memory every 5 minutes
             continue
-        private_memory = proc.memory_info().private
+        private_memory = sum([subproc.memory_info().private for subproc in get_proc_tree(proc)])
         if (private_memory > MAX_MEMORY):
             print("Server has exceded the allowed maximum memory... restarting.")
-            shutdown_server(proc, unique_id)
-            errorcode = WERKZEUG_RESTART_CODE
+            if shutdown_server(proc, unique_id, True):
+                errorcode = WERKZEUG_RESTART_CODE
+            else:
+                print("Server is busy... will try restarting again later.")
         last_checked = time.time()
+
+
+def get_proc_tree(proc, proc_list=None):
+    proc_list = proc_list if proc_list is not None else []
+    proc_list.append(proc)
+    for child in proc.children():
+        get_proc_tree(child, proc_list)
+    return proc_list
 
 
 def kill_proc_tree(proc):
@@ -256,7 +273,7 @@ def kill_proc_tree(proc):
     proc.kill()
 
 
-def shutdown_server(proc, unique_id=None):
+def shutdown_server(proc, unique_id=None, wait=False):
     import json
     import requests
     from config import PREBOORU_PORT, DATA_DIRECTORY
@@ -265,7 +282,7 @@ def shutdown_server(proc, unique_id=None):
         return
     if unique_id is not None:
         try:
-            resp = requests.post(f'http://127.0.0.1:{PREBOORU_PORT}/shutdown?uid={unique_id}', timeout=30)
+            resp = requests.post(f'http://127.0.0.1:{PREBOORU_PORT}/shutdown?uid={unique_id}&wait={wait}', timeout=120)
             data = resp.json()
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
             print(f"Connection error: {repr(e)}")
@@ -275,8 +292,11 @@ def shutdown_server(proc, unique_id=None):
         else:
             if data['error']:
                 print(f"Error with shutdown: {data['message']}",)
+            elif data['wait']:
+                return False
     print("Killing server...")
     kill_proc_tree(proc)
+    return True
 
 
 # #### Main functions

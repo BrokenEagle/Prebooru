@@ -67,9 +67,11 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record):
 
 
 def _before_request():
+    from app.logical.database.server_info_db import update_last_activity
     msg = f"\nBefore request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
     print(msg, end="", flush=True)
     SERVER_INFO.active_requests += 1
+    update_last_activity()
     return None if SERVER_INFO.allow_requests else ""
 
 

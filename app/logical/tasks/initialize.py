@@ -7,10 +7,12 @@ import random
 import datetime
 
 # ## PACKAGE IMPORTS
+from utility.time import time_ago
 from utility.print import buffered_print
 
 # ## LOCAL IMPORTS
 from ... import SCHEDULER
+from ..database.server_info_db import get_last_activity
 from ..database.jobs_db import create_job_tables, get_all_job_info, delete_job, create_job_lock, get_all_job_locks,\
     update_job_lock_status, delete_lock, create_job_timeval, get_all_job_timevals,\
     update_job_timeval, delete_timeval
@@ -52,6 +54,7 @@ def recheck_schedule_interval(config, lconfig, reschedule):
     global LAST_CHECK
     printer = buffered_print("Recheck Schedule Interval")
     printer("PID:", os.getpid())
+    printer("Last activity:", time_ago(get_last_activity()))
     info = get_all_job_info()
     locks = get_all_job_locks()
     timevals = get_all_job_timevals()

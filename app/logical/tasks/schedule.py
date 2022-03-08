@@ -21,6 +21,7 @@ from ..database.api_data_db import expired_api_data_count, delete_expired_api_da
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_data_db import expired_archive_data_count, delete_expired_archive_data
 from ..database.jobs_db import update_job_lock_status, get_job_lock_status
+from ..database.server_info_db import update_last_activity
 from .initialize import initialize_scheduler, recheck_schedule_interval
 
 # ## GLOBAL DATA
@@ -205,6 +206,7 @@ def _set_db_semaphore(id):
     if status is None or status:
         return False
     update_job_lock_status(id, True)
+    update_last_activity()
     return True
 
 
