@@ -1,9 +1,12 @@
 # APP/LOGICAL/DATABASE/POOL_ELEMENT_DB.PY
 
+# ## PACKAGE IMPORTS
+from utility.time import get_current_time
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Illust, Post, Notation
-from ..utility import get_current_time, set_error
+from ..utility import set_error
 
 
 # ## GLOBAL VARIABLES

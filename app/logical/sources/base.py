@@ -3,10 +3,13 @@
 # ## PYTHON IMPORTS
 import urllib
 
+# ## PACKAGE IMPORTS
+from utility.file import get_http_filename, get_file_extension
+
 # ## LOCAL IMPORTS
 from ..sites import get_site_key, get_site_id, get_site_domain
 from ..sources import SOURCES, SOURCEDICT
-from ..utility import get_http_filename, get_file_extension, set_error
+from ..utility import set_error
 from ..database.error_db import is_error
 
 

@@ -3,10 +3,13 @@
 # ## PYTHON IMPORTS
 import datetime
 
+# ## PACKAGE IMPORTS
+from utility.time import get_current_time
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Illust, IllustUrl, Tag, Description
-from ..utility import get_current_time, set_error
+from ..utility import set_error
 from .illust_url_db import update_illust_url_from_parameters
 from .site_data_db import update_site_data_from_parameters
 from .pool_element_db import delete_pool_element

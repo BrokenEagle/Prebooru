@@ -7,9 +7,11 @@ from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField
 from wtforms.validators import DataRequired
 
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string, is_falsey
+
 # ## LOCAL IMPORTS
 from ..models import Notation, Pool, Artist, Illust, Post, PoolNotation
-from ..logical.utility import eval_bool_string, is_falsey
 from ..logical.database.notation_db import create_notation_from_parameters, update_notation_from_parameters,\
     append_notation_to_item, delete_notation
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\

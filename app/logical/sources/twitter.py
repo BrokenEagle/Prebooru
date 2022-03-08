@@ -13,9 +13,11 @@ import requests
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE
+from utility.data import safe_get, decode_json, fixup_crlf
+from utility.time import get_current_time
+from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
 
 # ## LOCAL IMPORTS
-from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, decode_json, fixup_crlf
 from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data

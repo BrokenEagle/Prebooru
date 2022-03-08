@@ -3,10 +3,13 @@
 # ## PYTHON IMPORTS
 import datetime
 
+# ## PACKAGE IMPORTS
+from utility.time import process_utc_timestring
+from utility.print import safe_print
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..logger import log_error
-from ..utility import process_utc_timestring, safe_print
 
 
 # ## FUNCTIONS

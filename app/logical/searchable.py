@@ -8,8 +8,9 @@ from sqlalchemy.orm.relationships import RelationshipProperty
 from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance
 import sqlalchemy.sql.sqltypes as sqltypes
 
-# ## LOCAL IMPORTS
-from .utility import is_truthy, is_falsey, process_utc_timestring
+# ## PACKAGE IMPORTS
+from utility.data import is_truthy, is_falsey
+from utility.time import process_utc_timestring
 
 
 # ## GLOBAL VARIABLES

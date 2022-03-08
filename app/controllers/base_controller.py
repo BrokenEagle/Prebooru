@@ -13,8 +13,10 @@ from wtforms import Form
 from wtforms.meta import DefaultMeta
 from wtforms.widgets import HiddenInput
 
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string, merge_dicts
+
 # ## LOCAL IMPORTS
-from ..logical.utility import eval_bool_string, merge_dicts
 from ..logical.searchable import search_attributes
 
 

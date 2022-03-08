@@ -10,8 +10,10 @@ from flask import Markup, request, url_for
 from wtforms import Field, BooleanField
 from wtforms.widgets import HiddenInput
 
+# ## PACKAGE IMPORTS
+from utility.time import time_ago
+
 # ## LOCAL IMPORTS
-from ..logical.utility import time_ago
 from ..logical.sources import pixiv, twitter
 
 

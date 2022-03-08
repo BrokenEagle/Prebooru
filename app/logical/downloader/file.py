@@ -1,8 +1,9 @@
 # APP/LOGICAL/DOWNLOADER/FILE.PY
 
+# ## PACKAGE IMPORTS
+from utility.file import get_file_extension, put_get_raw
+
 # ## LOCAL IMPORTS
-from ..utility import get_file_extension
-from ..file import put_get_raw
 from ...models import Post
 from ..database.post_db import create_post_and_add_illust_url
 from ..database.error_db import create_and_append_error, extend_errors, is_error

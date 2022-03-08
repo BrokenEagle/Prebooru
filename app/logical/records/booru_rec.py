@@ -1,8 +1,11 @@
 # APP/LOGICAL/RECORDS/BOORU_REC.PY
 
+# ## PACKAGE IMPORTS
+from utility.print import error_print
+
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import set_error, error_print
+from ..utility import set_error
 from ..sources.base import get_artist_id_source
 from ..sources.danbooru import get_artist_by_id
 from ..database.artist_db import get_site_artist

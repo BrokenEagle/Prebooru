@@ -4,9 +4,13 @@
 import itertools
 import threading
 
+# ## PACKAGE IMPORTS
+from utility.time import get_current_time, minutes_ago
+from utility.print import buffered_print
+
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time, minutes_ago, unique_objects, buffered_print
+from ..utility import unique_objects
 from ..logger import log_error
 from ..similarity.generate_data import generate_post_similarity
 from ..similarity.populate_pools import populate_similarity_pools

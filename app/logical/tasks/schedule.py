@@ -5,11 +5,14 @@ import os
 import re
 import atexit
 
+# ## PACKAGE IMPORTS
+from utility import RepeatTimer
+from utility.print import buffered_print
+from utility.file import get_directory_listing, delete_file
+
 # ## LOCAL IMPORTS
 from ... import DB, SCHEDULER, MAIN_PROCESS
 from ...models.media_file import CACHE_DATA_DIRECTORY
-from ..utility import buffered_print, RepeatTimer
-from ..file import get_directory_listing, delete_file
 from ..check.boorus import check_all_boorus
 from ..check.posts import check_all_posts_for_danbooru_id
 from ..check.booru_artists import check_all_artists_for_boorus

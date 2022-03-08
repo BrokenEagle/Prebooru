@@ -67,6 +67,8 @@ def initialize_controllers():
 def initialize_server_callbacks(args):
     import atexit
     from flask import request
+    from utility.data import eval_bool_string
+    from utility.time import  minutes_ago
     from app import SERVER_INFO
 
     @atexit.register
@@ -118,7 +120,7 @@ def start_server(args):
     global SERVER_PID, SERVER_PID_FILE, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER,\
         load_default, put_get_json
     from config import DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
-    from app.logical.file import load_default, put_get_json
+    from utility.file import load_default, put_get_json
     SERVER_PID_FILE = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
     SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
     if SERVER_PID is not None:
@@ -161,8 +163,8 @@ def init_db(args):
     check = input("This will destroy any existing information. Proceed (y/n)? ")
     if check.lower() != 'y':
         return
-    from app.logical.file import create_directory
     from config import DB_PATH
+    from utility.file import create_directory
     if args.new:
         if os.path.exists(DB_PATH):
             print("Deleting prebooru database!")
@@ -195,7 +197,7 @@ def server_watchdog(args):
 def kill_server(args):
     import psutil
     from config import DATA_DIRECTORY
-    from app.logical.file import load_default, put_get_json
+    from utility.file import load_default, put_get_json
     SERVER_PID_FILE = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
     SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
     if SERVER_PID is None:
@@ -258,7 +260,7 @@ def shutdown_server(proc, unique_id=None):
     import json
     import requests
     from config import PREBOORU_PORT, DATA_DIRECTORY
-    from app.logical.file import put_get_raw
+    from utility.file import put_get_raw
     if proc is None:
         return
     if unique_id is not None:

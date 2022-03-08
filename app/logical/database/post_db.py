@@ -1,9 +1,11 @@
 # APP/LOGICAL/DATABASE/POST_DB.PY
 
+# ## PACKAGE IMPORTS
+from utility.time import get_current_time
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Post
-from ..utility import get_current_time
 from .base_db import update_column_attributes
 from .pool_element_db import delete_pool_element
 from .similarity_pool_db import delete_similarity_pool_by_post_id

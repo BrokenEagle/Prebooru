@@ -11,10 +11,11 @@ import requests
 
 # ## PACKAGE IMPORTS
 from config import PIXIV_PHPSESSID
+from utility.data import safe_get, fixup_crlf
+from utility.time import get_current_time, process_utc_timestring
+from utility.file import get_file_extension, get_http_filename
 
 # ## LOCAL IMPORTS
-from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, fixup_crlf,\
-    process_utc_timestring
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, get_api_data, save_api_data
 from ..sites import Site, get_site_domain, get_site_id

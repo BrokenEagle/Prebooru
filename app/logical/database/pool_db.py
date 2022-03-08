@@ -1,9 +1,11 @@
 # APP/LOGICAL/DATABASE/POOL_DB.PY
 
+# ## PACKAGE IMPORTS
+from utility.time import get_current_time
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Pool
-from ..utility import get_current_time
 from .base_db import update_column_attributes
 
 

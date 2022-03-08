@@ -8,9 +8,7 @@ import requests
 
 # ## PACKAGE IMPORTS
 from config import DANBOORU_USERNAME, DANBOORU_APIKEY, DANBOORU_HOSTNAME
-
-# ## LOCAL IMPORTS
-from ..utility import add_dict_entry
+from utility.data import add_dict_entry
 
 
 # ## GLOBAL VARIABLES

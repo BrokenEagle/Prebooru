@@ -7,9 +7,7 @@ from io import BytesIO
 
 # ## PACKAGE IMPORTS
 from config import PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
-
-# ## LOCAL IMPORTS
-from .file import create_directory, put_get_raw
+from utility.file import create_directory, put_get_raw
 
 
 # ## FUNCTIONS

@@ -5,9 +5,11 @@ from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy.orm import selectinload
 from wtforms import StringField, IntegerField, TextAreaField
 
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string
+
 # ## LOCAL IMPORTS
 from .. import SCHEDULER
-from ..logical.utility import eval_bool_string
 from ..logical.tasks.worker import process_upload
 from ..logical.records.media_file_rec import get_or_create_media
 from ..models import Upload, Post, IllustUrl, Illust

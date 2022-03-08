@@ -7,9 +7,11 @@ from sqlalchemy.orm import selectinload, selectin_polymorphic
 from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, StringField
 from wtforms.validators import DataRequired
 
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string, is_falsey
+
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
-from ..logical.utility import eval_bool_string, is_falsey
 from ..logical.sources.base import get_source_by_id, get_illust_required_params
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\

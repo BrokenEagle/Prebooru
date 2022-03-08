@@ -4,12 +4,32 @@
 import os
 import time
 import json
+import pathlib
 
 # ###LOCAL IMPORTS
-from .utility import get_directory_path, decode_unicode, decode_json
+from .data import decode_unicode, decode_json
 
 
 # ##FUNCTIONS
+
+# #### Filename functions
+
+def get_http_filename(webpath):
+    start = webpath.rfind('/') + 1
+    isextras = webpath.rfind('?')
+    end = isextras if isextras > 0 else len(webpath) + 1
+    return webpath[start:end]
+
+
+def get_file_extension(filepath):
+    return filepath[filepath.rfind('.') + 1:]
+
+
+def get_directory_path(filepath):
+    return str(pathlib.Path(filepath).parent.resolve())
+
+
+# #### File functions
 
 def get_directory_listing(directory):
     try:

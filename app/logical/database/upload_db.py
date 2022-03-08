@@ -3,9 +3,11 @@
 # ## PYTHON IMPORTS
 import re
 
+# ## PACKAGE IMPORTS
+from utility.time import get_current_time
+
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import get_current_time
 from ...models import Upload, UploadUrl
 from .base_db import update_column_attributes, update_relationship_collections
 

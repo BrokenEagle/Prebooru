@@ -1,9 +1,11 @@
 # APP/LOGICAL/DATABASE/API_DATA_DB.PY
 
-# ##LOCAL IMPORTS
+# ## PACKAGE IMPORTS
+from utility.time import get_current_time, days_from_now
+
+# ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import ApiData
-from ..utility import get_current_time, days_from_now
 
 
 # ##FUNCTIONS

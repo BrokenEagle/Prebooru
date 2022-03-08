@@ -1,8 +1,11 @@
 # APP/LOGICAL/RECORDS/ILLUST_REC.PY
 
+# ## PACKAGE IMPORTS
+from utility.data import merge_dicts
+
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import set_error, merge_dicts
+from ..utility import set_error
 from ..database.artist_db import get_site_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust,\
     get_site_illust, create_illust_from_raw_parameters

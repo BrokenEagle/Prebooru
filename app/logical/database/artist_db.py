@@ -3,10 +3,13 @@
 # ## PYTHON IMPORTS
 import datetime
 
+# ## PACKAGE IMPORTS
+from utility.time import get_current_time
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Artist, ArtistUrl, Label, Description
-from ..utility import get_current_time, set_error
+from ..utility import set_error
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
     set_timesvalue, set_association_attributes
 

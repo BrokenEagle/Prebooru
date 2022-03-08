@@ -4,9 +4,12 @@
 import os
 import logging
 
+# ## PACKAGE IMPORTS
+from utility.print import error_print
+from utility.file import delete_file
+
 # ## LOCAL IMPORTS
-from ..utility import set_error, error_print
-from ..file import delete_file
+from ..utility import set_error
 from ..database.archive_data_db import process_archive_data, ARCHIVE_DATA_DIRECTORY
 from .post_rec import reinstantiate_archived_post, relink_archived_post
 from .illust_rec import recreate_archived_illust, relink_archived_illust
