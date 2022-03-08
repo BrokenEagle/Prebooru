@@ -615,8 +615,12 @@ def get_twitter_illust(illust_id):
                   '&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true'
     data = twitter_request(request_url)
     if data['error']:
+        if DEBUG_MODE:
+            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         return create_error('logical.sources.twitter.get_twitter_illust', data['message'])
     if len(data['body']) == 0:
+        if DEBUG_MODE:
+            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         return create_error('logical.sources.twitter.get_twitter_illust', "Tweet not found: %d" % illust_id)
     return data['body'][0]
 
