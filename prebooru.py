@@ -15,14 +15,13 @@ SHUTDOWN_ERROR_FILE = 'prebooru-shutdown-error.txt'
 
 # #### Initialization functions
 
-def initialize_server(args):
+def initialize_server():
     global PREBOORU_APP, SCHEDULER, load_default, put_get_json, validate_version, validate_integrity
     from app import PREBOORU_APP, SCHEDULER
     from app.logical.validate import validate_version, validate_integrity
     initialize_environment()
     initialize_controllers()
     initialize_helpers()
-    initialize_server_callbacks(args)
 
 
 def initialize_environment():
@@ -131,7 +130,7 @@ def start_server(args):
     if SERVER_PID is not None:
         print("Server process already running: %d" % SERVER_PID)
         exit(-1)
-    initialize_server(args)
+    initialize_server()
     if args.extension:
         try:
             from flask_flaskwork import Flaskwork
@@ -152,6 +151,7 @@ def start_server(args):
         # Scheduled tasks must be added only after everything else has been initialized
         from app.logical.tasks import schedule  # noqa: F401
         from app.logical.database.server_info_db import update_last_activity
+        initialize_server_callbacks(args)
         update_last_activity()
         validate_version()
         validate_integrity()
