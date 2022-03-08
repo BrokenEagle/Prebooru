@@ -89,7 +89,7 @@ def check_filetype(buffer, file_ext, post_errors):
         msg = "Error reading file headers: %s" % repr(e)
         create_post_error('logical.downloader.base.check_filetype', msg, post_errors)
         return file_ext
-    if guess.extension != file_ext:
+    if guess and guess.extension != file_ext:
         msg = "Mismatching file extensions: Reported - %s, Actual - %s" % (file_ext, guess.extension)
         create_post_error('logical.downloader.base.check_filetype', msg, post_errors)
         file_ext = guess.extension
