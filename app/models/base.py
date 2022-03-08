@@ -10,9 +10,11 @@ from sqlalchemy.orm import RelationshipProperty
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.ext.associationproxy import _AssociationList
 
+# ## PACKAGE IMPORTS
+from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
+
 # ## LOCAL IMPORTS
 from .. import DB, SERVER_INFO
-from ..config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 
 
 # ## FUNCTIONS

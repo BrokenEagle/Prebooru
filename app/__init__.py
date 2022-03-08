@@ -16,9 +16,11 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from werkzeug.wsgi import get_input_stream
 from werkzeug.formparser import parse_form_data
 
+# ## PACKAGE IMPORTS
+from config import DB_PATH, JOBS_PATH, DEBUG_MODE
+
 # ## LOCAL IMPORTS
 from .logical import query_extensions
-from .config import DB_PATH, JOBS_PATH, DEBUG_MODE
 
 
 # ## VALIDATION

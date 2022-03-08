@@ -6,8 +6,10 @@ import urllib.parse
 # ## EXTERNAL IMPORTS
 from flask import url_for
 
+# ## PACKAGE IMPORTS
+from config import DANBOORU_HOSTNAME
+
 # ## LOCAL IMPORTS
-from ..config import DANBOORU_HOSTNAME
 from .base_helper import search_url_for, general_link, external_link
 
 

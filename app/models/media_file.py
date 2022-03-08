@@ -3,9 +3,11 @@
 # ## PYTHON IMPORTS
 import os
 
+# ## PACKAGE IMPORTS
+from config import IMAGE_DIRECTORY
+
 # ## LOCAL IMPORTS
 from .. import DB
-from ..config import IMAGE_DIRECTORY
 from .base import JsonModel, image_server_url
 
 

@@ -117,7 +117,7 @@ def initialize_migrate():
 def start_server(args):
     global SERVER_PID, SERVER_PID_FILE, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER,\
         load_default, put_get_json
-    from app.config import DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
+    from config import DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
     from app.logical.file import load_default, put_get_json
     SERVER_PID_FILE = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
     SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
@@ -162,7 +162,7 @@ def init_db(args):
     if check.lower() != 'y':
         return
     from app.logical.file import create_directory
-    from app.config import DB_PATH
+    from config import DB_PATH
     if args.new:
         if os.path.exists(DB_PATH):
             print("Deleting prebooru database!")
@@ -194,7 +194,7 @@ def server_watchdog(args):
 
 def kill_server(args):
     import psutil
-    from app.config import DATA_DIRECTORY
+    from config import DATA_DIRECTORY
     from app.logical.file import load_default, put_get_json
     SERVER_PID_FILE = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
     SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
@@ -257,7 +257,7 @@ def kill_proc_tree(proc):
 def shutdown_server(proc, unique_id=None):
     import json
     import requests
-    from app.config import PREBOORU_PORT, DATA_DIRECTORY
+    from config import PREBOORU_PORT, DATA_DIRECTORY
     from app.logical.file import put_get_raw
     if proc is None:
         return
@@ -299,7 +299,7 @@ def check_other_execs():
         if command == 'db':
             initialize_migrate()
         elif command == 'routes':
-            from app.config import HAS_EXTERNAL_IMAGE_SERVER
+            from config import HAS_EXTERNAL_IMAGE_SERVER
             initialize_controllers()
 
 

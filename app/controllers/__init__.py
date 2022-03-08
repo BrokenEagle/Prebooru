@@ -2,8 +2,8 @@
 
 """Directly interacts with routes."""
 
-# ## LOCAL_IMPORTS
-from ..config import HAS_EXTERNAL_IMAGE_SERVER
+# ## PACKAGE_IMPORTS
+from config import HAS_EXTERNAL_IMAGE_SERVER
 
 # ## COLLATION IMPORTS
 from . import base_controller as base  # noqa: F401

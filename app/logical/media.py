@@ -5,9 +5,11 @@ import ffmpeg
 from PIL import Image
 from io import BytesIO
 
+# ## PACKAGE IMPORTS
+from config import PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
+
 # ## LOCAL IMPORTS
 from .file import create_directory, put_get_raw
-from ..config import PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 
 
 # ## FUNCTIONS

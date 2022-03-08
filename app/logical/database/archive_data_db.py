@@ -5,9 +5,11 @@ import os
 import re
 import datetime
 
+# ## PACKAGE IMPORTS
+from config import IMAGE_DIRECTORY
+
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...config import IMAGE_DIRECTORY
 from ...models import ArchiveData
 from ..utility import get_current_time, days_from_now, process_utc_timestring
 

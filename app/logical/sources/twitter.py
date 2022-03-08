@@ -11,11 +11,12 @@ import datetime
 # ## EXTERNAL IMPORTS
 import requests
 
+# ## PACKAGE IMPORTS
+from config import DATA_DIRECTORY, DEBUG_MODE
+
 # ## LOCAL IMPORTS
-from ...config import DATA_DIRECTORY, DEBUG_MODE
 from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, decode_json, fixup_crlf
 from ..logger import log_network_error
-from ..file import load_default, put_get_json
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
 from ..database.illust_db import get_site_illust

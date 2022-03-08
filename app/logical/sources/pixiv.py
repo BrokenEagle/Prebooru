@@ -9,8 +9,10 @@ import datetime
 # ## EXTERNAL IMPORTS
 import requests
 
+# ## PACKAGE IMPORTS
+from config import PIXIV_PHPSESSID
+
 # ## LOCAL IMPORTS
-from ...config import PIXIV_PHPSESSID
 from ..utility import get_current_time, get_file_extension, get_http_filename, safe_get, fixup_crlf,\
     process_utc_timestring
 from ..database.error_db import create_error, is_error

@@ -9,9 +9,11 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
+# ## PACKAGE IMPORTS
+from config import IMAGE_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
+
 # ## LOCAL IMPORTS
 from .. import DB
-from ..config import IMAGE_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from ..logical.utility import unique_objects
 from .error import Error
 from .illust_url import IllustUrl

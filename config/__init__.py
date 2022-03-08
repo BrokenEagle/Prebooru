@@ -1,4 +1,4 @@
-# APP/CONFIG.PY
+# CONFIG/__INIT__.PY
 
 # flake8: noqa
 
@@ -7,9 +7,12 @@ import os
 import dotenv
 import logging
 
+# ## PACKAGE IMPORTS
+from utility import get_environment_variable
+from utility.data import eval_bool_string
+
 # ## LOCAL IMPORTS
-from .default_config import *
-from .logical.utility import get_environment_variable, eval_bool_string
+from .default import *
 
 # ## GLOBAL VARIABLES
 
@@ -23,9 +26,9 @@ logger.addHandler(logging.StreamHandler())
 
 try:
     if not get_environment_variable('DEFAULT_CONFIG', False):
-        from .local_config import *
+        from .local import *
 except ImportError:
-    logger.warning("Unable to load 'app\\local_config.py , using default config instead.")
+    logger.warning("Unable to load 'config\\local.py , using default config instead.")
 
 # #### Load .env file into environment variables if set
 

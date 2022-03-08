@@ -6,9 +6,11 @@ import urllib.parse
 # ## EXTERNAL IMPORTS
 from flask import Markup, url_for
 
-# ##LOCAL IMPORTS
+# ## PACKAGE IMPORTS
+from config import DANBOORU_HOSTNAME
+
+# ## LOCAL IMPORTS
 from ..logical.sources.base import get_source_by_id
-from ..config import DANBOORU_HOSTNAME
 from .base_helper import search_url_for, general_link, external_link
 
 

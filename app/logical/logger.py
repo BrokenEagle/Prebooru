@@ -6,8 +6,10 @@ import sys
 import time
 import traceback
 
+# ## PACKAGE IMPORTS
+from config import DATA_DIRECTORY
+
 # ###LOCAL IMPORTS
-from ..config import DATA_DIRECTORY
 from .file import load_default, put_get_json
 
 

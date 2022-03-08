@@ -3,8 +3,8 @@
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, send_from_directory
 
-# ## LOCAL IMPORTS
-from ..config import IMAGE_DIRECTORY
+# ## PACKAGE IMPORTS
+from config import IMAGE_DIRECTORY
 
 
 # ## GLOBAL VARIABLES

@@ -6,8 +6,10 @@ import time
 # ## EXTERNAL IMPORTS
 import requests
 
+# ## PACKAGE IMPORTS
+from config import DANBOORU_USERNAME, DANBOORU_APIKEY, DANBOORU_HOSTNAME
+
 # ## LOCAL IMPORTS
-from ...config import DANBOORU_USERNAME, DANBOORU_APIKEY, DANBOORU_HOSTNAME
 from ..utility import add_dict_entry
 
 

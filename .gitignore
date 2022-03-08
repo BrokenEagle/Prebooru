@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 *.env
 
-app/local_config.py
+config/local.py
 db/
 temp/
 junk/
