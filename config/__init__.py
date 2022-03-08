@@ -53,6 +53,8 @@ PIXIV_PHPSESSID = get_environment_variable('PIXIV_PHPSESSID', PIXIV_PHPSESSID)
 PREBOORU_PORT = get_environment_variable('PREBOORU_PORT', PREBOORU_PORT, int)
 IMAGE_PORT = get_environment_variable('IMAGE_PORT', IMAGE_PORT, int)
 HAS_EXTERNAL_IMAGE_SERVER = get_environment_variable('HAS_EXTERNAL_IMAGE_SERVER', HAS_EXTERNAL_IMAGE_SERVER, eval_bool_string)
+WATCHDOG_MAX_MEMORY_MB = get_environment_variable('PREBOORU_MAX_MEMORY', WATCHDOG_MAX_MEMORY_MB, int) * (1024 * 1024)
+WATCHDOG_POLLING_INTERVAL = get_environment_variable('WATCHDOG_POLLING_INTERVAL', WATCHDOG_POLLING_INTERVAL, int)
 DEBUG_MODE = get_environment_variable('DEBUG_MODE', DEBUG_MODE, eval_bool_string)
 
 # #### Constructed config variables

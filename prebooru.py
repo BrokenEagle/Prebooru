@@ -6,8 +6,6 @@ import time
 
 # ## GLOBAL VARIABLES
 
-MAX_MEMORY_MB = 800
-POLLING_INTERVAL = 5
 SHUTDOWN_ERROR_FILE = 'prebooru-shutdown-error.txt'
 
 
@@ -229,9 +227,9 @@ def watchdog_loop(watchdog_info):
     import psutil
     import subprocess
     from werkzeug._reloader import _get_args_for_reloading
+    from config import WATCHDOG_MAX_MEMORY_MB, WATCHDOG_POLLING_INTERVAL
 
     WERKZEUG_RESTART_CODE = 3
-    MAX_MEMORY = int(os.environ.get('PREBOORU_MAX_MEMORY', MAX_MEMORY_MB * (1024 * 1024)))
     new_environ = os.environ.copy()
     errorcode = WERKZEUG_RESTART_CODE
     last_checked = time.time()
@@ -246,11 +244,11 @@ def watchdog_loop(watchdog_info):
         elif errorcode is not None:
             exit(errorcode)
         errorcode = p.returncode and (p.returncode if (p.returncode < (1 << 31)) else (p.returncode - (1 << 32)))
-        time.sleep(POLLING_INTERVAL)
+        time.sleep(WATCHDOG_POLLING_INTERVAL)
         if ((time.time() - last_checked) < 300):  # Only check the memory every 5 minutes
             continue
         private_memory = sum([subproc.memory_info().private for subproc in get_proc_tree(proc)])
-        if (private_memory > MAX_MEMORY):
+        if (private_memory > WATCHDOG_MAX_MEMORY_MB):
             print("Server has exceded the allowed maximum memory... restarting.")
             if shutdown_server(proc, unique_id, True):
                 errorcode = WERKZEUG_RESTART_CODE
