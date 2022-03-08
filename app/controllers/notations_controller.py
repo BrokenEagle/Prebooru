@@ -46,7 +46,7 @@ SHOW_HTML_OPTIONS = (
 )
 
 
-# ####Forms
+# #### Forms
 
 def get_notation_form(**kwargs):
     # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
@@ -243,7 +243,7 @@ def update_html(id):
     return redirect(url_for('notation.show_html', id=notation.id))
 
 
-# ####DELETE
+# #### DELETE
 
 @bp.route('/notations/<int:id>', methods=['DELETE'])
 def delete_html(id):

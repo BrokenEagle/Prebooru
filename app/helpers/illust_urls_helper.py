@@ -7,7 +7,7 @@ from flask import Markup, url_for
 from .base_helper import general_link
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### Link functions
 

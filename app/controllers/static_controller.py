@@ -4,12 +4,12 @@
 from flask import Blueprint, render_template
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 bp = Blueprint("static", __name__)
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 @bp.route('/static/site_map', methods=['GET'])
 def site_map_html():

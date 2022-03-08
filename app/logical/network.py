@@ -5,7 +5,7 @@ import time
 import requests
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 def get_http_file(serverfilepath, headers=None, timeout=10):
     headers = headers if headers is not None else {}

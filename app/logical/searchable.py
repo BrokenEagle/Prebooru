@@ -29,7 +29,7 @@ TEXT_COMPARISON_RE = r'%%s_(%s)' % '|'.join(TEXT_COMPARISON_TYPES)
 TEXT_ARRAY_RE = '%%s_(%s)' % '|'.join(ALL_ARRAY_TYPES)
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### Test functions
 

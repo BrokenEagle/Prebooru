@@ -1,16 +1,16 @@
-# APP/LOGICAL/FILE.PY
+# UTILITY/FILE.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import os
 import time
 import json
 import pathlib
 
-# ###LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .data import decode_unicode, decode_json
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### Filename functions
 

@@ -1,4 +1,4 @@
-# APP/CONTROLLERS/UPLOADS.PY
+# APP/CONTROLLERS/UPLOADS_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash

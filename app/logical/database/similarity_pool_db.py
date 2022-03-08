@@ -18,7 +18,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['post_id']
 UPDATE_ALLOWED_ATTRIBUTES = ['element_count']
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### DB functions
 

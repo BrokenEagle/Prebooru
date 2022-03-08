@@ -1,6 +1,6 @@
 # APP/MODELS/ARTIST_URL.PY
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel
 

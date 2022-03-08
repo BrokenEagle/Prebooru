@@ -1,4 +1,4 @@
-# APP/BASE_MODEL.PY
+# APP/MODELS/BASE.PY
 
 # ## PYTHON IMPORTS
 import datetime

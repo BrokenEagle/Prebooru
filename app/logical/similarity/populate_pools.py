@@ -1,4 +1,4 @@
-# APP/LOGICAL/SIMILARITY/POOL.PY
+# APP/LOGICAL/SIMILARITY/POPULATE_POOLS.PY
 
 # ## PYTHON IMPORTS
 from sqlalchemy.orm import selectinload

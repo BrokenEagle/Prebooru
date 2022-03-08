@@ -25,7 +25,7 @@ from ..database.illust_db import get_site_illust
 from ..sites import Site, get_site_domain, get_site_id
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 # #### Module variables
 
@@ -205,7 +205,7 @@ TOKEN_FILE = os.path.join(DATA_DIRECTORY, 'twittertoken.txt')
 ERROR_TWEET_FILE = os.path.join(DATA_DIRECTORY, 'twittererror.json')
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # Illust
 

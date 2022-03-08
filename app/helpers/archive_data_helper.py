@@ -3,7 +3,7 @@
 # ## EXTERNAL IMPORTS
 from flask import url_for
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .base_helper import general_link
 
 

@@ -39,7 +39,7 @@ def hex_chunk(hashstr, index):
     return hashstr[strindex: strindex + CHARACTERS_PER_CHUNK]
 
 
-# ##CLASSES
+# ## CLASSES
 
 class SimilarityData(JsonModel):
     # ## Declarations

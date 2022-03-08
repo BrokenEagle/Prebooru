@@ -6,12 +6,12 @@ import requests
 import urllib.parse
 from functools import reduce
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import SESSION
 from ..models import Domain, Description, ArtistUrl
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 SHORTLINK_DOMAINS = ['t.co', 'bit.ly']
 NONSHORTLINK_DOMAINS = ['pixiv.me']
@@ -28,7 +28,7 @@ TCO_RG = re.compile(r'https?://t\.co/\w+')
 SHORTLINK_DOMAIN_RG = None
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 def initialize_shortlinks():
     global SHORTLINK_DOMAINS, NONSHORTLINK_DOMAINS, SHORTLINK_DOMAIN_RG

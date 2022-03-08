@@ -59,7 +59,7 @@ class CountPaginate():
         return self._count_query.get_count()
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### Initialization functions
 

@@ -27,7 +27,7 @@ class Site(Enum):
     TWVIDEO = auto()
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 def get_site_id(domain):
     if domain in DOMAINS:

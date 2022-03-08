@@ -65,7 +65,7 @@ def initialize_server_callbacks(args):
     import atexit
     from flask import request
     from utility.data import eval_bool_string
-    from utility.time import  minutes_ago
+    from utility.time import minutes_ago
     from app import SERVER_INFO
     from app.logical.database.server_info_db import get_last_activity
 

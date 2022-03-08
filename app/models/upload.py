@@ -13,7 +13,7 @@ from .error import Error
 from .base import JsonModel
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 # Many-to-many tables
 

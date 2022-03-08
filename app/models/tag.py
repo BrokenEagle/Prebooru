@@ -9,7 +9,7 @@ from .. import DB
 from .base import JsonModel
 
 
-# ##CLASSES
+# ## CLASSES
 
 class Tag(JsonModel):
     # ## Declarations

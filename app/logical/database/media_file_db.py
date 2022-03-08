@@ -9,14 +9,14 @@ from ...models import MediaFile
 from .base_db import update_column_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
 
 CREATE_ALLOWED_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### DB functions
 

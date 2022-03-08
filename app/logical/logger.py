@@ -1,6 +1,6 @@
 # APP/LOGICAL/LOGGER.PY
 
-# ##PYTHON IMPORTS
+# ## PYTHON IMPORTS
 import os
 import sys
 import time
@@ -11,14 +11,13 @@ from config import DATA_DIRECTORY
 from utility.file import load_default, put_get_json
 
 
-
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 ERROR_LOG_FILE = os.path.join(DATA_DIRECTORY, 'error_log.json')
 NETWORK_ERROR_LOG_FILE = os.path.join(DATA_DIRECTORY, 'network_error_log.json')
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 def log_error(module, message):
     all_errors = load_default(ERROR_LOG_FILE, [])

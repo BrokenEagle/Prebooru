@@ -9,14 +9,14 @@ from flask import url_for
 # ## PACKAGE IMPORTS
 from config import DANBOORU_HOSTNAME
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ..logical.sites import get_site_key
 from ..logical.sources import SOURCEDICT
 from ..logical.sources.base import get_source_by_id
 from .base_helper import search_url_for, external_link, general_link
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 SITE_DATA_LABELS = {
     'site_updated': 'Updated',
@@ -24,7 +24,7 @@ SITE_DATA_LABELS = {
 }
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 # #### Form functions
 

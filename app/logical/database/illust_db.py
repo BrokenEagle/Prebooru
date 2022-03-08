@@ -17,7 +17,7 @@ from .base_db import update_column_attributes, update_relationship_collections, 
     set_timesvalue, set_association_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('_tags', 'name', Tag)]

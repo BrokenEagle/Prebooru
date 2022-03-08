@@ -7,7 +7,7 @@ from ...models import TwitterData, PixivData
 from .base_db import update_column_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 TWITTER_COLUMN_ATTRIBUTES = ['retweets', 'replies', 'quotes']
 PIXIV_COLUMN_ATTRIBUTES = ['title', 'bookmarks', 'replies', 'views', 'site_updated', 'site_uploaded']
@@ -18,7 +18,7 @@ SITE_DATA_TYPE_DICT = {
 }
 
 
-# ##FUNCTIONS
+# ## FUNCTIONS
 
 def update_site_data_from_parameters(site_data, illust_id, site_id, params):
     if site_data is not None:

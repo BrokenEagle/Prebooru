@@ -3,13 +3,13 @@
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 
-# ##LOCAL IMPORTS
+# ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Booru, Label
 from .base_db import update_column_attributes, update_relationship_collections, set_association_attributes
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted']
 UPDATE_SCALAR_RELATIONSHIPS = [('_names', 'name', Label)]

@@ -4,7 +4,7 @@
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
-# ##L OCAL IMPORTS
+# ## LOCAL IMPORTS
 from .. import DB
 from ..logical.sites import get_site_domain, get_site_key
 from .tag import Tag

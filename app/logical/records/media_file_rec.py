@@ -1,4 +1,4 @@
-# APP/LOGICAL/RECORDS/MEDIA_FILE.PY
+# APP/LOGICAL/RECORDS/MEDIA_FILE_REC.PY
 
 # ## PACKAGE IMPORTS
 from utility.data import get_buffer_checksum

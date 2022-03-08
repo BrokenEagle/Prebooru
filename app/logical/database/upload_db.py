@@ -12,7 +12,7 @@ from ...models import Upload, UploadUrl
 from .base_db import update_column_attributes, update_relationship_collections
 
 
-# ##GLOBAL VARIABLES
+# ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'type', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('image_urls', 'url', UploadUrl)]
