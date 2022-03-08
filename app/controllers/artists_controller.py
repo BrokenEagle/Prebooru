@@ -8,6 +8,7 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Artist, Booru
+from ..logical.utility import set_error
 from ..logical.sources.base import get_source_by_id, get_artist_required_params
 from ..logical.sources.danbooru import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion
@@ -15,7 +16,7 @@ from ..logical.database.artist_db import create_artist_from_parameters, update_a
     artist_append_booru, artist_delete_profile
 from ..logical.database.booru_db import create_booru_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error, set_error,\
+    get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error,\
     parse_array_parameter, check_param_requirements, int_or_blank, nullify_blanks, set_default, parse_bool_parameter,\
     hide_input
 

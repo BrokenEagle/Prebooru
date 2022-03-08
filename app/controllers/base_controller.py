@@ -175,12 +175,6 @@ def get_data_params(request, key):
     return get_params_value(params, key, True)
 
 
-def set_error(retdata, message):
-    retdata['error'] = True
-    retdata['message'] = message
-    return retdata
-
-
 def parse_array_parameter(dataparams, array_key, string_key, separator):
     if array_key in dataparams and type(dataparams[array_key]) is list:
         return dataparams[array_key]
