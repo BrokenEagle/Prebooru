@@ -336,6 +336,11 @@ def query_create_html():
     return redirect(url_for('artist.show_html', id=results['item']['id']))
 
 
+@bp.route('/artists/query_create.json', methods=['POST'])
+def query_create_json():
+    return query_create()
+
+
 @bp.route('/artists/<int:id>/query_update', methods=['POST'])
 def query_update_html(id):
     """Query source and update artist."""
