@@ -7,6 +7,7 @@ import atexit
 
 # ## PACKAGE IMPORTS
 from utility import RepeatTimer
+from utility.time import minutes_ago
 from utility.print import buffered_print
 from utility.file import get_directory_listing, delete_file
 
@@ -21,8 +22,8 @@ from ..database.api_data_db import expired_api_data_count, delete_expired_api_da
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_data_db import expired_archive_data_count, delete_expired_archive_data
 from ..database.jobs_db import update_job_lock_status, get_job_lock_status
-from ..database.server_info_db import update_last_activity
-from .initialize import initialize_scheduler, recheck_schedule_interval
+from ..database.server_info_db import update_last_activity, get_last_activity
+from .initialize import initialize_scheduler, recheck_schedule_interval, reschedule_task
 
 # ## GLOBAL DATA
 
@@ -190,9 +191,14 @@ def vacuum_analyze_database_task():
         return
     printer = buffered_print("Vacuum/analyze DB")
     printer("PID:", os.getpid())
-    with DB.engine.begin() as connection:
-        connection.execute("VACUUM")
-        connection.execute("ANALYZE")
+    last_activity = get_last_activity()
+    if last_activity < minutes_ago(15):
+        with DB.engine.begin() as connection:
+            connection.execute("VACUUM")
+            connection.execute("ANALYZE")
+    else:
+        printer("Server busy, rescheduling....")
+        reschedule_task('vacuum_analyze_database', JOB_CONFIG, JOB_LEEWAY)
     printer.print()
     _free_db_semaphore('vacuum_analyze_database')
 
