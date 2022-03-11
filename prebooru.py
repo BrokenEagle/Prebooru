@@ -82,7 +82,7 @@ def initialize_server_callbacks(args):
         while True:
             if SERVER_INFO.active_requests <= expected_requests or iterations >= 8:
                 return
-            print("Waiting for active requests to complete.")
+            print("Waiting for active requests to complete:", SERVER_INFO.active_requests)
             iterations += 1
             time.sleep(1)
 
