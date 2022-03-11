@@ -12,7 +12,7 @@ import datetime
 import requests
 
 # ## PACKAGE IMPORTS
-from config import DATA_DIRECTORY, DEBUG_MODE
+from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN
 from utility.data import safe_get, decode_json, fixup_crlf
 from utility.time import get_current_time
 from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
@@ -45,8 +45,6 @@ TAG_SEARCH_HREFURL = 'https://twitter.com/hashtag/%s?src=hashtag_click&f=live'
 SITE_ID = Site.TWITTER.value
 
 HAS_TAG_SEARCH = True
-
-TWITTER_HEADERS = None
 
 
 # #### Regex variables
@@ -171,8 +169,17 @@ REQUEST_METHODS = {
     'POST': requests.post
 }
 
-TWITTER_GUEST_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
-                     "Zz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
+TWITTER_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
+               "Zz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
+
+TWITTER_USER_HEADERS = {
+    'authorization': 'Bearer ' + TWITTER_AUTH,
+    'x-csrf-token': TWITTER_CSRF_TOKEN,
+    'cookie': f'auth_token={TWITTER_USER_TOKEN}; ct0={TWITTER_CSRF_TOKEN}'
+}
+
+HAS_USER_AUTH = TWITTER_USER_TOKEN is not None and TWITTER_CSRF_TOKEN is not None
+TWITTER_HEADERS = TWITTER_USER_HEADERS if HAS_USER_AUTH else None
 
 TWITTER_SEARCH_PARAMS = {
     "tweet_search_mode": "live",
@@ -495,7 +502,7 @@ def check_token_file():
 
 def check_guest_auth(func):
     def wrapper(*args, **kwargs):
-        if TWITTER_HEADERS is None or not check_token_file():
+        if not HAS_USER_AUTH and (TWITTER_HEADERS is None or not check_token_file()):
             authenticate_guest()
         return func(*args, **kwargs)
     return wrapper
@@ -503,8 +510,10 @@ def check_guest_auth(func):
 
 def authenticate_guest(override=False):
     global TWITTER_HEADERS
+    if HAS_USER_AUTH:
+        raise Exception("Should not authenticate with user auth.")
     TWITTER_HEADERS = {
-        'authorization': 'Bearer %s' % TWITTER_GUEST_AUTH
+        'authorization': 'Bearer %s' % TWITTER_AUTH
     }
     guest_token = load_guest_token() if not override else None
     if guest_token is None:
@@ -545,10 +554,8 @@ def twitter_request(url, method='GET'):
         try:
             response = REQUEST_METHODS[method](url, headers=TWITTER_HEADERS, timeout=10)
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
-            if i == 2:
-                print("Connection errors exceeded!")
-                return {'error': True, 'message': repr(e)}
             print("Pausing for network timeout...")
+            error = e
             time.sleep(5)
             continue
         if response.status_code == 200:
@@ -561,6 +568,9 @@ def twitter_request(url, method='GET'):
             if DEBUG_MODE:
                 log_network_error('sources.twitter.twitter_request', response)
             return {'error': True, 'message': "HTTP %d - %s" % (response.status_code, response.reason)}
+    else:
+        print("Connection errors exceeded!")
+        return {'error': True, 'message': repr(error)}
     try:
         data = response.json()
     except Exception:

@@ -45,8 +45,12 @@ DANBOORU_HOSTNAME = 'https://danbooru.donmai.us'
 DANBOORU_USERNAME = None
 DANBOORU_APIKEY = None
 
-# Log into Pixiv and get this value from the cookie PHPSESSID
-PIXIV_PHPSESSID = None
+# Log into Pixiv and get these values
+PIXIV_PHPSESSID = None  # PHPSESSID
+
+# Log into Twitter and get these values
+TWITTER_USER_TOKEN = None  # auth_token
+TWITTER_CSRF_TOKEN = None  # ct0
 
 PREBOORU_PORT = 5000
 IMAGE_PORT = 1234
