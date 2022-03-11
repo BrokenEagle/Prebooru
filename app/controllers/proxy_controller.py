@@ -100,11 +100,11 @@ def danbooru_preprocess_upload():
         return error_resp("Post #d not found." % post_id)
     upload_ret = get_uploads_by_md5(post.md5)
     if upload_ret['error']:
-        return error_resp(upload_ret)
+        return _cors_json(upload_ret)
     if len(upload_ret['uploads']) == 0:
         upload_ret = create_upload(post)
         if upload_ret['error']:
-            return error_resp(upload_ret)
+            return _cors_json(upload_ret)
     # Preference for uploads created via file upload
     upload = next(filter(lambda x: x['source'] is None, upload_ret['uploads']), None)
     upload = upload or upload_ret['uploads'][0]
