@@ -81,7 +81,8 @@ def danbooru_upload_data():
     post_url = source.get_post_url(illust)
     profile_urls = source.artist_profile_urls(illust.artist)
     illust_commentaries = source.illust_commentaries_dtext(illust)
-    tags = source.BAD_ID_TAGS.copy() if not illust.active else []
+    tags = source.BAD_ID_TAGS.copy() if not illust.active or not illust.artist.active else []
+    tags += ['inactive_account'] if not illust.artist.active else []
     tags += list(set([booru.current_name for booru in illust.artist.boorus]))
     return _cors_json({'error': False, 'post_url': post_url, 'tags': tags, 'post': post.to_json(),
                        'profile_urls': profile_urls, 'illust_commentaries': illust_commentaries,
