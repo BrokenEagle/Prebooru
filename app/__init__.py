@@ -4,17 +4,19 @@
 import os
 import sys
 import logging
+import traceback
 from io import BytesIO
 from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
-from flask import Flask
+from flask import Flask, request, jsonify
 from sqlalchemy import event, MetaData
 from flask_sqlalchemy import SQLAlchemy
 from flask_apscheduler import APScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from werkzeug.wsgi import get_input_stream
 from werkzeug.formparser import parse_form_data
+from werkzeug.exceptions import HTTPException
 
 # ## PACKAGE IMPORTS
 from config import DB_PATH, JOBS_PATH, DEBUG_MODE
@@ -81,6 +83,28 @@ def _teardown_request(error=None):
     msg = f"\nAfter request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
     print(msg, end="", flush=True)
     SERVER_INFO.active_requests = max(SERVER_INFO.active_requests - 1, 0)
+
+
+def _error_handler(error):
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    traceback.print_exception(exc_type, exc_value, exc_tb)
+    if issubclass(error.__class__, HTTPException) and not request.path.endswith('.json'):
+        return error
+    fmt_tb = traceback.format_exception(exc_type, exc_value, exc_tb)
+    resp = jsonify({
+        'error': True,
+        'message': repr(error),
+        'traceback': fmt_tb,
+        'endpoint': request.endpoint,
+        'args': {k: v for (k, v) in request.args.items()},
+        'data': {k: v for (k, v) in request.form.items()},
+        'files': {k: f"{v.filename} ({v.mimetype})" for (k, v) in request.files.items()},
+    })
+    if issubclass(error.__class__, HTTPException):
+        resp.status_code = error.code
+    else:
+        resp.status_code = 520
+    return resp
 
 
 # ## CLASSES
@@ -152,6 +176,8 @@ event.listen(SCHEDULER_JOBSTORES.engine, 'connect', _fk_pragma_on_connect)
 PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
 PREBOORU_APP.before_request(_before_request)
 PREBOORU_APP.teardown_request(_teardown_request)
+PREBOORU_APP.errorhandler(Exception)(_error_handler)
+
 
 # #### Extend Python imports
 query_extensions.initialize()
