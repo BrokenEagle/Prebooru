@@ -73,7 +73,11 @@ def _before_request():
     msg = f"\nBefore request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
     print(msg, end="", flush=True)
     SERVER_INFO.active_requests += 1
-    update_last_activity()
+    try:
+        update_last_activity()
+    except Exception as e:
+        # Don't fail the request if the database is locked
+        print(f"Unable to update last activity:\r\n {e}")
     return None if SERVER_INFO.allow_requests else ""
 
 
