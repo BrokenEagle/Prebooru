@@ -127,7 +127,7 @@ def get_uploads_by_md5(md5):
 def create_upload_from_buffer(buffer, filename, mimetype):
     request_url = '/uploads.json'
     files = {
-        'upload[file]': (filename, buffer, mimetype)
+        'upload[files][0]': (filename, buffer, mimetype),
     }
     data = danbooru_request(request_url, files=files, method='post')
     if data['error']:
