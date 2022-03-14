@@ -10,8 +10,9 @@
         <div id="pool-name"><strong>Name:</strong> {{ pool.name }}</div>
         <div id="pool-items">
             {% for item in elements.items %}
-                <div class="pool-block">
+                <div class="pool-block" id="{{ item.model_name }}-{{ item.id }}">
                     <div class="pool-block-heading heading">
+                        <a href="#{{ item.model_name }}-{{ item.id }}" class="bookmark-target">&loz;</a>
                         {{ helpers.pool.media_header(item) }}
                         {{ item.show_link }}
                     </div>

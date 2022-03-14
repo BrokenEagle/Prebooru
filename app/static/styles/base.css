@@ -1,3 +1,6 @@
+:target {
+    background: #f7e7c3 !important;
+}
 body {
     font-size: 14px;
     font-family: Tahoma, Verdana, Helvetica, sans-serif;
@@ -181,6 +184,9 @@ span.description {
     font-size: 80%;
     color: #888;
     font-style: italic;
+}
+a.bookmark-target {
+    color: orange;
 }
 a.warning-link {
     color: red;
