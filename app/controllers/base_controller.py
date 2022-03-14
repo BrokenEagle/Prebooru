@@ -77,7 +77,11 @@ def default_order(query, search):
 
 
 def paginate(query, request):
-    return query.count_paginate(page=get_page(request), per_page=get_limit(request))
+    try:
+        return query.count_paginate(page=get_page(request), per_page=get_limit(request))
+    except Exception:
+        # Fallback to a less efficient paginate upon exception
+        return query.paginate(page=get_page(request), per_page=get_limit(request))
 
 
 # #### ID helpers
