@@ -90,10 +90,10 @@ def _teardown_request(error=None):
 
 
 def _error_handler(error):
+    if not request.path.endswith('.json'):
+        return error
     exc_type, exc_value, exc_tb = sys.exc_info()
     traceback.print_exception(exc_type, exc_value, exc_tb)
-    if issubclass(error.__class__, HTTPException) and not request.path.endswith('.json'):
-        return error
     fmt_tb = traceback.format_exception(exc_type, exc_value, exc_tb)
     resp = jsonify({
         'error': True,
