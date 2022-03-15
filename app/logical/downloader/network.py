@@ -4,7 +4,7 @@
 from ..network import get_http_file
 from ...models import Post
 from ..database.post_db import create_post_and_add_illust_url
-from ..database.error_db import create_error, create_and_append_error, extend_errors, is_error
+from ..database.error_db import create_error, create_and_append_error, append_error, extend_errors, is_error
 from .base import convert_image_upload, convert_video_upload, load_image, check_existing, check_filetype,\
     check_image_dimensions, check_video_dimensions, save_image, save_video, save_thumb
 
@@ -25,27 +25,44 @@ def convert_network_upload(illust, upload, source):
     return False
 
 
+# #### Auxiliary functions
+
+def get_media_extension(illust_url, source):
+    full_url = source.get_full_url(illust_url)
+    file_ext = source.get_media_extension(full_url)
+    if file_ext not in ['jpg', 'png', 'mp4']:
+        return create_error('downloader.network.get_media_extension', "Unsupported file format: %s" % file_ext)
+    else:
+        return file_ext
+
+
 # #### Network functions
 
-def download_media(illust_url, source):
+def download_media(illust_url, source, upload):
     download_url = source.get_full_url(illust_url)
-    file_ext = source.get_media_extension(download_url)
-    if file_ext not in ['jpg', 'png', 'mp4']:
-        msg = "Unsupported file format: %s" % file_ext
-        return create_error('logical.downloader.network.download_media', msg), None
-    print("Downloading", download_url)
-    buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
-    if type(buffer) is str:
-        return create_error('logical.downloader.network.download_media', buffer), None
-    return buffer, file_ext
+    buffer = _download_media(download_url, source)
+    if not is_error(buffer):
+        return buffer
+    error = buffer
+    alternate_url = source.get_alternate_url(illust_url)
+    if alternate_url is None:
+        return [error]
+    buffer = _download_media(alternate_url, source)
+    if is_error(buffer):
+        return [error, buffer]
+    append_error(upload, error)
+    return buffer
 
 
 # #### Post creation functions
 
 def create_image_post(illust_url, upload, source):
-    buffer, file_ext = download_media(illust_url, source)
-    if is_error(buffer):
-        return [buffer]
+    file_ext = get_media_extension(illust_url, source)
+    if is_error(file_ext):
+        return [file_ext]
+    buffer = download_media(illust_url, source, upload)
+    if isinstance(buffer, list):
+        return buffer
     md5 = check_existing(buffer, illust_url)
     if is_error(md5):
         return [md5]
@@ -65,9 +82,12 @@ def create_image_post(illust_url, upload, source):
 
 
 def create_video_post(illust_url, thumb_illust_url, upload, source):
-    buffer, file_ext = download_media(illust_url, source)
-    if is_error(buffer):
-        return [buffer]
+    file_ext = get_media_extension(illust_url, source)
+    if is_error(file_ext):
+        return [file_ext]
+    buffer = download_media(illust_url, source, upload)
+    if isinstance(buffer, list):
+        return buffer
     md5 = check_existing(buffer, illust_url)
     if is_error(md5):
         return [md5]
@@ -78,11 +98,21 @@ def create_video_post(illust_url, thumb_illust_url, upload, source):
     if error is not None:
         return post_errors + [error]
     video_width, video_height = check_video_dimensions(temppost, illust_url, post_errors)
-    thumb_binary, _ = download_media(thumb_illust_url, source)
-    if is_error(thumb_binary):
-        return post_errors + [thumb_binary]
+    thumb_binary = download_media(thumb_illust_url, source)
+    if isinstance(thumb_binary, list):
+        return post_errors + thumb_binary
     save_thumb(thumb_binary, temppost, post_errors)
     post = create_post_and_add_illust_url(illust_url, video_width, video_height, video_file_ext, md5, len(buffer))
     if len(post_errors):
         extend_errors(post, post_errors)
     return post
+
+
+# #### Private functions
+
+def _download_media(download_url, source):
+    print("Downloading", download_url)
+    buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
+    if isinstance(buffer, str):
+        return create_error('downloader.network.download_media', "Download URL: %s => %s" % (download_url, buffer))
+    return buffer

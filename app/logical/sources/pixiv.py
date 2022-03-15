@@ -170,6 +170,10 @@ def get_full_url(illust_url):
     return get_media_url(illust_url)
 
 
+def get_alternate_url(illust_url):
+    pass
+
+
 def image_url_mapper(x):
     return is_image_url(get_full_url(x))
 

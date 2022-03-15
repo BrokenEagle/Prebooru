@@ -343,6 +343,18 @@ def get_full_url(illust_url):
     return media_url
 
 
+def get_alternate_url(illust_url):
+    media_url = get_media_url(illust_url)
+    match = IMAGE1_RG.match(media_url)
+    if match:
+        path, key, ext, size = match.groups()
+        return IMAGE_SERVER + rf"/{path}/{key}?format={ext}&name=orig"
+    match = IMAGE2_RG.match(media_url)
+    if match:
+        path, key, ext, size = match.groups()
+        return IMAGE_SERVER + rf"/{path}/{key}.{ext}:orig"
+
+
 def small_image_url(image_url):
     return normalized_image_url(image_url) + ':small'
 
