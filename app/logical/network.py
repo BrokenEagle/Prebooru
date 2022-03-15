@@ -9,7 +9,7 @@ import requests
 
 def get_http_file(serverfilepath, headers=None, timeout=10):
     headers = headers if headers is not None else {}
-    for i in range(3):
+    for i in range(4):
         try:
             response = requests.get(serverfilepath, headers=headers, timeout=timeout)
         except requests.exceptions.ReadTimeout:
@@ -19,6 +19,7 @@ def get_http_file(serverfilepath, headers=None, timeout=10):
         if response.status_code == 200:
             return response.content
         if response.status_code >= 500 and response.status_code < 600:
-            time.sleep(5)
+            print("Server error; sleeping...")
+            time.sleep(15)
             continue
     return "HTTP %d - %s" % (response.status_code, response.reason)
