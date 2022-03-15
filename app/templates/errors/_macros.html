@@ -1,6 +1,6 @@
 {% macro errors_section(errors, section_id) -%}
     {% if errors | length > 0 %}
-        <section id="{{ section_id }}">
+        <section id="{{ section_id }}" class="errors-section">
             <h4>Errors</h4>
             {% for error in errors %}
                 <strong>{{ error.show_link }}</strong>

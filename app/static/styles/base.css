@@ -203,6 +203,9 @@ article.post > img {
     max-height: 300px;
     max-width: 300px;
 }
+section.errors-section {
+    overflow-x: hidden;
+}
 div#recent-posts-heading {
     font-size: 24px;
     margin-bottom: 1em;
