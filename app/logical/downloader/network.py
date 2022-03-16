@@ -98,7 +98,7 @@ def create_video_post(illust_url, thumb_illust_url, upload, source):
     if error is not None:
         return post_errors + [error]
     video_width, video_height = check_video_dimensions(temppost, illust_url, post_errors)
-    thumb_binary = download_media(thumb_illust_url, source)
+    thumb_binary = download_media(thumb_illust_url, source, upload)
     if isinstance(thumb_binary, list):
         return post_errors + thumb_binary
     save_thumb(thumb_binary, temppost, post_errors)
