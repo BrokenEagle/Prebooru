@@ -65,9 +65,8 @@ def initialize_server_callbacks(args):
     import atexit
     from flask import request
     from utility.data import eval_bool_string
-    from utility.time import minutes_ago
     from app import SERVER_INFO
-    from app.logical.database.server_info_db import get_last_activity
+    from app.logical.database.server_info_db import server_is_busy
 
     @atexit.register
     def cleanup(expected_requests=0):
@@ -95,8 +94,7 @@ def initialize_server_callbacks(args):
             wait = request.args.get('wait', type=eval_bool_string)
             # Only allow shutdowns from localhost
             if SERVER_INFO.addr == '127.0.0.1' and uid == SERVER_INFO.unique_id:
-                last_activity = get_last_activity()
-                if wait and (last_activity > minutes_ago(15)):
+                if wait and server_is_busy():
                     return {'error': False, 'wait': True}
                 print("Shutting down...")
                 SERVER_INFO.allow_requests = False
@@ -148,9 +146,9 @@ def start_server(args):
         app.MAIN_PROCESS = True
         # Scheduled tasks must be added only after everything else has been initialized
         from app.logical.tasks import schedule  # noqa: F401
-        from app.logical.database.server_info_db import update_last_activity
+        from app.logical.database.server_info_db import initialize_server_fields
         initialize_server_callbacks(args)
-        update_last_activity()
+        initialize_server_fields()
         validate_version()
         validate_integrity()
         print("\n========== Starting server - Prebooru-%s ==========" % VERSION)

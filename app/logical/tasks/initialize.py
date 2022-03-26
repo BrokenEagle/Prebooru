@@ -54,7 +54,10 @@ def recheck_schedule_interval(config, lconfig, reschedule):
     global LAST_CHECK
     printer = buffered_print("Recheck Schedule Interval")
     printer("PID:", os.getpid())
-    printer("Last activity:", time_ago(get_last_activity()))
+    user_activity = get_last_activity('user')
+    server_activity = get_last_activity('server')
+    printer("User last activity:", time_ago(user_activity) if user_activity is not None else None)
+    printer("Server last activity:", time_ago(server_activity) if server_activity is not None else None)
     info = get_all_job_info()
     locks = get_all_job_locks()
     timevals = get_all_job_timevals()

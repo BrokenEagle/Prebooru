@@ -7,10 +7,10 @@ import datetime
 from sqlalchemy import select, Table, Column, MetaData, Unicode
 
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time, process_utc_timestring
+from utility.time import get_current_time, process_utc_timestring, minutes_ago
 
 # ## LOCAL IMPORTS
-from ... import DB, MAIN_PROCESS
+from ... import DB
 
 # ## GLOBAL VARIABLES
 
@@ -21,7 +21,12 @@ T_SERVER_INFO = Table(
     Column('info', Unicode(255), nullable=False),
 )
 
-INITIALIZED = False
+INFO_FIELDS = ['server_last_activity', 'user_last_activity']
+
+FIELD_UPDATERS = {
+    'server_last_activity': lambda: datetime.datetime.isoformat(get_current_time()),
+    'user_last_activity': lambda: datetime.datetime.isoformat(get_current_time()),
+}
 
 
 # ## FUNCTIONS
@@ -47,6 +52,14 @@ def update_field(field, info):
         conn.execute(statement)
 
 
+# #### Delete
+
+def delete_field(field):
+    with DB.engine.begin() as conn:
+        statement = T_SERVER_INFO.delete().where(T_SERVER_INFO.c.field == field)
+        conn.execute(statement)
+
+
 # #### Query
 
 def query_field(field):
@@ -56,21 +69,42 @@ def query_field(field):
         return val[0] if val is not None else None
 
 
+def get_all_server_fields():
+    with DB.engine.begin() as conn:
+        statement = select([T_SERVER_INFO.c.field])
+        fields = conn.execute(statement).fetchall()
+        return [field[0] for field in fields]
+
+
 # #### Misc
 
-def get_last_activity():
-    last_activity = query_field('last_activity')
+def get_last_activity(type):
+    field = type + '_last_activity'
+    last_activity = query_field(field)
     return process_utc_timestring(last_activity) if last_activity is not None else None
 
 
-def update_last_activity():
-    global INITIALIZED
-    current_time = datetime.datetime.isoformat(get_current_time())
-    if MAIN_PROCESS and not INITIALIZED:
-        INITIALIZED = True
-        create_table()
-        last_activity = query_field('last_activity')
-        if last_activity is None:
-            create_field('last_activity', current_time)
-            return
-    update_field('last_activity', current_time)
+def update_last_activity(type):
+    field = type + '_last_activity'
+    value = FIELD_UPDATERS[field]()
+    update_field(field, value)
+
+
+def server_is_busy():
+    return get_last_activity('user') < minutes_ago(15) or get_last_activity('server') < minutes_ago(5)
+
+
+# #### Private
+
+def initialize_server_fields():
+    create_table()
+    current_fields = get_all_server_fields()
+    for field in current_fields:
+        if field not in INFO_FIELDS:
+            delete_field(field)
+    for field in INFO_FIELDS:
+        value = FIELD_UPDATERS[field]()
+        if field not in current_fields:
+            create_field(field, value)
+        else:
+            update_field(field, value)
