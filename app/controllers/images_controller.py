@@ -1,15 +1,15 @@
-# APP/CONTROLLERS/IMAGES_CONTROLLER.PY
+# APP/CONTROLLERS/MEDIA_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, send_from_directory
 
 # ## PACKAGE IMPORTS
-from config import IMAGE_DIRECTORY
+from config import MEDIA_DIRECTORY
 
 
 # ## GLOBAL VARIABLES
 
-bp = Blueprint("images", __name__)
+bp = Blueprint("media", __name__)
 
 
 # ## FUNCTIONS
@@ -18,6 +18,6 @@ bp = Blueprint("images", __name__)
 
 # ###### MISC
 
-@bp.route('/images/<path:path>')
+@bp.route('/media/<path:path>')
 def send_file(path):
-    return send_from_directory(IMAGE_DIRECTORY, path)
+    return send_from_directory(MEDIA_DIRECTORY, path)

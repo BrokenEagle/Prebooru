@@ -44,7 +44,7 @@ if DOTENV_FILEPATH is not None or True:
 
 WORKING_DIRECTORY = get_environment_variable('WORKING_DIRECTORY', WORKING_DIRECTORY)
 DATA_FILEPATH = get_environment_variable('DATA_FILEPATH', DATA_FILEPATH)
-IMAGE_FILEPATH = get_environment_variable('IMAGE_FILEPATH', IMAGE_FILEPATH)
+MEDIA_FILEPATH = get_environment_variable('MEDIA_FILEPATH', MEDIA_FILEPATH)
 DB_PATH = get_environment_variable('DB_PATH', DB_PATH)
 JOBS_PATH = get_environment_variable('JOBS_PATH', JOBS_PATH)
 DANBOORU_USERNAME = get_environment_variable('DANBOORU_USERNAME', DANBOORU_USERNAME)
@@ -59,5 +59,5 @@ DEBUG_MODE = get_environment_variable('DEBUG_MODE', DEBUG_MODE, eval_bool_string
 
 # #### Constructed config variables
 
-IMAGE_DIRECTORY = os.path.join(WORKING_DIRECTORY, IMAGE_FILEPATH)
+MEDIA_DIRECTORY = os.path.join(WORKING_DIRECTORY, MEDIA_FILEPATH)
 DATA_DIRECTORY = os.path.join(WORKING_DIRECTORY, DATA_FILEPATH)

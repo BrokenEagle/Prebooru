@@ -4,7 +4,7 @@
 import os
 
 # ## PACKAGE IMPORTS
-from config import IMAGE_DIRECTORY
+from config import MEDIA_DIRECTORY
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -13,7 +13,7 @@ from .base import JsonModel, image_server_url
 
 # ## GLOBAL VARIABLES
 
-CACHE_DATA_DIRECTORY = os.path.join(IMAGE_DIRECTORY, 'cache')
+CACHE_DATA_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'cache')
 
 
 # ## CLASSES

@@ -6,7 +6,7 @@ import re
 import datetime
 
 # ## PACKAGE IMPORTS
-from config import IMAGE_DIRECTORY
+from config import MEDIA_DIRECTORY
 from utility.time import get_current_time, days_from_now, process_utc_timestring
 
 # ## LOCAL IMPORTS
@@ -16,7 +16,7 @@ from ...models import ArchiveData
 
 # ## GLOBAL DATA
 
-ARCHIVE_DATA_DIRECTORY = os.path.join(IMAGE_DIRECTORY, 'archive')
+ARCHIVE_DATA_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'archive')
 
 ISODATETIME_RG = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
 

@@ -10,7 +10,7 @@ from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
-from config import IMAGE_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
+from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -109,16 +109,16 @@ class Post(JsonModel):
 
     @property
     def file_path(self):
-        return os.path.join(IMAGE_DIRECTORY, 'data', self._partial_file_path + self.file_ext)
+        return os.path.join(MEDIA_DIRECTORY, 'data', self._partial_file_path + self.file_ext)
 
     @property
     def sample_path(self):
-        return os.path.join(IMAGE_DIRECTORY, 'sample', self._partial_file_path + 'jpg')\
+        return os.path.join(MEDIA_DIRECTORY, 'sample', self._partial_file_path + 'jpg')\
                if self.has_sample else self.file_path
 
     @property
     def preview_path(self):
-        return os.path.join(IMAGE_DIRECTORY, 'preview', self._partial_file_path + 'jpg')\
+        return os.path.join(MEDIA_DIRECTORY, 'preview', self._partial_file_path + 'jpg')\
                if self.has_preview else self.file_path
 
     @memoized_property

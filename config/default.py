@@ -19,7 +19,7 @@ WORKING_DIRECTORY = "/tmp/"
 
 """Subdirectory paths should not begin or end with a directory separator ('\' or '/')"""
 DATA_FILEPATH = "data"
-IMAGE_FILEPATH = "pictures"
+MEDIA_FILEPATH = "media"
 
 """Path for loading the .env to load environment variables from. Can either be a relative or an absolute path"""
 DOTENV_FILEPATH = None
