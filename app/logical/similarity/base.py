@@ -26,12 +26,19 @@ def get_image_hash(image):
     return str(imagehash.whash(image, hash_size=HASH_SIZE))
 
 
-def get_similarity_data_matches(image_hash, ratio, post_id=None):
+def get_similarity_data_matches(image_hash, ratio, sim_clause=None, post_id=None):
+    switcher = {
+        'chunk': lambda image_hash: SimilarityData.chunk_similarity_clause(image_hash),
+        'cross0': lambda image_hash: SimilarityData.cross_similarity_clause0(image_hash),
+        'cross1': lambda image_hash: SimilarityData.cross_similarity_clause1(image_hash),
+        'cross2': lambda image_hash: SimilarityData.cross_similarity_clause2(image_hash),
+    }
     query = SimilarityData.query
-    query = query.filter(
-        SimilarityData.ratio_clause(ratio),
-        SimilarityData.cross_similarity_clause2(image_hash)
-    )
+    if isinstance(ratio, float):
+        query = query.filter(SimilarityData.ratio_clause(ratio))
+    if sim_clause != 'all':
+        sim_clause = sim_clause if sim_clause in switcher else 'cross2'
+        query = query.filter(switcher[sim_clause](image_hash))
     if post_id is not None:
         query = query.filter(SimilarityData.post_id != post_id)
     return query.all()

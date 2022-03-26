@@ -75,14 +75,14 @@ class SimilarityData(JsonModel):
         return cls.ratio.between(ratio_low, ratio_high)
 
     @classmethod
-    def similarity_clause(cls, image_hash):
+    def chunk_similarity_clause(cls, image_hash):
         clause = cls.chunk00 == image_hash[0:2]
         for i in range(1, NUM_CHUNKS):
             clause |= (getattr(cls, chunk_key(i)) == hex_chunk(image_hash, i))
         return clause
 
     @classmethod
-    def cross_similarity_clause(cls, image_hash):
+    def cross_similarity_clause0(cls, image_hash):
         clause = None
         for i in range(NUM_CHUNKS):
             # XXXX  Left-Right

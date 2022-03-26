@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, flash, redirect
-from wtforms import TextAreaField, BooleanField, FloatField
+from wtforms import TextAreaField, BooleanField, FloatField, SelectField
 from wtforms.validators import DataRequired
 
 
@@ -38,6 +38,10 @@ def get_similarity_form(**kwargs):
                            description="Lowest score of results to return. Default is 90.0.")
         use_original = BooleanField('Use Original', id='similarity-use-original',
                                     description="Uses the original image URL instead of the small version.")
+        sim_clause = SelectField('Similarity clause',
+                                 choices=[("", ""), ('chunk', 'Chunk'), ('cross0', 'Cross #0'), ('cross0', 'Cross #1'),
+                                          ('cross2', 'Cross #2'), ('all', 'All')],
+                                 id='similarity-sim-clause')
     return SimilarityForm(**kwargs)
 
 
@@ -58,6 +62,7 @@ def convert_data_params(dataparams):
     params = nullify_blanks(params)
     set_default(params, 'score', 90.0)
     set_default(params, 'use_original', False)
+    set_default(params, 'sim_clause', 'cross2')
     return params
 
 
@@ -72,7 +77,8 @@ def check(include_posts):
         return set_error(retdata, '\n'.join(errors))
     dataparams['url_string'] = '\r\n'.join(dataparams['urls'])
     similar_results = check_all_image_urls_similarity(dataparams['urls'], dataparams['score'],
-                                                      dataparams['use_original'], include_posts)
+                                                      dataparams['use_original'], include_posts,
+                                                      sim_clause=dataparams['sim_clause'])
     retdata['similar_results'] = similar_results
     return retdata
 

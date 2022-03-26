@@ -10,15 +10,15 @@ from .base import get_image, get_image_hash, get_similarity_data_matches, check_
 
 # ## FUNCTIONS
 
-def check_all_image_urls_similarity(image_urls, min_score, use_original=False, include_posts=False):
+def check_all_image_urls_similarity(image_urls, min_score, use_original=False, include_posts=False, sim_clause=None):
     similar_results = []
     for image_url in image_urls:
-        similar_result = check_image_url_similarity(image_url, min_score, use_original, include_posts)
+        similar_result = check_image_url_similarity(image_url, min_score, use_original, include_posts, sim_clause)
         similar_results.append(similar_result)
     return similar_results
 
 
-def check_image_url_similarity(image_url, min_score, use_original=False, include_posts=False):
+def check_image_url_similarity(image_url, min_score, use_original=False, include_posts=False, sim_clause=None):
     source = get_media_source(image_url) or NoSource()
     download_url = source.small_image_url(image_url) if not use_original else image_url
     media_file = get_or_create_media(download_url, source)
@@ -27,7 +27,7 @@ def check_image_url_similarity(image_url, min_score, use_original=False, include
     image = get_image(media_file.file_path)
     image_hash = get_image_hash(image)
     ratio = round(image.width / image.height, 4)
-    simdata_matches = get_similarity_data_matches(image_hash, ratio)
+    simdata_matches = get_similarity_data_matches(image_hash, ratio, sim_clause=sim_clause)
     score_results = check_similarity_match_scores(simdata_matches, image_hash, min_score)
     final_results = filter_score_results(score_results)
     if include_posts:
