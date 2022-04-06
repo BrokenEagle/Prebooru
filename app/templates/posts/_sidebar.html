@@ -2,15 +2,16 @@
 {% from "artists/_macros.html" import artists_section %}
 {% from "illusts/_macros.html" import illusts_section %}
 {% from "pools/_macros.html" import pools_section %}
+{% from "tags/_macros.html" import tags_section %}
 {% from "notations/_macros.html" import notations_section %}
 {% from "errors/_macros.html" import errors_section %}
 
 <aside id="post-sidebar">
-    <section id="tag-list" style="display: none;"><!-- placeholder for user tags --></section>
     {{ boorus_section(post.boorus, 'booru-info') }}
     {{ artists_section(post.artists, 'artist-info') }}
     {{ illusts_section(post.illusts, 'illust-info') }}
     {{ pools_section(post._pools, 'pool-list') }}
+    {{ tags_section(post._tags, 'tag-list', 'post', post.id) }}
     {{ notations_section(post.notations, 'notation-list') }}
     {{ errors_section(post.errors, 'error-list') }}
     <section id="post-image-search">
@@ -34,6 +35,7 @@
             <li>{{ helpers.base.general_link("Original file", post.file_url) }}</li>
             <li>{{ helpers.base.file_link(post.file_path, "Copy file link") }}</li>
             <li>{{ helpers.post.add_to_pool_link(post) }}</li>
+            <li>{{ helpers.post.add_tag_link(post) }}</li>
             <li>{{ helpers.post.add_notation_link(post) }}</li>
             <li>{{ helpers.post.regenerate_previews_link(post) }}</li>
             <li>{{ helpers.post.regenerate_similarity_link(post) }}</li>

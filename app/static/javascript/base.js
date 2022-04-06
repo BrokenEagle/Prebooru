@@ -56,6 +56,15 @@ Prebooru.deletePool = function(obj) {
     return false;
 };
 
+Prebooru.addTag = function (obj, type) {
+    let item_id = obj.dataset[type + 'Id'];
+    let tag_name = prompt("Enter tag name to add:");
+    if (tag_name !== null) {
+        Prebooru.postRequest(obj.href, {'tag[name]': tag_name, [`tag[${type}_id]`]: item_id});
+    }
+    return false;
+};
+
 Prebooru.selectAll = function(classname) {
     [...document.getElementsByClassName(classname)].forEach((input)=>{
         input.checked = true;

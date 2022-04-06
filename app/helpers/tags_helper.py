@@ -36,3 +36,8 @@ def tag_search_links(tag):
     links = [external_link(source.NAME.title(), source.tag_search_url(tag))
              for source in SOURCES if source.HAS_TAG_SEARCH]
     return Markup(' | ').join(links)
+
+
+def remove_tag_link(tag, item_type, item_id):
+    url = url_for('tag.remove_item_show_html', id=tag.id, **{f"tag[{item_type}_id]": item_id})
+    return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})

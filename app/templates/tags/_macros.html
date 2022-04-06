@@ -16,7 +16,12 @@
         {% endif %}
         <li>
             {{ tag.name_link }}&ensp;
-            {{ helpers.tag.post_search_link(tag, item_type) }}
+            {{ helpers.tag.post_search_link(tag, item_type) }}&ensp;
+            {% if (tag.type == 'user_tag') and (item_type is not none) and (item_id is not none) %}
+                <span class="delete-control">
+                    ( {{ helpers.tag.remove_tag_link(tag, item_type, item_id) }} )
+                </span>
+            {% endif %}
         </li>
         {% if loop.last %}
             </ul>

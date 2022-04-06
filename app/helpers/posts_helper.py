@@ -110,6 +110,11 @@ def add_notation_link(post):
     return general_link("Add notation", url_for('notation.new_html', post_id=post.id))
 
 
+def add_tag_link(post):
+    addons = {'onclick': "return Prebooru.addTag(this, 'post')", 'data-post-id': post.id}
+    return general_link("Add tag", url_for('tag.append_item_index_html'), **addons)
+
+
 def add_to_pool_link(post):
     addons = {'onclick': "return Prebooru.createPool(this, 'post')", 'data-post-id': post.id}
     return general_link("Add to pool", url_for('pool_element.create_html'), **addons)

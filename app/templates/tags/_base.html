@@ -2,4 +2,6 @@
 
 {% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/tags.css') }}">{% endblock %}
 
+{% block linkscript %}<script src="{{ url_for('static', filename='javascript/tags.js') }}"></script>{% endblock %}
+
 {% block secondary_links %}{% include "tags/_secondary_links.html" %}{% endblock %}
