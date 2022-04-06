@@ -37,6 +37,8 @@ def update_booru_from_source(booru):
         return booru_data
     updateparams = {
         'current_name': booru_data['artist']['name'],
+        'deleted': booru_data['artist']['is_deleted'],
+        'banned': booru_data['artist']['is_banned'],
     }
     update_booru_from_parameters(booru, updateparams)
     return {'error': False}
