@@ -237,6 +237,10 @@ def is_artist_url(artist_url):
     return is_artist_id_url(artist_url)
 
 
+def original_image_url(image_url):
+    return normalized_image_url(image_url)
+
+
 def small_image_url(image_url):
     date, id, order, type = IMAGE_RG.match(image_url).groups()
     return IMAGE_SERVER + '/c/540x540_70/img-master/img/' + date + '/' + id + '_p' + order + '_master1200.jpg'

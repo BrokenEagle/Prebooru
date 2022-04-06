@@ -21,6 +21,10 @@ class NoSource():
     IMAGE_HEADERS = {}
 
     @staticmethod
+    def original_image_url(url):
+        return url
+
+    @staticmethod
     def small_image_url(url):
         return url
 

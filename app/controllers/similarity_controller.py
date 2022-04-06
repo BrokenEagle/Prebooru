@@ -36,8 +36,10 @@ def get_similarity_form(**kwargs):
                                     description="Separated by carriage returns.", validators=[DataRequired()])
         score = FloatField('Score', id='similarity-score',
                            description="Lowest score of results to return. Default is 90.0.")
-        use_original = BooleanField('Use Original', id='similarity-use-original',
-                                    description="Uses the original image URL instead of the small version.")
+        size = SelectField('Image size',
+                           choices=[("", ""), ('actual', 'Actual'), ('original', 'Original'), ('large', 'Large'),
+                                    ('medium', 'medium'), ('small', 'Small'), ('thumb', 'Thumb')],
+                           id='similarity-sim-clause')
         sim_clause = SelectField('Similarity clause',
                                  choices=[("", ""), ('chunk', 'Chunk'), ('cross0', 'Cross #0'), ('cross0', 'Cross #1'),
                                           ('cross2', 'Cross #2'), ('all', 'All')],
@@ -57,11 +59,10 @@ def convert_data_params(dataparams):
         params['urls'] = parse_string_list(dataparams, 'urls_string', r'\r?\n')
     else:
         params['urls'] = None
-    params['use_original'] = parse_bool_parameter(dataparams, 'use_original')
     params['score'] = parse_type(dataparams, 'score', float)
     params = nullify_blanks(params)
     set_default(params, 'score', 90.0)
-    set_default(params, 'use_original', False)
+    set_default(params, 'size', 'small')
     set_default(params, 'sim_clause', 'cross2')
     return params
 
@@ -77,7 +78,7 @@ def check(include_posts):
         return set_error(retdata, '\n'.join(errors))
     dataparams['url_string'] = '\r\n'.join(dataparams['urls'])
     similar_results = check_all_image_urls_similarity(dataparams['urls'], dataparams['score'],
-                                                      dataparams['use_original'], include_posts,
+                                                      dataparams['size'], include_posts,
                                                       sim_clause=dataparams['sim_clause'])
     retdata['similar_results'] = similar_results
     return retdata

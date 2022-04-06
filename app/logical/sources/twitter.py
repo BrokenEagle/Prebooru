@@ -355,6 +355,10 @@ def get_alternate_url(illust_url):
         return IMAGE_SERVER + rf"/{path}/{key}.{ext}:orig"
 
 
+def original_image_url(image_url):
+    return normalized_image_url(image_url) + ':orig'
+
+
 def small_image_url(image_url):
     return normalized_image_url(image_url) + ':small'
 

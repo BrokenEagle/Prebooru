@@ -10,12 +10,14 @@ from .base import get_image, get_image_hash, get_similarity_data_matches, check_
 
 # ## FUNCTIONS
 
-def check_all_image_urls_similarity(image_urls, min_score, use_original=False, include_posts=False, sim_clause=None):
-    similar_results = []
-    for image_url in image_urls:
-        similar_result = check_image_url_similarity(image_url, min_score, use_original, include_posts, sim_clause)
-        similar_results.append(similar_result)
-    return similar_results
+def check_all_image_urls_similarity(image_urls, min_score, size, include_posts=False, sim_clause=None):
+    if size == 'actual':
+        download_urls = image_urls
+    elif size == 'original':
+        download_urls = [source.original_image_url(image_urls[i]) for (i, source) in enumerate(media_sources)]
+    elif size == 'small':
+        download_urls = [source.small_image_url(image_urls[i]) for (i, source) in enumerate(media_sources)]
+    for image_url in download_urls:
 
 
 def check_image_url_similarity(image_url, min_score, use_original=False, include_posts=False, sim_clause=None):
