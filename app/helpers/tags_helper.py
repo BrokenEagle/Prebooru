@@ -1,7 +1,7 @@
 # APP/MODELS/TAGS_HELPER.PY
 
 # ## EXTERNAL IMPORTS
-from flask import Markup
+from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
 from ..logical.sources import SOURCES
@@ -12,18 +12,24 @@ from .base_helper import search_url_for, general_link, external_link
 
 # #### URL functions
 
-def illust_search(tag):
-    return search_url_for('illust.index_html', tags={'id': tag.id})
+def illust_search(tag, item_type):
+    if item_type == 'illust':
+        return search_url_for('illust.index_html', tags={'id': tag.id})
+    elif item_type == 'post':
+        return search_url_for('illust.index_html', illust_urls={'posts': {'tags': {'id': tag.id}}})
 
 
-def post_search(tag):
-    return search_url_for('post.index_html', illust_urls={'illust': {'tags': {'id': tag.id}}})
+def post_search(tag, item_type):
+    if item_type == 'illust':
+        return search_url_for('post.index_html', illust_urls={'illust': {'tags': {'id': tag.id}}})
+    elif item_type == 'post':
+        return search_url_for('post.index_html', tags={'id': tag.id})
 
 
 # #### Link functions
 
-def post_search_link(tag):
-    return general_link('&raquo;', post_search(tag))
+def post_search_link(tag, item_type):
+    return general_link('&raquo;', post_search(tag, item_type))
 
 
 def tag_search_links(tag):

@@ -1,9 +1,23 @@
-{% macro tag_list(tags, force=False) -%}
+{% macro tags_section(tags, section_id, item_type, item_id) -%}
+    {% if tags | length > 0 %}
+    <section id="{{ section_id }}">
+        <h4>User tags</h4>
+        <div class="tags-container">
+            {{ tag_list(tags, item_type=item_type, item_id=item_id) }}
+        </div>
+    </section>
+    {% endif %}
+{%- endmacro %}
+
+{% macro tag_list(tags, force=False, item_type=None, item_id=None) -%}
     {% for tag in tags %}
         {% if loop.first %}
             <ul>
         {% endif %}
-        <li>{{ tag.name_link }}&emsp;{{ helpers.tag.post_search_link(tag) }}</li>
+        <li>
+            {{ tag.name_link }}&ensp;
+            {{ helpers.tag.post_search_link(tag, item_type) }}
+        </li>
         {% if loop.last %}
             </ul>
         {% endif %}
@@ -16,9 +30,9 @@
     {% endfor %}
 {%- endmacro %}
 
-{% macro simple_tag_list(tags) -%}
+{% macro simple_tag_list(tags, item_type) -%}
         {% for tag in tags %}
-            {{ tag.name_link }}&emsp;{{ helpers.tag.post_search_link(tag) }}
+            {{ tag.name_link }}&emsp;{{ helpers.tag.post_search_link(tag, item_type) }}
             {% if not loop.last %}
                 <br>
             {% endif %}

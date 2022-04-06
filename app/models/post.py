@@ -18,6 +18,7 @@ from ..logical.utility import unique_objects
 from .error import Error
 from .illust_url import IllustUrl
 from .notation import Notation
+from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .similarity_data import SimilarityData
 from .similarity_pool import SimilarityPool
@@ -47,6 +48,12 @@ PostNotations = DB.Table(
     DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),
 )
 
+PostTags = DB.Table(
+    'post_tags',
+    DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
+    DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
+)
+
 
 # ## CLASSES
 
@@ -70,6 +77,7 @@ class Post(JsonModel):
                              backref=DB.backref('post', uselist=False, lazy=True))
     notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, cascade='all,delete',
                                 backref=DB.backref('post', uselist=False, lazy=True))
+    _tags = DB.relationship(UserTag, secondary=PostTags, lazy=True, backref=DB.backref('posts', lazy=True))
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
     _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False))
     similarity_data = DB.relationship(SimilarityData, lazy=True, cascade='all,delete',
@@ -82,6 +90,7 @@ class Post(JsonModel):
     # uploads <- Upload (MtM)
 
     # #### Association proxies
+    tags = association_proxy('_tags', 'name')
     pools = association_proxy('_pools', 'pool')
 
     # ## Property methods
@@ -194,7 +203,7 @@ class Post(JsonModel):
     # ## Class properties
 
     basic_attributes = ['id', 'width', 'height', 'size', 'file_ext', 'md5', 'danbooru_id', 'created']
-    relation_attributes = ['illust_urls', 'uploads', 'notations', 'errors', 'similarity_data', 'similarity_pool',
-                           'similarity_elements']
+    relation_attributes = ['illust_urls', 'uploads', 'tags', 'notations', 'errors', 'similarity_data',
+                           'similarity_pool', 'similarity_elements']
     searchable_attributes = basic_attributes + relation_attributes
     json_attributes = basic_attributes + ['preview_url', 'sample_url', 'file_url', 'illust_urls', 'errors']
