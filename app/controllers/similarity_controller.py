@@ -110,7 +110,9 @@ def check_html():
     if show_form:
         return render_template("similarity/check.html", similar_results=None, form=get_similarity_form())
     results = check(False)
-    form = get_similarity_form(**results['data'])
+    formparams = results['data']
+    formparams['urls_string'] = '\r\n'.join(formparams['urls'])
+    form = get_similarity_form(**formparams)
     if results['error']:
         flash(results['message'], 'error')
         return render_template("similarity/check.html", similar_results=None, form=form)
