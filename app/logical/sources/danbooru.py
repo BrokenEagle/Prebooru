@@ -70,7 +70,7 @@ def get_artists_by_ids(id_list):
 def get_artists_by_url(url):
     request_url = '/artist_urls.json'
     params = {
-        'search[normalized_url]': url,
+        'search[url_ilike]': url.lower(),
         'only': 'url,artist',
         'limit': 1000,
     }
@@ -84,8 +84,8 @@ def get_artists_by_url(url):
 def get_artists_by_multiple_urls(url_list):
     request_url = '/artist_urls.json'
     params = {
-        'search[normalized_url_space]': ' '.join(url_list),
-        'only': 'normalized_url,artist',
+        'search[url_lower_space]': ' '.join(url_list).lower(),
+        'only': 'url,artist',
         'limit': 1000,
     }
     data = danbooru_request(request_url, params)
@@ -93,7 +93,7 @@ def get_artists_by_multiple_urls(url_list):
         return data
     retdata = {}
     for artist_url in data['json']:
-        add_dict_entry(retdata, artist_url['normalized_url'], artist_url['artist'])
+        add_dict_entry(retdata, artist_url['url'], artist_url['artist'])
     return {'error': False, 'data': retdata}
 
 

@@ -126,7 +126,7 @@ def artist_bookmarks_url(artist):
 
 
 def artist_booru_search_url(artist):
-    return 'http://www.pixiv.net/member.php?id=%d/' % artist.site_artist_id
+    return 'https://www.pixiv.net/users/%d' % artist.site_artist_id
 
 
 def get_data_illust_ids(pixiv_data, type):

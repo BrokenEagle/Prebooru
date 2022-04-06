@@ -412,7 +412,7 @@ def artist_profile_urls(artist):
 
 
 def artist_booru_search_url(artist):
-    return 'http://twitter.com/intent/user?user_id=%d/' % artist.site_artist_id
+    return 'https://twitter.com/intent/user?user_id=%d' % artist.site_artist_id
 
 
 def illust_commentaries_dtext(illust):
