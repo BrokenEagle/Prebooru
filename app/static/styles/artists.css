@@ -33,7 +33,7 @@ section#artist-illusts {
     font-size: 1.25em;
     font-weight: bold;
 }
-div#artist-notations-container {
+div.artist-notations-container {
     max-height: 250px;
     overflow-y: auto;
 }

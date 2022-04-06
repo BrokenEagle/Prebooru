@@ -20,7 +20,7 @@
     {% if notations | length > 0 %}
         <section id="{{ section_id }}">
             <h4>Notations</h4>
-            <div id="artist-notations-container">
+            <div class="artist-notations-container">
                 <ul>
                     {% for notation in notations %}
                         <li>{{ notation_block(notation) }}</li>
