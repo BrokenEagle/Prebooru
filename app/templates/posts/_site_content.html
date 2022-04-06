@@ -1,7 +1,8 @@
 {% from 'layouts/_macros.html' import items_list, items_block %}
 
 <div id="post-site-content">
-    <section id="post-info">
+    {% set info_class = 'danbooru-uploaded' if post.danbooru_id is not none else "" %}
+    <section id="post-info" class="{{ info_class }}">
         <h4>Info</h4>
         <ul>
             <li><strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(post) }}</li>

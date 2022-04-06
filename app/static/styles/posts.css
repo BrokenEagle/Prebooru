@@ -27,7 +27,12 @@ div#post-site-content {
     display: flex;
 }
 section#post-info {
+    padding: 5px;
     width: 40%;
+    margin-right: 1em;
+}
+section#post-info.danbooru-uploaded {
+    border: 2px solid green;
 }
 section#post-commentaries {
     width: 50%;
