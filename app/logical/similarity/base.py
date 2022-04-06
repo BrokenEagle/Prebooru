@@ -37,7 +37,6 @@ def get_similarity_data_matches(image_hash, ratio, sim_clause=None, post_id=None
     if isinstance(ratio, float):
         query = query.filter(SimilarityData.ratio_clause(ratio))
     if sim_clause != 'all':
-        sim_clause = sim_clause if sim_clause in switcher else 'cross2'
         query = query.filter(switcher[sim_clause](image_hash))
     if post_id is not None:
         query = query.filter(SimilarityData.post_id != post_id)
