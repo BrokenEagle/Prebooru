@@ -10,6 +10,8 @@ from alembic import context
 
 USE_TWOPHASE = False
 
+IGNORE_TABLES = ['sqlite_stat1', 'sqlite_stat4', 'server_info']
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -55,7 +57,7 @@ def get_metadata(bind):
 
 def include_object(object, name, type_, reflected, compare_to):
     if (
-        type_ == "table" and (name == "sqlite_stat1" or name == "sqlite_stat4")
+        type_ == "table" and name in IGNORE_TABLES
     ):
         return False
     else:
