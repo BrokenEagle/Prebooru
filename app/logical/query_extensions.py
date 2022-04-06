@@ -83,7 +83,10 @@ def unique_join(self, model, *args, **kwargs):
 
 
 def get_count(self):
-    return self.with_entities(func.count()).scalar()
+    try:
+        return self.with_entities(func.count()).scalar()
+    except Exception:
+        return self.count()
 
 
 def count_paginate(self, page=1, per_page=20):
