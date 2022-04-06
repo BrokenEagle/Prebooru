@@ -1,5 +1,8 @@
 # APP/LOGICAL/RECORDS/MEDIA_FILE_REC.PY
 
+# ## PYTHON IMPORTS
+from concurrent.futures import ThreadPoolExecutor
+
 # ## PACKAGE IMPORTS
 from utility.data import get_buffer_checksum
 from utility.file import create_directory, put_get_raw, delete_file
@@ -23,6 +26,12 @@ def batch_delete_media(media_files):
         if delete_count == usage_count:
             delete_file(media.file_path)
     batch_delete_media_files(media_files)
+
+
+def batch_get_or_create_media(media_batches):
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(get_or_create_media, url, source) for (url, source) in media_batches]
+        return [f.result() for f in futures]
 
 
 def get_or_create_media(download_url, source):

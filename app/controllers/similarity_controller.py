@@ -122,6 +122,9 @@ def check_html():
         if type(json_result) is str:
             flash("%s - %s" % (json_result, results['data']['urls'][i]), 'error')
             continue
+        if json_result['error']:
+            flash("%s - %s" % (json_result['message'], json_result['download_url']), 'error')
+            continue
         post_results = [SimpleNamespace(**post_result) for post_result in json_result['post_results']]
         del json_result['post_results']
         similarity_result = SimpleNamespace(post_results=post_results, **json_result)
