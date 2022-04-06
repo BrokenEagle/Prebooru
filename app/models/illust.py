@@ -138,7 +138,7 @@ class Illust(JsonModel):
 
     basic_attributes = ['id', 'site_id', 'site_illust_id', 'site_created', 'artist_id', 'pages', 'score', 'active',
                         'created', 'updated', 'requery']
-    relation_attributes = ['artist', 'urls', 'tags', 'commentaries', 'notations']
+    relation_attributes = ['artist', 'site_data', 'urls', 'tags', 'commentaries', 'notations']
     searchable_attributes = basic_attributes + relation_attributes
     json_attributes = basic_attributes + ['urls', 'tags', 'commentaries', 'site_data']
 

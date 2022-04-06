@@ -3,7 +3,7 @@
 # ## PYTHON IMPORTS
 import re
 from sqlalchemy import and_, not_, func
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, with_polymorphic
 from sqlalchemy.orm.relationships import RelationshipProperty
 from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance
 import sqlalchemy.sql.sqltypes as sqltypes
@@ -137,9 +137,10 @@ def basic_attribute_filters(model, columnname, params):
 
 
 def relationship_attribute_filters(query, model, attribute, params):
-    if is_polymorphic(model, attribute):
-        raise Exception("%s - polymorphic relationships are currently unhandled" % attribute)
     relation = get_attribute(model, attribute)
+    relation_model = relationship_model(model, attribute)
+    if is_polymorphic(model, attribute) and relation_model.polymorphic_base:
+        return polymorphic_attribute_filters(query, model, attribute, params)
     filters = ()
     if ('has_' + attribute) in params:
         primaryjoin = relation.property.primaryjoin
@@ -162,10 +163,27 @@ def relationship_attribute_filters(query, model, attribute, params):
         else:
             raise Exception("%s - invalid value: %s" % ('count_' + attribute, value))
     if attribute in params:
-        relation_model = relationship_model(model, attribute)
         aliased_model = aliased(relation_model)
         query = query.unique_join(aliased_model, relation)
         attr_filters, query = all_attribute_filters(query, aliased_model, params[attribute])
+        filters += (and_(*attr_filters),)
+    return filters, query
+
+
+def polymorphic_attribute_filters(query, model, attribute, params):
+    if attribute not in params:
+        return (), query
+    relation = get_attribute(model, attribute)
+    relation_model = relationship_model(model, attribute)
+    subclass_names = [subclass.__name__ for subclass in relation_model.polymorphic_classes]
+    subclass_attributes = set(params[attribute].keys()).intersection(subclass_names)
+    if not isinstance(params[attribute], dict) or not subclass_attributes:
+        raise Exception("Must include subclass designation for polymorphic class: %s" % repr(subclass_names))
+    polymorphic_model = with_polymorphic(relation_model, relation_model.polymorphic_classes)
+    query = query.unique_join(polymorphic_model, relation)
+    for key in subclass_attributes:
+        filters = ()
+        attr_filters, query = all_attribute_filters(query, getattr(polymorphic_model, key), params[attribute][key])
         filters += (and_(*attr_filters),)
     return filters, query
 

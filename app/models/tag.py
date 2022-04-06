@@ -14,6 +14,10 @@ from .base import JsonModel
 class Tag(JsonModel):
     # ## Declarations
 
+    # ## Class attributes
+
+    polymorphic_base = True
+
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
@@ -61,6 +65,10 @@ class Tag(JsonModel):
 
 
 class SiteTag(Tag):
+    # ## Class attributes
+
+    polymorphic_base = False
+
     # #### Private
 
     @property
@@ -83,6 +91,10 @@ class SiteTag(Tag):
 
 
 class UserTag(Tag):
+    # ## Class attributes
+
+    polymorphic_base = False
+
     # ## Private
 
     @property
@@ -102,3 +114,8 @@ class UserTag(Tag):
         'polymorphic_identity': 'user_tag',
     }
 
+
+# ## FUNCTIONS
+
+def initialize():
+    setattr(Tag, 'polymorphic_classes', [SiteTag, UserTag])

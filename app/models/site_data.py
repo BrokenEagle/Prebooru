@@ -13,6 +13,10 @@ from .base import JsonModel
 class SiteData(JsonModel):
     # ## Declarations
 
+    # ## Class attributes
+
+    polymorphic_base = True
+
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False)
@@ -33,6 +37,10 @@ class SiteData(JsonModel):
 class PixivData(SiteData):
     # ## Declarations
 
+    # ## Class attributes
+
+    polymorphic_base = False
+
     # #### Columns
     site_uploaded = DB.Column(DB.DateTime(timezone=False), nullable=True)
     site_updated = DB.Column(DB.DateTime(timezone=False), nullable=True)
@@ -50,6 +58,7 @@ class PixivData(SiteData):
     # ## Class properties
 
     basic_attributes = SiteData.basic_attributes + ['site_uploaded', 'site_updated', 'title', 'bookmarks', 'views']
+    searchable_attributes = basic_attributes
     json_attributes = basic_attributes
 
     # ## Private
@@ -62,6 +71,10 @@ class PixivData(SiteData):
 
 class TwitterData(SiteData):
     # ## Declarations
+
+    # ## Class attributes
+
+    polymorphic_base = False
 
     # #### Columns
     retweets = DB.Column(DB.Integer, nullable=True)
@@ -77,6 +90,7 @@ class TwitterData(SiteData):
     # ## Class properties
 
     basic_attributes = SiteData.basic_attributes + ['retweets', 'replies', 'quotes']
+    searchable_attributes = basic_attributes
     json_attributes = basic_attributes
 
     # ## Private
@@ -85,3 +99,9 @@ class TwitterData(SiteData):
     __mapper_args__ = {
         'polymorphic_identity': 'twitter_data',
     }
+
+
+# ## FUNCTIONS
+
+def initialize():
+    setattr(SiteData, 'polymorphic_classes', [PixivData, TwitterData])
