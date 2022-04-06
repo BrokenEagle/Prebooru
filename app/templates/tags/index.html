@@ -8,7 +8,8 @@
         <thead>
             <tr>
                 <th width="10%">ID</th>
-                <th width="70%">Name</th>
+                <th width="84%">Name</th>
+                <th width="6%">Type</th>
             </tr>
         </thead>
         <tbody>
@@ -16,6 +17,7 @@
                 <tr id="tag-{{ tag.id }}">
                     <td>{{ tag.show_link }}</td>
                     <td>{{ tag.name }}</td>
+                    <td>{{ tag.display_type }}</td>
                 </tr>
             {% endfor %}
         </tbody>

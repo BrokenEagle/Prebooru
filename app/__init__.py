@@ -34,7 +34,7 @@ if sys.version_info.major == 3 and sys.version_info.minor < 7:
 
 # ## GLOBAL VARIABLES
 
-DATABASE_VERSION = '1ac5693be102'
+DATABASE_VERSION = '213bda92645a'
 
 # For imports outside the relative path
 PREBOORU_DB_URL = os.environ.get('PREBOORU_DB', 'sqlite:///%s' % DB_PATH)

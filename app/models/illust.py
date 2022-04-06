@@ -7,7 +7,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ## LOCAL IMPORTS
 from .. import DB
 from ..logical.sites import get_site_domain, get_site_key
-from .tag import Tag
+from .tag import SiteTag
 from .illust_url import IllustUrl
 from .site_data import SiteData
 from .description import Description
@@ -60,7 +60,7 @@ class Illust(JsonModel):
     # #### Relationships
     _commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True,
                                     backref=DB.backref('illusts', lazy=True))
-    _tags = DB.relationship(Tag, secondary=IllustTags, lazy=True, backref=DB.backref('illusts', lazy=True))
+    _tags = DB.relationship(SiteTag, secondary=IllustTags, lazy=True, backref=DB.backref('illusts', lazy=True))
     urls = DB.relationship(IllustUrl, backref=DB.backref('illust', lazy=True, uselist=False), lazy=True,
                            cascade="all, delete")
     site_data = DB.relationship(SiteData, lazy=True, uselist=False, cascade="all, delete")

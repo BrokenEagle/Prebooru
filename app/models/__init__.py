@@ -9,7 +9,7 @@ from types import ModuleType
 # ## COLLATION IMPORTS
 
 # #### Site data
-from .tag import Tag  # noqa: F401
+from .tag import Tag, SiteTag, UserTag  # noqa: F401
 from .label import Label  # noqa: F401
 from .description import Description  # noqa: F401
 from .site_data import SiteData, PixivData, TwitterData  # noqa: F401

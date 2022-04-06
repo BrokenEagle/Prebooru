@@ -17,12 +17,17 @@ class Tag(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
+    type = DB.Column(DB.String(50))
 
     # ## Property methods
 
     @property
     def name_link(self):
         return Markup('<a href="%s">%s</a>' % (self.show_url, self.name))
+
+    @property
+    def display_type(self):
+        return self.type.replace('_', ' ').capitalize()
 
     @memoized_property
     def recent_posts(self):
@@ -42,6 +47,22 @@ class Tag(JsonModel):
 
     # #### Private
 
+    __tablename__ = 'tag'
+    __mapper_args__ = {
+        'polymorphic_identity': 'tag',
+        "polymorphic_on": type
+    }
+
+    # ## Class properties
+
+    basic_attributes = ['id', 'name', 'type']
+    searchable_attributes = basic_attributes
+    json_attributes = basic_attributes
+
+
+class SiteTag(Tag):
+    # #### Private
+
     @property
     def _illust_query(self):
         from .illust import Illust
@@ -55,8 +76,29 @@ class Tag(JsonModel):
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust._tags)\
                    .filter(Tag.id == self.id)
 
-    # ## Class properties
+    __tablename__ = 'site_tag'
+    __mapper_args__ = {
+        'polymorphic_identity': 'site_tag',
+    }
 
-    basic_attributes = ['id', 'name']
-    searchable_attributes = basic_attributes
-    json_attributes = basic_attributes
+
+class UserTag(Tag):
+    # ## Private
+
+    @property
+    def _illust_query(self):
+        from .illust import Illust
+        from .illust_url import IllustUrl
+        from .post import Post
+        return Illust.query.join(IllustUrl).join(Post, IllustUrl.post).join(UserTag, Post._tags).filter(UserTag.id == self.id)
+
+    @property
+    def _post_query(self):
+        from .post import Post
+        return Post.query.join(UserTag, Post._tags).filter(UserTag.id == self.id)
+
+    __tablename__ = 'user_tag'
+    __mapper_args__ = {
+        'polymorphic_identity': 'user_tag',
+    }
+

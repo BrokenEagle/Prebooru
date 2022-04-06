@@ -13,11 +13,16 @@
     <div id="tag-content">
         <ul>
             <li><strong>Name:</strong>&emsp;{{ tag.name }}</li>
-            <li><strong>Links:</strong>&emsp;{{ helpers.tag.tag_search_links(tag) }}</li>
+            <li><strong>Type:</strong>&emsp;{{ tag.display_type }}</li>
+            {% if tag.type == 'site_tag' %}
+                <li><strong>Links:</strong>&emsp;{{ helpers.tag.tag_search_links(tag) }}</li>
+            {% endif %}
         </ul>
     </div>
-    {{ illusts_display(helpers.tag.illust_search(tag), tag.illust_count, 'tag-illusts', False) }}
-    <div id="tag-posts">
-        {{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag)) }}
-    </div>
+    {% if tag.type == 'site_tag' %}
+        {{ illusts_display(helpers.tag.illust_search(tag, 'illust'), tag.illust_count, 'tag-illusts', False) }}
+        <div id="tag-posts">
+            {{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag, 'illust')) }}
+        </div>
+    {% endif %}
 {% endblock %}

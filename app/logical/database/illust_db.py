@@ -8,7 +8,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Illust, IllustUrl, Tag, Description
+from ...models import Illust, IllustUrl, SiteTag, Description
 from ..utility import set_error
 from .illust_url_db import update_illust_url_from_parameters
 from .site_data_db import update_site_data_from_parameters
@@ -20,7 +20,7 @@ from .base_db import update_column_attributes, update_relationship_collections, 
 # ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active']
-UPDATE_SCALAR_RELATIONSHIPS = [('_tags', 'name', Tag)]
+UPDATE_SCALAR_RELATIONSHIPS = [('_tags', 'name', SiteTag)]
 APPEND_SCALAR_RELATIONSHIPS = [('_commentaries', 'body', Description)]
 RECREATE_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['tags', 'commentaries']
