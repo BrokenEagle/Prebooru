@@ -93,7 +93,12 @@ def _teardown_request(error=None):
 
 def _error_handler(error):
     if not request.path.endswith('.json'):
-        raise error
+        if issubclass(error.__class__, HTTPException):
+            return error.get_response()
+        else:
+            # Reraising and having the Werkzeug catch the exception prevents the _teardown request from running
+            SERVER_INFO.active_requests = max(SERVER_INFO.active_requests - 1, 0)
+            raise error
     exc_type, exc_value, exc_tb = sys.exc_info()
     traceback.print_exception(exc_type, exc_value, exc_tb)
     fmt_tb = traceback.format_exception(exc_type, exc_value, exc_tb)
