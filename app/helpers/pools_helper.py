@@ -21,6 +21,10 @@ def media_header(item):
 
 # #### Link functions
 
+def last_page_link(pool):
+    return general_link('&raquo;', url_for('pool.show_last_html', id=pool.id))
+
+
 def prev_navigation(pool_element):
     return _pool_navigation('&laquo;', 'pool_element.previous_html', pool_element)
 
