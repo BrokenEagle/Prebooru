@@ -12,7 +12,7 @@ from utility.data import eval_bool_string
 from .. import SCHEDULER
 from ..logical.utility import set_error
 from ..logical.tasks.worker import process_upload
-from ..logical.records.media_file_rec import get_or_create_media
+from ..logical.records.media_file_rec import batch_get_or_create_media
 from ..models import Upload, Post, IllustUrl, Illust
 from ..logical.sources.base import get_post_source, get_preview_url
 from ..logical.database.upload_db import create_upload_from_parameters, set_upload_status
@@ -167,12 +167,16 @@ def upload_select():
         return set_error(retdata, msg)
     site_illust_id = source.get_illust_id(selectparams['request_url'])
     illust_data = source.get_illust_data(site_illust_id)
+    media_batches = []
     for url_data in illust_data['illust_urls']:
         full_url = get_preview_url(url_data['url'], url_data['site_id'])
         url_data['full_url'] = full_url
         url_data['preview_url'] = source.small_image_url(full_url)
-        media = get_or_create_media(url_data['preview_url'], source)
-        if type(media) is str:
+        media_batches.append((url_data['preview_url'], source))
+    media_files = batch_get_or_create_media(media_batches)
+    for (i, media) in enumerate(media_files):
+        url_data = illust_data['illust_urls'][i]
+        if isinstance(media, str):
             flash(media, 'error')
             url_data['media_url'] = None
         else:
