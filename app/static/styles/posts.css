@@ -2,6 +2,19 @@
 div#posts-container {
     margin-top: 2em;
 }
+div#type-selector {
+    font-size: 1.2em;
+    margin-top: 1em;
+    width: 14em;
+    border-bottom: 1px solid #CCC;
+}
+a.post-type {
+    display: inline-block;
+    margin: 0 0.5em;
+}
+a.post-type.type-active {
+    font-weight: bold;
+}
 /****SHOW Page****/
 div#sidebar-container {
     display: flex;

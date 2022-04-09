@@ -69,6 +69,7 @@ class Post(JsonModel):
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
+    type = DB.Column(DB.String(50), nullable=False)
 
     # #### Relationships
     illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True,
@@ -202,7 +203,7 @@ class Post(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'width', 'height', 'size', 'file_ext', 'md5', 'danbooru_id', 'created']
+    basic_attributes = ['id', 'width', 'height', 'size', 'file_ext', 'md5', 'danbooru_id', 'created', 'type']
     relation_attributes = ['illust_urls', 'uploads', 'tags', 'notations', 'errors', 'similarity_data',
                            'similarity_pool', 'similarity_elements']
     searchable_attributes = basic_attributes + relation_attributes

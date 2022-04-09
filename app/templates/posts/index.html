@@ -5,6 +5,11 @@
 {% block title %}Posts{% endblock %}
 
 {% block content %}
+    <div id="type-selector">
+        {{ helpers.post.post_type_link('all') }}
+        {{ helpers.post.post_type_link('user') }}
+        {{ helpers.post.post_type_link('subscription') }}
+    </div>
     <div id="posts-container">
         {% for post in posts.items %}
             {{ post_preview(post) }}
