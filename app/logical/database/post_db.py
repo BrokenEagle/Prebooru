@@ -13,8 +13,8 @@ from .similarity_pool_db import delete_similarity_pool_by_post_id
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created']
-CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size']
+COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type']
+CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type']
 UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
 
 
@@ -67,7 +67,7 @@ def delete_post(post):
 # #### Misc functions
 
 def create_post(width, height, file_ext, md5, size):
-    params = {'width': width, 'height': height, 'file_ext': file_ext, 'md5': md5, 'size': size}
+    params = {'width': width, 'height': height, 'file_ext': file_ext, 'md5': md5, 'size': size, 'type': 'user_post'}
     return create_post_from_parameters(params)
 
 

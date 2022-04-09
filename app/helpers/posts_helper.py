@@ -4,14 +4,14 @@
 import urllib.parse
 
 # ## EXTERNAL IMPORTS
-from flask import Markup, url_for
+from flask import Markup, url_for, request
 
 # ## PACKAGE IMPORTS
 from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
 from ..logical.sources.base import get_source_by_id
-from .base_helper import search_url_for, general_link, external_link
+from .base_helper import search_url_for, general_link, external_link, url_for_with_params
 
 
 # ## FUNCTIONS
@@ -124,3 +124,10 @@ def danbooru_post_link(post):
     if post.danbooru_id is not None:
         return external_link('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id)
     return Markup('<em>N/A</em>')
+
+# ###### INDEX
+
+def post_type_link(post_type):
+    active_type = request.args.get('type') or 'user'
+    classes = ['post-type'] + [post_type + '-type'] + (['type-active'] if active_type == post_type else [])
+    return general_link(post_type.title(), url_for_with_params('post.index_html', type=post_type, page=None), **{'class': ' '.join(classes)})

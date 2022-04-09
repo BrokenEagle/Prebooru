@@ -75,9 +75,17 @@ def pool_filter(query, search):
 
 # #### Route auxiliary functions
 
-def index():
+def index(is_html):
     params = process_request_values(request.values)
     search = get_params_value(params, 'search', True)
+    if is_html and 'type' not in search:
+        post_type = request.args.get('type')
+        if post_type == 'all':
+            search.pop('type', None)
+        elif post_type in ['user', 'subscription']:
+            search['type'] = post_type + '_post'
+        else:
+            search['type'] = 'user_post'
     negative_search = get_params_value(params, 'not', True)
     q = Post.query
     q = search_filter(q, search, negative_search)
@@ -105,7 +113,7 @@ def show_html(id):
 
 @bp.route('/posts.json', methods=['GET'])
 def index_json():
-    q = index()
+    q = index(False)
     q = q.options(JSON_OPTIONS)
     return index_json_response(q, request)
 
@@ -113,7 +121,7 @@ def index_json():
 @bp.route('/', methods=['GET'])
 @bp.route('/posts', methods=['GET'])
 def index_html():
-    q = index()
+    q = index(True)
     q = q.options(INDEX_HTML_OPTIONS)
     posts = paginate(q, request)
     return render_template("posts/index.html", posts=posts, post=Post())
