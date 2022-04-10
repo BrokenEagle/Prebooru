@@ -1,0 +1,115 @@
+/****INDEX Page****/
+div#subscription-page-controls {
+    position: relative;
+    width: 95%;
+    height: 4em;
+    border-bottom: 2px solid #EEE;
+}
+div#subscription-page-controls > div {
+    position: absolute;
+}
+div#subscription-type-selector {
+    left: 0;
+    margin-top: 1em;
+    font-size: 20px;
+    width: 20em;
+}
+a.element-type {
+    margin-right: -6px;
+    display: inline-block;
+    background: #F0F0F0;
+    border: 1px solid #DDD;
+    border-radius: 15px 15px 0 0;
+    padding: 5px 10px;
+}
+a.element-type.type-active {
+    font-weight: bold;
+    color: white;
+    background: blue;
+}
+div#subscription-pool-elements-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 2em;
+}
+article.subscription-element {
+    width: 325px;
+    height: 400px;
+    margin: 2em 1em 4em;
+}
+article.subscription-element > * {
+    display: block;
+}
+article.subscription-element > a {
+    height: 300px;
+}
+div.subscription-element-info {
+    font-size: 16px;
+    border: 2px solid;
+    margin-top: 5px;
+    padding: 5px;
+}
+div.subscription-element-info.yes-info {
+    border-color: limegreen;
+}
+div.subscription-element-info.maybe-info {
+    border-color: darkorange;
+}
+div.subscription-element-info.no-info {
+    border-color: red;
+}
+div.subscription-element-info.unsure-info {
+    border-color: #DDD;
+}
+article.subscription-element ul {
+    margin-left: 25px;
+}
+article.subscription-element > div.subscription-no-post {
+    padding: 1em;
+    height: 305px;
+    background: #F0F0F0;
+    border: 2px solid #DDD;
+}
+article.subscription-element div.errors-list {
+    border: 1px solid #DDD;
+    padding: 5px;
+}
+/****SHOW Page****/
+div#sidebar-container {
+    display: flex;
+}
+aside#subscription-pool-element-sidebar {
+    width: 25em;
+    border: 2px solid #DDD;
+    background: #F8F8F8;
+    padding: 0.5em;
+    height: fit-content;
+    min-height: 50em;
+}
+aside#subscription-pool-element-sidebar > section {
+    margin-bottom: 1em;
+}
+div#post-content {
+    width: 1300px;
+    margin-left: 1em;
+}
+section#image-container {
+    cursor: pointer;
+    margin-right: 1em;
+    margin-bottom: 1em;
+}
+section#image-container.fullsize img {
+    max-height: 100vh;
+    width: auto;
+}
+div#subscription-pool-element-site-content {
+    border: 1px solid #DEF;
+    background-color: #F8FFFF;
+    padding: 5px;
+    display: flex;
+}
+section#subscription-pool-element-info {
+    padding: 5px;
+    width: 40%;
+    margin-right: 1em;
+}

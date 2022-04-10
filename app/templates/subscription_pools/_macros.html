@@ -5,6 +5,8 @@
             <ul>
                 <li><strong>{{ subscription_pool.show_link }}</strong></li>
                 <li><strong>Status:</strong> {{ subscription_pool.status }}</li>
+                <li><strong>Elements:</strong> {{ subscription_pool.element_count }}</li>
+                <li><strong>Posts:</strong> {{ subscription_pool.post_count }}</li>
                 <li><strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription_pool.checked) }}</li>
             </ul>
         </section>

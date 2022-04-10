@@ -32,7 +32,6 @@ def create_upload_from_parameters(createparams):
         'successes': 0,
         'failures': 0,
         'status': 'pending',
-        'subscription_id': None,
         'created': get_current_time(),
     }
     upload = Upload(**data)

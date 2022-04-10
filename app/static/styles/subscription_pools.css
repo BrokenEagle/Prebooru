@@ -46,3 +46,12 @@ section#subscription-pool-settings {
 section#subscription-pool-status {
     width: 25%;
 }
+div#subscription-elements,
+div#subscription-illusts {
+    margin-top: 1em;
+    font-size: 24px;
+    font-weight: bold;
+}
+div#subscription-pool-posts {
+    margin-top: 2em;
+}

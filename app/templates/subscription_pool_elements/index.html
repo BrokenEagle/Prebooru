@@ -1,0 +1,23 @@
+{% extends 'subscription_pool_elements/_base.html' %}
+{% from 'layouts/_macros.html' import page_navigation %}
+{% from 'subscription_pool_elements/_macros.html' import subscription_element_preview %}
+
+{% block title %}Subscription Pool Elements{% endblock %}
+
+{% block content %}
+    <div id="subscription-page-controls">
+        <div id="subscription-type-selector">
+            {{ helpers.subscription_pool.element_type_link('all') }}
+            {{ helpers.subscription_pool.element_type_link('yes') }}
+            {{ helpers.subscription_pool.element_type_link('no') }}
+            {{ helpers.subscription_pool.element_type_link('unsure') }}
+        </div>
+    </div>
+        <div id="subscription-pool-elements-container">
+            {% for element in subscription_pool_elements.items %}
+                {{ subscription_element_preview(element) }}
+            {% endfor %}
+        </div>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(subscription_pool_elements) }}{% endblock %}
