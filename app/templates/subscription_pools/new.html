@@ -1,0 +1,16 @@
+{% extends 'subscription_pools/_base.html' %}
+{% from 'layouts/_macros.html' import render_form %}
+
+{% block title %}New Subscription Pool{% endblock %}
+
+{% block content %}
+    <div id="subscription-pool-form-heading" class="heading">
+        New Subscription Pool
+    </div>
+    {% if artist is not none %}
+        <div id="subscription-pool-form-info">
+            For {{ artist.show_link }}:
+        </div>
+    {% endif %}
+    {{ render_form(form, 'POST', subscription_pool.create_url) }}
+{% endblock %}

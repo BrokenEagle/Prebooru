@@ -49,7 +49,6 @@ class Upload(JsonModel):
     media_filepath = DB.Column(DB.String(255), nullable=True)
     sample_filepath = DB.Column(DB.String(255), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=True)
-    subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=True)
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
 
     # #### Relationships

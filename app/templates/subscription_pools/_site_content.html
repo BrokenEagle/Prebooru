@@ -1,0 +1,26 @@
+<div id="subscription-pool-site-content">
+    <div id="subscription-pool-site-content-1">
+        <section id="subscription-pool-status">
+            <h4>Info</h4>
+            <ul>
+                <li><strong>Status:</strong> {{ subscription_pool.status }}</li>
+                <li><strong>Last ID:</strong> {{ helpers.base.val_or_none(subscription_pool.last_id) }}</li>
+                <li><strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription_pool.checked) }}</li>
+            </ul>
+        </section>
+        <section id="subscription-pool-settings">
+            <h4>Settings</h4>
+            <ul>
+                <li><strong>Interval:</strong> {{ subscription_pool.interval }} hours</li>
+                <li><strong>Expiration:</strong>
+                    {% if subscription_pool.expiration is not none %}
+                        {{ subscription_pool.expiration }} days
+                    {% else %}
+                        <em>none</em>
+                    {% endif %}
+                </li>
+                <li><strong>Active:</strong> {{ subscription_pool.active | tojson }}</li>
+            </ul>
+        </section>
+    </div>
+</div>

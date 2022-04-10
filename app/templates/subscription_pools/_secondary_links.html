@@ -1,0 +1,11 @@
+{% from 'layouts/_macros.html' import subnav_link_to %}
+
+<menu id="secondary-menu">
+    {{ subnav_link_to("Listing", 'subscription_pool.index_html') }}
+    {{ subnav_link_to("New", 'subscription_pool.new_html') }}
+    {% if subscription_pool.id is not none %}
+        |
+        {{ subnav_link_to("Show", 'subscription_pool.show_html', id=subscription_pool.id) }}
+        {{ subnav_link_to("Edit", 'subscription_pool.edit_html', id=subscription_pool.id) }}
+    {% endif %}
+</menu>

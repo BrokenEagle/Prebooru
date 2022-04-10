@@ -1,0 +1,12 @@
+{% macro subscription_section(subscription_pool, section_id) -%}
+    {% if subscription_pool is not none %}
+        <section id="{{ section_id }}">
+            <h4>Subscription Pool</h4>
+            <ul>
+                <li><strong>{{ subscription_pool.show_link }}</strong></li>
+                <li><strong>Status:</strong> {{ subscription_pool.status }}</li>
+                <li><strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription_pool.checked) }}</li>
+            </ul>
+        </section>
+    {% endif %}
+{%- endmacro %}
