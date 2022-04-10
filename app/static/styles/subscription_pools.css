@@ -1,0 +1,48 @@
+/****NEW/EDIT Page****/
+div#subscription-pool-form-heading {
+    font-size: 28px;
+    margin-top: 1em;
+}
+div#subscription-pool-form-info {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 1em;
+}
+/****SHOW Page****/
+div#subscription-pool-heading {
+    font-size: 32px;
+}
+div#subscription-pool-content {
+    margin-top: 2em;
+    display: flex;
+}
+div#subscription-pool-sidebar {
+    width: 25em;
+    border: 2px solid #DDD;
+    background: #F8F8F8;
+    padding: 0.5em;
+}
+div#subscription-pool-sidebar > section {
+    margin-bottom: 1em;
+}
+div#subscription-pool-site-content {
+    width: 70%;
+}
+div#subscription-pool-site-content h4 {
+    text-decoration: underline;
+}
+div#subscription-pool-site-content-1 {
+    display: flex;
+}
+div#subscription-pool-site-content-1 > section {
+    margin-left: 1em;
+}
+div#subscription-pool-site-content-1 span.heading {
+    font-size: 1.33em;
+}
+section#subscription-pool-settings {
+    width: 25%;
+}
+section#subscription-pool-status {
+    width: 25%;
+}

@@ -27,7 +27,7 @@ from .upload import Upload  # noqa: F401
 from .notation import Notation  # noqa: F401
 from .pool import Pool  # noqa: F401
 from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation  # noqa: F401
-from .subscription import Subscription  # noqa: F401
+from .subscription_pool import SubscriptionPool  # noqa: F401
 
 # #### Similarity data
 from .similarity_data import SimilarityData  # noqa: F401

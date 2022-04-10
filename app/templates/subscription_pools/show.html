@@ -1,0 +1,11 @@
+{% extends 'subscription_pools/_base.html' %}
+
+{% block title %}{{ subscription_pool.header }}{% endblock %}
+
+{% block content %}
+    <div id="subscription-pool-heading" class="heading">{{ subscription_pool.header }}</div>
+    <div id="subscription-pool-content">
+        {% include "subscription_pools/_sidebar.html" %}
+        {% include "subscription_pools/_site_content.html" %}
+    </div>
+{% endblock %}

@@ -44,6 +44,7 @@ def initialize_controllers():
     PREBOORU_APP.register_blueprint(controllers.booru.bp)
     PREBOORU_APP.register_blueprint(controllers.upload.bp)
     PREBOORU_APP.register_blueprint(controllers.post.bp)
+    PREBOORU_APP.register_blueprint(controllers.subscription_pool.bp)
     PREBOORU_APP.register_blueprint(controllers.pool.bp)
     PREBOORU_APP.register_blueprint(controllers.pool_element.bp)
     PREBOORU_APP.register_blueprint(controllers.tag.bp)

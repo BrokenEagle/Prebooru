@@ -18,6 +18,7 @@ from . import boorus_controller as booru  # noqa: F401
 # #### Local data
 from . import posts_controller as post  # noqa: F401
 from . import uploads_controller as upload  # noqa: F401
+from . import subscription_pools_controller as subscription_pool  # noqa: F401
 from . import pools_controller as pool  # noqa: F401
 from . import pool_elements_controller as pool_element  # noqa: F401
 from . import tags_controller as tag  # noqa: F401

@@ -11,6 +11,7 @@ from .artist_url import ArtistUrl
 from .illust import Illust
 from .label import Label
 from .description import Description
+from .subscription_pool import SubscriptionPool
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
@@ -65,6 +66,7 @@ class Artist(JsonModel):
     _names = DB.relationship(Label, secondary=ArtistNames, lazy=True)
     _profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True)
     illusts = DB.relationship(Illust, lazy=True, backref=DB.backref('artist', lazy=True), cascade="all, delete")
+    subscription_pool = DB.relationship(SubscriptionPool, lazy=True, uselist=False, backref=DB.backref('artist', uselist=False, lazy=True), cascade="all, delete")
     webpages = DB.relationship(ArtistUrl, backref='artist', lazy=True, cascade="all, delete")
     notations = DB.relationship(Notation, secondary=ArtistNotations, lazy=True,
                                 backref=DB.backref('artist', uselist=False, lazy=True))
@@ -139,6 +141,6 @@ class Artist(JsonModel):
 
     basic_attributes = ['id', 'site_id', 'site_artist_id', 'site_created', 'current_site_account', 'active',
                         'created', 'updated', 'requery']
-    relation_attributes = ['names', 'site_accounts', 'profiles', 'webpages', 'illusts', 'boorus']
+    relation_attributes = ['names', 'site_accounts', 'profiles', 'webpages', 'illusts', 'boorus', 'subscription_pool']
     searchable_attributes = basic_attributes + relation_attributes
     json_attributes = basic_attributes + ['site_accounts', 'names', 'webpages', 'profiles']
