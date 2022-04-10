@@ -17,6 +17,7 @@ from .. import DB
 from ..logical.utility import unique_objects
 from .error import Error
 from .illust_url import IllustUrl
+from .subscription_pool_element import SubscriptionPoolElement
 from .notation import Notation
 from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
@@ -76,6 +77,8 @@ class Post(JsonModel):
                                   backref=DB.backref('post', uselist=False, lazy=True))
     errors = DB.relationship(Error, secondary=PostErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('post', uselist=False, lazy=True))
+    subscription_pool_element = DB.relationship(SubscriptionPoolElement, lazy=True, uselist=False,
+                                                backref=DB.backref('post', lazy=True, uselist=False))
     notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, cascade='all,delete',
                                 backref=DB.backref('post', uselist=False, lazy=True))
     _tags = DB.relationship(UserTag, secondary=PostTags, lazy=True, backref=DB.backref('posts', lazy=True))
@@ -205,6 +208,6 @@ class Post(JsonModel):
 
     basic_attributes = ['id', 'width', 'height', 'size', 'file_ext', 'md5', 'danbooru_id', 'created', 'type']
     relation_attributes = ['illust_urls', 'uploads', 'tags', 'notations', 'errors', 'similarity_data',
-                           'similarity_pool', 'similarity_elements']
+                           'similarity_pool', 'similarity_elements', 'subscription_pool_element']
     searchable_attributes = basic_attributes + relation_attributes
     json_attributes = basic_attributes + ['preview_url', 'sample_url', 'file_url', 'illust_urls', 'errors']

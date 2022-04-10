@@ -100,7 +100,7 @@ class Upload(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'successes', 'failures', 'subscription_id', 'illust_url_id', 'request_url', 'type',
+    basic_attributes = ['id', 'successes', 'failures', 'illust_url_id', 'request_url', 'type',
                         'status', 'media_filepath', 'sample_filepath', 'created']
     relation_attributes = ['image_urls', 'posts', 'errors']
     searchable_attributes = basic_attributes + relation_attributes

@@ -11,7 +11,7 @@ from wtforms import Field, BooleanField
 from wtforms.widgets import HiddenInput
 
 # ## PACKAGE IMPORTS
-from utility.time import time_ago
+from utility.time import time_ago, time_from_now
 
 # ## LOCAL IMPORTS
 from ..logical.sources import pixiv, twitter
@@ -54,6 +54,10 @@ def format_timestamp_difference(item):
     if delta.days > 0 or delta.seconds > 3600:
         text += " ( %s )" % time_ago(item.updated)
     return text
+
+
+def format_expires(timeval):
+    return time_from_now(timeval) if timeval is not None else Markup('<em>N/A</em>')
 
 
 def convert_to_html(text):
@@ -156,7 +160,7 @@ def form_iterator(form):
 
 # #### URL functions
 
-def search_url_for(endpoint, **kwargs):
+def search_url_for(endpoint, base_args=None, **kwargs):
     """Construct search URL for any endpoint given a dict of search parameters"""
     def _recurse(current_key, arg_dict, url_args):
         for key in arg_dict:
@@ -165,7 +169,7 @@ def search_url_for(endpoint, **kwargs):
                 _recurse(updated_key, arg_dict[key], url_args)
             else:
                 url_args[updated_key] = arg_dict[key]
-    url_args = {}
+    url_args = base_args if base_args is not None else {}
     _recurse('search', kwargs, url_args)
     return url_for(endpoint, **url_args)
 

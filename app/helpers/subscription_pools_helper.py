@@ -1,10 +1,10 @@
 # APP/HELPERS/ILLUSTS_HELPERS.PY
 
 # ## EXTERNAL IMPORTS
-from flask import url_for
+from flask import url_for, request, Markup
 
 # ## LOCAL IMPORTS
-from .base_helper import search_url_for, general_link
+from .base_helper import search_url_for, general_link, url_for_with_params
 
 
 # ## GLOBAL VARIABLES
@@ -43,3 +43,18 @@ def element_search_link(subscription_pool):
 def process_subscription_link(subscription_pool):
     url = url_for('subscription_pool.process_html', id=subscription_pool.id)
     return general_link("Process subscription", url, method="POST")
+
+
+# #### Elements
+
+def keep_element_val(subscription_element):
+    return subscription_element.keep if subscription_element.keep is not None else Markup("<em>Not yet chosen</em>")
+
+
+# ###### Link functions
+
+def element_type_link(element_type):
+    active_type = request.args.get('type') or 'unsure'
+    classes = ['element-type'] + [element_type + '-type'] + (['type-active'] if active_type == element_type else [])
+    url = url_for_with_params('subscription_pool_element.index_html', type=element_type, page=None)
+    return general_link(element_type.title(), url, **{'class': ' '.join(classes)})

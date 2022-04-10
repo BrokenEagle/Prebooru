@@ -3,8 +3,10 @@
         <section id="{{ section_id }}">
             <h4>Subscription Pool</h4>
             <ul>
-                <li><strong>{{ subscription_pool.show_link }}</strong></li>
+                <li><strong>{{ subscription_pool.show_link }} {{ helpers.subscription_pool.element_search_link(subscription_pool) }}</strong></li>
                 <li><strong>Status:</strong> {{ subscription_pool.status }}</li>
+                <li><strong>Elements:</strong> {{ subscription_pool.element_count }}</li>
+                <li><strong>Posts:</strong> {{ subscription_pool.post_count }}</li>
                 <li><strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription_pool.checked) }}</li>
             </ul>
         </section>

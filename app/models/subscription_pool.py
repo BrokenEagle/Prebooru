@@ -5,7 +5,11 @@ from sqlalchemy.util import memoized_property
 
 # ## LOCAL IMPORTS
 from .. import DB
+from .illust import Illust
+from .illust import IllustUrl
+from .post import Post
 from .error import Error
+from .subscription_pool_element import SubscriptionPoolElement
 from .base import JsonModel
 
 
@@ -39,8 +43,52 @@ class SubscriptionPool(JsonModel):
     active = DB.Column(DB.Boolean, nullable=False)
 
     # #### Relationships
+    elements = DB.relationship(SubscriptionPoolElement, lazy=True, cascade="all, delete",
+                               backref=DB.backref('pool', lazy=True, uselist=False))
     errors = DB.relationship(Error, secondary=SubscriptionPoolErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('subscription_pool', uselist=False, lazy=True))
+
+    # ## Property methods
+
+    @property
+    def posts(self):
+        q = self._post_query
+        q = q.order_by(Post.id.desc())
+        return q.all()
+
+    @memoized_property
+    def recent_posts(self):
+        q = self._post_query
+        q = q.order_by(Post.id.desc())
+        q = q.limit(10)
+        return q.all()
+
+    @property
+    def element_count(self):
+        return self._element_query.get_count()
+
+    @property
+    def illust_count(self):
+        return self._illust_query.distinct().get_count()
+
+    @property
+    def post_count(self):
+        return self._post_query.distinct().get_count()
+
+    # ## Private methods
+
+    @property
+    def _element_query(self):
+        return SubscriptionPoolElement.query.filter_by(pool_id=self.id)
+
+    @property
+    def _illust_query(self):
+        return Illust.query.join(IllustUrl).join(SubscriptionPoolElement)\
+                     .filter(SubscriptionPoolElement.pool_id == self.id)
+
+    @property
+    def _post_query(self):
+        return Post.query.join(SubscriptionPoolElement).filter(SubscriptionPoolElement.pool_id == self.id)
 
     # ## Class properties
 

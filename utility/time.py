@@ -70,5 +70,22 @@ def time_ago(timeval, precision=2):
     return (precision_str + "years ago") % set_precision(days / 365, precision)
 
 
-def add_dict_entry(indict, key, entry):
-    indict[key] = indict[key] + [entry] if key in indict else [entry]
+def time_from_now(timeval, precision=2):
+    delta = timeval - get_current_time()
+    if delta < datetime.timedelta(0):
+        return "already past"
+    precision_str = "%%.%df " % precision
+    if delta.days == 0:
+        if delta.seconds < 60:
+            return "%d seconds from now" % delta.seconds
+        if delta.seconds < 3600:
+            return (precision_str + "minutes from now") % set_precision(delta.seconds / 60, precision)
+        return (precision_str + "hours from now") % set_precision(delta.seconds / 3600, precision)
+    days = delta.days + (delta.seconds / 86400)
+    if days < 7:
+        return (precision_str + "days from now") % set_precision(days, precision)
+    if days < 30:
+        return (precision_str + "weeks from now") % set_precision(days / 7, precision)
+    if days < 365:
+        return (precision_str + "months from now") % set_precision(days / 30, precision)
+    return (precision_str + "years from now") % set_precision(days / 365, precision)

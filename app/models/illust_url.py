@@ -3,6 +3,7 @@
 # ## LOCAL IMPORTS
 from .. import DB
 from ..logical.sites import get_site_domain, get_site_key
+from .subscription_pool_element import SubscriptionPoolElement
 from .base import JsonModel
 
 
@@ -20,6 +21,11 @@ class IllustUrl(JsonModel):
     order = DB.Column(DB.Integer, nullable=False)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)
+
+    # ## Relationships
+    subscription_pool_element = DB.relationship(SubscriptionPoolElement, lazy=True, uselist=False,
+                                                backref=DB.backref('illust_url', lazy=True, uselist=False),
+                                                cascade="all, delete")
 
     # ## Property methods
 
@@ -44,7 +50,7 @@ class IllustUrl(JsonModel):
     # ## Class properties
 
     basic_attributes = ['id', 'site_id', 'url', 'width', 'height', 'order', 'illust_id', 'active']
-    relation_attributes = ['illust', 'post']
+    relation_attributes = ['illust', 'post', 'subscription_pool_element']
     searchable_attributes = basic_attributes + relation_attributes
     json_attributes = basic_attributes + ['full_url', 'site_domain']
 

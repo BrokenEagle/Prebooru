@@ -1,0 +1,15 @@
+<div id="subscription-pool-element-site-content">
+    <section id="subscription-pool-element-info">
+        <h4>Info</h4>
+        <ul>
+            {% if subscription_pool_element.post is not none %}
+                <li><strong>{{ subscription_pool_element.post_show_link }}</strong></li>
+            {% endif %}
+            <li><strong>Illust URL:</strong> {{ helpers.base.url_link(subscription_pool_element.illust_url.full_url) }}</li>
+            <li><strong>Keep:</strong> {{ helpers.subscription_pool.keep_element_val(subscription_pool_element) }}</li>
+            <li><strong>MD5:</strong> {{ helpers.base.val_or_none(subscription_pool_element.md5) }}</li>
+            <li><strong>Active:</strong> {{ subscription_pool_element.active | tojson }}</li>
+            <li><strong>Deleted:</strong> {{ subscription_pool_element.deleted | tojson }}</li>
+        </ul>
+    </section>
+</div>

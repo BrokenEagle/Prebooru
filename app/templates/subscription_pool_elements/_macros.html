@@ -1,0 +1,38 @@
+{% from 'errors/_macros.html' import error_list %}
+
+{% macro elements_display(element_search_url, element_count, section_id) -%}
+    <div id="{{ section_id }}">
+        <span class="heading">Elements</span> (&thinsp;{{ element_count }}&thinsp;) {{ helpers.base.general_link('&raquo;', element_search_url) }}
+    </div>
+{%- endmacro %}
+
+{% macro subscription_element_preview(element) -%}
+    <article class="subscription-element">
+        {% if element.post is not none %}
+            <a href="{{ element.show_url }}">
+                <img src="{{ element.post.preview_url }}">
+            </a>
+            {% set info_class = element.keep + '-info' if element.keep is not none else 'unsure-info' %}
+            <div class="subscription-element-info {{info_class}}">
+                <ul>
+                    <li><strong>{{ element.pool_show_link }} {{ helpers.subscription_pool.element_search_link(element) }}</strong></li>
+                    <li><strong>{{ element.post_show_link }}</strong></li>
+                    <li><strong>{{ element.illust_url.illust_show_link }}</strong></li>
+                    <li><strong>Expires:</strong>&ensp;
+                        <span class="subscription-element-expires">{{ helpers.base.format_expires(element.expires) }}</span>
+                    </li>
+                </ul>
+            </div>
+        {% else %}
+            {% set post_type = "Deleted" if element.deleted else "No" %}
+            <div class="subscription-no-post">
+                <ul>
+                    <li><strong>{{ element.show_link }}</strong>
+                    <li><strong>{{ element.pool_show_link }}</strong></li>
+                    <li><span class="explanation">{{post_type}} post.</span></li>
+                </ul>
+                {{ error_list(element.errors) }}
+            </div>
+        {% endif %}
+    </article>
+{%- endmacro %}
