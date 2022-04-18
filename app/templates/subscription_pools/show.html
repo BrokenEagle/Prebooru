@@ -26,4 +26,31 @@
             }, 15000);
         </script>
     {% endif %}
+    {% if job_status is not none and job_status['stage'] != 'done' %}
+        <script>
+            const job_interval = setInterval(function () {
+                let url = "{{ url_for('subscription_pool.status_json', id=subscription_pool.id, job=job_id) }}";
+                fetch(url)
+                    .then((resp)=>resp.json())
+                    .then((data)=>{
+                        console.log("Job interval:", JSON.stringify(data, null, 4));
+                        if (data.error) {
+                            Prebooru.error(data.message);
+                            clearInterval(job_interval);
+                        } else {
+                            document.getElementById('subscription-pool-job-stage').innerHTML = data.item.stage || '<em>none</em>';
+                            document.getElementById('subscription-pool-job-range').innerHTML = data.item.range || '<em>none</em>';
+                            document.getElementById('subscription-pool-job-records').innerText = data.item.records;
+                            document.getElementById('subscription-pool-job-elements').innerText = data.item.elements;
+                            document.getElementById('subscription-pool-job-illust-creates').innerText = data.item.illust_creates;
+                            document.getElementById('subscription-pool-job-illust-updates').innerText = data.item.illust_updates;
+                            document.getElementById('subscription-pool-job-downloads').innerText = data.item.downloads;
+                            if (data.item.stage === 'done') {
+                                clearInterval(job_interval);
+                            }
+                        }
+                    });
+            }, 2000);
+        </script>
+    {% endif %}
 {% endblock %}

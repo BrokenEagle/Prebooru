@@ -103,7 +103,7 @@ def check_for_new_artist_boorus(post_ids):
     printer.print()
 
 
-def process_subscription(subscription_id):
+def process_subscription(subscription_id, job_id):
     printer = buffered_print("Process Subscription")
     subscription = SubscriptionPool.find(subscription_id)
     start_illusts = subscription.artist.illust_count

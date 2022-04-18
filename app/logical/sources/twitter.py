@@ -22,6 +22,7 @@ from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
 from ..database.illust_db import get_site_illust
+from ..database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status, update_job_status
 from ..sites import Site, get_site_domain, get_site_id
 
 
@@ -751,28 +752,35 @@ def get_twitter_illust_timeline(illust_id):
     return found_tweets
 
 
-def populate_twitter_media_timeline(user_id, last_id):
+def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}):
     print("Populating from media page: %d" % (user_id))
 
     def page_func(cursor, **kwargs):
-        nonlocal user_id
+        nonlocal user_id, job_id, job_status, page
+        job_status['range'] = 'media:' + str(page)
+        update_job_status(job_id, job_status)
+        page += 1
         params = TWITTER_BASE_PARAMS.copy()
         if cursor is not None:
             params['cursor'] = cursor
         url_params = urllib.parse.urlencode(params)
         return twitter_request(("https://api.twitter.com/2/timeline/media/%d.json?" % user_id) + url_params)
 
+    page = 1
     tweet_ids = get_timeline(page_func, last_id=last_id)
     return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
 
-def populate_twitter_search_timeline(account, since_date, until_date):
+def populate_twitter_search_timeline(account, since_date, until_date, job_id=None, job_status={}):
     query = f"from:{account} since:{since_date} until:{until_date}"
     print("Populating from search page: %s" % query)
 
     def page_func(cursor, **kwargs):
-        nonlocal query
+        nonlocal query, job_id, job_status, page
+        job_status['range'] = since_date + '..' + until_date + ':' + str(page)
+        update_job_status(job_id, job_status)
+        page += 1
         params = TWITTER_BASE_PARAMS.copy()
         params.update(TWITTER_SEARCH_PARAMS)
         params['q'] = query
@@ -781,6 +789,7 @@ def populate_twitter_search_timeline(account, since_date, until_date):
         url_params = urllib.parse.urlencode(params)
         return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params)
 
+    page = 1
     tweet_ids = get_timeline(page_func)
     return create_error('sources.twitter.populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
@@ -1023,8 +1032,11 @@ def snowflake_to_epoch(snowflake):
     return ((snowflake >> 22) + 1288834974657) / 1000.0
 
 
-def populate_all_artist_illusts(artist, last_id):
-    tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id)
+def populate_all_artist_illusts(artist, last_id, job_id=None):
+    job_status = get_job_status_data(job_id) or {}
+    job_status['stage'] = 'querying'
+    update_job_status(job_id, job_status)
+    tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id, job_id=job_id, job_status=job_status)
     if is_error(tweet_ids):
         return tweet_ids
     if len(tweet_ids) == 0:
@@ -1039,9 +1051,12 @@ def populate_all_artist_illusts(artist, last_id):
         next_timeval = add_days(timeval, -90)  # Get 3 months at a time
         until_date = get_date(timeval)
         since_date = get_date(next_timeval)
-        temp_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date)
+        job_status['records'] = len(tweet_ids)
+        update_job_status(job_id, job_status)
+        temp_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date, job_id=job_id, job_status=job_status)
         if is_error(temp_ids):
             return temp_ids
         tweet_ids += temp_ids
         timeval = next_timeval
+    update_job_status(job_id, job_status)
     return tweet_ids
