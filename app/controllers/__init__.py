@@ -35,5 +35,6 @@ from . import similarity_pool_elements_controller as similarity_pool_element  # 
 # #### Misc
 from . import proxy_controller as proxy  # noqa: F401
 from . import static_controller as static  # noqa: F401
+from . import tasks_controller as task  # noqa: F401
 if not HAS_EXTERNAL_IMAGE_SERVER:
     from . import media_controller as media  # noqa: F401

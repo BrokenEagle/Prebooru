@@ -70,9 +70,13 @@ def recheck_schedule_interval(config, lconfig, reschedule):
     printer.print()
 
 
-def reschedule_task(id, config, lconfig):
-    next_run_offset = max(config[id]['jitter'] * random.random(), lconfig[id])
-    next_run_time = datetime.datetime.now() + datetime.timedelta(seconds=next_run_offset)
+def reschedule_task(id, config, lconfig, soon=True):
+    if soon:
+        next_run_offset = max(config[id]['jitter'] * random.random(), lconfig[id])
+        next_run_time = datetime.datetime.now() + datetime.timedelta(seconds=next_run_offset)
+    else:
+        time_config = {k: v for (k, v) in config[id].items() if k in ['seconds', 'minutes', 'hours', 'days', 'weeks']}
+        next_run_time = datetime.datetime.now() + datetime.timedelta(**time_config)
     _reschedule_task(id, next_run_time)
 
 
