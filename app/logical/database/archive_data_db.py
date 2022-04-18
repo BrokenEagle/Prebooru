@@ -67,7 +67,7 @@ def delete_expired_archive_data():
         return
     for archive_data in expired_data:
         remove_archive_media_file(archive_data)
-    ArchiveData.query.filter(ArchiveData.id._in([data.id for data in expired_data])).delete()
+    ArchiveData.query.filter(ArchiveData.id.in_([data.id for data in expired_data])).delete()
     SESSION.commit()
 
 
