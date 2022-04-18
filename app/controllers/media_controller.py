@@ -20,4 +20,5 @@ bp = Blueprint("media", __name__)
 
 @bp.route('/media/<path:path>')
 def send_file(path):
+    print(MEDIA_DIRECTORY, path)
     return send_from_directory(MEDIA_DIRECTORY, path)
