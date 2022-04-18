@@ -342,5 +342,10 @@ if __name__ == '__main__':
     parser.add_argument('--unique-id', required=False, help="Unique identifier required to access admin routes.")
     args = parser.parse_args()
     main(args)
+elif __name__ == '__mp_main__':
+    spawn_pid = os.getpid()
+    print(f'[PID {spawn_pid}] Initializing spawned process')
+    import app.logical.database.server_info_db as server_info_db
+    server_info_db.INITIALIZED = True
 else:
     check_other_execs()

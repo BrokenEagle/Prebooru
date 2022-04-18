@@ -16,6 +16,8 @@ from .jobs_db import is_any_job_locked
 
 # ## GLOBAL VARIABLES
 
+INITIALIZED = False
+
 T_SERVER_INFO = Table(
     'server_info',
     MetaData(),
@@ -81,12 +83,14 @@ def get_all_server_fields():
 # #### Misc
 
 def get_last_activity(type):
+    if not INITIALIZED: return None
     field = type + '_last_activity'
     last_activity = query_field(field)
     return process_utc_timestring(last_activity) if last_activity is not None else None
 
 
 def update_last_activity(type):
+    if not INITIALIZED: return
     field = type + '_last_activity'
     value = FIELD_UPDATERS[field]()
     update_field(field, value)
@@ -99,6 +103,8 @@ def server_is_busy():
 # #### Private
 
 def initialize_server_fields():
+    global INITIALIZED
+    if INITIALIZED: return
     create_table()
     current_fields = get_all_server_fields()
     for field in current_fields:
@@ -108,5 +114,4 @@ def initialize_server_fields():
         value = FIELD_UPDATERS[field]()
         if field not in current_fields:
             create_field(field, value)
-        else:
-            update_field(field, value)
+    INITIALIZED = True
