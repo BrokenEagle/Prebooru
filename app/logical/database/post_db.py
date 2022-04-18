@@ -66,8 +66,8 @@ def delete_post(post):
 
 # #### Misc functions
 
-def create_post(width, height, file_ext, md5, size):
-    params = {'width': width, 'height': height, 'file_ext': file_ext, 'md5': md5, 'size': size, 'type': 'user_post'}
+def create_post(width, height, file_ext, md5, size, post_type):
+    params = {'width': width, 'height': height, 'file_ext': file_ext, 'md5': md5, 'size': size, 'type': post_type}
     return create_post_from_parameters(params)
 
 
@@ -76,8 +76,8 @@ def post_append_illust_url(post, illust_url):
     SESSION.commit()
 
 
-def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size):
-    post = create_post(width, height, file_ext, md5, size)
+def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size, post_type):
+    post = create_post(width, height, file_ext, md5, size, post_type)
     post_append_illust_url(post, illust_url)
     return post
 

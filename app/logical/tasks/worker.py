@@ -13,15 +13,18 @@ from utility.print import buffered_print
 from ..utility import unique_objects
 from ..similarity.generate_data import generate_post_similarity
 from ..similarity.populate_pools import populate_similarity_pools
-from ...models import Upload, Illust
+from ...models import Upload, Illust, SubscriptionPool
 from ..check.posts import check_posts_for_danbooru_id
 from ..check.booru_artists import check_artists_for_boorus
+from ..check.subscriptions import download_subscription_illusts, download_subscription_elements
 from ..records.artist_rec import update_artist_from_source
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
 from ..database.base_db import safe_db_execute
 from ..database.post_db import get_posts_by_id
 from ..database.upload_db import set_upload_status, has_duplicate_posts
+from ..database.subscription_pool_db import update_subscription_pool_status, update_subscription_pool_active
 from ..database.error_db import create_and_append_error, append_error
+from ..database.jobs_db import get_job_status_data, update_job_status
 from ..sources.base import get_post_source, get_source_by_id
 from ..downloader.network import convert_network_upload
 from ..downloader.file import convert_file_upload
@@ -97,6 +100,50 @@ def check_for_new_artist_boorus(post_ids):
     printer("Artists to check:", len(check_artists))
     if len(check_artists):
         check_artists_for_boorus(check_artists)
+    printer.print()
+
+
+def process_subscription(subscription_id):
+    printer = buffered_print("Process Subscription")
+    subscription = SubscriptionPool.find(subscription_id)
+    start_illusts = subscription.artist.illust_count
+    start_posts = subscription.artist.post_count
+    start_elements = subscription.element_count
+    starting_post_ids = [post.id for post in subscription.posts]
+
+    def try_func(scope_vars):
+        subscription, job_id = operator.itemgetter('subscription', 'job_id')(scope_vars)
+        download_subscription_illusts(subscription, job_id)
+        download_subscription_elements(subscription, job_id)
+        job_status = get_job_status_data(job_id)
+        job_status['stage'] = 'done'
+        job_status['range'] = None
+        update_job_status(job_id, job_status)
+
+    def msg_func(scope_vars, e):
+        return "Unhandled exception occurred on %s: %s" % (scope_vars['subscription'].shortlink, e)
+
+    def error_func(scope_vars, e):
+        subscription = scope_vars['subscription']
+        update_subscription_pool_status(subscription, 'error')
+        update_subscription_pool_active(subscription, False)
+
+    def finally_func(scope_vars, data, error):
+        nonlocal printer, starting_post_ids
+        subscription = scope_vars['subscription']
+        update_subscription_pool_status(subscription, 'idle')
+        new_post_ids = [post.id for post in subscription.posts if post.id not in starting_post_ids]
+        if len(new_post_ids):
+            printer("Starting secondary threads.")
+            threading.Thread(target=process_similarity, args=(new_post_ids,)).start()
+            threading.Thread(target=check_for_matching_danbooru_posts, args=(new_post_ids,)).start()
+
+    safe_db_execute('process_subscription', 'tasks.worker', try_func=try_func, msg_func=msg_func, printer=printer,
+                    error_func=error_func, finally_func=finally_func,
+                    scope_vars={'subscription': subscription, 'job_id': job_id})
+    printer("Added illusts:", subscription.artist.illust_count - start_illusts)
+    printer("Added posts:", subscription.artist.post_count - start_posts)
+    printer("Added elements:", subscription.element_count - start_elements)
     printer.print()
 
 

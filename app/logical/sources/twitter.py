@@ -14,7 +14,7 @@ import requests
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN
 from utility.data import safe_get, decode_json, fixup_crlf
-from utility.time import get_current_time
+from utility.time import get_current_time, datetime_from_epoch, add_days, get_date
 from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
 
 # ## LOCAL IMPORTS
@@ -203,13 +203,50 @@ TWITTER_ILLUST_TIMELINE_GRAPHQL = {
     "withVoice": True
 }
 
+TWITTER_BASE_PARAMS = {
+    "include_profile_interstitial_type": "1",
+    "include_blocking": "1",
+    "include_blocked_by": "1",
+    "include_followed_by": "1",
+    "include_want_retweets": "1",
+    "include_mute_edge": "1",
+    "include_can_dm": "1",
+    "include_can_media_tag": "1",
+    "skip_status": "1",
+    "cards_platform": "Web-12",
+    "include_cards": "1",
+    "include_ext_alt_text": "true",
+    "include_reply_count": "1",
+    "tweet_mode": "extended",
+    "include_entities": "true",
+    "include_user_entities": "true",
+    "include_ext_media_color": "true",
+    "include_ext_media_availability": "true",
+    "send_error_codes": "true",
+    "simple_quoted_tweet": "true",
+    "count": "20",
+    "ext": "mediaStats,highlightedLabel,cameraMoment",
+    "include_quote_count": "true"
+}
+
+TWITTER_SEARCH_PARAMS = {
+    "tweet_search_mode": "live",
+    "query_source": "typed_query",
+    "pc": "1",
+    "spelling_corrections": "1",
+}
+
 # #### Other variables
 
 IMAGE_SERVER = 'https://pbs.twimg.com'
 TWITTER_SIZES = [':orig', ':large', ':medium', ':small']
 
+MINIMUM_QUERY_INTERVAL = 4
+
 TOKEN_FILE = os.path.join(DATA_DIRECTORY, 'twittertoken.txt')
 ERROR_TWEET_FILE = os.path.join(DATA_DIRECTORY, 'twittererror.json')
+
+LAST_QUERY = None
 
 
 # ## FUNCTIONS
@@ -514,6 +551,77 @@ def check_token_file():
     return last_timestamp == TOKEN_TIMESTAMP
 
 
+# #### Network auxiliary functions
+
+def get_global_objects(data, type_name):
+    objects = safe_get(data, 'globalObjects', type_name)
+    if type(objects) is not dict:
+        print("get_global_objects", data)
+        raise Exception("Global data not found.")
+    return list(objects.values())
+
+
+def get_twitter_timeline_cursor(type_name, instruction, entryname):
+    if type_name == "addEntries":
+        for entry in instruction[type_name]['entries']:
+            if entry['entryId'].find(entryname) > -1:
+                cursor_entry = entry
+                break
+        else:
+            cursor_entry = None
+        if cursor_entry is not None:
+            return safe_get(cursor_entry, 'content', 'operation', 'cursor', 'value')
+    elif type_name == "replaceEntry" and instruction[type_name]['entryIdToReplace'].find(entryname) > -1:
+        return safe_get(instruction[type_name], 'entry', 'content', 'operation', 'cursor', 'value')
+
+
+def get_twitter_scroll_bottom_cursor(data):
+    instructions = safe_get(data, 'timeline', 'instructions')
+    if type(instructions) is not list:
+        print("get_twitter_scroll_bottom_cursor", data)
+        raise Exception("Invalid JSON response.")
+    for instruction in instructions:
+        for type_name in instruction:
+            cursor = get_twitter_timeline_cursor(type_name, instruction, 'cursor-bottom')
+            if cursor is not None:
+                return cursor
+
+
+def timeline_iterator(data, cursor, tweet_ids, last_id=None, **kwargs):
+    tweets = get_global_objects(data['body'], 'tweets')
+    if len(tweets) == 0:
+        print("Reached end of timeline!")
+        return True
+    tweets = [tweet for tweet in tweets if safe_get(tweet, 'entities', 'media')]
+    tweet_ids.extend([int(tweet['id_str']) for tweet in tweets])
+    save_api_data(tweets, 'id_str', SITE_ID, 'illust')
+    if last_id is not None and any(x for x in tweet_ids if x <= last_id):
+        valid_ids = [x for x in tweet_ids if x > last_id]
+        tweet_ids.clear()
+        tweet_ids.extend(valid_ids)
+        return True
+    found_cursor = get_twitter_scroll_bottom_cursor(data['body'])
+    if found_cursor is None:
+        print("Reached end of timeline!")
+        return True
+    cursor[0] = found_cursor
+    return False
+
+
+def get_timeline(pageFunc, **kwargs):
+    page = 1
+    cursor = [None]
+    tweet_ids = []
+    while True:
+        data = pageFunc(cursor=cursor[0], **kwargs)
+        if data['error']:
+            return data['message']
+        print("get_timeline:", page)
+        if timeline_iterator(data, cursor, tweet_ids, **kwargs):
+            return sorted(tweet_ids, key=int, reverse=True)
+        page += 1
+
+
 # #### Network functions
 
 def check_guest_auth(func):
@@ -534,7 +642,7 @@ def authenticate_guest(override=False):
     guest_token = load_guest_token() if not override else None
     if guest_token is None:
         print("Authenticating as guest...")
-        data = twitter_request('https://api.twitter.com/1.1/guest/activate.json', 'POST')
+        data = twitter_request('https://api.twitter.com/1.1/guest/activate.json', 'POST', False)
         guest_token = str(data['body']['guest_token'])
         save_guest_token(guest_token)
     else:
@@ -564,7 +672,12 @@ def reauthentication_check(response):
 
 
 @check_guest_auth
-def twitter_request(url, method='GET'):
+def twitter_request(url, method='GET', wait=True):
+    global LAST_QUERY
+    if wait and (LAST_QUERY is not None) and (LAST_QUERY + MINIMUM_QUERY_INTERVAL > time.time()):
+        sleep_time = LAST_QUERY + MINIMUM_QUERY_INTERVAL - time.time()
+        print("Twitter request: sleeping -", sleep_time)
+        time.sleep(sleep_time)
     reauthenticated = False
     for i in range(3):
         try:
@@ -574,6 +687,9 @@ def twitter_request(url, method='GET'):
             error = e
             time.sleep(5)
             continue
+        finally:
+            if wait:
+                LAST_QUERY = time.time()
         if response.status_code == 200:
             break
         if not reauthenticated and reauthentication_check(response):
@@ -635,6 +751,41 @@ def get_twitter_illust_timeline(illust_id):
     return found_tweets
 
 
+def populate_twitter_media_timeline(user_id, last_id):
+    print("Populating from media page: %d" % (user_id))
+
+    def page_func(cursor, **kwargs):
+        nonlocal user_id
+        params = TWITTER_BASE_PARAMS.copy()
+        if cursor is not None:
+            params['cursor'] = cursor
+        url_params = urllib.parse.urlencode(params)
+        return twitter_request(("https://api.twitter.com/2/timeline/media/%d.json?" % user_id) + url_params)
+
+    tweet_ids = get_timeline(page_func, last_id=last_id)
+    return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
+        if isinstance(tweet_ids, str) else tweet_ids
+
+
+def populate_twitter_search_timeline(account, since_date, until_date):
+    query = f"from:{account} since:{since_date} until:{until_date}"
+    print("Populating from search page: %s" % query)
+
+    def page_func(cursor, **kwargs):
+        nonlocal query
+        params = TWITTER_BASE_PARAMS.copy()
+        params.update(TWITTER_SEARCH_PARAMS)
+        params['q'] = query
+        if cursor is not None:
+            params['cursor'] = cursor
+        url_params = urllib.parse.urlencode(params)
+        return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params)
+
+    tweet_ids = get_timeline(page_func)
+    return create_error('sources.twitter.populate_twitter_search_timeline', tweet_ids)\
+        if isinstance(tweet_ids, str) else tweet_ids
+
+
 def get_twitter_illust(illust_id):
     print("Getting twitter #%d" % illust_id)
     request_url = 'https://api.twitter.com/1.1/statuses/lookup.json?id=%d' % illust_id +\
@@ -660,7 +811,7 @@ def get_twitter_user_id(account):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     request_url = 'https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
                   'UserByScreenNameWithoutResults?%s' % urladdons
-    data = twitter_request(request_url)
+    data = twitter_request(request_url, wait=False)
     if data['error']:
         return create_error('logical.sources.twitter.get_user_id', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
@@ -864,3 +1015,33 @@ def get_illust_data(site_illust_id):
 def get_artist_id_by_illust_id(site_illust_id):
     tweet = get_illust_api_data(site_illust_id)
     return safe_get(tweet, 'user', 'id_str') or safe_get(tweet, 'user_id_str')
+
+
+# #### Other
+
+def snowflake_to_epoch(snowflake):
+    return ((snowflake >> 22) + 1288834974657) / 1000.0
+
+
+def populate_all_artist_illusts(artist, last_id):
+    tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id)
+    if is_error(tweet_ids):
+        return tweet_ids
+    if len(tweet_ids) == 0:
+        return []
+    if last_id is not None:  # Only check the full timeline the first time
+        return tweet_ids
+    lowest_tweet_id = min(tweet_ids)
+    timestamp = snowflake_to_epoch(lowest_tweet_id)
+    timeval = datetime_from_epoch(timestamp)
+    timeval = add_days(timeval, 1)  # Add a day since the media timeline can end partway through a day
+    while timeval > artist.site_created:
+        next_timeval = add_days(timeval, -90)  # Get 3 months at a time
+        until_date = get_date(timeval)
+        since_date = get_date(next_timeval)
+        temp_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date)
+        if is_error(temp_ids):
+            return temp_ids
+        tweet_ids += temp_ids
+        timeval = next_timeval
+    return tweet_ids

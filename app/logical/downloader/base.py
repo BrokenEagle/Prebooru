@@ -13,6 +13,8 @@ from utility.file import create_directory, put_get_raw
 
 # ## LOCAL IMPORTS
 from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
+from ..database.subscription_pool_element_db import add_subscription_post, update_subscription_pool_element_active,\
+    check_deleted_subscription_post
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.error_db import create_error, create_and_append_error, extend_errors, is_error
 
@@ -21,40 +23,45 @@ from ..database.error_db import create_error, create_and_append_error, extend_er
 
 # #### Main execution functions
 
-def convert_video_upload(illust, upload, source, create_video_func):
+def convert_video_upload(illust, upload, source, create_video_func, post_type):
     video_illust_url, thumb_illust_url = source.VideoIllustDownloadUrls(illust)
     if thumb_illust_url is None:
         msg = "Did not find thumbnail for video on illust #%d" % illust.id
         create_and_append_error('logical.downloader.convert_video_upload', msg, upload)
         return False
     else:
-        post = create_video_func(video_illust_url, thumb_illust_url, upload, source)
+        post = create_video_func(video_illust_url, thumb_illust_url, upload, source, post_type)
         return record_outcome(post, upload)
 
 
-def convert_image_upload(illust_urls, upload, source, create_image_func):
+def convert_image_upload(illust_urls, upload, source, create_image_func, post_type):
     result = False
     for illust_url in illust_urls:
-        post = create_image_func(illust_url, upload, source)
+        post = create_image_func(illust_url, upload, source, post_type)
         result = record_outcome(post, upload) or result
     return result
 
 
 # #### Helper functions
 
-def record_outcome(post, upload):
+def record_outcome(post, record):
     if isinstance(post, list):
         post_errors = post
         valid_errors = [error for error in post_errors if is_error(error)]
         if len(valid_errors) != len(post_errors):
             print("\aInvalid data returned in outcome:", [item for item in post_errors if not is_error(item)])
-        extend_errors(upload, valid_errors)
-        add_upload_failure(upload)
+        extend_errors(record, valid_errors)
+        if record.model_name == 'upload':
+            add_upload_failure(record)
+        else:
+            update_subscription_pool_element_active(record, False)
         return False
+    if record.model_name == 'upload':
+        upload_append_post(record, post)
+        add_upload_success(record)
     else:
-        upload_append_post(upload, post)
-        add_upload_success(upload)
-        return True
+        add_subscription_post(record, post)
+    return True
 
 
 def load_image(buffer):
@@ -73,12 +80,16 @@ def create_post_error(module, message, post_errors):
 
 # #### Validation functions
 
-def check_existing(buffer, illust_url):
+def check_existing(buffer, illust_url, record):
     md5 = get_buffer_checksum(buffer)
     post = get_post_by_md5(md5)
     if post is not None:
         post_append_illust_url(post, illust_url)
-        return create_error('logical.downloader.base.check_existing', "Image already uploaded on post #%d" % post.id)
+        if record.model_name == 'subscription_pool_element':
+            add_subscription_post(record, post)
+        return create_error('downloader.base.check_existing', "Image already uploaded on post #%d" % post.id)
+    if record.model_name == 'subscription_pool_element' and check_deleted_subscription_post(md5):
+        return create_error('downloader.base.check_existing', "Image already marked as deleted: %s" % md5)
     return md5
 
 

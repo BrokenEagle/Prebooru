@@ -51,6 +51,11 @@ def update_subscription_pool_status(pool, status):
     SESSION.commit()
 
 
+def update_subscription_pool_active(pool, status):
+    pool.status = status
+    SESSION.commit()
+
+
 def update_subscription_pool_requery(pool, timeval):
     pool.requery = timeval
     SESSION.commit()

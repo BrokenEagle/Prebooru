@@ -6,4 +6,10 @@
     {{ artists_section(subscription_pool.artist, 'subscription-pool-artist') }}
     {{ errors_section(subscription_pool.errors, 'subscription-pool-errors') }}
     {{ timestamps_section(subscription_pool, 'subscription-pool-timestamps') }}
+    <section id="subscription-pool-options">
+        <h4>Options</h4>
+        <ul>
+            <li>{{ helpers.subscription_pool.process_subscription_link(subscription_pool) }}</li>
+        </ul>
+    </section>
 </div>

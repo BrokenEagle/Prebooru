@@ -17,3 +17,13 @@
         {{ recent_posts(subscription_pool.recent_posts, subscription_pool.post_count, helpers.subscription_pool.post_search(subscription_pool)) }}
     </div>
 {% endblock %}
+
+{% block pagescript %}
+    {% if subscription_pool.status == 'manual' or subscription_pool.status == 'automatic' %}
+        <script>
+            setTimeout(function () {
+                window.location.reload();
+            }, 15000);
+        </script>
+    {% endif %}
+{% endblock %}
