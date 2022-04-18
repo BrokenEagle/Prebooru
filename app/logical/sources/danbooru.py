@@ -18,7 +18,7 @@ REQUEST_METHODS = {
     'get': requests.get,
     'post': requests.post,
 }
-
+REQUEST_AUTH = (DANBOORU_USERNAME, DANBOORU_APIKEY) if DANBOORU_USERNAME is not None and DANBOORU_APIKEY is not None else None
 
 # ## FUNCTIONS
 
@@ -32,7 +32,7 @@ def danbooru_request(url, params=None, files=None, long=False, method='get'):
     for i in range(3):
         try:
             response = REQUEST_METHODS[method](DANBOORU_HOSTNAME + url, params=params, data=data, files=files,
-                                               timeout=10, auth=(DANBOORU_USERNAME, DANBOORU_APIKEY))
+                                               timeout=10, auth=REQUEST_AUTH)
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
             print("Pausing for network timeout...")
             time.sleep(5)
