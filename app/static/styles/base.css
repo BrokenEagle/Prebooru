@@ -168,6 +168,27 @@ div.notice-error {
     background: #fbe3e3;
     border: 1px solid #ffc3c3;
 }
+div#script-notice {
+    display: none;
+    position: fixed;
+    top: 2em;
+    left: 25%;
+    width: 50%;
+    z-index: 10000;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+div#script-notice.notice-message,
+div#script-notice.notice-error {
+    display: block;
+}
+div#script-notice > div {
+    padding: .5em;
+}
+a#script-close-notice-link {
+    right: 1em;
+    bottom: 0;
+    position: absolute;
+}
 span.item-heading {
     font-size: 1.18em;
     font-weight: bold;

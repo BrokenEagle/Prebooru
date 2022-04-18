@@ -87,3 +87,30 @@ Prebooru.copyFileLink = function(obj) {
     prompt('Copy file link:', obj.dataset.filePath);
     return false;
 };
+
+Prebooru.message = function(msg) {
+    this.processNotice('notice-message', msg);
+    this._notice_timeout_id = setTimeout(function () {
+        Prebooru.closeNotice();
+        Prebooru._notice_timeout_id = null;
+    }, 6000);
+};
+
+Prebooru.error = function(msg) {
+    this.processNotice('notice-error', msg);
+};
+
+Prebooru.processNotice = function(notice_class, msg) {
+    let $notice = document.getElementById('script-notice');
+    $notice.className = notice_class;
+    $notice.children['script-notice-message'].innerHTML = msg;
+    if (Number.isInteger(this._notice_timeout_id)) {
+        clearTimeout(this._notice_timeout_id);
+        this._notice_timeout_id = null;
+    }
+};
+
+Prebooru.closeNotice = function() {
+    document.getElementById('script-notice').className = "";
+    return false;
+};
