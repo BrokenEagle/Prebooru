@@ -45,7 +45,7 @@ def val_or_none(val):
 
 
 def format_timestamp(timeval):
-    return datetime.datetime.isoformat(timeval) if timeval is not None else Markup('<em>none</em>')
+    return datetime.datetime.isoformat(timeval) if timeval is not None else Markup('<em>N/A</em>')
 
 
 def format_timestamp_difference(item):
