@@ -12,6 +12,8 @@ import sqlalchemy.sql.sqltypes as sqltypes
 from utility.data import is_truthy, is_falsey
 from utility.time import process_utc_timestring
 
+# ## LOCAL IMPORTS
+from .. import SESSION
 
 # ## GLOBAL VARIABLES
 
@@ -143,9 +145,10 @@ def relationship_attribute_filters(query, model, attribute, params):
         return polymorphic_attribute_filters(query, model, attribute, params)
     filters = ()
     if ('has_' + attribute) in params:
+        if relation.property.secondaryjoin is None:
+            raise Exception("Has not available for fk relations. Use ID exists instead.")
         primaryjoin = relation.property.primaryjoin
-        subquery = model.query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)\
-                        .filter(primaryjoin.left == primaryjoin.right).with_entities(model.id)
+        subquery = SESSION.query(primaryjoin.right.table).with_entities(primaryjoin.right)
         subclause = model.id.in_(subquery)
         if is_truthy(params['has_' + attribute]):
             filters += (subclause,)
@@ -154,6 +157,8 @@ def relationship_attribute_filters(query, model, attribute, params):
         else:
             raise Exception("%s - value must be truthy or falsey" % ('has_' + attribute))
     elif ('count_' + attribute) in params:
+        if relation.property.secondaryjoin is None:
+            raise Exception("Count not available for fk relations. Use ID exists instead.")
         primaryjoin = relation.property.primaryjoin
         value = params['count_' + attribute]
         count_clause = relationship_count(model, primaryjoin, value)

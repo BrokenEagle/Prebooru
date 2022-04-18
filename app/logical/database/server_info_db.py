@@ -14,6 +14,8 @@ from ... import DB
 
 # ## GLOBAL VARIABLES
 
+INITIALIZED = False
+
 T_SERVER_INFO = Table(
     'server_info',
     MetaData(),
@@ -108,3 +110,4 @@ def initialize_server_fields():
             create_field(field, value)
         else:
             update_field(field, value)
+    INITIALIZED = True

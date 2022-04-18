@@ -36,6 +36,7 @@
                 {% endif %}
             {% endif %}
         {% endwith %}
+        <div id="script-notice"><div id="script-notice-message"></div><a href="#" id="script-close-notice-link" onclick="return Prebooru.closeNotice()">close</a></div>
         {% block content %}{% endblock %}
         {% block pages %}{% endblock %}
         {% block pagescript %}{% endblock %}

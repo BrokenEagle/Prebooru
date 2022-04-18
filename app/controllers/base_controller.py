@@ -241,6 +241,12 @@ def set_default(indict, key, default):
     indict[key] = indict[key] if (key in indict and indict[key] is not None) else default
 
 
+# #### Template helpers
+
+def strip_whitespace(html):
+    return re.sub(r'\s+', ' ', html).replace('> <', '><').strip()
+
+
 # #### Private functions
 
 def _custom_order(ids, entity):

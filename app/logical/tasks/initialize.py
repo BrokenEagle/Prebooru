@@ -17,6 +17,7 @@ from ..database.jobs_db import create_job_tables, get_all_job_info, delete_job, 
     update_job_lock_status, delete_lock, create_job_timeval, get_all_job_timevals,\
     update_job_timeval, delete_timeval
 
+
 # ## GLOBAL VARIABLES
 
 LAST_CHECK = time.time()
@@ -51,13 +52,15 @@ def initialize_scheduler(config, leeway):
 
 
 def recheck_schedule_interval(config, lconfig, reschedule):
+    from ..database.server_info_db import INITIALIZED as SERVER_INFO_INITIALIZED
     global LAST_CHECK
     printer = buffered_print("Recheck Schedule Interval")
     printer("PID:", os.getpid())
-    user_activity = get_last_activity('user')
-    server_activity = get_last_activity('server')
-    printer("User last activity:", time_ago(user_activity) if user_activity is not None else None)
-    printer("Server last activity:", time_ago(server_activity) if server_activity is not None else None)
+    if SERVER_INFO_INITIALIZED:
+        user_activity = get_last_activity('user')
+        server_activity = get_last_activity('server')
+        printer("User last activity:", time_ago(user_activity) if user_activity is not None else None)
+        printer("Server last activity:", time_ago(server_activity) if server_activity is not None else None)
     info = get_all_job_info()
     locks = get_all_job_locks()
     timevals = get_all_job_timevals()

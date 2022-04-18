@@ -11,12 +11,17 @@ from utility.print import buffered_print
 from utility.file import get_directory_listing, delete_file
 
 # ## LOCAL IMPORTS
-from ... import DB, SCHEDULER, MAIN_PROCESS
+from ... import DB, SESSION, SCHEDULER, MAIN_PROCESS
 from ...models.media_file import CACHE_DATA_DIRECTORY
+from ..logger import log_error
 from ..check.boorus import check_all_boorus
 from ..check.posts import check_all_posts_for_danbooru_id
 from ..check.booru_artists import check_all_artists_for_boorus
+from ..check.subscriptions import download_subscription_illusts, download_missing_elements,\
+    expire_subscription_elements
 from ..records.media_file_rec import batch_delete_media
+from ..database.subscription_pool_db import get_available_subscription, update_subscription_pool_status
+from ..database.subscription_pool_element_db import total_missing_downloads, total_expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_data_db import expired_archive_data_count, delete_expired_archive_data
@@ -52,6 +57,21 @@ JOB_CONFIG = {
         'days': 1,
         'jitter': 3600,
     },
+    'check_pending_subscriptions': {
+        'id': 'check_pending_subscriptions',
+        'minutes': 15,
+        'jitter': 30,
+    },
+    'process_expired_subscription_elements': {
+        'id': 'process_expired_subscription_elements',
+        'hours': 1,
+        'jitter': 300,
+    },
+    'check_pending_downloads': {
+        'id': 'check_pending_downloads',
+        'hours': 1,
+        'jitter': 300,
+    },
     'delete_orphan_images': {
         'id': 'delete_orphan_images',
         'weeks': 1,
@@ -70,6 +90,9 @@ JOB_LEEWAY = {
     'check_all_boorus': 300,
     'check_all_artists_for_boorus': 300,
     'check_all_posts_for_danbooru_id': 300,
+    'check_pending_subscriptions': 60,
+    'check_pending_downloads': 180,
+    'process_expired_subscription_elements': 180,
     'delete_orphan_images': 300,
     'vacuum_analyze_database': 300,
 }
@@ -159,6 +182,67 @@ def check_all_posts_for_danbooru_id_task():
     _free_db_semaphore('check_all_posts_for_danbooru_id')
 
 
+@SCHEDULER.task('interval', **JOB_CONFIG['check_pending_subscriptions'])
+def check_pending_subscriptions():
+    if not _set_db_semaphore('check_pending_subscriptions'):
+        print("Task scheduler - Check All Pending Subscriptions: already running")
+        return
+    printer = buffered_print("Check All Pending Subscriptions")
+    printer("PID:", os.getpid())
+    subscriptions = get_available_subscription()
+    if len(subscriptions) > 0:
+        for subscription in subscriptions:
+            printer("Processing subscription:", subscription.id)
+            update_subscription_pool_status(subscription, 'automatic')
+            try:
+                download_subscription_illusts(subscription)
+            except Exception as e:
+                printer("\a\process_subscription: Exception occured in worker!\n", e)
+                printer("Unlocking the database...")
+                SESSION.rollback()
+                msg = "Unhandled exception occurred on %s: %s" % (subscription.shortlink, e)
+                log_error('tasks.schedule.check_pending_subscriptions', msg)
+            finally:
+                update_subscription_pool_status(subscription, 'idle')
+    else:
+        printer("No subscriptions to process.")
+    printer.print()
+    _free_db_semaphore('check_pending_subscriptions')
+
+
+@SCHEDULER.task('interval', **JOB_CONFIG['check_pending_downloads'])
+def check_pending_downloads():
+    if not _set_db_semaphore('check_pending_downloads'):
+        print("Task scheduler - Check All Pending Downloads: already running")
+        return
+    printer = buffered_print("Check All Pending Downloads")
+    printer("PID:", os.getpid())
+    total = total_missing_downloads()
+    printer("Missing downloads:", total)
+    if total > 0:
+        download_missing_elements()
+    printer.print()
+    _free_db_semaphore('check_pending_downloads')
+
+
+@SCHEDULER.task('interval', **JOB_CONFIG['process_expired_subscription_elements'])
+def process_expired_subscription_elements():
+    if not _set_db_semaphore('process_expired_subscription_elements'):
+        print("Task scheduler - Check All Expired Subscription Elements: already running")
+        return
+    printer = buffered_print("Process Expired Subscription Elements")
+    printer("PID:", os.getpid())
+    total = total_expired_subscription_elements()
+    if total > 0:
+        _safe_db_execute(expire_subscription_elements, lambda *args: None,
+                         lambda e: "Unhandled exception occurred on %s: %s" % (subscription.shortlink, e),
+                         'process_expired_subscription_elements', 'tasks.schedule.process_expired_subscription_elements')
+    else:
+        printer("No subscriptions to process.")
+    printer.print()
+    _free_db_semaphore('process_expired_subscription_elements')
+
+
 @SCHEDULER.task("interval", **JOB_CONFIG['delete_orphan_images'])
 def delete_orphan_images_task():
     if not _set_db_semaphore('delete_orphan_images'):
@@ -202,6 +286,21 @@ def vacuum_analyze_database_task():
 
 
 # #### Private
+
+# ###### Database
+
+def _safe_db_execute(try_func, finally_func, msg_func, name, module):
+    try:
+        try_func()
+    except Exception as e:
+        printer(f"\a\{name}: Exception occured in worker!\n", e)
+        printer("Unlocking the database...")
+        SESSION.rollback()
+        msg = msg_func(e)
+        log_error(module, msg)
+    finally:
+        finally_func()
+
 
 # ###### Semaphore
 

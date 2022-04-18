@@ -90,11 +90,12 @@
     {% endfor %}
 {%- endmacro %}
 
-{% macro timestamps_section(item, section_id) -%}
+{% macro timestamps_section(item, section_id, other_timestamps=[]) -%}
     <section id="{{ section_id }}">
         <h4>Timestamps</h4>
         <ul>
-            {% for attr in ['requery', 'created', 'updated'] %}
+            {% set all_time_attrs = ['requery', 'created', 'updated'] + other_timestamps %}
+            {% for attr in all_time_attrs %}
                 {% if item[attr] is defined %}
                     <li><strong>{{ attr | title }}:</strong> {{ helpers.base.format_timestamp(item[attr]) }}</li>
                 {% endif %}

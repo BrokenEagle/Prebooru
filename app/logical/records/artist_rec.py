@@ -6,6 +6,7 @@ from utility.print import error_print
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
+from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, get_site_artist,\
     create_artist_from_raw_parameters, artist_append_booru, delete_artist
 from ..database.booru_db import get_booru

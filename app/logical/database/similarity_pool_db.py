@@ -1,5 +1,8 @@
 # APP/LOGICAL/DATABASE/SIMILARITY_POOL_DB.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy.orm import selectinload
+
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 
@@ -52,6 +55,19 @@ def update_similarity_pool_element_count(similarity_pool):
 
 
 # ###### DELETE
+
+def batch_delete_similarity_pools_by_post_ids(post_id_list):
+    q = SimilarityPool.query
+    q = q.options(selectinload(SimilarityPool.elements))
+    q = q.filter(SimilarityPool.post_id.in_(post_id_list))
+    pools = q.distinct().all()
+    if len(pools) == 0:
+        return 0
+    all_elements = list(itertools.chain(*[pool.elements for pool in pools]))
+    batch_delete_similarity_pool_element2(all_elements)
+    q.delete()
+    SESSION.commit()
+
 
 def delete_similarity_pool_by_post_id(post_id):
     similarity_pool = SimilarityPool.query.filter(SimilarityPool.post_id == post_id).first()

@@ -37,6 +37,10 @@ def archive_post_for_deletion(post):
     return _delete_sample_preview_files(sample_path, preview_path, retdata)
 
 
+def batch_archive_posts_for_deletion(posts):
+    pass
+
+
 def reinstantiate_archived_post(data):
     retdata = {'error': False}
     post = get_post_by_md5(data['body']['md5'])

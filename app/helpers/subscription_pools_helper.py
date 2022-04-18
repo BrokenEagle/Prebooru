@@ -49,6 +49,36 @@ def process_subscription_link(subscription_pool):
 
 # ###### Link functions
 
+def keep_element_link(subscription_element, value):
+    url = url_for('subscription_pool_element.keep_json', id=subscription_element.id, keep=value)
+    addons = {'class': value + '-link keep-link', 'onclick': "return SubscriptionPools.keepElement(this)"}
+    return general_link(value, url, **addons)
+
+
+def unexpire_element_index_link(subscription_element):
+    url = url_for('subscription_pool_element.unexpire_json', id=subscription_element.id)
+    addons = {'class': 'control-link', 'onclick': "return SubscriptionPools.unexpireElement(this)"}
+    return general_link("unexpire", url, **addons)
+
+
+def unexpire_element_show_link(subscription_element):
+    url = url_for('subscription_pool_element.unexpire_html', id=subscription_element.id)
+    addons = {'onclick': "return Prebooru.linkPost(this)"}
+    return general_link("Unexpire element", url, **addons)
+
+
+def delete_post_index_link(subscription_element):
+    url = url_for('subscription_pool_element.delete_post_json', id=subscription_element.id)
+    addons = {'class': 'warning-link', 'onclick': "return SubscriptionPools.deletePostJSON(this)"}
+    return general_link("delete post", url, **addons)
+
+
+def delete_post_show_link(subscription_element):
+    url = url_for('subscription_pool_element.delete_post_html', id=subscription_element.id)
+    addons = {'onclick': "return SubscriptionPools.deletePost(this)"}
+    return general_link("Delete post", url, **addons)
+
+
 def element_type_link(element_type):
     active_type = request.args.get('type') or 'unsure'
     classes = ['element-type'] + [element_type + '-type'] + (['type-active'] if active_type == element_type else [])

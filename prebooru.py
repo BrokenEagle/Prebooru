@@ -44,6 +44,8 @@ def initialize_controllers():
     PREBOORU_APP.register_blueprint(controllers.booru.bp)
     PREBOORU_APP.register_blueprint(controllers.upload.bp)
     PREBOORU_APP.register_blueprint(controllers.post.bp)
+    PREBOORU_APP.register_blueprint(controllers.subscription_pool.bp)
+    PREBOORU_APP.register_blueprint(controllers.subscription_pool_element.bp)
     PREBOORU_APP.register_blueprint(controllers.pool.bp)
     PREBOORU_APP.register_blueprint(controllers.pool_element.bp)
     PREBOORU_APP.register_blueprint(controllers.tag.bp)
@@ -54,6 +56,7 @@ def initialize_controllers():
     PREBOORU_APP.register_blueprint(controllers.media_file.bp)
     PREBOORU_APP.register_blueprint(controllers.proxy.bp)
     PREBOORU_APP.register_blueprint(controllers.static.bp)
+    PREBOORU_APP.register_blueprint(controllers.task.bp)
     PREBOORU_APP.register_blueprint(controllers.similarity.bp)
     PREBOORU_APP.register_blueprint(controllers.similarity_pool.bp)
     PREBOORU_APP.register_blueprint(controllers.similarity_pool_element.bp)
@@ -142,9 +145,11 @@ def start_server(args):
         logging.getLogger('apscheduler').setLevel(logging.DEBUG)
     if args.title:
         os.system('title Prebooru Server')
+    print("PREBOORU.PY:", DEBUG_MODE, os.environ.get("WERKZEUG_RUN_MAIN") == "true")
     if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         import app
         app.MAIN_PROCESS = True
+        print("Setting MAIN_PROCESS", app.MAIN_PROCESS)
         # Scheduled tasks must be added only after everything else has been initialized
         from app.logical.tasks import schedule  # noqa: F401
         from app.logical.database.server_info_db import initialize_server_fields

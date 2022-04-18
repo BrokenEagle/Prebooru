@@ -24,6 +24,7 @@ from ..database.post_db import get_posts_by_id
 from ..database.upload_db import set_upload_status, has_duplicate_posts
 from ..database.subscription_pool_db import update_subscription_pool_status
 from ..database.error_db import create_and_append_error, append_error
+from ..database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status, update_job_status
 from ..sources.base import get_post_source, get_source_by_id
 from ..downloader.network import convert_network_upload
 from ..downloader.file import convert_file_upload
@@ -95,7 +96,7 @@ def check_for_new_artist_boorus(post_ids):
     printer.print()
 
 
-def process_subscription(subscription_id):
+def process_subscription(subscription_id, job_id):
     printer = buffered_print("Process Subscription")
     subscription = SubscriptionPool.find(subscription_id)
     start_illusts = subscription.artist.illust_count
@@ -103,8 +104,12 @@ def process_subscription(subscription_id):
     start_elements = subscription.element_count
     starting_post_ids = [post.id for post in subscription.posts]
     try:
-        download_subscription_illusts(subscription)
-        download_subscription_elements(subscription)
+        download_subscription_illusts(subscription, job_id)
+        download_subscription_elements(subscription, job_id)
+        job_status = get_job_status_data(job_id)
+        job_status['stage'] = 'done'
+        job_status['range'] = None
+        update_job_status(job_id, job_status)
     except Exception as e:
         printer("\a\process_subscription: Exception occured in worker!\n", e)
         printer("Unlocking the database...")

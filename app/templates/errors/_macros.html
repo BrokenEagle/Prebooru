@@ -16,3 +16,20 @@
         </section>
     {% endif %}
 {%- endmacro %}
+
+{% macro error_list(errors, section_id) -%}
+    {% if errors | length > 0 %}
+        <div class="errors-list">
+            {% for error in errors %}
+                <strong>{{ error.show_link }}</strong>
+                <ul>
+                    <li class="hanging-indent"><strong>Module:</strong> <code>{{ helpers.base.break_period(error.module) }}</code></li>
+                    <li class="hanging-indent"><strong>Message:</strong> {{ helpers.base.convert_to_html(error.message) }}</li>
+                </ul>
+                {% if not loop.last %}
+                    <hr>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+{%- endmacro %}

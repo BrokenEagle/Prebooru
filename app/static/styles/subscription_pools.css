@@ -46,6 +46,13 @@ section#subscription-pool-settings {
 section#subscription-pool-status {
     width: 25%;
 }
+div#subscription-pool-site-content-2 {
+    margin-top: 2em;
+    margin-left: 0.8em;
+    border: 1px solid #DDD;
+    padding: 5px;
+    width: 40%;
+}
 div#subscription-elements,
 div#subscription-illusts {
     margin-top: 1em;

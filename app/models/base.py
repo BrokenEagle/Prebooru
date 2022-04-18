@@ -32,7 +32,7 @@ def _external_server_url(urlpath):
 
 
 def _internal_serval_url(urlpath):
-    return url_for('images.send_file', path=urlpath)
+    return url_for('media.send_file', path=urlpath)
 
 
 image_server_url = _external_server_url if HAS_EXTERNAL_IMAGE_SERVER else _internal_serval_url

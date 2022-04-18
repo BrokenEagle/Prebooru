@@ -13,6 +13,8 @@ from ..logical.utility import set_error
 from ..logical.tasks.worker import process_subscription
 from ..logical.database.subscription_pool_db import create_subscription_pool_from_parameters,\
     update_subscription_pool_from_parameters, update_subscription_pool_status
+from ..logical.database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status,\
+    update_job_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error,\
     check_param_requirements, nullify_blanks, parse_bool_parameter, set_default, hide_input, parse_type
@@ -133,7 +135,10 @@ def show_json(id):
 @bp.route('/subscription_pools/<int:id>', methods=['GET'])
 def show_html(id):
     subscription_pool = get_or_abort(SubscriptionPool, id)
-    return render_template("subscription_pools/show.html", subscription_pool=subscription_pool)
+    job_id = request.args.get('job')
+    job_status = get_job_status_data(job_id) if job_id else None
+    return render_template("subscription_pools/show.html", subscription_pool=subscription_pool, job_status=job_status,
+                           job_id=job_id)
 
 
 # ###### INDEX
@@ -225,6 +230,33 @@ def process_html(id):
         return redirect(request.referrer)
     update_subscription_pool_status(subscription_pool, 'manual')
     job_id = "process_subscription-%d" % subscription_pool.id
-    SCHEDULER.add_job(job_id, process_subscription, args=(subscription_pool.id))
+    job_status = {
+        'stage': None,
+        'range': None,
+        'records': 0,
+        'illust_creates': 0,
+        'illust_updates': 0,
+        'elements': 0,
+        'downloads': 0,
+    }
+    if check_job_status_exists(job_id):
+        update_job_status(job_id, job_status)
+    else:
+        create_job_status(job_id, job_status)
+    SCHEDULER.add_job(job_id, process_subscription, args=(subscription_pool.id, job_id))
     flash("Subscription started.")
-    return redirect(url_for('subscription_pool.show_html', id=subscription_pool.id))
+    return redirect(url_for('subscription_pool.show_html', id=subscription_pool.id, job=job_id))
+
+
+@bp.route('/subscription_pools/<int:id>/status.json', methods=['GET'])
+def status_json(id):
+    subscription_pool = get_or_error(SubscriptionPool, id)
+    if type(subscription_pool) is dict:
+        return subscription_pool
+    job_id = request.args.get('job')
+    if job_id is None:
+        return {'error': True, 'message': "No Job ID parameter found."}
+    job_status = get_job_status_data(job_id)
+    if job_status is None:
+        return {'error': True, 'message': "Job with ID %s not found." % job_id}
+    return {'error': False, 'item': job_status}

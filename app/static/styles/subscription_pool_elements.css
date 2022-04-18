@@ -1,3 +1,13 @@
+/****General****/
+a.yes-link {
+    color: green;
+}
+a.maybe-link {
+    color: darkorange;
+}
+a.no-link {
+    color: red;
+}
 /****INDEX Page****/
 div#subscription-page-controls {
     position: relative;
@@ -7,6 +17,10 @@ div#subscription-page-controls {
 }
 div#subscription-page-controls > div {
     position: absolute;
+}
+div#subscription-pool-controls {
+    right: 0;
+    bottom: 0;
 }
 div#subscription-type-selector {
     left: 0;
@@ -61,6 +75,17 @@ div.subscription-element-info.no-info {
 div.subscription-element-info.unsure-info {
     border-color: #DDD;
 }
+div.subscription-element-info a.keep-link {
+    padding: 5px 10px;
+    display: inline-block;
+    border: 1px solid;
+}
+div.subscription-element-info a.yes-link {
+    border-radius: 25px 0 0 25px;
+}
+div.subscription-element-info a.no-link {
+    border-radius: 0 25px 25px 0;
+}
 article.subscription-element ul {
     margin-left: 25px;
 }
@@ -73,6 +98,15 @@ article.subscription-element > div.subscription-no-post {
 article.subscription-element div.errors-list {
     border: 1px solid #DDD;
     padding: 5px;
+}
+form#form label {
+    margin-top: 0;
+    margin-bottom: 5px;
+    border: 1px solid #8DD;
+    border-radius: 25px;
+    background: #E0F0F0;
+    padding: 5px;
+    width: 33%;
 }
 /****SHOW Page****/
 div#sidebar-container {

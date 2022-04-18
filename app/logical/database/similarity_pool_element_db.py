@@ -1,9 +1,15 @@
 # APP/LOGICAL/DATABASE/SIMILARITY_POOL_ELEMENT_DB.PY
 
+# ## PYTHON IMPORTS
+import itertools
+
+# ## EXTERNAL IMPORTS
+from sqlalchemy import or_
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..utility import unique_objects
-from ...models import SimilarityPoolElement
+from ...models import SimilarityPoolElement, SimilarityPool
 from .base_db import update_column_attributes
 
 # ## GLOBAL VARIABLES
@@ -70,3 +76,16 @@ def batch_delete_similarity_pool_element(similarity_pool_elements):
     for pool in similarity_pools:
         pool.element_count = pool._get_element_count()
     SESSION.commit()
+
+
+def batch_delete_similarity_pool_element2(similarity_pool_elements):
+    if len(similarity_pool_elements) == 0:
+        return
+    delete_element_ids = [element.id for element in similarity_pool_elements]
+    update_pool_ids = {element.pool_id for element in similarity_pool_elements}
+    q = SimilarityPoolElement.query.filter(SimilarityPoolElement.sibling_id.in_(delete_element_ids))
+    update_pool_ids = update_pool_ids.union(itertools.chain(*q.with_entities(SimilarityPoolElement.pool_id).all()))
+    q.update({'sibling_id': None})
+    SimilarityPoolElement.query.filter(or_(SimilarityPoolElement.id.in_(delete_element_ids), SimilarityPoolElement.sibling_id == None)).delete()
+    SESSION.commit()
+    return update_pool_ids
