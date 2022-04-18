@@ -318,7 +318,7 @@ def edit_html(id):
     editparams['tag_string'] = '\r\n'.join(illust.tags)
     editparams.update({k: v for (k, v) in illust.site_data.to_json().items() if k not in ['id', 'illust_id', 'type']})
     form = get_illust_form(**editparams)
-    hide_input(form, 'artist_id', illust.id)
+    hide_input(form, 'artist_id', illust.artist_id)
     hide_input(form, 'site_id', illust.site_id)
     return render_template("illusts/edit.html", form=form, illust=illust)
 
