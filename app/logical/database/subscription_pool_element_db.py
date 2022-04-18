@@ -1,6 +1,10 @@
 # APP/LOGICAL/DATABASE/SUBSCRIPTION_POOL_ELEMENT_DB.PY
 
+# ## PACKAGE IMPORTS
+from utility.time import days_from_now
+
 # ## LOCAL IMPORTS
+from ... import SESSION
 from ...models import SubscriptionPoolElement
 from .base_db import update_column_attributes
 

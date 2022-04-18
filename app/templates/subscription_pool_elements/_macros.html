@@ -9,6 +9,11 @@
 {% macro subscription_element_preview(element) -%}
     <article class="subscription-element">
         {% if element.post is not none %}
+            <div class="input">
+                <label for="subscription-element-{{ element.id }}">
+                    <input type="checkbox" class="similar-post-input" id="subscription-element-{{ element.id }}" name="subscription_pool_element[id][]" value="{{ element.id }}">
+                </label>
+            </div>
             <a href="{{ element.show_url }}">
                 <img src="{{ element.post.preview_url }}">
             </a>
@@ -21,6 +26,12 @@
                     <li><strong>Expires:</strong>&ensp;
                         <span class="subscription-element-expires">{{ helpers.base.format_expires(element.expires) }}</span>
                     </li>
+                    <li><strong>
+                        Keep:
+                            {{ helpers.subscription_pool.keep_element_link(element, 'yes', 'json') -}} |
+                            {{- helpers.subscription_pool.keep_element_link(element, 'maybe', 'json') -}} |
+                            {{- helpers.subscription_pool.keep_element_link(element, 'no', 'json') }}
+                    </strong></li>
                 </ul>
             </div>
         {% else %}

@@ -1,14 +1,15 @@
 # APP/CONTROLLERS/SUBSCRIPTION_POOL_ELEMENTS_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, flash, redirect
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
 from ..models import SubscriptionPoolElement
+from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_or_abort, get_or_error
+    get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace
 
 
 # ## GLOBAL VARIABLES
@@ -53,6 +54,13 @@ def show_html(id):
     return render_template("subscription_pool_elements/show.html", subscription_pool_element=subscription_pool_element)
 
 
+@bp.route('/subscription_pool_elements/<int:id>/preview.json', methods=['GET'])
+def preview_json(id):
+    subscription_pool_element = get_or_abort(SubscriptionPoolElement, id)
+    html = render_template("subscription_pool_elements/_element_preview.html", element=subscription_pool_element)
+    return {'item': subscription_pool_element.to_json(), 'html': strip_whitespace(html)}
+
+
 # ###### INDEX
 
 @bp.route('/subscription_pool_elements.json', methods=['GET'])
@@ -77,3 +85,50 @@ def index_html():
     return render_template("subscription_pool_elements/index.html",
                            subscription_pool_elements=subscription_pool_elements,
                            subscription_pool_element=SubscriptionPoolElement())
+
+
+# ###### Misc
+
+@bp.route('/subscription_pool_elements/keep', methods=['POST'])
+def batch_keep_html():
+    params = process_request_values(request.values)
+    data_params = get_params_value(params, 'subscription_pool_element', True)
+    if 'keep' not in data_params or data_params['keep'] not in ['yes', 'no', 'maybe']:
+        flash("Invalid or missing keep value.", 'error')
+        return redirect(request.referrer)
+    if 'id' not in data_params or not isinstance(data_params['id'], list):
+        flash("Invalid or missing id values.", 'error')
+        return redirect(request.referrer)
+    id_list = [int(id) for id in data_params['id']]
+    elements = get_elements_by_id(id_list)
+    missing_ids = list(set(id_list).difference([element.id for element in elements]))
+    if len(missing_ids) > 0:
+        flash(f"Unable to find elements: {repr(missing_ids)}")
+    for element in elements:
+        update_subscription_pool_element_keep(element, data_params['keep'])
+    return redirect(request.referrer)
+
+
+@bp.route('/subscription_pool_elements/<int:id>/keep', methods=['POST'])
+def keep_html(id):
+    element = get_or_abort(SubscriptionPoolElement, id)
+    value = request.args.get('keep')
+    if value is None:
+        flash("Keep argument not found.", 'error')
+    else:
+        flash("Element updated.")
+        update_subscription_pool_element_keep(element, value)
+    return redirect(request.referrer)
+
+
+@bp.route('/subscription_pool_elements/<int:id>/keep.json', methods=['POST'])
+def keep_json(id):
+    element = get_or_error(SubscriptionPoolElement, id)
+    if isinstance(element, str):
+        return element
+    value = request.args.get('keep')
+    if value is None:
+        return {'error': True, 'message': "Keep argument not found."}
+    update_subscription_pool_element_keep(element, value)
+    html = render_template("subscription_pool_elements/_element_preview.html", element=element)
+    return {'error': False, 'item': element.to_json(), 'html': strip_whitespace(html)}

@@ -1,5 +1,5 @@
 {% extends 'subscription_pool_elements/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
+{% from 'layouts/_macros.html' import image_select_controls, page_navigation %}
 {% from 'subscription_pool_elements/_macros.html' import subscription_element_preview %}
 
 {% block title %}Subscription Pool Elements{% endblock %}
@@ -12,12 +12,38 @@
             {{ helpers.subscription_pool.element_type_link('no') }}
             {{ helpers.subscription_pool.element_type_link('unsure') }}
         </div>
+        <div id="subscription-pool-controls">
+            {% call image_select_controls('similar-post-input') %}
+                &emsp;&emsp;&emsp;
+                <strong>
+                    KEEP[
+                        <a class="yes-link" href="javascript:SubmitForm('yes')">YES</a>
+                        |
+                        <a class="maybe-link" href="javascript:SubmitForm('maybe')">MAYBE</a>
+                        |
+                        <a class="no-link" href="javascript:SubmitForm('no')">NO</a>
+                    ]
+                </strong>
+            {% endcall %}
+        </div>
     </div>
+    <form id="form" method="POST" action="{{ url_for('subscription_pool_element.batch_keep_html') }}">
+        <input type="hidden" id="subscription-pool-element-keep" name="subscription_pool_element[keep]" value="">
         <div id="subscription-pool-elements-container">
             {% for element in subscription_pool_elements.items %}
                 {{ subscription_element_preview(element) }}
             {% endfor %}
         </div>
+    </form>
 {% endblock %}
 
 {% block pages %}{{ page_navigation(subscription_pool_elements) }}{% endblock %}
+
+{% block pagescript %}
+<script>
+function SubmitForm(value) {
+    document.getElementById('subscription-pool-element-keep').value = value;
+    document.getElementById('form').submit();
+}
+</script>
+{% endblock %}
