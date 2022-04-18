@@ -28,5 +28,5 @@ def generate_post_similarity(post, printer=print):
         sample_image_hash = get_image_hash(sample_image)
         if len(check_similarity_match_scores(simdata_items, sample_image_hash, 90.0)) == 0:
             printer("Generate similarity (post #%d): SAMPLE" % post.id)
-            simdata_items.append(create_similarity_data_from_parameters({'image_hash': full_image_hash, **params}))
+            simdata_items.append(create_similarity_data_from_parameters({'image_hash': sample_image_hash, **params}))
     return simdata_items
