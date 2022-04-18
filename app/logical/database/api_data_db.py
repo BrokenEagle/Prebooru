@@ -19,6 +19,7 @@ def save_api_data(network_data, id_key, site_id, type):
         data_id = int(data_item[id_key])
         cache_item = next(filter(lambda x: x.data_id == data_id, cache_data), None)
         if not cache_item:
+            print("save_api_data - creating cache item:", type, data_id)
             data = {
                 'site_id': site_id,
                 'type': type,
