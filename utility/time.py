@@ -18,25 +18,37 @@ def process_utc_timestring(timestring):
         logging.error('Failed parse datetime string')
 
 
+def datetime_from_epoch(timestamp):
+    return datetime.datetime.fromtimestamp(timestamp)
+
+
 def get_current_time():
     t = datetime.datetime.utcnow()
     return t - datetime.timedelta(microseconds=t.microsecond)
 
 
-def days_ago(days):  # Unused
-    return get_current_time() - datetime.timedelta(days=days)
+def add_days(timeval, days):
+    return timeval + datetime.timedelta(days=days)
+
+
+def add_hours(timeval, hours):
+    return timeval + datetime.timedelta(hours=hours)
+
+
+def days_ago(days):
+    return add_days(get_current_time(), -days)
 
 
 def days_from_now(days):
-    return get_current_time() + datetime.timedelta(days=days)
+    return add_days(get_current_time(), days)
 
 
-def hours_from_now(hours):  # Unused
-    return get_current_time() + datetime.timedelta(hours=hours)
+def hours_ago(hours):
+    return add_hours(get_current_time(), -hours)
 
 
-def hours_ago(hours):  # Unused
-    return get_current_time() - datetime.timedelta(hours=hours)
+def hours_from_now(hours):
+    return add_hours(get_current_time(), hours)
 
 
 def minutes_from_now(minutes):  # Unused
@@ -49,6 +61,10 @@ def minutes_ago(minutes):
 
 def seconds_from_now_local(seconds):
     return datetime.datetime.now() + datetime.timedelta(seconds=seconds)
+
+
+def get_date(timeval):
+    return timeval.strftime("%Y-%m-%d")
 
 
 def time_ago(timeval, precision=2):

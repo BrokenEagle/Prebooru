@@ -14,13 +14,15 @@ from ..utility import unique_objects
 from ..logger import log_error
 from ..similarity.generate_data import generate_post_similarity
 from ..similarity.populate_pools import populate_similarity_pools
-from ...models import Upload, Illust
+from ...models import Upload, Illust, SubscriptionPool
 from ..check.posts import check_posts_for_danbooru_id
 from ..check.booru_artists import check_artists_for_boorus
+from ..check.subscriptions import download_subscription_illusts, download_subscription_elements
 from ..records.artist_rec import update_artist_from_source
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
 from ..database.post_db import get_posts_by_id
 from ..database.upload_db import set_upload_status, has_duplicate_posts
+from ..database.subscription_pool_db import update_subscription_pool_status
 from ..database.error_db import create_and_append_error, append_error
 from ..sources.base import get_post_source, get_source_by_id
 from ..downloader.network import convert_network_upload
@@ -90,6 +92,34 @@ def check_for_new_artist_boorus(post_ids):
     printer("Artists to check:", len(check_artists))
     if len(check_artists):
         check_artists_for_boorus(check_artists)
+    printer.print()
+
+
+def process_subscription(subscription_id):
+    printer = buffered_print("Process Subscription")
+    subscription = SubscriptionPool.find(subscription_id)
+    start_illusts = subscription.artist.illust_count
+    start_posts = subscription.artist.post_count
+    start_elements = subscription.element_count
+    starting_post_ids = [post.id for post in subscription.posts]
+    try:
+        download_subscription_illusts(subscription)
+        download_subscription_elements(subscription)
+    except Exception as e:
+        printer("\a\process_subscription: Exception occured in worker!\n", e)
+        printer("Unlocking the database...")
+        SESSION.rollback()
+        log_error('worker.process_subscription', "Unhandled exception occurred on %s: %s" % (subscription.shortlink, e))
+    finally:
+        update_subscription_pool_status(subscription, 'idle')
+        new_post_ids = [post.id for post in subscription.posts if post.id not in starting_post_ids]
+        if len(new_post_ids):
+            printer("Starting secondary threads.")
+            threading.Thread(target=process_similarity, args=(new_post_ids,)).start()
+            threading.Thread(target=check_for_matching_danbooru_posts, args=(new_post_ids,)).start()
+    printer("Added illusts:", subscription.artist.illust_count - start_illusts)
+    printer("Added posts:", subscription.artist.post_count - start_posts)
+    printer("Added elements:", subscription.element_count - start_elements)
     printer.print()
 
 

@@ -10,6 +10,7 @@ from wtforms.validators import DataRequired
 from .. import SCHEDULER
 from ..models import SubscriptionPool, Artist
 from ..logical.utility import set_error
+from ..logical.tasks.worker import process_subscription
 from ..logical.database.subscription_pool_db import create_subscription_pool_from_parameters,\
     update_subscription_pool_from_parameters, update_subscription_pool_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -212,3 +213,18 @@ def update_json(id):
     if type(subscription_pool) is dict:
         return subscription_pool
     return update(subscription_pool)
+
+
+# ###### Misc
+
+@bp.route('/subscription_pools/<int:id>/process', methods=['POST'])
+def process_html(id):
+    subscription_pool = get_or_abort(SubscriptionPool, id)
+    if subscription_pool.status != 'idle':
+        flash("Subscription currently processing.", 'error')
+        return redirect(request.referrer)
+    update_subscription_pool_status(subscription_pool, 'manual')
+    job_id = "process_subscription-%d" % subscription_pool.id
+    SCHEDULER.add_job(job_id, process_subscription, args=(subscription_pool.id))
+    flash("Subscription started.")
+    return redirect(url_for('subscription_pool.show_html', id=subscription_pool.id))
