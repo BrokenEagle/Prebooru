@@ -59,6 +59,48 @@ class CountPaginate():
         return self._count_query.get_count()
 
 
+class LimitPaginate():
+    """Pagination method for processing items which may be removed from the total as it gets processed."""
+    def __init__(self, query=None, page=1, per_page=20, count=None):
+        self.query = query
+        self.per_page = per_page
+        self.page = page
+        self.items = self._GetItems()
+        self.current_count = self._GetCount()
+        self.count = self.count or self.current_count
+        self.pages = ((self.current_count - 1) // per_page) + 1
+        self.first = ((page - 1) * per_page) + 1
+        self.last = min(page * per_page, page.count)
+
+    @property
+    def has_next(self):
+        return self.pages > 0
+
+    @property
+    def has_prev(self):
+        return self.pages > 0
+
+    @property
+    def next_num(self):
+        return self.page + 1
+
+    @property
+    def prev_num(self):
+        return self.page - 1
+
+    def next(self):
+        return LimitPaginate(query=self.query, page=self.next_num, per_page=self.per_page, count=self.count) if self.has_next else None
+
+    def prev(self):
+        return LimitPaginate(query=self.query, page=self.prev_num, per_page=self.per_page, count=self.count) if self.has_prev else None
+
+    def _GetItems(self):
+        return self.query.limit(self.per_page).all()
+
+    def _GetCount(self):
+        return self.query.count()
+
+
 # ## FUNCTIONS
 
 # #### Initialization functions
@@ -71,6 +113,7 @@ def initialize():
         sqlalchemy.orm.Query.unique_join = unique_join
         sqlalchemy.orm.Query.get_count = get_count
         sqlalchemy.orm.Query.count_paginate = count_paginate
+        sqlalchemy.orm.Query.LimitPaginate = limit_paginate
         INIT = True
 
 
@@ -91,6 +134,10 @@ def get_count(self):
 
 def count_paginate(self, page=1, per_page=20):
     return CountPaginate(query=self, page=page, per_page=per_page)
+
+
+def limit_paginate(self, page=1, per_page=20):
+    return LimitPaginate(query=self, page=page, per_page=per_page)
 
 
 # #### Private functions
