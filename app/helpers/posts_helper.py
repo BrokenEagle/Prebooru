@@ -125,9 +125,11 @@ def danbooru_post_link(post):
         return external_link('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id)
     return Markup('<em>N/A</em>')
 
+
 # ###### INDEX
 
 def post_type_link(post_type):
     active_type = request.args.get('type') or 'user'
     classes = ['post-type'] + [post_type + '-type'] + (['type-active'] if active_type == post_type else [])
-    return general_link(post_type.title(), url_for_with_params('post.index_html', type=post_type, page=None), **{'class': ' '.join(classes)})
+    return general_link(post_type.title(), url_for_with_params('post.index_html', type=post_type, page=None),
+                        **{'class': ' '.join(classes)})

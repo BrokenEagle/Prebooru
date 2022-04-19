@@ -102,7 +102,8 @@ class UserTag(Tag):
         from .illust import Illust
         from .illust_url import IllustUrl
         from .post import Post
-        return Illust.query.join(IllustUrl).join(Post, IllustUrl.post).join(UserTag, Post._tags).filter(UserTag.id == self.id)
+        return Illust.query.join(IllustUrl).join(Post, IllustUrl.post).join(UserTag, Post._tags)\
+                     .filter(UserTag.id == self.id)
 
     @property
     def _post_query(self):

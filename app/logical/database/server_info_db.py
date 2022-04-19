@@ -83,14 +83,16 @@ def get_all_server_fields():
 # #### Misc
 
 def get_last_activity(type):
-    if not INITIALIZED: return None
+    if not INITIALIZED:
+        return None
     field = type + '_last_activity'
     last_activity = query_field(field)
     return process_utc_timestring(last_activity) if last_activity is not None else None
 
 
 def update_last_activity(type):
-    if not INITIALIZED: return
+    if not INITIALIZED:
+        return
     field = type + '_last_activity'
     value = FIELD_UPDATERS[field]()
     update_field(field, value)
@@ -104,7 +106,8 @@ def server_is_busy():
 
 def initialize_server_fields():
     global INITIALIZED
-    if INITIALIZED: return
+    if INITIALIZED:
+        return
     create_table()
     current_fields = get_all_server_fields()
     for field in current_fields:

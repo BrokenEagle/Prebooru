@@ -5,9 +5,8 @@ from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, flash, redirect
-from wtforms import TextAreaField, BooleanField, FloatField, SelectField
+from wtforms import TextAreaField, FloatField, SelectField
 from wtforms.validators import DataRequired
-
 
 # ## LOCAL IMPORTS
 from ..models import Post
@@ -18,8 +17,8 @@ from ..logical.database.similarity_pool_db import delete_similarity_pool_by_post
 from ..logical.similarity.check_image import check_all_image_urls_similarity
 from ..logical.similarity.generate_data import generate_post_similarity
 from ..logical.similarity.populate_pools import populate_similarity_pools
-from .base_controller import process_request_values, CustomNameForm, parse_type, parse_bool_parameter,\
-    parse_string_list, nullify_blanks, set_default, check_param_requirements, eval_bool_string
+from .base_controller import process_request_values, CustomNameForm, parse_type, parse_string_list, nullify_blanks,\
+    set_default, check_param_requirements, eval_bool_string
 
 
 # ## GLOBAL VARIABLES

@@ -12,7 +12,8 @@ from .base import JsonModel
 
 SubscriptionPoolElementErrors = DB.Table(
     'subscription_pool_element_errors',
-    DB.Column('subscription_pool_element_id', DB.Integer, DB.ForeignKey('subscription_pool_element.id'), primary_key=True),
+    DB.Column('subscription_pool_element_id', DB.Integer, DB.ForeignKey('subscription_pool_element.id'),
+              primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
 )
 
@@ -28,10 +29,10 @@ class SubscriptionPoolElement(JsonModel):
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(DB.String(32), nullable=True)
-    keep = DB.Column(DB.String(16), nullable=True) # Can have the values of yes, maybe, no, or null
-    expires = DB.Column(DB.DateTime(timezone=False), nullable=True) # Will be deleted by the system after this date
-    deleted = DB.Column(DB.Boolean, nullable=False) # Marked as deleted by the user, so that a post with the same MD5 won't be created again
-    active = DB.Column(DB.Boolean, nullable=False) # Marked as inactive by the system, so that this particular element isn't downloaded again
+    keep = DB.Column(DB.String(16), nullable=True)
+    expires = DB.Column(DB.DateTime(timezone=False), nullable=True)
+    deleted = DB.Column(DB.Boolean, nullable=False)
+    active = DB.Column(DB.Boolean, nullable=False)
 
     # #### Relationships
     # pool <- SusbscriptionPool (MtO)

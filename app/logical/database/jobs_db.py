@@ -59,7 +59,8 @@ def create_job_timeval(id):
 
 
 def create_job_status(id, data):
-    if id is None: return
+    if id is None:
+        return
     print('create_job_status', id, data)
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = T_JOBS_STATUS.insert().values(id=id, data=data)
@@ -90,7 +91,8 @@ def update_job_timeval(id, timestamp):
 
 
 def update_job_status(id, data):
-    if id is None: return
+    if id is None:
+        return
     print('update_job_status', id, data)
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = T_JOBS_STATUS.update().where(T_JOBS_STATUS.c.id == id)\
@@ -119,7 +121,8 @@ def delete_timeval(id):
 
 
 def delete_status(id):
-    if id is None: return
+    if id is None:
+        return
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = T_JOBS_STATUS.delete().where(T_JOBS_STATUS.c.id == id)
         conn.execute(statement)
@@ -168,14 +171,16 @@ def get_job_timeval(id):
 
 
 def check_job_status_exists(id):
-    if id is None: return False
+    if id is None:
+        return False
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = exists(T_JOBS_STATUS.c.id).where(T_JOBS_STATUS.c.id == id).select()
         return (conn.execute(statement).fetchone())[0]
 
 
 def get_job_status_data(id):
-    if id is None: return None
+    if id is None:
+        return None
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = select([T_JOBS_STATUS.c.data]).where(T_JOBS_STATUS.c.id == id)
         val = conn.execute(statement).fetchone()

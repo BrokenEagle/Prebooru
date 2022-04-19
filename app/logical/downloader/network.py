@@ -21,7 +21,7 @@ def convert_network_upload(illust, upload, source):
         image_illust_urls = [illust_url for illust_url in source.image_illust_download_urls(illust)
                              if (len(all_upload_urls) == 0) or (illust_url.url in all_upload_urls)]
         return convert_image_upload(image_illust_urls, upload, source, create_image_post, 'user_post')
-    create_and_append_error('logical.downloader.file.convert_network_upload', "No valid illust URLs.", upload)
+    create_and_append_error('downloader.file.convert_network_upload', "No valid illust URLs.", upload)
     return False
 
 
@@ -30,8 +30,9 @@ def convert_network_subscription(subscription, source):
     if source.illust_has_videos(illust):
         return convert_video_upload(illust, subscription, source, create_video_post, 'subscription_post')
     elif source.illust_has_images(illust):
-        return convert_image_upload([subscription.illust_url], subscription, source, create_image_post, 'subscription_post')
-    create_and_append_error('logical.downloader.file.convert_network_subscription', "No valid illust URLs.", subscription)
+        return convert_image_upload([subscription.illust_url], subscription, source, create_image_post,
+                                    'subscription_post')
+    create_and_append_error('downloader.file.convert_network_subscription', "No valid illust URLs.", subscription)
     return False
 
 
@@ -85,7 +86,8 @@ def create_image_post(illust_url, record, source, post_type):
     temppost = Post(md5=md5, file_ext=image_file_ext, width=image_width, height=image_height)
     if not save_image(buffer, image, temppost, post_errors):
         return post_errors
-    post = create_post_and_add_illust_url(illust_url, image_width, image_height, image_file_ext, md5, len(buffer), post_type)
+    post = create_post_and_add_illust_url(illust_url, image_width, image_height, image_file_ext, md5, len(buffer),
+                                          post_type)
     if len(post_errors):
         extend_errors(post, post_errors)
     return post
@@ -112,7 +114,8 @@ def create_video_post(illust_url, thumb_illust_url, record, source, post_type):
     if isinstance(thumb_binary, list):
         return post_errors + thumb_binary
     save_thumb(thumb_binary, temppost, post_errors)
-    post = create_post_and_add_illust_url(illust_url, video_width, video_height, video_file_ext, md5, len(buffer), post_type)
+    post = create_post_and_add_illust_url(illust_url, video_width, video_height, video_file_ext, md5, len(buffer),
+                                          post_type)
     if len(post_errors):
         extend_errors(post, post_errors)
     return post

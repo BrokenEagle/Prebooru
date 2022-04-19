@@ -66,7 +66,8 @@ class Artist(JsonModel):
     _names = DB.relationship(Label, secondary=ArtistNames, lazy=True)
     _profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True)
     illusts = DB.relationship(Illust, lazy=True, backref=DB.backref('artist', lazy=True), cascade="all, delete")
-    subscription_pool = DB.relationship(SubscriptionPool, lazy=True, uselist=False, backref=DB.backref('artist', uselist=False, lazy=True), cascade="all, delete")
+    subscription_pool = DB.relationship(SubscriptionPool, lazy=True, uselist=False, cascade="all, delete",
+                                        backref=DB.backref('artist', uselist=False, lazy=True))
     webpages = DB.relationship(ArtistUrl, backref='artist', lazy=True, cascade="all, delete")
     notations = DB.relationship(Notation, secondary=ArtistNotations, lazy=True,
                                 backref=DB.backref('artist', uselist=False, lazy=True))

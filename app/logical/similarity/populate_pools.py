@@ -19,7 +19,8 @@ def populate_similarity_pools(post, printer=print):
     simdata_items = get_similarity_data_by_post_id(post.id)
     score_results = []
     for simdata in simdata_items:
-        smatches = get_similarity_data_matches(simdata.image_hash, simdata.ratio, sim_clause='cross2', post_id=simdata.post_id)
+        smatches = get_similarity_data_matches(simdata.image_hash, simdata.ratio, sim_clause='cross2',
+                                               post_id=simdata.post_id)
         score_results += check_similarity_match_scores(smatches, simdata.image_hash, 90.0)
     final_results = filter_score_results(score_results)
     main_pool = get_or_create_similarity_pool(post.id)

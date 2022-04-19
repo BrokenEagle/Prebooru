@@ -22,6 +22,7 @@ ID_MODEL_DICT = {
     'post_id': Post,
 }
 
+
 # ## FUNCTIONS
 
 def create_tag_from_parameters(createparams):

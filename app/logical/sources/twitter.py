@@ -22,7 +22,7 @@ from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
 from ..database.illust_db import get_site_illust
-from ..database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status, update_job_status
+from ..database.jobs_db import get_job_status_data, update_job_status
 from ..sites import Site, get_site_domain, get_site_id
 
 
@@ -1053,7 +1053,8 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
         since_date = get_date(next_timeval)
         job_status['records'] = len(tweet_ids)
         update_job_status(job_id, job_status)
-        temp_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date, job_id=job_id, job_status=job_status)
+        temp_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date,
+                                                    job_id=job_id, job_status=job_status)
         if is_error(temp_ids):
             return temp_ids
         tweet_ids += temp_ids

@@ -18,7 +18,10 @@ REQUEST_METHODS = {
     'get': requests.get,
     'post': requests.post,
 }
-REQUEST_AUTH = (DANBOORU_USERNAME, DANBOORU_APIKEY) if DANBOORU_USERNAME is not None and DANBOORU_APIKEY is not None else None
+REQUEST_AUTH = (DANBOORU_USERNAME, DANBOORU_APIKEY)\
+               if DANBOORU_USERNAME is not None and DANBOORU_APIKEY is not None\
+               else None
+
 
 # ## FUNCTIONS
 
