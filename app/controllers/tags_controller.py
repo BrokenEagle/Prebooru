@@ -85,7 +85,7 @@ def remove_item(tag):
     dataparams.update({k: parse_type(dataparams, k, int) for (k, v) in dataparams.items() if k in APPEND_KEYS})
     remove_key = [key for key in APPEND_KEYS if key in dataparams and dataparams[key] is not None]
     if len(remove_key) > 1:
-        return set_error(retdata, "May remove using only a single ID; multiple values found: %s" % repr(append_key))
+        return set_error(retdata, "May remove using only a single ID; multiple values found: %s" % repr(remove_key))
     elif len(remove_key) == 0:
         return set_error(retdata, "Must include an remove ID.")
     else:
