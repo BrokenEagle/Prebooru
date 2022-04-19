@@ -1,11 +1,13 @@
 # APP/LOGICAL/DATABASE/SUBSCRIPTION_POOL_ELEMENT_DB.PY
 
 # ## PACKAGE IMPORTS
-from utility.time import days_from_now
+from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import SubscriptionPoolElement
+from ..records.post_rec import archive_post_for_deletion
+from .post_db import delete_post
 from .base_db import update_column_attributes
 
 
@@ -51,6 +53,31 @@ def update_subscription_pool_element_keep(subscription_pool_element, value):
 
 # #### Misc
 
+def unlink_subscription_post(element):
+    element.post_id = None
+    element.expires = None
+    element.active = False
+    SESSION.commit()
+
+
+def delete_subscription_post(element):
+    if element.post is not None:
+        delete_post(element.post)
+    element.expires = None
+    element.active = False
+    element.deleted = True
+    SESSION.commit()
+
+
+def archive_subscription_post(element):
+    if element.post is not None:
+        archive_post_for_deletion(element.post)
+    element.expires = None
+    element.active = False
+    element.deleted = True
+    SESSION.commit()
+
+
 def add_subscription_post(subscription_pool_element, post):
     subscription_pool_element.post_id = post.id
     subscription_pool_element.md5 = post.md5
@@ -65,3 +92,12 @@ def get_elements_by_id(id_list):
 
 def check_deleted_subscription_post(md5):
     return SESSION.query(SubscriptionPoolElement.id).filter_by(md5=md5, deleted=True).first() is not None
+
+
+def total_expired_subscription_elements():
+    return SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
+                                                SubscriptionPoolElement.post_id.is_not(None)).get_count()
+
+
+def total_missing_downloads():
+    return SubscriptionPoolElement.query.filter_by(post_id=None, active=True, deleted=False).get_count()

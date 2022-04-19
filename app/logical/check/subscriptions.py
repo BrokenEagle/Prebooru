@@ -4,13 +4,15 @@
 from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
-from utility.time import hours_from_now
+from utility.time import get_current_time, hours_from_now
 
 # ## LOCAL IMPORTS
 from ...models import SubscriptionPoolElement, IllustUrl
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
+from ..database.subscription_pool_element_db import unlink_subscription_post, delete_subscription_post,\
+    archive_subscription_post
 from ..database.subscription_pool_db import update_subscription_pool_requery, update_subscription_pool_last_info,\
     add_subscription_pool_error
 from ..database.error_db import is_error
@@ -76,3 +78,60 @@ def download_subscription_elements(subscription_pool, job_id=None):
             break
         page = page.next()
     update_job_status(job_id, job_status)
+
+
+def download_missing_elements():
+    q = SubscriptionPoolElement.query.filter_by(post_id=None, active=True)
+    q = q.options(selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
+    page = q.limit_paginate()
+    while True:
+        print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
+        for element in page.items:
+            site_key = get_site_key(element.illust_url.site_id)
+            source = SOURCEDICT[site_key]
+            convert_network_subscription(element, source)
+        if not page.has_next:
+            break
+        if page.page > 10:
+            print("download_missing_elements: Max pages reached!")
+            break
+        page = page.next()
+
+
+def expire_subscription_elements():
+    # First pass - Unlink all "yes" elements
+    q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
+                                             SubscriptionPoolElement.keep == 'yes')
+    page = q.limit_paginate(per_page=100)
+    while True:
+        print(f"expire_subscription_elements-unlink: {page.first} - {page.last} / Total({page.count})")
+        for element in page.items:
+            print(f"Unlinking {element.shortlink}")
+            unlink_subscription_post(element)
+        if not page.has_next:
+            break
+        page = page.next()
+    # Second pass - Hard delete all "no" element posts
+    q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
+                                             SubscriptionPoolElement.keep == 'no')
+    page = q.limit_paginate(per_page=50)
+    while True:
+        print(f"expire_subscription_elements-delete: {page.first} - {page.last} / Total({page.count})")
+        for element in page.items:
+            print(f"Deleting post of {element.shortlink}")
+            delete_subscription_post(element)
+        if not page.has_next:
+            break
+        page = page.next()
+    # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
+    q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
+                                             SubscriptionPoolElement.keep.is_(None))
+    page = q.limit_paginate(per_page=50)
+    while True:
+        print(f"expire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})")
+        for element in page.items:
+            print(f"Archiving post of {element.shortlink}")
+            archive_subscription_post(element)
+        if not page.has_next:
+            break
+        page = page.next()

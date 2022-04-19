@@ -14,6 +14,14 @@
                 <li>{{ helpers.base.general_link("Check All Posts For Danbooru ID",  url_for('task.run_task_html', name='check_all_posts_for_danbooru_id'),  method='POST') }}</li>
             </ul>
         </section>
+        <section id="static-subscription-tasks">
+            <h4>Subscription Tasks</h4>
+            <ul>
+                <li>{{ helpers.base.general_link("Check Pending Subscriptions",  url_for('task.run_task_html', name='check_pending_subscriptions'),  method='POST') }}</li>
+                <li>{{ helpers.base.general_link("Check Pending Downloads",  url_for('task.run_task_html', name='check_pending_downloads'),  method='POST') }}</li>
+                <li>{{ helpers.base.general_link("Process Expired Subscription Elements",  url_for('task.run_task_html', name='process_expired_subscription_elements'),  method='POST') }}</li>
+            </ul>
+        </section>
         <section id="static-maintenance-tasks">
             <h4>Maintenance Tasks</h4>
             <ul>
