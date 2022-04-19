@@ -1,6 +1,7 @@
 # APP/LOGICAL/TASKS/WORKER.PY
 
 # ## PYTHON IMPORTS
+import operator
 import itertools
 import threading
 
@@ -9,9 +10,7 @@ from utility.time import get_current_time, minutes_ago
 from utility.print import buffered_print
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ..utility import unique_objects
-from ..logger import log_error
 from ..similarity.generate_data import generate_post_similarity
 from ..similarity.populate_pools import populate_similarity_pools
 from ...models import Upload, Illust
@@ -19,6 +18,7 @@ from ..check.posts import check_posts_for_danbooru_id
 from ..check.booru_artists import check_artists_for_boorus
 from ..records.artist_rec import update_artist_from_source
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
+from ..database.base_db import safe_db_execute
 from ..database.post_db import get_posts_by_id
 from ..database.upload_db import set_upload_status, has_duplicate_posts
 from ..database.error_db import create_and_append_error, append_error
@@ -40,20 +40,24 @@ def check_requery(instance):
 def process_upload(upload_id):
     printer = buffered_print("Process Upload")
     upload = Upload.find(upload_id)
-    printer("Upload:", upload)
+    printer("Upload:", upload.id)
     set_upload_status(upload, 'processing')
-    try:
-        if upload.type == 'post':
+
+    def try_func(scope_vars):
+        if scope_vars['upload'].type == 'post':
             process_network_upload(upload)
-        elif upload.type == 'file':
+        elif scope_vars['upload'].type == 'file':
             process_file_upload(upload)
-    except Exception as e:
-        printer("\a\aProcessUpload: Exception occured in worker!\n", e)
-        printer("Unlocking the database...")
-        SESSION.rollback()
-        log_error('worker.ProcessUpload', "Unhandled exception occurred on upload #%d: %s" % (upload.id, e))
-        set_upload_status(upload, 'error')
-    finally:
+
+    def msg_func(scope_vars, e):
+        return "Unhandled exception occurred on upload #%d: %s" % (scope_vars['upload'].id, e)
+
+    def error_func(scope_vars, e):
+        set_upload_status(scope_vars['upload'], 'error')
+
+    def finally_func(scope_vars, data, error):
+        nonlocal printer
+        upload = scope_vars['upload']
         printer("Upload:", upload.status)
         printer("Posts:", len(upload.posts))
         if upload.status in ['complete', 'duplicate'] and len(upload.posts) > 0:
@@ -62,6 +66,9 @@ def process_upload(upload_id):
             threading.Thread(target=process_similarity, args=(post_ids,)).start()
             threading.Thread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
             threading.Thread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
+
+    safe_db_execute('process_upload', 'tasks.worker', try_func=try_func, msg_func=msg_func, error_func=error_func,
+                    finally_func=finally_func, scope_vars={'upload': upload}, printer=printer)
     printer.print()
 
 

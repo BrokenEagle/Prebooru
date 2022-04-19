@@ -14,6 +14,28 @@ from ..logger import log_error
 
 # ## FUNCTIONS
 
+def safe_db_execute(func_name, module_name, scope_vars=None, **kwargs):
+    for func_name in ['try_func', 'msg_func', 'error_func', 'finally_func', 'printer']:
+        kwargs[func_name] = kwargs[func_name]\
+                            if (func_name in kwargs) and (callable(kwargs[func_name]))\
+                            else (lambda *args: None)
+    scope_vars = scope_vars or {}
+    data = None
+    error = None
+    try:
+        data = kwargs['try_func'](scope_vars)
+    except Exception as e:
+        kwargs['printer'](f"\a\n{func_name}: Exception occured in worker!\n", e)
+        kwargs['printer']("Unlocking the database...")
+        SESSION.rollback()
+        msg = kwargs['msg_func'](scope_vars, e)
+        log_error(f"{module_name}.func_name", msg)
+        kwargs['error_func'](scope_vars, e)
+        error = e
+    finally:
+        return kwargs['finally_func'](scope_vars, data, error)
+
+
 def set_timesvalue(params, key):
     if key in params:
         if type(params[key]) is str:
