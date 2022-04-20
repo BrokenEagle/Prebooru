@@ -29,8 +29,8 @@ from .initialize import initialize_scheduler, recheck_schedule_interval, resched
 JOB_CONFIG = {
     'expunge_cache_records': {
         'id': 'expunge_cache_records',
-        'hours': 1,
-        'jitter': 300,
+        'hours': 8,
+        'jitter': 3600,
     },
     'expunge_archive_records': {
         'id': 'expunge_archive_records',
@@ -65,7 +65,7 @@ JOB_CONFIG = {
 }
 
 JOB_LEEWAY = {
-    'expunge_cache_records': 60,
+    'expunge_cache_records': 300,
     'expunge_archive_records': 180,
     'check_all_boorus': 300,
     'check_all_artists_for_boorus': 300,
