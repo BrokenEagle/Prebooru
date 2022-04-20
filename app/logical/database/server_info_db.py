@@ -11,6 +11,8 @@ from utility.time import get_current_time, process_utc_timestring, minutes_ago
 
 # ## LOCAL IMPORTS
 from ... import DB
+from .jobs_db import is_any_job_locked
+
 
 # ## GLOBAL VARIABLES
 
@@ -91,7 +93,7 @@ def update_last_activity(type):
 
 
 def server_is_busy():
-    return get_last_activity('user') < minutes_ago(15) or get_last_activity('server') < minutes_ago(5)
+    return (get_last_activity('user') < minutes_ago(15)) or ((get_last_activity('server') < minutes_ago(5)) and is_any_job_locked())
 
 
 # #### Private

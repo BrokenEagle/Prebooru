@@ -116,6 +116,11 @@ def get_job_lock_status(id):
         return status[0] if status is not None else None
 
 
+def is_any_job_locked():
+    all_locks = get_all_job_locks()
+    return any(lock for lock in all_locks.values())
+
+
 def get_all_job_timevals():
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = select([T_JOBS_TIME.c.id, T_JOBS_TIME.c.time])
