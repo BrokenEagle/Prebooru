@@ -36,7 +36,7 @@ dotenv_logger = logging.getLogger('dotenv.main')
 dotenv_logger.setLevel(logging.INFO)
 dotenv_logger.addHandler(logging.StreamHandler())
 DOTENV_FILEPATH = get_environment_variable('DOTENV_FILEPATH', DOTENV_FILEPATH)
-if DOTENV_FILEPATH is not None or True:
+if DOTENV_FILEPATH is not None:
     logger.info("\n[PID %d] Loading DOTENV file: %s" % (os.getpid(), DOTENV_FILEPATH))
     dotenv.load_dotenv(dotenv_path=DOTENV_FILEPATH, override=True, verbose=True)
 
