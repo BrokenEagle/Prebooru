@@ -157,27 +157,3 @@ def saucenao():
     base['href'] = 'https://saucenao.com'
     soup.head.insert(0, base)
     return Markup(soup.prettify())
-
-
-@bp.route('/proxy/ascii2d', methods=['GET'])
-def ascii2d():
-    post_id = request.args.get('post_id', type=int)
-    if post_id is None:
-        return "Must include post ID."
-    post = Post.find(post_id)
-    if post is None:
-        return "Post #d not found." % post_id
-    file_path = post.file_path if post.file_ext != 'mp4' else post.sample_path
-    buffer = put_get_raw(file_path, 'rb')
-    filename = post.md5 + '.' + post.file_ext
-    files = {
-        'file': (filename, buffer, 'application/octet-stream')
-    }
-    resp = requests.post('https://ascii2d.net/search/file', files=files)
-    if resp.status_code != 200:
-        return "HTTP Error %d: %s" % (resp.status_code, resp.reason)
-    soup = BeautifulSoup(resp.text, 'lxml')
-    base = soup.new_tag("base")
-    base['href'] = 'https://ascii2d.net'
-    soup.head.insert(0, base)
-    return Markup(soup.prettify())

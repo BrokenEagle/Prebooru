@@ -63,7 +63,7 @@ def saucenao_search_links(post):
 
 
 def ascii2d_search_links(post):
-    return similar_search_links(post, 'https://ascii2d.net/search/url/', '/proxy/ascii2d')
+    return similar_search_links(post, 'https://ascii2d.net/search/url/')
 
 
 def iqdborg_search_links(post):
