@@ -857,7 +857,13 @@ def get_twitter_artist(artist_id):
 
 def get_tweet_commentary(twitter_data):
     text = convert_entity_text(twitter_data, 'full_text', 'urls')
-    return fixup_crlf(SHORT_URL_REPLACE_RG.sub('', text).strip())
+    text = fixup_crlf(SHORT_URL_REPLACE_RG.sub('', text).strip())
+    media = safe_get(twitter_data, 'extended_entities', 'media')
+    if media is not None and len(media):
+        alt_text_items = [(i + 1, item['ext_alt_text']) for (i, item) in enumerate(media) if 'ext_alt_text' in item]
+        if len(alt_text_items):
+            text += '\r\n\r\n' + '\r\n'.join([f"IMAGE #{i}: {alt_text}" for (i, alt_text) in alt_text_items])
+    return text
 
 
 def get_illust_tags(tweet):
