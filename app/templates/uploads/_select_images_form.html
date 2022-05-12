@@ -2,6 +2,10 @@
 
 {{ image_select_controls('select-image-input') }}
 {% call render_form(form, 'POST', upload.create_url, manual=True) %}
+    <div class="input" style="margin: 0.5em;">
+        <label style="display: inline-block;">Force</label>
+        <input type="checkbox" id="select-force" name="force" value="true" style="display: inline-block;">
+    </div>
     {% for url_data in illust_urls %}
         <div class="select-image-block">
             <div class="input">
