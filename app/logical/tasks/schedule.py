@@ -270,18 +270,18 @@ def delete_orphan_images_task():
 
 @SCHEDULER.task('interval', **JOB_CONFIG['vacuum_analyze_database'])
 def vacuum_analyze_database_task():
+    if server_is_busy():
+        print("Vaccuum/Analyze: Server busy, rescheduling....")
+        reschedule_task('vacuum_analyze_database', JOB_CONFIG, JOB_LEEWAY)
+        return
     if not _set_db_semaphore('vacuum_analyze_database'):
         print("Task scheduler - Vacuum/analyze DB: already running")
         return
     printer = buffered_print("Vacuum/analyze DB")
     printer("PID:", os.getpid())
-    if not server_is_busy():
-        with DB.engine.begin() as connection:
-            connection.execute("VACUUM")
-            connection.execute("ANALYZE")
-    else:
-        printer("Server busy, rescheduling....")
-        reschedule_task('vacuum_analyze_database', JOB_CONFIG, JOB_LEEWAY)
+    with DB.engine.begin() as connection:
+        connection.execute("VACUUM")
+        connection.execute("ANALYZE")
     printer.print()
     _free_db_semaphore('vacuum_analyze_database')
 
