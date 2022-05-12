@@ -90,6 +90,7 @@ def index(is_html):
     q = Post.query
     q = search_filter(q, search, negative_search)
     q = pool_filter(q, search)
+    q = q.distinct(Post.id)
     q = default_order(q, search)
     return q
 
