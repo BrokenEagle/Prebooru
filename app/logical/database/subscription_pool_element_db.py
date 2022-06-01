@@ -92,6 +92,14 @@ def add_subscription_post(subscription_pool_element, post):
     SESSION.commit()
 
 
+def duplicate_subscription_post(element, md5):
+    element.status = 'duplicate'
+    element.expires = None
+    element.active = False
+    element.md5 = md5
+    SESSION.commit()
+
+
 # #### Query
 
 def get_elements_by_id(id_list):

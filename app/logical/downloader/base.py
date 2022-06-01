@@ -14,7 +14,7 @@ from utility.file import create_directory, put_get_raw
 # ## LOCAL IMPORTS
 from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
 from ..database.subscription_pool_element_db import add_subscription_post, update_subscription_pool_element_active,\
-    check_deleted_subscription_post
+    check_deleted_subscription_post, duplicate_subscription_post
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.error_db import create_error, create_and_append_error, extend_errors, is_error
 
@@ -86,10 +86,11 @@ def check_existing(buffer, illust_url, record):
     if post is not None:
         post_append_illust_url(post, illust_url)
         if record.model_name == 'subscription_pool_element':
-            add_subscription_post(record, post)
-        return create_error('downloader.base.check_existing', "Image already uploaded on post #%d" % post.id)
+            duplicate_subscription_post(record, post.md5)
+        return create_error('downloader.base.check_existing', "Media already uploaded on post #%d" % post.id)
     if record.model_name == 'subscription_pool_element' and check_deleted_subscription_post(md5):
-        return create_error('downloader.base.check_existing', "Image already marked as deleted: %s" % md5)
+        duplicate_subscription_post(record, md5)
+        return create_error('downloader.base.check_existing', "Media already marked as deleted: %s" % md5)
     return md5
 
 
