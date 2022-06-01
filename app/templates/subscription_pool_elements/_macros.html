@@ -35,8 +35,8 @@
                 </ul>
             </div>
         {% else %}
-            {% set post_type = "Deleted" if element.deleted else "No" %}
             <div class="subscription-no-post">
+                <h4 class="heading">{{ element.status | title }} post&emsp;({{ element.illust_url.type }})</h4>
                 <ul>
                     <li><strong>{{ element.show_link }}</strong>
                     <li><strong>{{ element.pool_show_link }}</strong></li>

@@ -25,7 +25,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['pool_id', 'illust_url_id', 'post_id', 'expires']
 # ###### CREATE
 
 def create_subscription_pool_element_from_parameters(createparams):
-    subscription_pool_element = SubscriptionPoolElement(active=True, deleted=False)
+    subscription_pool_element = SubscriptionPoolElement(active=True, deleted=False, status='active')
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(subscription_pool_element, update_columns, createparams)
@@ -51,12 +51,18 @@ def update_subscription_pool_element_keep(subscription_pool_element, value):
     SESSION.commit()
 
 
+def update_subscription_pool_element_status(subscription_pool_element, value):
+    subscription_pool_element.status = value
+    SESSION.commit()
+
+
 # #### Misc
 
 def unlink_subscription_post(element):
     element.post_id = None
     element.expires = None
     element.active = False
+    element.status = 'unlinked'
     SESSION.commit()
 
 
@@ -66,6 +72,7 @@ def delete_subscription_post(element):
     element.expires = None
     element.active = False
     element.deleted = True
+    element.status = 'deleted'
     SESSION.commit()
 
 
@@ -75,6 +82,7 @@ def archive_subscription_post(element):
     element.expires = None
     element.active = False
     element.deleted = True
+    element.status = 'archived'
     SESSION.commit()
 
 

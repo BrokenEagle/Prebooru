@@ -31,6 +31,7 @@ class SubscriptionPoolElement(JsonModel):
     md5 = DB.Column(DB.String(32), nullable=True)
     keep = DB.Column(DB.String(16), nullable=True)
     expires = DB.Column(DB.DateTime(timezone=False), nullable=True)
+    status = DB.Column(DB.String(16), nullable=True)
     deleted = DB.Column(DB.Boolean, nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)
 
