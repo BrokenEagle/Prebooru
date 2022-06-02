@@ -5,8 +5,12 @@ from flask import Blueprint, request, render_template, flash, redirect
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string
+
 # ## LOCAL IMPORTS
 from ..models import SubscriptionPoolElement
+from ..logical.utility import search_url_for
 from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep,\
     batch_update_subscription_pool_element_keep
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -51,8 +55,7 @@ def show_json(id):
 
 @bp.route('/subscription_pool_elements/<int:id>', methods=['GET'])
 def show_html(id):
-    subscription_pool_element = get_or_abort(SubscriptionPoolElement, id)
-    return render_template("subscription_pool_elements/show.html", subscription_pool_element=subscription_pool_element)
+    return redirect(search_url_for('subscription_pool_element.index_html', base_args={'type': 'all'}, id=id))
 
 
 @bp.route('/subscription_pool_elements/<int:id>/preview.json', methods=['GET'])
@@ -126,9 +129,15 @@ def keep_json(id):
     element = get_or_error(SubscriptionPoolElement, id)
     if isinstance(element, str):
         return element
+    messages = []
     value = request.args.get('keep')
     if value is None:
-        return {'error': True, 'message': "Keep argument not found."}
+        messages.append("Keep argument not found.")
+    has_preview = request.args.get('preview', type=eval_bool_string)
+    if has_preview is None:
+        messages.append("Preview argument not found.")
+    if len(messages) > 0:
+        return {'error': True, 'message': '<br>'.join(messages)}
     update_subscription_pool_element_keep(element, value)
-    html = render_template("subscription_pool_elements/_element_preview.html", element=element)
+    html = render_template("subscription_pool_elements/_element_preview.html", element=element) if has_preview else render_template("subscription_pool_elements/_element_info.html", element=element)
     return {'error': False, 'item': element.to_json(), 'html': strip_whitespace(html)}

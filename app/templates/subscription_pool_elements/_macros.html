@@ -1,5 +1,14 @@
 {% from 'errors/_macros.html' import error_list %}
 
+{% macro subscription_element_section(element, section_id) %}
+    {% if element is not none %}
+        <section id="{{ section_id }}">
+            <h4>Subscription</h4>
+            {{ subscription_pool_element_info(element, False, False) }}
+        </section>
+    {% endif %}
+{%- endmacro %}
+
 {% macro elements_display(element_search_url, element_count, section_id) -%}
     <div id="{{ section_id }}">
         <span class="heading">Elements</span> (&thinsp;{{ element_count }}&thinsp;) {{ helpers.base.general_link('&raquo;', element_search_url) }}
@@ -7,43 +16,49 @@
 {%- endmacro %}
 
 {% macro subscription_element_preview(element) -%}
-    <article class="subscription-element">
+    <article id="subscription-element-{{ element.id }}" class="subscription-element">
         {% if element.post is not none %}
             <div class="input">
                 <label for="subscription-element-{{ element.id }}">
                     <input type="checkbox" class="similar-post-input" id="subscription-element-{{ element.id }}" name="subscription_pool_element[id][]" value="{{ element.id }}">
                 </label>
             </div>
-            <a href="{{ element.show_url }}">
+            <a href="{{ element.post.show_url }}">
                 <img src="{{ element.post.preview_url }}">
             </a>
-            {% set info_class = element.keep + '-info' if element.keep is not none else 'unsure-info' %}
-            <div class="subscription-element-info {{info_class}}">
-                <ul>
-                    <li><strong>{{ element.pool_show_link }} {{ helpers.subscription_pool.element_search_link(element) }}</strong></li>
-                    <li><strong>{{ element.post_show_link }}</strong></li>
-                    <li><strong>{{ element.illust_url.illust_show_link }}</strong></li>
-                    <li><strong>Expires:</strong>&ensp;
-                        <span class="subscription-element-expires">{{ helpers.base.format_expires(element.expires) }}</span>
-                    </li>
-                    <li><strong>
-                        Keep:
-                            {{ helpers.subscription_pool.keep_element_link(element, 'yes', 'json') -}} |
-                            {{- helpers.subscription_pool.keep_element_link(element, 'maybe', 'json') -}} |
-                            {{- helpers.subscription_pool.keep_element_link(element, 'no', 'json') }}
-                    </strong></li>
-                </ul>
-            </div>
+            {{ subscription_pool_element_info(element, True, True) }}
         {% else %}
             <div class="subscription-no-post">
                 <h4 class="heading">{{ element.status | title }} post&emsp;({{ element.illust_url.type }})</h4>
                 <ul>
-                    <li><strong>{{ element.show_link }}</strong>
-                    <li><strong>{{ element.pool_show_link }}</strong></li>
-                    <li><span class="explanation">{{post_type}} post.</span></li>
+                    <li><strong>{{ element.pool_show_link }} {{ helpers.subscription_pool.element_search_link(element) }}</strong></li>
+                    <li><strong>{{ element.illust_url.illust_show_link }}</strong></li>
+                    <li><strong>{{ helpers.base.url_link(element.illust_url.full_url) }}</strong></li>
+                    <li><strong>MD5:</strong> <code>{{ helpers.base.val_or_none(element.md5) }}</code></li>
                 </ul>
                 {{ error_list(element.errors) }}
             </div>
         {% endif %}
     </article>
+{%- endmacro %}
+
+{% macro subscription_pool_element_info(element, show_illust, has_preview) -%}
+    {% set info_class = element.keep + '-info' if element.keep is not none else 'unsure-info' %}
+    <div class="subscription-element-info {{info_class}}">
+        <ul>
+            <li><strong>{{ element.pool_show_link }} {{ helpers.subscription_pool.element_search_link(element) }}</strong></li>
+            {% if show_illust %}
+                <li><strong>{{ element.illust_url.illust_show_link }}</strong></li>
+            {% endif %}
+            <li><strong>Expires:</strong>&ensp;
+                <span class="subscription-element-expires">{{ helpers.base.format_expires(element.expires) }}</span>
+            </li>
+            <li><strong>
+                Keep:
+                    {{ helpers.subscription_pool.keep_element_link(element, 'yes', 'json', has_preview) -}} |
+                    {{- helpers.subscription_pool.keep_element_link(element, 'maybe', 'json', has_preview) -}} |
+                    {{- helpers.subscription_pool.keep_element_link(element, 'no', 'json', has_preview) }}
+            </strong></li>
+        </ul>
+    </div>
 {%- endmacro %}

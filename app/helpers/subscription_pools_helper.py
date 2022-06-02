@@ -54,13 +54,14 @@ def keep_element_val(subscription_element):
 
 # ###### Link functions
 
-def keep_element_link(subscription_element, value, format):
-    url = url_for('subscription_pool_element.keep_' + format, id=subscription_element.id, keep=value)
+def keep_element_link(subscription_element, value, format, has_preview):
+    preview = 'yes' if has_preview else 'no'
+    url = url_for('subscription_pool_element.keep_' + format, id=subscription_element.id, keep=value, preview=preview)
     addons = {'class': value + '-link keep-link'}
     if format == 'html':
         addons['onclick'] = "return Prebooru.linkPost(this)"
     elif format == 'json':
-        addons['onclick'] = "return SubscriptionPools.keepElement(this)"
+        addons['onclick'] = "return SubscriptionPools.keepElement(this)" if has_preview else "return Prebooru.keepElement(this)"
     return general_link(value, url, **addons)
 
 

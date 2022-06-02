@@ -114,3 +114,22 @@ Prebooru.closeNotice = function() {
     document.getElementById('script-notice').className = "";
     return false;
 };
+
+Prebooru.keepElement = function(obj) {
+    fetch(obj.href, {method: 'POST'})
+        .then((resp)=>resp.json())
+        .then((data)=>{
+            if (data.error) {
+                Prebooru.error(data.message);
+            } else {
+                Prebooru.message("Updated element.");
+                Prebooru.replaceDiv(obj, data.html);
+            }
+        });
+    return false;
+};
+
+Prebooru.replaceDiv = function(obj, html) {
+    for (var curr = obj; curr.tagName !== 'DIV' && curr.parentElement !== null; curr = curr.parentElement);
+    curr.outerHTML = html;
+};

@@ -103,3 +103,54 @@ article.post.similar-post {
     text-align: left;
     margin-top: 0.5em;
 }
+
+
+/****TEMP****/
+
+a.yes-link {
+    color: green;
+}
+a.maybe-link {
+    color: darkorange;
+}
+a.no-link {
+    color: red;
+}
+
+div.subscription-element-info {
+    font-size: 16px;
+    border: 2px solid;
+    margin-top: 5px;
+    padding: 5px;
+}
+div.subscription-element-info.yes-info {
+    border-color: limegreen;
+}
+div.subscription-element-info.maybe-info {
+    border-color: darkorange;
+}
+div.subscription-element-info.no-info {
+    border-color: red;
+}
+div.subscription-element-info.unsure-info {
+    border-color: #DDD;
+}
+div.subscription-element-info a.keep-link {
+    margin-top: 0.25em;
+    display: inline-block;
+    border: 1px solid;
+}
+div.subscription-element-info a.keep-link.yes-link {
+    border-radius: 25px 0 0 25px;
+    padding: 5px 20px;
+}
+div.subscription-element-info a.keep-link.no-link {
+    border-radius: 0 25px 25px 0;
+    padding: 5px 20px;
+}
+div.subscription-element-info a.keep-link.maybe-link {
+    padding: 5px 10px;
+}
+article.subscription-element ul {
+    margin-left: 25px;
+}

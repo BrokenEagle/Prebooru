@@ -47,8 +47,8 @@ div#subscription-pool-elements-container {
     margin-bottom: 2em;
 }
 article.subscription-element {
-    width: 325px;
-    height: 400px;
+    width: 340px;
+    height: 450px;
     margin: 2em 1em 4em;
 }
 article.subscription-element > * {
@@ -76,28 +76,53 @@ div.subscription-element-info.unsure-info {
     border-color: #DDD;
 }
 div.subscription-element-info a.keep-link {
-    padding: 5px 10px;
+    margin-top: 0.25em;
     display: inline-block;
     border: 1px solid;
 }
-div.subscription-element-info a.yes-link {
+div.subscription-element-info a.keep-link.yes-link {
     border-radius: 25px 0 0 25px;
+    padding: 5px 20px;
 }
-div.subscription-element-info a.no-link {
+div.subscription-element-info a.keep-link.no-link {
     border-radius: 0 25px 25px 0;
+    padding: 5px 20px;
+}
+div.subscription-element-info a.keep-link.maybe-link {
+    padding: 5px 10px;
 }
 article.subscription-element ul {
-    margin-left: 25px;
+    margin-left: 20px;
 }
 article.subscription-element > div.subscription-no-post {
-    padding: 1em;
-    height: 305px;
+    padding: 0.5em;
+    max-height: 450px;
     background: #F0F0F0;
     border: 2px solid #DDD;
+    width: 325px;
+    overflow-x: hidden;
+}
+article.subscription-element > div.subscription-no-post > div.preview {
+    height: 300px;
+}
+article.subscription-element > div.subscription-no-post > div.preview > img {
+    max-height: 300px;
+    max-width: 300px;
+}
+article.subscription-element > div.subscription-no-post > ul {
+    margin-left: 0;
+}
+article.subscription-element > div.subscription-no-post > ul > li {
+    list-style-position: inside;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
 }
 article.subscription-element div.errors-list {
     border: 1px solid #DDD;
     padding: 5px;
+    overflow-x: hidden;
+    margin-top: 0.5em;
 }
 form#form label {
     margin-top: 0;
