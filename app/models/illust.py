@@ -13,7 +13,7 @@ from .site_data import SiteData
 from .description import Description
 from .notation import Notation
 from .pool_element import PoolIllust
-from .base import JsonModel, polymorphic_accessor_factory
+from .base import JsonModel, polymorphic_accessor_factory, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -136,11 +136,9 @@ class Illust(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'site_id', 'site_illust_id', 'site_created', 'artist_id', 'pages', 'score', 'active',
-                        'created', 'updated', 'requery']
-    relation_attributes = ['artist', 'site_data', 'urls', 'tags', 'commentaries', 'notations']
-    searchable_attributes = basic_attributes + relation_attributes
-    json_attributes = basic_attributes + ['urls', 'tags', 'commentaries', 'site_data']
+    @classproperty(cached=True)
+    def json_attributes(cls):
+        return super().json_attributes + ['urls', 'tags', 'commentaries', 'site_data']
 
 
 # ## INITIALIZATION

@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel
+from .base import JsonModel, classproperty
 
 
 # ## CLASSES
@@ -17,7 +17,8 @@ class ArchiveData(JsonModel):
     data = DB.Column(DB.JSON, nullable=False)
     expires = DB.Column(DB.DateTime(timezone=False), nullable=True)
 
-    basic_attributes = ['id', 'type', 'data_key', 'expires']
-    relation_attributes = []
-    searchable_attributes = basic_attributes + relation_attributes
-    json_attributes = basic_attributes + ['data']
+    # ## Class properties
+
+    @classproperty(cached=True)
+    def searchable_attributes(cls):
+        return [x for x in super().searchable_attributes if x not in ['data']]

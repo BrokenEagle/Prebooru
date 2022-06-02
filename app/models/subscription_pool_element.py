@@ -40,13 +40,6 @@ class SubscriptionPoolElement(JsonModel):
     errors = DB.relationship(Error, secondary=SubscriptionPoolElementErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('subscription_pool_element', uselist=False, lazy=True))
 
-    # ## Class properties
-
-    basic_attributes = ['id', 'pool_id', 'post_id', 'illust_url_id', 'md5', 'keep', 'expires', 'deleted', 'active']
-    json_attributes = basic_attributes
-    relation_attributes = ['pool', 'post', 'illust_url']
-    searchable_attributes = basic_attributes + relation_attributes
-
 
 # ## INITIALIZATION
 

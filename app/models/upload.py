@@ -10,7 +10,7 @@ from ..logical.utility import unique_objects
 from .upload_url import UploadUrl
 from .post import Post
 from .error import Error
-from .base import JsonModel
+from .base import JsonModel, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -100,8 +100,6 @@ class Upload(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'successes', 'failures', 'illust_url_id', 'request_url', 'type',
-                        'status', 'media_filepath', 'sample_filepath', 'created']
-    relation_attributes = ['image_urls', 'posts', 'errors']
-    searchable_attributes = basic_attributes + relation_attributes
-    json_attributes = basic_attributes + ['image_urls', 'post_ids', 'errors']
+    @classproperty(cached=True)
+    def json_attributes(cls):
+        return super().json_attributes + ['image_urls', 'post_ids', 'errors']

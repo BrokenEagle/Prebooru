@@ -8,7 +8,7 @@ from config import MEDIA_DIRECTORY
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, image_server_url
+from .base import JsonModel, image_server_url, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -46,6 +46,8 @@ class MediaFile(JsonModel):
     def _partial_file_path(self):
         return '%s.%s' % (self.md5, self.file_ext)
 
-    basic_attributes = ['id', 'md5', 'file_ext', 'media_url', 'expires']
-    searchable_attributes = basic_attributes
-    json_attributes = basic_attributes + ['file_url']
+    # ## Class properties
+
+    @classproperty(cached=True)
+    def json_attributes(cls):
+        return super().json_attributes + ['file_url']

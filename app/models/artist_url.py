@@ -16,13 +16,6 @@ class ArtistUrl(JsonModel):
     url = DB.Column(DB.String(255), nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)
 
-    # ## Class properties
-
-    basic_attributes = ['id', 'artist_id', 'url', 'active']
-    relation_attributes = ['artist']
-    searchable_attributes = basic_attributes + relation_attributes
-    json_attributes = basic_attributes
-
 
 # ## INITIALIZATION
 

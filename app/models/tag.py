@@ -57,12 +57,6 @@ class Tag(JsonModel):
         "polymorphic_on": type
     }
 
-    # ## Class properties
-
-    basic_attributes = ['id', 'name', 'type']
-    searchable_attributes = basic_attributes
-    json_attributes = basic_attributes
-
 
 class SiteTag(Tag):
     # ## Class attributes

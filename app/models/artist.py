@@ -15,7 +15,7 @@ from .subscription_pool import SubscriptionPool
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel
+from .base import JsonModel, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -140,8 +140,6 @@ class Artist(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'site_id', 'site_artist_id', 'site_created', 'current_site_account', 'active',
-                        'created', 'updated', 'requery']
-    relation_attributes = ['names', 'site_accounts', 'profiles', 'webpages', 'illusts', 'boorus', 'subscription_pool']
-    searchable_attributes = basic_attributes + relation_attributes
-    json_attributes = basic_attributes + ['site_accounts', 'names', 'webpages', 'profiles']
+    @classproperty(cached=True)
+    def json_attributes(cls):
+        return super().json_attributes + ['site_accounts', 'names', 'webpages', 'profiles']

@@ -65,8 +65,3 @@ class SimilarityPool(JsonModel):
         else:
             element.score = score
         return element
-
-    # ## Class properties
-
-    basic_attributes = ['id', 'post_id', 'element_count', 'created', 'updated']
-    json_attributes = basic_attributes

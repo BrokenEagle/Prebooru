@@ -45,10 +45,3 @@ class Notation(JsonModel):
     @property
     def _pools(self):           # All other pool elements are MtM, so there needs to be a plural property
         return [self._pool]
-
-    # ## Class properties
-
-    basic_attributes = ['id', 'body', 'created', 'updated']
-    relation_attributes = ['artist', 'illust', 'post']
-    searchable_attributes = basic_attributes + relation_attributes
-    json_attributes = basic_attributes

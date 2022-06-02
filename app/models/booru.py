@@ -11,7 +11,7 @@ from .illust import Illust
 from .illust_url import IllustUrl
 from .post import Post
 from .label import Label
-from .base import JsonModel
+from .base import JsonModel, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -87,7 +87,6 @@ class Booru(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'danbooru_id', 'current_name', 'names', 'created', 'updated']
-    relation_attributes = ['names', 'artists']
-    searchable_attributes = basic_attributes + relation_attributes
-    json_attributes = basic_attributes + ['names']
+    @classproperty(cached=True)
+    def json_attributes(cls):
+        return super().json_attributes + ['names']

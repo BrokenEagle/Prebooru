@@ -220,6 +220,22 @@ class JsonModel(DB.Model):
     def archive_columns(cls):
         return [k for k in cls.base_columns if k != 'id']
 
+    @classproperty(cached=True)
+    def basic_attributes(cls):
+        return [attr for attr in cls.all_columns if (attr in dir(cls) and hasattr(getattr(cls, attr), 'property'))]
+
+    @classproperty(cached=True)
+    def relation_attributes(cls):
+        return [relation.strip('_') for relation in cls.relations()]
+
+    @classproperty(cached=True)
+    def searchable_attributes(cls):
+        return cls.basic_attributes + cls.relation_attributes
+
+    @classproperty(cached=False)
+    def json_attributes(cls):
+        return cls.basic_attributes
+
     # Private
 
     def __repr__(self):

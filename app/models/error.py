@@ -15,9 +15,3 @@ class Error(JsonModel):
     module = DB.Column(DB.String(255), nullable=False)
     message = DB.Column(DB.UnicodeText, nullable=False)
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
-
-    # ## Class properties
-
-    basic_attributes = ['id', 'module', 'message', 'created']
-    searchable_attributes = basic_attributes
-    json_attributes = basic_attributes

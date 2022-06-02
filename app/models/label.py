@@ -13,9 +13,3 @@ class Label(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
-
-    # ## Class properties
-
-    basic_attributes = ['id', 'name']
-    searchable_attributes = basic_attributes
-    json_attributes = basic_attributes

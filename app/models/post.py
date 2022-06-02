@@ -24,7 +24,7 @@ from .pool_element import PoolPost, pool_element_delete
 from .similarity_data import SimilarityData
 from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
-from .base import JsonModel, image_server_url
+from .base import JsonModel, image_server_url, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -206,8 +206,6 @@ class Post(JsonModel):
 
     # ## Class properties
 
-    basic_attributes = ['id', 'width', 'height', 'size', 'file_ext', 'md5', 'danbooru_id', 'created', 'type']
-    relation_attributes = ['illust_urls', 'uploads', 'tags', 'notations', 'errors', 'similarity_data',
-                           'similarity_pool', 'similarity_elements', 'subscription_pool_element']
-    searchable_attributes = basic_attributes + relation_attributes
-    json_attributes = basic_attributes + ['preview_url', 'sample_url', 'file_url', 'illust_urls', 'errors']
+    @classproperty(cached=True)
+    def json_attributes(cls):
+        return super().json_attributes + ['preview_url', 'sample_url', 'file_url', 'illust_urls', 'errors']

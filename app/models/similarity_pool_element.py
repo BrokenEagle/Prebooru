@@ -21,11 +21,6 @@ class SimilarityPoolElement(JsonModel):
     # pool <- SimilarityPool (MtO)
     # sibling <- SimilarityPoolElement (OtO)
 
-    # ## Class properties
-
-    basic_attributes = ['id', 'pool_id', 'sibling_id', 'post_id', 'score']
-    json_attributes = basic_attributes
-
 
 # ## INITIALIZATION
 

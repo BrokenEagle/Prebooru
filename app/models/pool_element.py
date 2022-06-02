@@ -41,6 +41,10 @@ def pool_element_delete(pool_id, item):
 class PoolElement(JsonModel):
     # ## Declarations
 
+    # ## Class attributes
+
+    polymorphic_base = True
+
     # #### JSON format
     id: int
     pool_id: int
@@ -68,12 +72,6 @@ class PoolElement(JsonModel):
         page = math.ceil(self.position1 / 20)
         return url_for('pool.show_html', id=self.pool_id, page=page)
 
-    # ## Class properties
-
-    searchable_attributes = ['id', 'pool_id', 'position', 'type', 'post_id', 'illust_id', 'notation_id']
-    basic_attributes = ['id', 'pool_id', 'position', 'type']
-    json_attributes = basic_attributes
-
     # #### Private
     __tablename__ = 'pool_element'
     __mapper_args__ = {
@@ -85,16 +83,15 @@ class PoolElement(JsonModel):
 class PoolPost(PoolElement):
     # ## Declarations
 
+    # ## Class attributes
+
+    polymorphic_base = False
+
     # #### Columns
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
 
     # ## Relationships
     # item <- Post (MtO)
-
-    # ## Class properties
-
-    basic_attributes = PoolElement.basic_attributes + ['post_id']
-    json_attributes = basic_attributes
 
     # #### Private
     __tablename__ = 'pool_post'
@@ -106,16 +103,15 @@ class PoolPost(PoolElement):
 class PoolIllust(PoolElement):
     # ## Declarations
 
+    # ## Class attributes
+
+    polymorphic_base = False
+
     # #### Columns
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
 
     # ## Relationships
     # item <- Illust (MtO)
-
-    # ## Class properties
-
-    basic_attributes = PoolElement.basic_attributes + ['illust_id']
-    json_attributes = basic_attributes
 
     # #### Private
     __tablename__ = 'pool_illust'
@@ -127,16 +123,15 @@ class PoolIllust(PoolElement):
 class PoolNotation(PoolElement):
     # ## Declarations
 
+    # ## Class attributes
+
+    polymorphic_base = False
+
     # #### Columns
     notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
 
     # ## Relationships
     # item <- Notation (OtO)
-
-    # ## Class properties
-
-    basic_attributes = PoolElement.basic_attributes + ['notation_id']
-    json_attributes = basic_attributes
 
     # #### Private
     __tablename__ = 'pool_notation'

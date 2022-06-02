@@ -90,13 +90,6 @@ class SubscriptionPool(JsonModel):
     def _post_query(self):
         return Post.query.join(SubscriptionPoolElement).filter(SubscriptionPoolElement.pool_id == self.id)
 
-    # ## Class properties
-
-    basic_attributes = ['id', 'artist_id', 'interval', 'expiration', 'requery', 'checked', 'created', 'updated',
-                        'active']
-    json_attributes = basic_attributes
-    searchable_attributes = basic_attributes
-
 
 # ## INITIALIZATION
 

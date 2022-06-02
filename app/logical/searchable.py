@@ -5,7 +5,7 @@ import re
 from sqlalchemy import and_, not_, func
 from sqlalchemy.orm import aliased, with_polymorphic
 from sqlalchemy.orm.relationships import RelationshipProperty
-from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance
+from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance, ObjectAssociationProxyInstance
 import sqlalchemy.sql.sqltypes as sqltypes
 
 # ## PACKAGE IMPORTS
@@ -35,25 +35,41 @@ TEXT_ARRAY_RE = '%%s_(%s)' % '|'.join(ALL_ARRAY_TYPES)
 
 # #### Test functions
 
-def get_attribute(model, columnname):
-    if hasattr(model, columnname):
-        value = getattr(model, columnname)
+def get_property(attr, name, model):
+    if type(attr) is ObjectAssociationProxyInstance:
+        name = attr.target_collection
+        attr = getattr(model, name)
+    if not hasattr(attr, 'property'):
+        raise Exception(f"Attribute {name} on model {model.__table__.name} is not a property.")
+    return getattr(attr, 'property')
+
+
+def get_attribute(model, name):
+    if hasattr(model, name):
+        value = getattr(model, name)
         if type(value) is ColumnAssociationProxyInstance:
             value = value.attr[0]
         return value
 
 
-def is_relationship(model, columnname):
-    attr = get_attribute(model, columnname)
-    return attr and type(attr.property) is RelationshipProperty
+def get_attribute_property(model, name):
+    attr = get_attribute(model, name)
+    return get_property(attr, name, model) if attr is not None else None
 
 
-def relationship_model(model, attribute):
-    return get_attribute(model, attribute).property.mapper.class_
+def is_relationship(model, name):
+    prop = get_attribute_property(model, name)
+    return type(prop) is RelationshipProperty
 
 
-def is_polymorphic(model, attribute):
-    return get_attribute(model, attribute).property.mapper.polymorphic_on is not None
+def relationship_model(model, name):
+    prop = get_attribute_property(model, name)
+    return bool(prop) and prop.mapper.class_
+
+
+def is_polymorphic(model, name):
+    prop = get_attribute_property(model, name)
+    return bool(prop) and prop.mapper.polymorphic_on is not None
 
 
 def is_column(model, columnname):
@@ -141,8 +157,10 @@ def basic_attribute_filters(model, columnname, params):
 def relationship_attribute_filters(query, model, attribute, params):
     relation = get_attribute(model, attribute)
     relation_model = relationship_model(model, attribute)
-    if is_polymorphic(model, attribute) and relation_model.polymorphic_base:
-        return polymorphic_attribute_filters(query, model, attribute, params)
+    if is_polymorphic(model, attribute):
+        if relation_model.polymorphic_base:
+            return polymorphic_attribute_filters(query, model, attribute, params)
+        # Else treat the relation like other relations
     filters = ()
     if ('has_' + attribute) in params:
         if relation.property.secondaryjoin is None:

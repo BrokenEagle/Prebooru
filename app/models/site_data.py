@@ -22,9 +22,6 @@ class SiteData(JsonModel):
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False)
     type = DB.Column(DB.String(50))
 
-    basic_attributes = ['id', 'illust_id', 'type']
-    json_attributes = basic_attributes
-
     # ## Private
 
     __tablename__ = 'site_data'
@@ -55,12 +52,6 @@ class PixivData(SiteData):
     def replies(cls):
         return SiteData.__table__.c.get('replies', DB.Column(DB.Integer, nullable=True))
 
-    # ## Class properties
-
-    basic_attributes = SiteData.basic_attributes + ['site_uploaded', 'site_updated', 'title', 'bookmarks', 'views']
-    searchable_attributes = basic_attributes
-    json_attributes = basic_attributes
-
     # ## Private
 
     __tablename__ = 'pixiv_data'
@@ -86,12 +77,6 @@ class TwitterData(SiteData):
     @declared_attr
     def replies(cls):
         return SiteData.__table__.c.get('replies', DB.Column(DB.Integer, nullable=True))
-
-    # ## Class properties
-
-    basic_attributes = SiteData.basic_attributes + ['retweets', 'replies', 'quotes']
-    searchable_attributes = basic_attributes
-    json_attributes = basic_attributes
 
     # ## Private
 

@@ -13,9 +13,3 @@ class Description(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     body = DB.Column(DB.UnicodeText, nullable=False)
-
-    # ## Class properties
-
-    basic_attributes = ['id', 'body']
-    searchable_attributes = basic_attributes
-    json_attributes = basic_attributes

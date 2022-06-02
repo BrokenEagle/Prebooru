@@ -101,9 +101,3 @@ class Pool(JsonModel):
         if pool_element is None:
             raise Exception("Could not find mark item %s #%d in pool #%d")
         return pool_element
-
-    # ## Class properties
-
-    basic_attributes = ['id', 'name', 'series', 'created', 'updated', 'element_count']
-    searchable_attributes = basic_attributes
-    json_attributes = basic_attributes
