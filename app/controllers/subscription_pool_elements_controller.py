@@ -7,7 +7,8 @@ from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
 from ..models import SubscriptionPoolElement
-from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep
+from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep,\
+    batch_update_subscription_pool_element_keep
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace
 
@@ -104,8 +105,7 @@ def batch_keep_html():
     missing_ids = list(set(id_list).difference([element.id for element in elements]))
     if len(missing_ids) > 0:
         flash(f"Unable to find elements: {repr(missing_ids)}")
-    for element in elements:
-        update_subscription_pool_element_keep(element, data_params['keep'])
+    batch_update_subscription_pool_element_keep(elements, data_params['keep'])
     return redirect(request.referrer)
 
 

@@ -40,14 +40,14 @@ def update_subscription_pool_element_active(subscription_pool_element, active):
     SESSION.commit()
 
 
+def batch_update_subscription_pool_element_keep(subscription_pool_elements, value):
+    for subscription_pool_element in subscription_pool_elements:
+        _update_subscription_pool_element_keep(subscription_pool_element, value)
+    SESSION.commit()
+
+
 def update_subscription_pool_element_keep(subscription_pool_element, value):
-    subscription_pool_element.keep = value
-    if value == 'yes':
-        subscription_pool_element.expires = days_from_now(1)  # Posts will be unlinked after this period
-    elif value == 'maybe':
-        subscription_pool_element.expires = None  # Will force the expires to be refreshed when changed
-    elif subscription_pool_element.expires is None:
-        subscription_pool_element.expires = days_from_now(subscription_pool_element.pool.expiration)
+    _update_subscription_pool_element_keep(subscription_pool_element, value)
     SESSION.commit()
 
 
@@ -117,3 +117,17 @@ def total_expired_subscription_elements():
 
 def total_missing_downloads():
     return SubscriptionPoolElement.query.filter_by(post_id=None, active=True, deleted=False).get_count()
+
+
+# #### Private
+
+def _update_subscription_pool_element_keep(subscription_pool_element, value):
+    subscription_pool_element.keep = value
+    if value == 'yes':
+        subscription_pool_element.expires = days_from_now(1)  # Posts will be unlinked after this period
+    elif value == 'no':
+        subscription_pool_element.expires = days_from_now(7)  # Posts will be deleted after this period
+    elif value == 'maybe':
+        subscription_pool_element.expires = None  # Will force the expires to be refreshed when changed
+    elif subscription_pool_element.expires is None:
+        subscription_pool_element.expires = days_from_now(subscription_pool_element.pool.expiration)
