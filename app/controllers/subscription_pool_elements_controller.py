@@ -74,13 +74,13 @@ def index_json():
 def index_html():
     q = index()
     element_type = request.args.get('type')
-    if element_type != 'all':
-        q = q.filter(SubscriptionPoolElement.post_id.__ne__(None))
     if request.args.get('search[keep]') is None:
-        if element_type in ['yes', 'no']:
+        if element_type != 'all':
+            q = q.filter(SubscriptionPoolElement.post_id.__ne__(None))
+        if element_type in ['yes', 'no', 'maybe']:
             q = q.filter(SubscriptionPoolElement.keep == element_type)
         elif element_type == 'unsure' or element_type is None:
-            q = q.filter(or_(SubscriptionPoolElement.keep == 'maybe', SubscriptionPoolElement.keep.__eq__(None)))
+            q = q.filter(SubscriptionPoolElement.keep.is_(None))
     q = q.options(INDEX_HTML_OPTIONS)
     subscription_pool_elements = paginate(q, request)
     return render_template("subscription_pool_elements/index.html",
