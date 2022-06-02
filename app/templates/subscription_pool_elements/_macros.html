@@ -18,10 +18,15 @@
 {% macro subscription_element_preview(element) -%}
     <article id="subscription-element-{{ element.id }}" class="subscription-element">
         {% if element.post is not none %}
-            <div class="input">
-                <label for="subscription-element-{{ element.id }}">
-                    <input type="checkbox" class="similar-post-input" id="subscription-element-{{ element.id }}" name="subscription_pool_element[id][]" value="{{ element.id }}">
-                </label>
+            <div class="subscription-element-display">
+                <div class="input">
+                    <label for="subscription-element-{{ element.id }}-checkbox">
+                        <input type="checkbox" class="similar-post-input" id="subscription-element-{{ element.id }}-checkbox" name="subscription_pool_element[id][]" value="{{ element.id }}" onchange="return SubscriptionPools.toggleCheckbox(this)">
+                    </label>
+                </div>
+                <div class="element-illust-type">
+                    {{ element.illust_url.type | title }}
+                </div>
             </div>
             <a href="{{ element.post.show_url }}">
                 <img src="{{ element.post.preview_url }}">

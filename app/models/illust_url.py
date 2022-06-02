@@ -30,6 +30,15 @@ class IllustUrl(JsonModel):
     # ## Property methods
 
     @property
+    def type(self):
+        if self._source.video_url_mapper(self):
+            return 'video'
+        elif self._source.image_url_mapper(self):
+            return 'image'
+        else:
+            return 'unknown'
+
+    @property
     def full_url(self):
         if not hasattr(self, '__full_url'):
             self.__full_url = self._source.get_media_url(self)

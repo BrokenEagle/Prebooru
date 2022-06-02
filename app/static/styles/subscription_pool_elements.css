@@ -57,6 +57,18 @@ article.subscription-element > * {
 article.subscription-element > a {
     height: 300px;
 }
+article.subscription-element div.subscription-element-display {
+    display: flex;
+}
+article.subscription-element div.subscription-element-display div.input {
+    flex-basis: 50%;
+}
+div.element-illust-type {
+    margin-left: 1em;
+    padding-top: 0.4em;
+    font-size: 20px;
+    font-weight: bold;
+}
 div.subscription-element-info {
     font-size: 16px;
     border: 2px solid;
@@ -131,7 +143,9 @@ form#form label {
     border-radius: 25px;
     background: #E0F0F0;
     padding: 5px;
-    width: 33%;
+}
+form#form div.checkbox-active label {
+    background: linear-gradient(270deg, dodgerblue, transparent);
 }
 /****SHOW Page****/
 div#sidebar-container {

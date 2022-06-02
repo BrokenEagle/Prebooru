@@ -46,5 +46,8 @@ function SubmitForm(value) {
     document.getElementById('subscription-pool-element-keep').value = value;
     document.getElementById('form').submit();
 }
+(function(){
+    document.addEventListener('prebooru:update-inputs', SubscriptionPools.updateAllInputs);
+})();
 </script>
 {% endblock %}

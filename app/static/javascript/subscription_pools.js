@@ -18,3 +18,18 @@ SubscriptionPools.replaceArticle = function(obj, html) {
     for (var curr = obj; curr.tagName !== 'ARTICLE' && curr.parentElement !== null; curr = curr.parentElement);
     curr.outerHTML = html;
 };
+
+SubscriptionPools.toggleCheckbox = function(obj) {
+    for (var curr = obj; curr.tagName !== 'DIV' && curr.parentElement !== null; curr = curr.parentElement);
+    if (obj.checked) {
+        curr.classList.add('checkbox-active');
+    } else {
+        curr.classList.remove('checkbox-active');
+    }
+};
+
+SubscriptionPools.updateAllInputs = function() {
+    document.querySelectorAll('form#form input[type=checkbox]').forEach(function (input) {
+        SubscriptionPools.toggleCheckbox(input);
+    });
+};

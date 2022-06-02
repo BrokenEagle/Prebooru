@@ -1,5 +1,7 @@
 const Prebooru = {};
 
+Prebooru.updateInputsEvent = new CustomEvent('prebooru:update-inputs');
+
 Prebooru.postRequest = function(url, args) {
     let form = document.createElement('form');
     form.method = 'POST';
@@ -69,18 +71,21 @@ Prebooru.selectAll = function(classname) {
     [...document.getElementsByClassName(classname)].forEach((input)=>{
         input.checked = true;
     });
+    document.dispatchEvent(Prebooru.updateInputsEvent);
 };
 
 Prebooru.selectNone = function(classname) {
     [...document.getElementsByClassName(classname)].forEach((input)=>{
         input.checked = false;
     });
+    document.dispatchEvent(Prebooru.updateInputsEvent);
 };
 
 Prebooru.selectInvert = function(classname) {
     [...document.getElementsByClassName(classname)].forEach((input)=>{
         input.checked = !input.checked;
     });
+    document.dispatchEvent(Prebooru.updateInputsEvent);
 };
 
 Prebooru.copyFileLink = function(obj) {
