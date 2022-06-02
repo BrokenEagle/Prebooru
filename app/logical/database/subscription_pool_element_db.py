@@ -5,7 +5,7 @@ from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import SubscriptionPoolElement
+from ...models import SubscriptionPool, SubscriptionPoolElement
 from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
 from .post_db import delete_post
 from .base_db import update_column_attributes
@@ -116,7 +116,12 @@ def total_expired_subscription_elements():
 
 
 def total_missing_downloads():
-    return SubscriptionPoolElement.query.filter_by(post_id=None, active=True, deleted=False).get_count()
+    return SubscriptionPoolElement.query.join(SubscriptionPool)\
+                                        .filter(SubscriptionPoolElement.post_id.is_(None),
+                                                SubscriptionPoolElement.active.is_(True),
+                                                SubscriptionPoolElement.deleted.is_(False),
+                                                SubscriptionPool.status == 'idle')\
+                                        .get_count()
 
 
 # #### Private

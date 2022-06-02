@@ -72,7 +72,9 @@ def update_subscription_pool_last_info(pool, last_id):
 def get_available_subscription():
     # Return only subscriptions which have already been processed manually (requery is not None)
     return SubscriptionPool.query.filter(SubscriptionPool.requery < get_current_time(),
-                                         SubscriptionPool.active.__eq__(True)).limit(20).all()
+                                         SubscriptionPool.active.is_(True),
+                                         SubscriptionPool.status.not_in(['manual', 'automatic']))\
+                                        .limit(20).all()
 
 
 # #### Misc

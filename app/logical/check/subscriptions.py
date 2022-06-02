@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 from utility.time import get_current_time, hours_from_now
 
 # ## LOCAL IMPORTS
-from ...models import SubscriptionPoolElement, IllustUrl
+from ...models import SubscriptionPool, SubscriptionPoolElement, IllustUrl
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
@@ -81,7 +81,11 @@ def download_subscription_elements(subscription_pool, job_id=None):
 
 
 def download_missing_elements():
-    q = SubscriptionPoolElement.query.filter_by(post_id=None, active=True)
+    q = SubscriptionPoolElement.query.join(SubscriptionPool)\
+                               .filter(SubscriptionPoolElement.post_id.is_(None),
+                                       SubscriptionPoolElement.active.is_(True),
+                                       SubscriptionPoolElement.deleted.is_(False),
+                                       SubscriptionPool.status == 'idle')
     q = q.options(selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     page = q.limit_paginate()
     while True:
