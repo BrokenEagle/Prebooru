@@ -6,7 +6,7 @@ from utility.time import days_from_now, get_current_time
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import SubscriptionPoolElement
-from ..records.post_rec import archive_post_for_deletion
+from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
 from .post_db import delete_post
 from .base_db import update_column_attributes
 
@@ -68,7 +68,7 @@ def unlink_subscription_post(element):
 
 def delete_subscription_post(element):
     if element.post is not None:
-        delete_post(element.post)
+        delete_post_and_media(element.post)
     element.expires = None
     element.active = False
     element.deleted = True

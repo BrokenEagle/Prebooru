@@ -20,7 +20,23 @@ from ..database.archive_data_db import get_archive_data, create_archive_data, up
 
 # ## FUNCTIONS
 
+def delete_post_and_media(post):
+    """Hard delete. Continue as long as post record gets deleted."""
+    retdata = {'error': False, 'is_deleted': False}
+    file_path = post.file_path
+    sample_path = post.sample_path if post.has_sample else None
+    preview_path = post.preview_path if post.has_preview else None
+    retdata = _delete_post_data(post, retdata)
+    if retdata['error']:
+        return retdata
+    retdata = _delete_media_files(sample_path, preview_path, retdata, file_path=file_path)
+    if not retdata['error']:
+        retdata['is_deleted'] = True
+    return retdata
+
+
 def archive_post_for_deletion(post):
+    """Soft delete. Preserve data at all costs."""
     retdata = {'error': False, 'is_deleted': False}
     sample_path = post.sample_path if post.has_sample else None
     preview_path = post.preview_path if post.has_preview else None
