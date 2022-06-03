@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 from sqlalchemy import func
 import sqlalchemy.orm
+import flask_sqlalchemy
 
 # ## PACKAGE IMPORTS
 from config import DEFAULT_PAGINATE_LIMIT
@@ -133,6 +134,7 @@ def initialize():
         sqlalchemy.orm.Query._has_entity = _has_entity
         sqlalchemy.orm.Query.unique_join = unique_join
         sqlalchemy.orm.Query.get_count = get_count
+        sqlalchemy.orm.Query.relation_count = relation_count
         sqlalchemy.orm.Query.count_paginate = count_paginate
         sqlalchemy.orm.Query.limit_paginate = limit_paginate
         INIT = True
@@ -151,6 +153,14 @@ def get_count(self):
         return self.with_entities(func.count()).scalar()
     except Exception:
         return self.count()
+
+
+def relation_count(self):
+    entity = self.column_descriptions[0]['entity']
+    try:
+        return self.distinct().with_entities(entity.id).count()
+    except Exception:
+        return self.distinct().count()
 
 
 def count_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT):

@@ -59,6 +59,7 @@ class SubscriptionPool(JsonModel):
     @memoized_property
     def recent_posts(self):
         q = self._post_query
+        q = q.distinct(Post.id)
         q = q.order_by(Post.id.desc())
         q = q.limit(10)
         return q.all()
@@ -69,11 +70,11 @@ class SubscriptionPool(JsonModel):
 
     @property
     def illust_count(self):
-        return self._illust_query.distinct().get_count()
+        return self._illust_query.distinct().relation_count()
 
     @property
     def post_count(self):
-        return self._post_query.distinct().get_count()
+        return self._post_query.distinct().relation_count()
 
     # ## Private methods
 

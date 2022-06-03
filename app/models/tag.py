@@ -37,17 +37,10 @@ class Tag(JsonModel):
     def recent_posts(self):
         from .post import Post
         q = self._post_query
+        q = q.distinct(Post.id)
         q = q.order_by(Post.id.desc())
         q = q.limit(10)
         return q.all()
-
-    @memoized_property
-    def illust_count(self):
-        return self._illust_query.get_count()
-
-    @memoized_property
-    def post_count(self):
-        return self._post_query.get_count()
 
     # #### Private
 
@@ -62,6 +55,16 @@ class SiteTag(Tag):
     # ## Class attributes
 
     polymorphic_base = False
+
+    # ## Property methods
+
+    @memoized_property
+    def illust_count(self):
+        return self._illust_query.get_count()
+
+    @memoized_property
+    def post_count(self):
+        return self._post_query.distinct().relation_count()
 
     # #### Private
 
@@ -88,6 +91,16 @@ class UserTag(Tag):
     # ## Class attributes
 
     polymorphic_base = False
+
+    # ## Property methods
+
+    @memoized_property
+    def illust_count(self):
+        return self._illust_query.distinct().relation_count()
+
+    @memoized_property
+    def post_count(self):
+        return self._post_query.get_count()
 
     # ## Private
 
