@@ -8,6 +8,9 @@ from sqlalchemy.orm import lazyload, selectin_polymorphic
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.associationproxy import association_proxy
 
+# ## PACKAGE IMPORTS
+from config import DEFAULT_PAGINATE_LIMIT, MAXIMUM_PAGINATE_LIMIT
+
 # ## LOCAL IMPORTS
 from .. import DB
 from .post import Post
@@ -15,6 +18,11 @@ from .illust import Illust
 from .notation import Notation
 from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation, pool_element_create, pool_element_delete
 from .base import JsonModel
+
+
+# ## GLOBAL VARIABLES
+
+SHOW_PAGINATE_LIMIT = min(100, MAXIMUM_PAGINATE_LIMIT)
 
 
 # ## CLASSES
@@ -69,6 +77,7 @@ class Pool(JsonModel):
         q = self._element_query
         q = q.options(selectin_polymorphic(PoolElement, [PoolIllust, PoolPost, PoolNotation]))
         q = q.order_by(PoolElement.position)
+        per_page = min(per_page, SHOW_PAGINATE_LIMIT) if per_page is not None else DEFAULT_PAGINATE_LIMIT
         page = q.count_paginate(per_page=per_page, page=page)
         post_ids = [element.post_id for element in page.items if element.type == 'pool_post']
         illust_ids = [element.illust_id for element in page.items if element.type == 'pool_illust']

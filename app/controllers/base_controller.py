@@ -14,6 +14,7 @@ from wtforms.meta import DefaultMeta
 from wtforms.widgets import HiddenInput
 
 # ## PACKAGE IMPORTS
+from config import MAXIMUM_PAGINATE_LIMIT, DEFAULT_PAGINATE_LIMIT
 from utility.data import eval_bool_string, merge_dicts
 
 # ## LOCAL IMPORTS
@@ -46,8 +47,8 @@ def show_json_response(model, id, options=None):
     return results.to_json() if type(results) is not dict else results
 
 
-def index_json_response(query, request):
-    return jsonify([x.to_json() for x in paginate(query, request).items])
+def index_json_response(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT):
+    return jsonify([x.to_json() for x in paginate(query, request, max_limit).items])
 
 
 # #### Query helpers
@@ -76,12 +77,13 @@ def default_order(query, search):
     return query.order_by(entity.id.desc())
 
 
-def paginate(query, request):
+def paginate(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT):
+    print("paginate", max_limit, request.args.get('limit'))
     try:
-        return query.count_paginate(page=get_page(request), per_page=get_limit(request))
+        return query.count_paginate(page=get_page(request), per_page=get_limit(request, max_limit))
     except Exception:
         # Fallback to a less efficient paginate upon exception
-        return query.paginate(page=get_page(request), per_page=get_limit(request))
+        return query.paginate(page=get_page(request), per_page=get_limit(request, max_limit))
 
 
 # #### ID helpers
@@ -124,8 +126,9 @@ def get_page(request):
     return int(request.args['page']) if 'page' in request.args else 1
 
 
-def get_limit(request):
-    return int(request.args['limit']) if 'limit' in request.args else 20
+def get_limit(request, max_limit=MAXIMUM_PAGINATE_LIMIT):
+    print("get_limit", max_limit, request.args.get('limit'))
+    return min(int(request.args['limit']), max_limit) if 'limit' in request.args else DEFAULT_PAGINATE_LIMIT
 
 
 def process_request_values(values_dict):

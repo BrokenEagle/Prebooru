@@ -27,6 +27,8 @@ INDEX_HTML_OPTIONS = (
     selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).selectinload(Illust.urls).lazyload('*'),
 )
 
+MAX_LIMIT_HTML = 100
+
 
 # ## FUNCTIONS
 
@@ -85,7 +87,7 @@ def index_html():
         elif element_type == 'unsure' or element_type is None:
             q = q.filter(SubscriptionPoolElement.keep.is_(None))
     q = q.options(INDEX_HTML_OPTIONS)
-    subscription_pool_elements = paginate(q, request)
+    subscription_pool_elements = paginate(q, request, MAX_LIMIT_HTML)
     return render_template("subscription_pool_elements/index.html",
                            subscription_pool_elements=subscription_pool_elements,
                            subscription_pool_element=SubscriptionPoolElement())

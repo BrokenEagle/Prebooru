@@ -6,6 +6,9 @@ import math
 # ## EXTERNAL IMPORTS
 from flask import url_for
 
+# ## PACKAGE IMPORTS
+from config import DEFAULT_PAGINATE_LIMIT
+
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
 from .base import JsonModel
@@ -69,7 +72,7 @@ class PoolElement(JsonModel):
 
     @property
     def page_url(self):
-        page = math.ceil(self.position1 / 20)
+        page = math.ceil(self.position1 / DEFAULT_PAGINATE_LIMIT)
         return url_for('pool.show_html', id=self.pool_id, page=page)
 
     # #### Private

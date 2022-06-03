@@ -4,6 +4,9 @@
 from sqlalchemy import func
 import sqlalchemy.orm
 
+# ## PACKAGE IMPORTS
+from config import DEFAULT_PAGINATE_LIMIT
+
 
 # ## GLOBAL VARIABLES
 
@@ -13,7 +16,7 @@ INIT = False
 # ## CLASSES
 
 class CountPaginate():
-    def __init__(self, query=None, page=1, per_page=20):
+    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
         self.query = query
         self.per_page = per_page
         self.page = max(page, 1)
@@ -61,7 +64,7 @@ class CountPaginate():
 
 class LimitPaginate():
     """Pagination method for processing items which may be removed from the total as it gets processed."""
-    def __init__(self, query=None, page=1, per_page=20, count=None, next_id=None, prev_id=None):
+    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT, count=None, next_id=None, prev_id=None):
         self.query = query
         self.per_page = per_page
         self.page = page
@@ -150,11 +153,11 @@ def get_count(self):
         return self.count()
 
 
-def count_paginate(self, page=1, per_page=20):
+def count_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
     return CountPaginate(query=self, page=page, per_page=per_page)
 
 
-def limit_paginate(self, page=1, per_page=20):
+def limit_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
     return LimitPaginate(query=self, page=page, per_page=per_page)
 
 

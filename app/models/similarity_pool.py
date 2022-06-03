@@ -3,10 +3,18 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload, lazyload
 
+# ## PACKAGE IMPORTS
+from config import DEFAULT_PAGINATE_LIMIT, MAXIMUM_PAGINATE_LIMIT
+
 # ## LOCAL IMPORTS
 from .. import DB
 from .similarity_pool_element import SimilarityPoolElement
 from .base import JsonModel
+
+
+# ## GLOBAL VARIABLES
+
+SHOW_PAGINATE_LIMIT = min(100, MAXIMUM_PAGINATE_LIMIT)
 
 
 # ## CLASSES
@@ -40,6 +48,7 @@ class SimilarityPool(JsonModel):
         q = q.options(selectinload(SimilarityPoolElement.post),
                       selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
         q = q.order_by(SimilarityPoolElement.score.desc())
+        per_page = min(per_page, SHOW_PAGINATE_LIMIT) if per_page is not None else DEFAULT_PAGINATE_LIMIT
         page = q.count_paginate(per_page=per_page, page=page)
         return page
 

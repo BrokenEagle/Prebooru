@@ -51,6 +51,8 @@ JSON_OPTIONS = (
     selectinload(Post.errors),
 )
 
+MAX_LIMIT_HTML = 100
+
 
 # ## FUNCTIONS
 
@@ -124,7 +126,7 @@ def index_json():
 def index_html():
     q = index(True)
     q = q.options(INDEX_HTML_OPTIONS)
-    posts = paginate(q, request)
+    posts = paginate(q, request, MAX_LIMIT_HTML)
     return render_template("posts/index.html", posts=posts, post=Post())
 
 
