@@ -27,7 +27,7 @@ class SimilarityPoolElement(JsonModel):
 def initialize():
     from .post import Post
     from .similarity_pool import SimilarityPool
-    SimilarityPoolElement.sibling = DB.relationship(SimilarityPoolElement, uselist=False, lazy=True)
+    SimilarityPoolElement.sibling = DB.relationship(SimilarityPoolElement, uselist=False, lazy=True, remote_side=[SimilarityPoolElement.id])
     # Access the opposite side of the relationships to force the back references to be generated
     Post.similarity_data.property._configure_started
     SimilarityPool.elements.property._configure_started
