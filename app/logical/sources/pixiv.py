@@ -174,6 +174,10 @@ def get_alternate_url(illust_url):
     pass
 
 
+def get_preview_url(illust_url):
+    return small_image_url(get_full_url(illust_url))
+
+
 def image_url_mapper(x):
     return is_image_url(get_full_url(x))
 

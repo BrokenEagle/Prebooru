@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
-from ..models import SubscriptionPoolElement
+from ..models import SubscriptionPoolElement, IllustUrl, Illust
 from ..logical.utility import search_url_for
 from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep,\
     batch_update_subscription_pool_element_keep
@@ -24,7 +24,7 @@ bp = Blueprint("subscription_pool_element", __name__)
 # #### Load options
 
 INDEX_HTML_OPTIONS = (
-    selectinload(SubscriptionPoolElement.illust_url).lazyload('*'),
+    selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).selectinload(Illust.urls).lazyload('*'),
 )
 
 

@@ -35,6 +35,9 @@
         {% else %}
             <div class="subscription-no-post">
                 <h4 class="heading">{{ element.status | title }} post&emsp;({{ element.illust_url.type }})</h4>
+                <div class="preview">
+                    <img src="{{ element.illust_url.preview_url }}">
+                </div>
                 <ul>
                     <li><strong>{{ element.pool_show_link }} {{ helpers.subscription_pool.element_search_link(element) }}</strong></li>
                     <li><strong>{{ element.illust_url.illust_show_link }}</strong></li>

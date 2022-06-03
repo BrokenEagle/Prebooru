@@ -39,6 +39,11 @@ class IllustUrl(JsonModel):
             return 'unknown'
 
     @property
+    def preview_url(self):
+        preview_illust_url = self if self.type == 'image' else self.illust.thumb_illust_url
+        return self._source.get_preview_url(preview_illust_url)
+
+    @property
     def full_url(self):
         if not hasattr(self, '__full_url'):
             self.__full_url = self._source.get_media_url(self)
