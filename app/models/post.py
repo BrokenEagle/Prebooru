@@ -99,10 +99,13 @@ class Post(JsonModel):
 
     # ## Property methods
 
+    @property
+    def is_video(self):
+        return self.file_ext not in ['jpg', 'png', 'gif']
+
     @memoized_property
     def has_sample(self):
-        return self.width > SAMPLE_DIMENSIONS[0] or self.height > SAMPLE_DIMENSIONS[1]\
-               or self.file_ext not in ['jpg', 'png', 'gif']
+        return self.width > SAMPLE_DIMENSIONS[0] or self.height > SAMPLE_DIMENSIONS[1] or self.is_video
 
     @memoized_property
     def has_preview(self):
@@ -118,7 +121,11 @@ class Post(JsonModel):
 
     @property
     def preview_url(self):
-        return image_server_url('preview' + self._partial_network_path + 'jpg') if self.has_preview else self.file_url
+        if self.has_preview:
+            return image_server_url('preview' + self._partial_network_path + 'jpg')
+        elif self.is_video:
+            return self.sample_url
+        return self.file_url
 
     @property
     def file_path(self):
@@ -131,8 +138,11 @@ class Post(JsonModel):
 
     @property
     def preview_path(self):
-        return os.path.join(MEDIA_DIRECTORY, 'preview', self._partial_file_path + 'jpg')\
-               if self.has_preview else self.file_path
+        if self.has_preview:
+            return os.path.join(MEDIA_DIRECTORY, 'preview', self._partial_file_path + 'jpg')
+        elif self.is_video:
+            return self.sample_path
+        return self.file_path
 
     @memoized_property
     def related_posts(self):
