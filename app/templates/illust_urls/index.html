@@ -19,7 +19,7 @@
         <tbody>
             {% for illust_url in illust_urls.items %}
                 <tr id="illust-url-{{ illust_url.id }}">
-                    <td>{{ post_preview(illust_url.post) }}</td>
+                    <td>{{ post_preview(illust_url.post, True) }}</td>
                     <td>
                         <span><strong>{{ illust_url.show_link}}</strong></span><br>
                         <span><strong>Domain:</strong> {{ illust_url.site_domain }}</span><br><br>
@@ -36,3 +36,9 @@
 {% endblock %}
 
 {% block pages %}{{ page_navigation(illust_urls) }}{% endblock %}
+
+{% block pagescript %}
+<script>
+Prebooru.initializeLazyLoad('.post');
+</script>
+{% endblock %}

@@ -12,9 +12,15 @@
     </div>
     <div id="posts-container">
         {% for post in posts.items %}
-            {{ post_preview(post) }}
+            {{ post_preview(post, True) }}
         {% endfor %}
     </div>
 {% endblock %}
 
 {% block pages %}{{ page_navigation(posts) }}{% endblock %}
+
+{% block pagescript %}
+<script>
+Prebooru.initializeLazyLoad('.post');
+</script>
+{% endblock %}

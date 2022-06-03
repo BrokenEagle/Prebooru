@@ -29,3 +29,9 @@
 {% endblock %}
 
 {% block pages %}{{ page_navigation(elements) }}{% endblock %}
+
+{% block pagescript %}
+<script>
+Prebooru.initializeLazyLoad('.pool-display-block');
+</script>
+{% endblock %}

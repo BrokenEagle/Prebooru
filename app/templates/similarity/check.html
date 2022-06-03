@@ -33,7 +33,7 @@
                         <div class="similarity-result-block">
                             {% for post_result in similar_result.post_results %}
                                 <div class="similarity-post">
-                                    {{ post_preview(post_result.post) }}
+                                    {{ post_preview(post_result.post, True) }}
                                     <div class="similarity-post-info">
                                         <strong>Score:</strong> {{ post_result.score }}<br>
                                         <strong>Type/Size:</strong> {{ post_result.post.file_ext.upper() }} @ {{ post_result.post.size }}<br>
@@ -58,5 +58,6 @@ function ShowForm(obj) {
     obj.parentElement.style.display = 'none';
     return false;
 }
+Prebooru.initializeLazyLoad('.similarity-post');
 </script>
 {% endblock %}

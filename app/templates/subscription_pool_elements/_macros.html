@@ -1,3 +1,4 @@
+{% from 'posts/_macros.html' import post_preview %}
 {% from 'errors/_macros.html' import error_list %}
 
 {% macro subscription_element_section(element, section_id) %}
@@ -15,7 +16,7 @@
     </div>
 {%- endmacro %}
 
-{% macro subscription_element_preview(element) -%}
+{% macro subscription_element_preview(element, lazyload) -%}
     <article id="subscription-element-{{ element.id }}" class="subscription-element">
         {% if element.post is not none %}
             <div class="subscription-element-display">
@@ -28,15 +29,17 @@
                     {{ element.illust_url.type | title }}
                 </div>
             </div>
-            <a href="{{ element.post.show_url }}">
-                <img src="{{ element.post.preview_url }}">
-            </a>
+            {{ post_preview(element.post, lazyload) }}
             {{ subscription_pool_element_info(element, True, True) }}
         {% else %}
             <div class="subscription-no-post">
                 <h4 class="heading">{{ element.status | title }} post&emsp;({{ element.illust_url.type }})</h4>
                 <div class="preview">
-                    <img src="{{ element.illust_url.preview_url }}">
+                    {% if lazyload %}
+                        <img data-src="{{ element.illust_url.preview_url }}">
+                    {% else %}
+                        <img src="{{ element.illust_url.preview_url }}">
+                    {% endif %}
                 </div>
                 <ul>
                     <li><strong>{{ element.pool_show_link }} {{ helpers.subscription_pool.element_search_link(element) }}</strong></li>

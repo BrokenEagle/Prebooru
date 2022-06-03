@@ -32,7 +32,7 @@
         <input type="hidden" id="subscription-pool-element-keep" name="subscription_pool_element[keep]" value="">
         <div id="subscription-pool-elements-container">
             {% for element in subscription_pool_elements.items %}
-                {{ subscription_element_preview(element) }}
+                {{ subscription_element_preview(element, True) }}
             {% endfor %}
         </div>
     </form>
@@ -49,5 +49,6 @@ function SubmitForm(value) {
 (function(){
     document.addEventListener('prebooru:update-inputs', SubscriptionPools.updateAllInputs);
 })();
+Prebooru.initializeLazyLoad('.subscription-element');
 </script>
 {% endblock %}

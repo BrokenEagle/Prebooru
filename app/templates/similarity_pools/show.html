@@ -35,7 +35,7 @@
                             <strong>{{ helpers.similarity_pool.sibling_pool_link(similarity_element) }}</strong>&nbsp;
                             (&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element) }}&thinsp;)
                         </div>
-                        {{ post_preview(similarity_element.post) }}
+                        {{ post_preview(similarity_element.post, True) }}
                         <div><strong>Score:</strong> {{ similarity_element.score }}</div>
                     </div>
                 {% endfor %}
@@ -52,5 +52,6 @@
             document.getElementById('form').submit();
         }
     }
+    Prebooru.initializeLazyLoad('.similar-post-block');
 </script>
 {% endblock %}

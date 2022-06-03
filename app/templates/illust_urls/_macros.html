@@ -20,7 +20,7 @@
                     </div>
                     {% if illust_url.post is not none %}
                         <div class="image-post-preview">
-                            {{ post_preview(illust_url.post) }}
+                            {{ post_preview(illust_url.post, True) }}
                         </div>
                     {% else %}
                         <div class="no-post-preview">

@@ -1,8 +1,12 @@
-{% macro post_preview(post) -%}
+{% macro post_preview(post, lazyload=False) -%}
     <article class="post {{ 'no-post' if post is none else ""}}">
         {% if post is not none %}
             <a href="{{ post.show_url }}">
-                <img src="{{ post.preview_url }}">
+                {% if lazyload %}
+                    <img data-src="{{ post.preview_url }}">
+                {% else %}
+                    <img src="{{ post.preview_url }}">
+                {% endif %}
             </a>
         {% else %}
             <span class="explanation">No post.</span>
@@ -10,7 +14,7 @@
     </article>
 {%- endmacro %}
 
-{% macro multi_post_preview(item, type) -%}
+{% macro multi_post_preview(item, type, lazyload=False) -%}
     <div class="{{ type }}-preview">
         {% for post in item.posts %}
             {% if (loop.index == 4) and ((item.posts | length) > 4) %}
@@ -19,9 +23,13 @@
                 </article>
                 {% break %}
             {% endif %}
-            <article class="{{ type }}-post">
+            <article class="{{ type }}-post multi-post">
                 <a href="{{ post.show_url }}">
-                    <img src="{{ post.preview_url }}">
+                    {% if lazyload %}
+                        <img data-src="{{ post.preview_url }}">
+                    {% else %}
+                        <img src="{{ post.preview_url }}">
+                    {% endif %}
                 </a>
             </article>
         {% else %}

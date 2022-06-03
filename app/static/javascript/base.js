@@ -138,3 +138,23 @@ Prebooru.replaceDiv = function(obj, html) {
     for (var curr = obj; curr.tagName !== 'DIV' && curr.parentElement !== null; curr = curr.parentElement);
     curr.outerHTML = html;
 };
+
+Prebooru.initializeLazyLoad = function (container_selector) {
+    let obs = new IntersectionObserver(function (entries, observer) {
+        entries.forEach((entry)=>{
+            if (entry.isIntersecting) {
+                entry.target.querySelectorAll('img').forEach((image) => {
+                    image.src = image.dataset.src;
+                });
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        rootMargin: '150px',
+    });
+    document.querySelectorAll(container_selector).forEach((preview)=>{
+        if (preview.querySelectorAll('img').length > 0) {
+            obs.observe(preview);
+        }
+    });
+}

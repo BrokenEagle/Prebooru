@@ -17,3 +17,9 @@
         {% endif %}
     </div>
 {% endblock %}
+
+{% block pagescript %}
+<script>
+Prebooru.initializeLazyLoad('.image-post-preview');
+</script>
+{% endblock %}

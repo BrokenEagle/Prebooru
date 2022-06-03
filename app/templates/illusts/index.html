@@ -20,7 +20,7 @@
             {% for illust in illusts.items %}
                 <tr id="illust-{{ illust.id }}">
                     <td>
-                        {{ multi_post_preview(illust, 'illust') }}
+                        {{ multi_post_preview(illust, 'illust', True) }}
                     </td>
                     <td>
                         <span><strong>{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</strong></span><br>
@@ -60,3 +60,9 @@
 {% endblock %}
 
 {% block pages %}{{ page_navigation(illusts) }}{% endblock %}
+
+{% block pagescript %}
+<script>
+Prebooru.initializeLazyLoad('.illust-preview');
+</script>
+{% endblock %}
