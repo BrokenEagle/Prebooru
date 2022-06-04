@@ -86,8 +86,6 @@ def index(is_html):
             search.pop('type', None)
         elif post_type in ['user', 'subscription']:
             search['type'] = post_type + '_post'
-        else:
-            search['type'] = 'user_post'
     negative_search = get_params_value(params, 'not', True)
     q = Post.query
     q = search_filter(q, search, negative_search)

@@ -130,7 +130,7 @@ def danbooru_post_link(post):
 # ###### INDEX
 
 def post_type_link(post_type):
-    active_type = request.args.get('type') or 'user'
+    active_type = request.args.get('type') or 'all'
     classes = ['post-type'] + [post_type + '-type'] + (['type-active'] if active_type == post_type else [])
     return general_link(post_type.title(), url_for_with_params('post.index_html', type=post_type, page=None),
                         **{'class': ' '.join(classes)})
