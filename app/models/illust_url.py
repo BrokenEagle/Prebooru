@@ -1,5 +1,8 @@
 # APP/MODELS/ILLUST_URL.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy.util import memoized_property
+
 # ## LOCAL IMPORTS
 from .. import DB
 from ..logical.sites import get_site_domain, get_site_key
@@ -29,7 +32,7 @@ class IllustUrl(JsonModel):
 
     # ## Property methods
 
-    @property
+    @memoized_property
     def type(self):
         if self._source.video_url_mapper(self):
             return 'video'
@@ -38,24 +41,20 @@ class IllustUrl(JsonModel):
         else:
             return 'unknown'
 
-    @property
+    @memoized_property
     def preview_url(self):
         preview_illust_url = self if self.type == 'image' else self.illust.thumb_illust_url
         return self._source.get_preview_url(preview_illust_url)
 
-    @property
+    @memoized_property
     def full_url(self):
-        if not hasattr(self, '__full_url'):
-            self.__full_url = self._source.get_media_url(self)
-        return self.__full_url
+        return self._source.get_media_url(self)
 
-    @property
+    @memoized_property
     def _source(self):
-        if not hasattr(self, '__source'):
-            from ..logical.sources import SOURCEDICT
-            site_key = get_site_key(self.site_id)
-            self.__source = SOURCEDICT[site_key]
-        return self.__source
+        from ..logical.sources import SOURCEDICT
+        site_key = get_site_key(self.site_id)
+        return SOURCEDICT[site_key]
 
     @property
     def site_domain(self):
