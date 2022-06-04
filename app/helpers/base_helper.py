@@ -160,20 +160,6 @@ def form_iterator(form):
 
 # #### URL functions
 
-def search_url_for(endpoint, base_args=None, **kwargs):
-    """Construct search URL for any endpoint given a dict of search parameters"""
-    def _recurse(current_key, arg_dict, url_args):
-        for key in arg_dict:
-            updated_key = current_key + '[' + key + ']'
-            if type(arg_dict[key]) is dict:
-                _recurse(updated_key, arg_dict[key], url_args)
-            else:
-                url_args[updated_key] = arg_dict[key]
-    url_args = base_args if base_args is not None else {}
-    _recurse('search', kwargs, url_args)
-    return url_for(endpoint, **url_args)
-
-
 def url_for_with_params(endpoint, **kwargs):
     """Construct URL given the current URL parameters"""
     url_args = {}

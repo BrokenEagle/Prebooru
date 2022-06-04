@@ -10,8 +10,9 @@ from flask import Markup, url_for, request
 from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
+from ..logical.utility import search_url_for
 from ..logical.sources.base import get_source_by_id
-from .base_helper import search_url_for, general_link, external_link, url_for_with_params
+from .base_helper import general_link, external_link, url_for_with_params
 
 
 # ## FUNCTIONS

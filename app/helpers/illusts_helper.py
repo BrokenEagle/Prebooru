@@ -10,10 +10,11 @@ from flask import url_for
 from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
+from ..logical.utility import search_url_for
 from ..logical.sites import get_site_key
 from ..logical.sources import SOURCEDICT
 from ..logical.sources.base import get_source_by_id
-from .base_helper import search_url_for, external_link, general_link
+from .base_helper import external_link, general_link
 
 
 # ## GLOBAL VARIABLES

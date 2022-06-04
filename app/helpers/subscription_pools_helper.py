@@ -4,7 +4,8 @@
 from flask import url_for, request, Markup
 
 # ## LOCAL IMPORTS
-from .base_helper import search_url_for, general_link, url_for_with_params
+from ..logical.utility import search_url_for
+from .base_helper import general_link, url_for_with_params
 
 
 # ## GLOBAL VARIABLES

@@ -4,8 +4,9 @@
 from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
+from ..logical.utility import search_url_for
 from ..logical.sources import SOURCES
-from .base_helper import search_url_for, general_link, external_link
+from .base_helper import general_link, external_link
 
 
 # ## FUNCTIONS

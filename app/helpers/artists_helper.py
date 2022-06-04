@@ -4,9 +4,10 @@
 from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
+from ..logical.utility import search_url_for
 from ..logical.sites import get_site_key
 from ..logical.sources import SOURCEDICT
-from .base_helper import search_url_for, general_link, external_link
+from .base_helper import general_link, external_link
 
 
 # ## FUNCTIONS
