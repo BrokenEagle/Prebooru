@@ -167,6 +167,7 @@ PREBOORU_APP.config.from_mapping(
     DEBUG=DEBUG_MODE,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     EXPLAIN_TEMPLATE_LOADING=False,
+    SEND_FILE_MAX_AGE_DEFAULT=43200,
     SCHEDULER_JOBSTORES={"default": SCHEDULER_JOBSTORES},
     SCHEDULER_EXECUTORS={"default": {"type": "processpool", "max_workers": 3}},
     SCHEDULER_JOB_DEFAULTS={"coalesce": False, "max_instances": 1, 'misfire_grace_time': 30},
