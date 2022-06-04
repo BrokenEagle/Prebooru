@@ -3,7 +3,7 @@
         <section id="subscription-pool-status">
             <h4>Info</h4>
             <ul>
-                <li><strong>Status:</strong> {{ subscription_pool.status }}</li>
+                <li><strong>Status:</strong> {{ helpers.subscription_pool.pool_status_link(subscription_pool) }}</li>
                 <li><strong>Last ID:</strong> {{ helpers.base.val_or_none(subscription_pool.last_id) }}</li>
                 <li><strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription_pool.checked) }}</li>
             </ul>

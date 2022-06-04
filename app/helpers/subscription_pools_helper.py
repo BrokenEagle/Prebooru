@@ -46,6 +46,13 @@ def process_subscription_link(subscription_pool):
     return general_link("Process subscription", url, method="POST")
 
 
+def pool_status_link(subscription_pool):
+    return 'idle' if subscription_pool.status == 'idle'\
+                  else general_link(subscription_pool.status,
+                                    url_for('subscription_pool.reset_html', id=subscription_pool.id),
+                                    method='PUT')
+
+
 # #### Elements
 
 def keep_element_val(subscription_element):

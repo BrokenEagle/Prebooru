@@ -247,6 +247,13 @@ def process_html(id):
     return redirect(url_for('subscription_pool.show_html', id=subscription_pool.id, job=job_id))
 
 
+@bp.route('/subscription_pools/<int:id>/reset', methods=['PUT'])
+def reset_html(id):
+    subscription_pool = get_or_abort(SubscriptionPool, id)
+    update_subscription_pool_status(subscription_pool, 'idle')
+    return redirect(request.referrer)
+
+
 @bp.route('/subscription_pools/<int:id>/status.json', methods=['GET'])
 def status_json(id):
     subscription_pool = get_or_error(SubscriptionPool, id)
