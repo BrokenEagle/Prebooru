@@ -32,7 +32,7 @@ def download_subscription_illusts(subscription_pool, job_id=None):
     if is_error(site_illust_ids):
         add_subscription_pool_error(subscription_pool, site_illust_ids)
         return
-    job_status = get_job_status_data(job_id) or {'illust_creates': 0, 'illust_updates': 0}
+    job_status = get_job_status_data(job_id) or {'illusts': 0}
     job_status['stage'] = 'illusts'
     job_status['records'] = len(site_illust_ids)
     print(f"download_subscription_illusts [{subscription_pool.id}]: Total({len(site_illust_ids)})")
@@ -48,10 +48,9 @@ def download_subscription_illusts(subscription_pool, job_id=None):
         if illust is None:
             data_params['artist_id'] = artist.id
             create_illust_from_parameters(data_params)
-            job_status['illust_creates'] += 1
         else:
             update_illust_from_parameters(illust, data_params)
-            job_status['illust_updates'] += 1
+        job_status['illusts'] += 1
     update_job_status(job_id, job_status)
     last_id = max(site_illust_ids) if len(site_illust_ids) else subscription_pool.last_id
     update_subscription_pool_last_info(subscription_pool, last_id)

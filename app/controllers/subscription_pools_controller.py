@@ -234,8 +234,7 @@ def process_html(id):
         'stage': None,
         'range': None,
         'records': 0,
-        'illust_creates': 0,
-        'illust_updates': 0,
+        'illusts': 0,
         'elements': 0,
         'downloads': 0,
     }

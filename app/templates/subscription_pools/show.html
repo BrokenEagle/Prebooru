@@ -42,9 +42,7 @@
                             document.getElementById('subscription-pool-job-range').innerHTML = data.item.range || '<em>none</em>';
                             document.getElementById('subscription-pool-job-records').innerText = data.item.records;
                             document.getElementById('subscription-pool-job-elements').innerText = data.item.elements;
-                            document.getElementById('subscription-pool-job-illust-creates').innerText = data.item.illust_creates;
-                            document.getElementById('subscription-pool-job-illust-updates').innerText = data.item.illust_updates;
-                            document.getElementById('subscription-pool-job-downloads').innerText = data.item.downloads;
+                            document.getElementById('subscription-pool-job-illusts').innerText = data.item.illusts;
                             if (data.item.stage === 'done') {
                                 clearInterval(job_interval);
                             }

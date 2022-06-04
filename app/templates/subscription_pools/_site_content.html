@@ -31,12 +31,7 @@
                     <li><strong>Stage:</strong> <span id="subscription-pool-job-stage">{{ helpers.base.val_or_none(job_status['stage']) }}</span></li>
                     <li><strong>Range:</strong> <span id="subscription-pool-job-range">{{ helpers.base.val_or_none(job_status['range']) }}</span></li>
                     <li><strong>Records:</strong> <span id="subscription-pool-job-records">{{ job_status['records'] }}</span></li>
-                    <li><strong>Illust:</strong>
-                        <ul>
-                            <li><strong>Creates:</strong> <span id="subscription-pool-job-illust-creates">{{ job_status['illust_creates'] }}</span></li>
-                            <li><strong>Updates:</strong> <span id="subscription-pool-job-illust-updates">{{ job_status['illust_updates'] }}</span></li>
-                        </ul>
-                    </li>
+                    <li><strong>Illust:</strong> <span id="subscription-pool-job-illusts">{{ job_status['illusts'] }}</span></li>
                     <li><strong>Elements:</strong> <span id="subscription-pool-job-elements">{{ job_status['elements'] }}</span></li>
                     <li><strong>Downloads:</strong> <span id="subscription-pool-job-downloads">{{ job_status['downloads'] }}</span></li>
                 </ul>
