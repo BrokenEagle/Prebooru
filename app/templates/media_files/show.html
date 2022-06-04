@@ -11,7 +11,7 @@
             <li><strong>Expires:</strong> {{ helpers.base.format_timestamp(media_file.expires) }}</li>
             <li><strong>Media:</strong><br>
                 <article class="media-file">
-                    <img src="{{ media_file.file_url }}">
+                    <img src="{{ media_file.file_url }}" onerror="Prebooru.onImageError(this)">
                 </article>
             </li>
         </ul>

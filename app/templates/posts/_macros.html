@@ -3,9 +3,9 @@
         {% if post is not none %}
             <a href="{{ post.show_url }}">
                 {% if lazyload %}
-                    <img data-src="{{ post.preview_url }}">
+                    <img data-src="{{ post.preview_url }}" onerror="Prebooru.onImageError(this)">
                 {% else %}
-                    <img src="{{ post.preview_url }}">
+                    <img src="{{ post.preview_url }}" onerror="Prebooru.onImageError(this)">
                 {% endif %}
             </a>
         {% else %}
@@ -26,9 +26,9 @@
             <article class="{{ type }}-post multi-post">
                 <a href="{{ post.show_url }}">
                     {% if lazyload %}
-                        <img data-src="{{ post.preview_url }}">
+                        <img data-src="{{ post.preview_url }}" onerror="Prebooru.onImageError(this)">
                     {% else %}
-                        <img src="{{ post.preview_url }}">
+                        <img src="{{ post.preview_url }}" onerror="Prebooru.onImageError(this)">
                     {% endif %}
                 </a>
             </article>

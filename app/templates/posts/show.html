@@ -15,7 +15,7 @@
         <div id="post-content">
             <section id="image-container" onclick="ResizeImage(this)" class="fullsize">
                 <picture>
-                    <img src="{{ post.sample_url }}">
+                    <img src="{{ post.sample_url }}" onerror="Prebooru.onImageError(this)">
                 </picture>
             </section>
             {% include "posts/_site_content.html" %}

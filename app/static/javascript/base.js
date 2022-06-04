@@ -120,6 +120,18 @@ Prebooru.closeNotice = function() {
     return false;
 };
 
+Prebooru.onImageError = function (obj) {
+    let retries = Number(obj.dataset.loadRetries) || 0;
+    if (retries < 3) {
+        console.log("Set timeout");
+        setTimeout(() => (obj.src = obj.src), 1000);
+    } else {
+        obj.src = '/static/image_error.jpg';
+    }
+    obj.dataset.loadRetries = ++retries;
+    console.log("Error:", obj, obj.src, retries);
+};
+
 Prebooru.keepElement = function(obj) {
     fetch(obj.href, {method: 'POST'})
         .then((resp)=>resp.json())

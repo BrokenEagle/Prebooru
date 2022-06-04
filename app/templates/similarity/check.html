@@ -24,7 +24,7 @@
                         <div class="similarity-result-heading heading">Image #{{ loop.index }}</div>
                         <div class="similarity-proxy-block">
                             <article class="proxy-post">
-                                <img src="{{ similar_result.cache }}">
+                                <img src="{{ similar_result.cache }}" onerror="Prebooru.onImageError(this)">
                             </article>
                             <div class="proxy-image-details">
                                 <strong>Image url:</strong> {{ similar_result.image_url }}

@@ -36,9 +36,9 @@
                 <h4 class="heading">{{ element.status | title }} post&emsp;({{ element.illust_url.type }})</h4>
                 <div class="preview">
                     {% if lazyload %}
-                        <img data-src="{{ element.illust_url.preview_url }}">
+                        <img data-src="{{ element.illust_url.preview_url }}" onerror="Prebooru.onImageError(this)">
                     {% else %}
-                        <img src="{{ element.illust_url.preview_url }}">
+                        <img src="{{ element.illust_url.preview_url }}" onerror="Prebooru.onImageError(this)">
                     {% endif %}
                 </div>
                 <ul>

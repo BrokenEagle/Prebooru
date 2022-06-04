@@ -23,7 +23,7 @@
                     </td>
                     <td>
                         <article class="media-file">
-                            <img src="{{ media_file.file_url }}">
+                            <img src="{{ media_file.file_url }}" onerror="Prebooru.onImageError(this)">
                         </article>
                     </td>
                     <td>{{ helpers.base.format_timestamp(media_file.expires) }}</td>
