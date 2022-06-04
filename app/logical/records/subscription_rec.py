@@ -28,10 +28,8 @@ def update_subscription_elements(subscription_pool, job_id=None):
     page = q.paginate(per_page=50)
     job_status['stage'] = 'elements'
     while True:
-        first = ((page.page - 1) * 50) + 1
-        last = min((page.page) * 50, page.total)
-        print(f"update_subscription_elements: {first} - {last} / Total({page.total})")
-        job_status['range'] = f"({first} - {last}) / {page.total}"
+        print(f"update_subscription_elements: {page.first} - {page.last} / Total({page.total})")
+        job_status['range'] = f"({page.first} - {page.last}) / {page.total}"
         update_job_status(job_id, job_status)
         for illust in page.items:
             if illust.type == 'image':

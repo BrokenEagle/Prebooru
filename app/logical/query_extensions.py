@@ -137,6 +137,8 @@ def initialize():
         sqlalchemy.orm.Query.relation_count = relation_count
         sqlalchemy.orm.Query.count_paginate = count_paginate
         sqlalchemy.orm.Query.limit_paginate = limit_paginate
+        flask_sqlalchemy.Pagination.first = paginate_first
+        flask_sqlalchemy.Pagination.last = paginate_last
         INIT = True
 
 
@@ -169,6 +171,16 @@ def count_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
 
 def limit_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
     return LimitPaginate(query=self, page=page, per_page=per_page)
+
+
+@property
+def paginate_first(self):
+    return ((self.page - 1) * self.per_page) + 1
+
+
+@property
+def paginate_last(self):
+    return min((self.page * self.per_page), self.total)
 
 
 # #### Private functions

@@ -69,7 +69,7 @@ def download_subscription_elements(subscription_pool, job_id=None):
     page = q.limit_paginate(per_page=5)
     while True:
         print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
-        job_status['range'] = f"({page.first} - {page.last}) / {page.total}"
+        job_status['range'] = f"({page.first} - {page.last}) / {page.count}"
         update_job_status(job_id, job_status)
         for element in page.items:
             if convert_network_subscription(element, source):
