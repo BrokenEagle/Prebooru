@@ -80,19 +80,19 @@ class LimitPaginate():
 
     @property
     def has_next(self):
-        return self.pages > 0 and len(self.items) > self.per_page
+        return self.pages > 0 and len(self.items) >= self.per_page
 
-    @property
-    def has_prev(self):
-        return self.pages > 0 and len(self.items) > self.per_page
+    has_prev = has_next
 
     @property
     def next_num(self):
         return self.page + 1
 
+    prev_num = next_num
+
     @property
     def prev_num(self):
-        return self.page - 1
+        return self.page + 1
 
     @property
     def next_sequential_id(self):
@@ -117,7 +117,7 @@ class LimitPaginate():
             q = q.filter(model.id < self.next_id)
         elif self.prev_id:
             q = q.filter(model.id > self.prev_id)
-        return q.limit(self.per_page).all()
+        return q.order_by(model.id.desc()).limit(self.per_page).all()
 
     def _GetCount(self):
         return self.query.count()
