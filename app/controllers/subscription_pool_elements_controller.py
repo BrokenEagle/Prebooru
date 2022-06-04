@@ -25,6 +25,8 @@ bp = Blueprint("subscription_pool_element", __name__)
 
 INDEX_HTML_OPTIONS = (
     selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).selectinload(Illust.urls).lazyload('*'),
+    selectinload(SubscriptionPoolElement.post).lazyload('*'),
+    selectinload(SubscriptionPoolElement.errors),
 )
 
 MAX_LIMIT_HTML = 100
