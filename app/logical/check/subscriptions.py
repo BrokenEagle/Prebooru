@@ -35,7 +35,7 @@ POST_PAGE_LIMIT = 5
 # ## FUNCTIONS
 
 def download_subscription_illusts(subscription_pool, job_id=None):
-    update_subscription_pool_requery(subscription_pool, hours_from_now(1))
+    update_subscription_pool_requery(subscription_pool, hours_from_now(4))
     artist = subscription_pool.artist
     site_key = get_site_key(artist.site_id)
     source = SOURCEDICT[site_key]
