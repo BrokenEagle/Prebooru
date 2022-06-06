@@ -30,6 +30,11 @@ Prebooru.linkPost = function(obj) {
     return false;
 };
 
+Prebooru.linkPut = function(obj) {
+    Prebooru.postRequest(obj.href, {_method: 'put'});
+    return false;
+};
+
 Prebooru.linkDelete = function(obj) {
     Prebooru.postRequest(obj.href, {_method: 'delete'});
     return false;

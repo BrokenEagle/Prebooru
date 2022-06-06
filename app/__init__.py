@@ -50,8 +50,6 @@ NAMING_CONVENTION = {
 
 SERVER_INFO = SimpleNamespace(addr="127.0.0.1", allow_requests=True, active_requests=0, unique_id=None)
 
-MAIN_PROCESS = False
-
 
 # ## FUNCTIONS
 

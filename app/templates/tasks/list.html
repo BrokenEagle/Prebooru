@@ -1,0 +1,45 @@
+{% from 'tasks/_macros.html' import task_row %}
+
+{% extends 'layouts/base.html' %}
+
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/tasks.css') }}">{% endblock %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+    <div id="tasks-page">
+        <table id="static-danbooru-tasks" class="striped" width="80%">
+            <thead>
+                <tr>
+                    <th width="1%"></th>
+                    <th width="30%">Name</th>
+                    <th width="30%">Next run time</th>
+                    <th width="10%">Enabled</th>
+                    <th width="10%">Locked</th>
+                    <th width="15%">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5"><span class="heading">Danbooru Tasks</span></td>
+                </tr>
+                <tr>{{ task_row('check_all_boorus', tasks) }}</tr>
+                <tr>{{ task_row('check_all_artists_for_boorus', tasks) }}</tr>
+                <tr>{{ task_row('check_all_posts_for_danbooru_id', tasks) }}</tr>
+                <tr>
+                    <td colspan="5"><span class="heading">Subscription Tasks</span></td>
+                </tr>
+                <tr>{{ task_row('check_pending_subscriptions', tasks) }}</tr>
+                <tr>{{ task_row('check_pending_downloads', tasks) }}</tr>
+                <tr>{{ task_row('process_expired_subscription_elements', tasks) }}</tr>
+                <tr>
+                    <td colspan="5"><span class="heading">Maintenance Tasks</span></td>
+                </tr>
+                <tr>{{ task_row('expunge_cache_records', tasks) }}</tr>
+                <tr>{{ task_row('expunge_archive_records', tasks) }}</tr>
+                <tr>{{ task_row('delete_orphan_images', tasks) }}</tr>
+                <tr>{{ task_row('vacuum_analyze_database', tasks) }}</tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

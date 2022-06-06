@@ -3,15 +3,13 @@
 # ## PYTHON IMPORTS
 import os
 import re
-import atexit
 
 # ## PACKAGE IMPORTS
-from utility import RepeatTimer
 from utility.print import buffered_print
 from utility.file import get_directory_listing, delete_file
 
 # ## LOCAL IMPORTS
-from ... import DB, SCHEDULER, MAIN_PROCESS
+from ... import DB, SCHEDULER
 from ...models.media_file import CACHE_DATA_DIRECTORY
 from ..check.boorus import check_all_boorus
 from ..check.posts import check_all_posts_for_danbooru_id
@@ -25,95 +23,19 @@ from ..database.subscription_pool_element_db import total_missing_downloads, tot
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_data_db import expired_archive_data_count, delete_expired_archive_data
-from ..database.jobs_db import update_job_lock_status, get_job_lock_status
+from ..database.jobs_db import get_job_enabled_status, update_job_lock_status, get_job_lock_status
 from ..database.server_info_db import update_last_activity, server_is_busy
-from .initialize import initialize_scheduler, recheck_schedule_interval, reschedule_task
-
-# ## GLOBAL DATA
-
-JOB_CONFIG = {
-    'expunge_cache_records': {
-        'id': 'expunge_cache_records',
-        'hours': 8,
-        'jitter': 3600,
-    },
-    'expunge_archive_records': {
-        'id': 'expunge_archive_records',
-        'hours': 12,
-        'jitter': 3600,
-    },
-    'check_all_boorus': {
-        'id': 'check_all_boorus',
-        'days': 1,
-        'jitter': 3600,
-    },
-    'check_all_artists_for_boorus': {
-        'id': 'check_all_artists_for_boorus',
-        'days': 1,
-        'jitter': 3600,
-    },
-    'check_all_posts_for_danbooru_id': {
-        'id': 'check_all_posts_for_danbooru_id',
-        'days': 1,
-        'jitter': 3600,
-    },
-    'check_pending_subscriptions': {
-        'id': 'check_pending_subscriptions',
-        'hours': 1,
-        'jitter': 300,
-    },
-    'check_pending_downloads': {
-        'id': 'check_pending_downloads',
-        'hours': 1,
-        'jitter': 300,
-    },
-    'process_expired_subscription_elements': {
-        'id': 'process_expired_subscription_elements',
-        'hours': 4,
-        'jitter': 1200,
-    },
-    'delete_orphan_images': {
-        'id': 'delete_orphan_images',
-        'weeks': 1,
-        'jitter': 3600,
-    },
-    'vacuum_analyze_database': {
-        'id': 'vacuum_analyze_database',
-        'weeks': 1,
-        'jitter': 3600,
-    },
-}
-
-JOB_LEEWAY = {
-    'expunge_cache_records': 300,
-    'expunge_archive_records': 180,
-    'check_all_boorus': 300,
-    'check_all_artists_for_boorus': 300,
-    'check_all_posts_for_danbooru_id': 300,
-    'check_pending_subscriptions': 180,
-    'check_pending_downloads': 180,
-    'process_expired_subscription_elements': 300,
-    'delete_orphan_images': 300,
-    'vacuum_analyze_database': 300,
-}
-
-
-# ## INITIALIZATION
-
-if MAIN_PROCESS:
-    # Initialization must take place first, so that the job dictionary can be used to intialize tasks
-    print("\nMAIN_PROCESS", os.getpid())
-    initialize_scheduler(JOB_CONFIG, JOB_LEEWAY)
-    recheck_schedule_interval(JOB_CONFIG, JOB_LEEWAY, False)
-    RECHECK = RepeatTimer(300, recheck_schedule_interval, args=(JOB_CONFIG, JOB_LEEWAY, True))
-    RECHECK.setDaemon(True)
-    RECHECK.start()
+from .initialize import reschedule_task
+from . import JOB_CONFIG
 
 
 # ## FUNCTIONS
 
-@SCHEDULER.task("interval", **JOB_CONFIG['expunge_cache_records'])
+@SCHEDULER.task("interval", **JOB_CONFIG['expunge_cache_records']['config'])
 def expunge_cache_records_task():
+    if not get_job_enabled_status('expunge_cache_records'):
+        print("Task scheduler - Expunge Cache Records: disabled")
+        return
     if not _set_db_semaphore('expunge_cache_records'):
         print("Task scheduler - Expunge Cache Records: already running")
         return
@@ -131,8 +53,11 @@ def expunge_cache_records_task():
     _free_db_semaphore('expunge_cache_records')
 
 
-@SCHEDULER.task("interval", **JOB_CONFIG['expunge_archive_records'])
+@SCHEDULER.task("interval", **JOB_CONFIG['expunge_archive_records']['config'])
 def expunge_archive_records_task():
+    if not get_job_enabled_status('expunge_archive_records'):
+        print("Task scheduler - Expunge Archive Records: disabled")
+        return
     if not _set_db_semaphore('expunge_archive_records'):
         print("Task scheduler - Expunge Archive Records: already running")
         return
@@ -146,8 +71,11 @@ def expunge_archive_records_task():
     _free_db_semaphore('expunge_archive_records')
 
 
-@SCHEDULER.task('interval', **JOB_CONFIG['check_all_boorus'])
+@SCHEDULER.task('interval', **JOB_CONFIG['check_all_boorus']['config'])
 def check_all_boorus_task():
+    if not get_job_enabled_status('check_all_boorus'):
+        print("Task scheduler - Check All Boorus: disabled")
+        return
     if not _set_db_semaphore('check_all_boorus'):
         print("Task scheduler - Check All Boorus: already running")
         return
@@ -158,8 +86,11 @@ def check_all_boorus_task():
     _free_db_semaphore('check_all_boorus')
 
 
-@SCHEDULER.task('interval', **JOB_CONFIG['check_all_artists_for_boorus'])
+@SCHEDULER.task('interval', **JOB_CONFIG['check_all_artists_for_boorus']['config'])
 def check_all_artists_for_boorus_task():
+    if not get_job_enabled_status('check_all_artists_for_boorus'):
+        print("Task scheduler - Check All Artists for Boorus: disabled")
+        return
     if not _set_db_semaphore('check_all_artists_for_boorus'):
         print("Task scheduler - Check All Artists For Boorus: already running")
         return
@@ -170,8 +101,11 @@ def check_all_artists_for_boorus_task():
     _free_db_semaphore('check_all_artists_for_boorus')
 
 
-@SCHEDULER.task('interval', **JOB_CONFIG['check_all_posts_for_danbooru_id'])
+@SCHEDULER.task('interval', **JOB_CONFIG['check_all_posts_for_danbooru_id']['config'])
 def check_all_posts_for_danbooru_id_task():
+    if not get_job_enabled_status('check_all_posts_for_danbooru_id'):
+        print("Task scheduler - Check All Posts for Danbooru ID: disabled")
+        return
     if not _set_db_semaphore('check_all_posts_for_danbooru_id'):
         print("Task scheduler - Check All Posts For Danbooru ID: already running")
         return
@@ -182,8 +116,11 @@ def check_all_posts_for_danbooru_id_task():
     _free_db_semaphore('check_all_posts_for_danbooru_id')
 
 
-@SCHEDULER.task('interval', **JOB_CONFIG['check_pending_subscriptions'])
+@SCHEDULER.task('interval', **JOB_CONFIG['check_pending_subscriptions']['config'])
 def check_pending_subscriptions():
+    if not get_job_enabled_status('check_pending_subscriptions'):
+        print("Task scheduler - Check Pending Subscriptions: disabled")
+        return
     if not _set_db_semaphore('check_pending_subscriptions'):
         print("Task scheduler - Check All Pending Subscriptions: already running")
         return
@@ -211,8 +148,11 @@ def check_pending_subscriptions():
     _free_db_semaphore('check_pending_subscriptions')
 
 
-@SCHEDULER.task('interval', **JOB_CONFIG['check_pending_downloads'])
+@SCHEDULER.task('interval', **JOB_CONFIG['check_pending_downloads']['config'])
 def check_pending_downloads():
+    if not get_job_enabled_status('check_pending_downloads'):
+        print("Task scheduler - Check Pending Downloads: disabled")
+        return
     if not _set_db_semaphore('check_pending_downloads'):
         print("Task scheduler - Check All Pending Downloads: already running")
         return
@@ -226,8 +166,11 @@ def check_pending_downloads():
     _free_db_semaphore('check_pending_downloads')
 
 
-@SCHEDULER.task('interval', **JOB_CONFIG['process_expired_subscription_elements'])
+@SCHEDULER.task('interval', **JOB_CONFIG['process_expired_subscription_elements']['config'])
 def process_expired_subscription_elements():
+    if not get_job_enabled_status('process_expired_subscription_elements'):
+        print("Task scheduler - Process Expired Subscription Elements: disabled")
+        return
     if not _set_db_semaphore('process_expired_subscription_elements'):
         print("Task scheduler - Check All Expired Subscription Elements: already running")
         return
@@ -244,8 +187,11 @@ def process_expired_subscription_elements():
     _free_db_semaphore('process_expired_subscription_elements')
 
 
-@SCHEDULER.task("interval", **JOB_CONFIG['delete_orphan_images'])
+@SCHEDULER.task("interval", **JOB_CONFIG['delete_orphan_images']['config'])
 def delete_orphan_images_task():
+    if not get_job_enabled_status('delete_orphan_images'):
+        print("Task scheduler - Delete Orphan Images: disabled")
+        return
     if not _set_db_semaphore('delete_orphan_images'):
         print("Task scheduler - Delete Orphan Images: already running")
         return
@@ -268,7 +214,7 @@ def delete_orphan_images_task():
     _free_db_semaphore('delete_orphan_images')
 
 
-@SCHEDULER.task('interval', **JOB_CONFIG['vacuum_analyze_database'])
+@SCHEDULER.task('interval', **JOB_CONFIG['vacuum_analyze_database']['config'])
 def vacuum_analyze_database_task():
     if server_is_busy():
         print("Vaccuum/Analyze: Server busy, rescheduling....")
@@ -302,10 +248,3 @@ def _set_db_semaphore(id):
 def _free_db_semaphore(id):
     update_job_lock_status(id, False)
 
-
-# ###### Other
-
-@atexit.register
-def _cleanup():
-    if MAIN_PROCESS:
-        RECHECK.cancel()

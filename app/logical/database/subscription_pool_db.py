@@ -77,6 +77,10 @@ def get_available_subscription():
                                         .limit(20).all()
 
 
+def check_processing_subscriptions():
+    return SubscriptionPool.query.filter_by(status='manual').get_count() > 0
+
+
 # #### Misc
 
 def add_subscription_pool_error(pool, error):

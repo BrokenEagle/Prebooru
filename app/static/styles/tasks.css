@@ -3,6 +3,6 @@ div#tasks-page {
     margin-top: 1em;
     font-size: 1.25em;
 }
-div#tasks-page > section {
-    margin-bottom: 1em;
+table tr span.heading {
+    font-size: 1.2em;
 }

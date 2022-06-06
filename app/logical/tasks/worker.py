@@ -1,6 +1,7 @@
 # APP/LOGICAL/TASKS/WORKER.PY
 
 # ## PYTHON IMPORTS
+import os
 import operator
 import itertools
 import threading
@@ -22,9 +23,10 @@ from ..records.illust_rec import create_illust_from_source, update_illust_from_s
 from ..database.base_db import safe_db_execute
 from ..database.post_db import get_posts_by_id
 from ..database.upload_db import set_upload_status, has_duplicate_posts
-from ..database.subscription_pool_db import update_subscription_pool_status, update_subscription_pool_active
+from ..database.subscription_pool_db import update_subscription_pool_status, update_subscription_pool_active,\
+    check_processing_subscriptions
 from ..database.error_db import create_and_append_error, append_error
-from ..database.jobs_db import get_job_status_data, update_job_status
+from ..database.jobs_db import get_job_status_data, update_job_status, update_job_lock_status
 from ..sources.base import get_post_source, get_source_by_id
 from ..downloader.network import convert_network_upload
 from ..downloader.file import convert_file_upload
@@ -38,29 +40,33 @@ def check_requery(instance):
     return instance.requery is None or instance.requery < get_current_time()
 
 
-# #### Task functions
+# #### Primary task functions
 
 def process_upload(upload_id):
     printer = buffered_print("Process Upload")
-    upload = Upload.find(upload_id)
-    printer("Upload:", upload.id)
-    set_upload_status(upload, 'processing')
+    upload = None
 
     def try_func(scope_vars):
-        if scope_vars['upload'].type == 'post':
+        nonlocal upload
+        upload = Upload.find(upload_id)
+        printer("Upload:", upload.id)
+        set_upload_status(upload, 'processing')
+        if upload.type == 'post':
             process_network_upload(upload)
-        elif scope_vars['upload'].type == 'file':
+        elif upload.type == 'file':
             process_file_upload(upload)
 
     def msg_func(scope_vars, e):
-        return "Unhandled exception occurred on upload #%d: %s" % (scope_vars['upload'].id, e)
+        return f"Unhandled exception occurred on upload #{upload_id}: {repr(e)}"
 
     def error_func(scope_vars, e):
-        set_upload_status(scope_vars['upload'], 'error')
+        nonlocal upload
+        upload = upload or Upload.find(upload_id)
+        set_upload_status(upload, 'error')
 
     def finally_func(scope_vars, data, error):
-        nonlocal printer
-        upload = scope_vars['upload']
+        nonlocal upload
+        upload = upload or Upload.find(upload_id)
         printer("Upload:", upload.status)
         printer("Posts:", len(upload.posts))
         if upload.status in ['complete', 'duplicate'] and len(upload.posts) > 0:
@@ -71,9 +77,64 @@ def process_upload(upload_id):
             threading.Thread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
 
     safe_db_execute('process_upload', 'tasks.worker', try_func=try_func, msg_func=msg_func, error_func=error_func,
-                    finally_func=finally_func, scope_vars={'upload': upload}, printer=printer)
+                    finally_func=finally_func, printer=printer)
     printer.print()
 
+
+def process_subscription(subscription_id, job_id):
+    printer = buffered_print("Process Subscription")
+    subscription = None
+    start_illusts = 0
+    start_posts = 0
+    start_elements = 0
+    starting_post_ids = []
+
+    def try_func(scope_vars):
+        nonlocal subscription, start_illusts, start_posts, start_elements, starting_post_ids
+        subscription = SubscriptionPool.find(subscription_id)
+        start_illusts = subscription.artist.illust_count
+        start_posts = subscription.artist.post_count
+        start_elements = subscription.element_count
+        starting_post_ids = [post.id for post in subscription.posts]
+        update_job_lock_status('process_subscription', True)
+        download_subscription_illusts(subscription, job_id)
+        download_subscription_elements(subscription, job_id)
+        job_status = get_job_status_data(job_id)
+        job_status['stage'] = 'done'
+        job_status['range'] = None
+        update_job_status(job_id, job_status)
+
+    def msg_func(scope_vars, e):
+        return f"Unhandled exception occurred on subscripton pool #{subscription_id}: {repr(e)}"
+
+    def error_func(scope_vars, e):
+        nonlocal subscription
+        print("process_subscription-error_func:", e)
+        subscription = subscription or SubscriptionPool.find(subscription_id)
+        update_subscription_pool_status(subscription, 'error')
+        update_subscription_pool_active(subscription, False)
+
+    def finally_func(scope_vars, data, error):
+        nonlocal subscription
+        subscription = subscription or SubscriptionPool.find(subscription_id)
+        if error is None and subscription.status != 'error':
+            update_subscription_pool_status(subscription, 'idle')
+        new_post_ids = [post.id for post in subscription.posts if post.id not in starting_post_ids]
+        if len(new_post_ids):
+            printer("Starting secondary threads.")
+            threading.Thread(target=process_similarity, args=(new_post_ids,)).start()
+            threading.Thread(target=check_for_matching_danbooru_posts, args=(new_post_ids,)).start()
+        threading.Timer(15, _query_unlock_subscription_job).start()  # Check later to give the DB time to catch up
+
+    safe_db_execute('process_subscription', 'tasks.worker', try_func=try_func, msg_func=msg_func, printer=printer,
+                    error_func=error_func, finally_func=finally_func)
+    printer("Added illusts:", subscription.artist.illust_count - start_illusts)
+    printer("Added posts:", subscription.artist.post_count - start_posts)
+    printer("Added elements:", subscription.element_count - start_elements)
+    printer.print()
+
+
+# #### Secondary task functions
 
 def process_similarity(post_ids):
     printer = buffered_print("Process Similarity")
@@ -100,50 +161,6 @@ def check_for_new_artist_boorus(post_ids):
     printer("Artists to check:", len(check_artists))
     if len(check_artists):
         check_artists_for_boorus(check_artists)
-    printer.print()
-
-
-def process_subscription(subscription_id, job_id):
-    printer = buffered_print("Process Subscription")
-    subscription = SubscriptionPool.find(subscription_id)
-    start_illusts = subscription.artist.illust_count
-    start_posts = subscription.artist.post_count
-    start_elements = subscription.element_count
-    starting_post_ids = [post.id for post in subscription.posts]
-
-    def try_func(scope_vars):
-        subscription, job_id = operator.itemgetter('subscription', 'job_id')(scope_vars)
-        download_subscription_illusts(subscription, job_id)
-        download_subscription_elements(subscription, job_id)
-        job_status = get_job_status_data(job_id)
-        job_status['stage'] = 'done'
-        job_status['range'] = None
-        update_job_status(job_id, job_status)
-
-    def msg_func(scope_vars, e):
-        return "Unhandled exception occurred on %s: %s" % (scope_vars['subscription'].shortlink, e)
-
-    def error_func(scope_vars, e):
-        subscription = scope_vars['subscription']
-        update_subscription_pool_status(subscription, 'error')
-        update_subscription_pool_active(subscription, False)
-
-    def finally_func(scope_vars, data, error):
-        nonlocal printer, starting_post_ids
-        subscription = scope_vars['subscription']
-        update_subscription_pool_status(subscription, 'idle')
-        new_post_ids = [post.id for post in subscription.posts if post.id not in starting_post_ids]
-        if len(new_post_ids):
-            printer("Starting secondary threads.")
-            threading.Thread(target=process_similarity, args=(new_post_ids,)).start()
-            threading.Thread(target=check_for_matching_danbooru_posts, args=(new_post_ids,)).start()
-
-    safe_db_execute('process_subscription', 'tasks.worker', try_func=try_func, msg_func=msg_func, printer=printer,
-                    error_func=error_func, finally_func=finally_func,
-                    scope_vars={'subscription': subscription, 'job_id': job_id})
-    printer("Added illusts:", subscription.artist.illust_count - start_illusts)
-    printer("Added posts:", subscription.artist.post_count - start_posts)
-    printer("Added elements:", subscription.element_count - start_elements)
     printer.print()
 
 
@@ -189,3 +206,12 @@ def process_file_upload(upload):
         set_upload_status(upload, 'complete')
     else:
         set_upload_status(upload, 'error')
+
+
+# #### Private functions
+
+def _query_unlock_subscription_job():
+    print("_query_unlock_subscription_job-0")
+    if not check_processing_subscriptions():
+        print("_query_unlock_subscription_job-1")
+        update_job_lock_status('process_subscription', False)

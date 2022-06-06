@@ -10,6 +10,13 @@ from .data import set_precision
 
 # ## FUNCTIONS
 
+def local_datetime_utcoffset():
+    return datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo.utcoffset(None)
+
+
+def local_datetime_to_utc(timeval):
+    return timeval - local_datetime_utcoffset()
+
 
 def process_utc_timestring(timestring):
     try:

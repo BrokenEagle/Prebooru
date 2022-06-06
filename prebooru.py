@@ -146,8 +146,8 @@ def start_server(args):
     if args.title:
         os.system('title Prebooru Server')
     if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        import app
-        app.MAIN_PROCESS = True
+        from app.logical.tasks.initialize import initialize_all_tasks
+        initialize_all_tasks()
         # Scheduled tasks must be added only after everything else has been initialized
         from app.logical.tasks import schedule  # noqa: F401
         from app.logical.database.server_info_db import initialize_server_fields

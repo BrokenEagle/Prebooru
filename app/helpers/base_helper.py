@@ -40,6 +40,10 @@ def html_kebab_case(text):
     return text.lower().replace(" ", "-").replace("&raquo;", "").strip("-")
 
 
+def display_case(text):
+    return ' '.join(map(str.title, text.split('_')))
+
+
 def val_or_none(val):
     return Markup('<em>none</em>') if val is None else val
 
@@ -96,6 +100,8 @@ def general_link(text, url, method=None, **addons):
         return Markup('<em>none</em>')
     if method == "POST":
         addons['onclick'] = "return Prebooru.linkPost(this)"
+    elif method == "PUT":
+        addons['onclick'] = "return Prebooru.linkPut(this)"
     elif method == "DELETE":
         addons['onclick'] = "return Prebooru.deleteConfirm(this)"
     attrs = ['%s="%s"' % (k, v) for (k, v) in addons.items()]
