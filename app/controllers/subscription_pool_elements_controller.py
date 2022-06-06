@@ -41,8 +41,10 @@ def index():
     search = get_params_value(params, 'search', True)
     q = SubscriptionPoolElement.query
     q = search_filter(q, search)
-    if 'order' in search and search['order'] == 'expires':
-        q = q.order_by(SubscriptionPoolElement.expires.asc())
+    if search.get('order') == 'expires':
+        q = q.filter(SubscriptionPoolElement.expires.is_not(None)).order_by(SubscriptionPoolElement.expires.asc())
+    elif search.get('order') == 'site':
+        q = q.unique_join(IllustUrl).unique_join(Illust).order_by(Illust.site_illust_id.desc())
     else:
         q = default_order(q, search)
     return q
