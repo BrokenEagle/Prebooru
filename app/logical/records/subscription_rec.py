@@ -30,6 +30,7 @@ def update_subscription_elements(subscription_pool, job_id=None):
             selectinload(IllustUrl.subscription_pool_element).lazyload('*'),
         )
     )
+    q = q.order_by(Illust.site_illust_id.asc())
     page = q.paginate(per_page=50)
     job_status['stage'] = 'elements'
     while True:
@@ -38,7 +39,7 @@ def update_subscription_elements(subscription_pool, job_id=None):
         update_job_status(job_id, job_status)
         for illust in page.items:
             if illust.type == 'image':
-                illust_urls = illust.urls
+                illust_urls = sorted(illust.urls, key=lambda x: x.order)
             elif illust.type == 'video':
                 illust_urls = [illust.video_illust_url]
             else:

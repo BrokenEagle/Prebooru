@@ -32,6 +32,7 @@ def download_subscription_illusts(subscription_pool, job_id=None):
     if is_error(site_illust_ids):
         add_subscription_pool_error(subscription_pool, site_illust_ids)
         return
+    site_illust_ids = sorted(x for x in set(site_illust_ids))
     job_status = get_job_status_data(job_id) or {'illusts': 0}
     job_status['stage'] = 'illusts'
     job_status['records'] = len(site_illust_ids)
@@ -65,6 +66,7 @@ def download_subscription_elements(subscription_pool, job_id=None):
     source = SOURCEDICT[site_key]
     q = SubscriptionPoolElement.query.filter_by(pool_id=subscription_pool.id, post_id=None, active=True)
     q = q.options(selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
+    q = q.order_by(SubscriptionPoolElement.id.asc())
     page = q.limit_paginate(per_page=5)
     while True:
         print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
@@ -86,6 +88,7 @@ def download_missing_elements():
                                        SubscriptionPoolElement.deleted.is_(False),
                                        SubscriptionPool.status == 'idle')
     q = q.options(selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
+    q = q.order_by(SubscriptionPoolElement.id.asc())
     page = q.limit_paginate()
     while True:
         print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
