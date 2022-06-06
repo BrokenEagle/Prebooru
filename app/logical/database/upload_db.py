@@ -66,5 +66,7 @@ def add_upload_failure(upload):
 
 
 def upload_append_post(upload, post):
+    if post.type != 'user_post':
+        post.type = 'user_post'
     upload.posts.append(post)
     SESSION.commit()
