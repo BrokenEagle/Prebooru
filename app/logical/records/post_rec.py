@@ -56,7 +56,7 @@ def archive_post_for_deletion(post):
     retdata = _delete_post_data(post, retdata)
     if retdata['error']:
         return retdata
-    return _delete_sample_preview_files(sample_path, preview_path, retdata)
+    return _delete_media_files(sample_path, preview_path, retdata)
 
 
 def reinstantiate_archived_post(data):
@@ -164,18 +164,27 @@ def _delete_post_data(post, retdata):
     return retdata
 
 
-def _delete_sample_preview_files(sample_path, preview_path, retdata):
+def _delete_media_files(sample_path, preview_path, retdata, file_path=None):
+    print('_delete_media_files', file_path, sample_path, preview_path)
     error_messages = []
+    if file_path is not None:
+        print(f"Deleting data file: {file_path}")
+        try:
+            delete_file(file_path)
+        except Exception as e:
+            error_messages.append("Error deleting data file: %s" % str(e))
     if sample_path is not None:
+        print(f"Deleting sample file: {sample_path}")
         try:
             delete_file(sample_path)
         except Exception as e:
-            error_messages.append("Error deleting sample: %s" % str(e))
+            error_messages.append("Error deleting sample file: %s" % str(e))
     if preview_path is not None:
+        print(f"Deleting preview file: {preview_path}")
         try:
             delete_file(preview_path)
         except Exception as e:
-            error_messages.append("Error deleting preview: %s" % str(e))
+            error_messages.append("Error deleting preview file: %s" % str(e))
     if len(error_messages) > 0:
         return set_error(retdata, '\r\n'.join(error_messages))
     return retdata
