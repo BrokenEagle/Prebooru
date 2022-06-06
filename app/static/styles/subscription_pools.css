@@ -8,6 +8,10 @@ div#subscription-pool-form-info {
     font-weight: bold;
     margin-top: 1em;
 }
+/****INDEX Page****/
+table#subscription-pools-table span.explanation {
+    font-size: 80%;
+}
 /****SHOW Page****/
 div#subscription-pool-heading {
     font-size: 32px;

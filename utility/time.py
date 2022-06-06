@@ -74,41 +74,33 @@ def get_date(timeval):
     return timeval.strftime("%Y-%m-%d")
 
 
-def time_ago(timeval, precision=2):
-    delta = get_current_time() - timeval
+def humanized_timedelta(delta, precision=2):
     precision_str = "%%.%df " % precision
     if delta.days == 0:
         if delta.seconds < 60:
-            return "%d seconds ago" % delta.seconds
+            return "%d seconds" % delta.seconds
         if delta.seconds < 3600:
-            return (precision_str + "minutes ago") % set_precision(delta.seconds / 60, precision)
-        return (precision_str + "hours ago") % set_precision(delta.seconds / 3600, precision)
+            return (precision_str + "minutes") % set_precision(delta.seconds / 60, precision)
+        return (precision_str + "hours") % set_precision(delta.seconds / 3600, precision)
     days = delta.days + (delta.seconds / 86400)
     if days < 7:
-        return (precision_str + "days ago") % set_precision(days, precision)
+        return (precision_str + "days") % set_precision(days, precision)
     if days < 30:
-        return (precision_str + "weeks ago") % set_precision(days / 7, precision)
+        return (precision_str + "weeks") % set_precision(days / 7, precision)
     if days < 365:
-        return (precision_str + "months ago") % set_precision(days / 30, precision)
-    return (precision_str + "years ago") % set_precision(days / 365, precision)
+        return (precision_str + "months") % set_precision(days / 30, precision)
+    return (precision_str + "years") % set_precision(days / 365, precision)
+
+
+def time_ago(timeval, precision=2):
+    delta = get_current_time() - timeval
+    if delta < datetime.timedelta(0):
+        return "not yet"
+    return humanized_timedelta(delta, precision) + " ago"
 
 
 def time_from_now(timeval, precision=2):
     delta = timeval - get_current_time()
     if delta < datetime.timedelta(0):
         return "already past"
-    precision_str = "%%.%df " % precision
-    if delta.days == 0:
-        if delta.seconds < 60:
-            return "%d seconds from now" % delta.seconds
-        if delta.seconds < 3600:
-            return (precision_str + "minutes from now") % set_precision(delta.seconds / 60, precision)
-        return (precision_str + "hours from now") % set_precision(delta.seconds / 3600, precision)
-    days = delta.days + (delta.seconds / 86400)
-    if days < 7:
-        return (precision_str + "days from now") % set_precision(days, precision)
-    if days < 30:
-        return (precision_str + "weeks from now") % set_precision(days / 7, precision)
-    if days < 365:
-        return (precision_str + "months from now") % set_precision(days / 30, precision)
-    return (precision_str + "years from now") % set_precision(days / 365, precision)
+    return humanized_timedelta(delta, precision) + " from now"

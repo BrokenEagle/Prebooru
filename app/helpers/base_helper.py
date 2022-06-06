@@ -60,8 +60,37 @@ def format_timestamp_difference(item):
     return text
 
 
+def humanized_timestamp_difference(item):
+    if item.created is None:
+        return Markup('<em>N/A</em>')
+    text = time_ago(item.created)
+    timestring = format_timestamp(item.created)
+    output_html = _time_tag(text, timestring)
+    if not hasattr(item, 'updated') or item.updated is None:
+        return Markup(output_html)
+    delta = item.updated - item.created
+    if delta.days > 0 or delta.seconds > 3600:
+        text = time_ago(item.updated)
+        timestring = format_timestamp(item.updated)
+        temp_html = _time_tag(text, timestring)
+        output_html += f'<br><span class="explanation">(updated {temp_html})</span>'
+    return Markup(output_html)
+
+
+def format_time_ago(timeval):
+    if timeval is not None:
+        text = time_ago(timeval)
+        timestring = timeval.isoformat()
+        return Markup(f'<time date="{timestring}" title="{timestring}">{text}</time>')
+    return Markup('<em>N/A</em>')
+
+
 def format_expires(timeval):
-    return time_from_now(timeval) if timeval is not None else Markup('<em>N/A</em>')
+    if timeval is not None:
+        text = time_from_now(timeval)
+        timestring = timeval.isoformat()
+        return Markup(f'<time date="{timestring}" title="{timestring}">{text}</time>')
+    return Markup('<em>N/A</em>')
 
 
 def convert_to_html(text):
@@ -228,6 +257,10 @@ def break_period(text):
 
 
 # #### Private functions
+
+def _time_tag(text, timestring):
+    return f'<time datetime="{timestring}" title="{timestring}">{text}</time>'
+
 
 def _is_field(form, attr):
     return not attr.startswith('__') and issubclass(getattr(form, attr).__class__, Field)

@@ -4,16 +4,16 @@
 {% block title %}Subscription pools{% endblock %}
 
 {% block content %}
-    <table id="subscription-pools-table" class="striped" width="70%">
+    <table id="subscription-pools-table" class="striped" width="75%">
         <thead>
             <tr>
                 <th width="15%">ID</th>
                 <th width="10%">Artist</th>
                 <th>Info</th>
                 <th width="15%">Settings</th>
-                <th width="10%">Active</th>
+                <th width="5%">Active</th>
+                <th width="15%">Requery</th>
                 <th width="15%">Created</th>
-                <th width="15%">Updated</th>
             </tr>
         </thead>
         <tbody>
@@ -23,15 +23,15 @@
                     <td>{{ pool.artist_show_link }}</td>
                     <td>
                         <strong>Status:</strong> {{ pool.status }}<br>
-                        <strong>Checked:</strong> {{ helpers.base.format_timestamp(pool.checked) }}
+                        <strong>Checked:</strong> {{ helpers.base.format_time_ago(pool.checked) }}
                     </td>
                     <td>
                         <strong>Interval:</strong> {{ pool.interval }}<br>
                         <strong>Expiration:</strong> {{ pool.expiration }}
                     </td>
                     <td>{{ pool.active | tojson }}</td>
-                    <td>{{ helpers.base.format_timestamp(pool.created) }}</td>
-                    <td>{{ helpers.base.format_timestamp(pool.updated) }}</td>
+                    <td>{{ helpers.base.format_expires(pool.requery) }}</td>
+                    <td>{{ helpers.base.humanized_timestamp_difference(pool) }}</td>
                 </tr>
             {% endfor %}
         </tbody>
