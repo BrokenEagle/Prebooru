@@ -51,8 +51,8 @@ def update_subscription_pool_status(pool, status):
     SESSION.commit()
 
 
-def update_subscription_pool_active(pool, status):
-    pool.status = status
+def update_subscription_pool_active(pool, active):
+    pool.active = active
     SESSION.commit()
 
 
