@@ -127,22 +127,10 @@ def check_pending_subscriptions():
     printer = buffered_print("Check All Pending Subscriptions")
     printer("PID:", os.getpid())
     subscriptions = get_available_subscription()
-    if len(subscriptions) > 0:
-        def try_func(scope_vars):
-            download_subscription_illusts(scope_vars['subscription'])
-
-        def msg_func(scope_vars, error):
-            return "Unhandled exception occurred on %s: %s" % (scope_vars['subscription'].shortlink, error)
-
-        def finally_func(scope_vars, data, error):
-            update_subscription_pool_status(scope_vars['subscription'], 'idle')
-
-        for subscription in subscriptions:
-            printer("Processing subscription:", subscription.id)
-            update_subscription_pool_status(subscription, 'automatic')
-            safe_db_execute('check_pending_subscriptions', 'tasks.schedule', scope_vars={'subscription': subscription},
-                            try_func=try_func, msg_func=msg_func, finally_func=finally_func, printer=printer)
-    else:
+    for subscription in subscriptions:
+        printer("Processing subscription:", subscription.id)
+        _process_pending_subscription(subscription, printer)
+    if not subscriptions:
         printer("No subscriptions to process.")
     printer.print()
     _free_db_semaphore('check_pending_subscriptions')
@@ -248,3 +236,27 @@ def _set_db_semaphore(id):
 def _free_db_semaphore(id):
     update_job_lock_status(id, False)
 
+
+def _process_pending_subscription(subscription, printer):
+    def try_func(scope_vars):
+        nonlocal subscription
+        download_subscription_illusts(subscription)
+
+    def msg_func(scope_vars, error):
+        nonlocal subscription
+        return "Unhandled exception occurred on %s: %s" % (subscription.shortlink, error)
+
+    def error_func(scope_vars, error):
+        nonlocal subscription
+        update_subscription_pool_status(subscription, 'error')
+        update_subscription_pool_active(subscription, False)
+
+    def finally_func(scope_vars, data, error):
+        nonlocal subscription
+        if error is None and subscription.status != 'error':
+            update_subscription_pool_status(subscription, 'idle')
+
+    update_subscription_pool_status(subscription, 'automatic')
+    safe_db_execute('check_pending_subscriptions', 'tasks.schedule', scope_vars={'subscription': subscription},
+                    try_func=try_func, msg_func=msg_func, error_func=error_func, finally_func=finally_func,
+                    printer=printer)
