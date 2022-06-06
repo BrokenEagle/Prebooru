@@ -110,6 +110,7 @@ def initialize_server_callbacks(args):
 
 def initialize_migrate():
     global PREOBOORU_MIGRATE
+    from app import DB, PREBOORU_APP
     from app import models   # noqa: F401
     from flask_migrate import Migrate
     # Registering this with the Prebooru app so that DB commands can be executed with flask
@@ -178,6 +179,7 @@ def init_db(args):
             os.remove(DB_PATH)
 
     print("Creating tables")
+    from app import DB, PREBOORU_APP
     from app.models import NONCE  # noqa: F401, F811
     create_directory(DB_PATH)
     DB.drop_all()
