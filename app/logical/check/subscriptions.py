@@ -1,5 +1,8 @@
 # APP/LOGICAL/CHECK/SUBSCRIPTIONS.PY
 
+# ## PYTHON IMPORTS
+import threading
+
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
 
@@ -10,6 +13,9 @@ from utility.time import get_current_time, hours_from_now
 from ...models import SubscriptionPool, SubscriptionPoolElement, IllustUrl
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
+from ..similarity.generate_data import generate_post_similarity
+from ..similarity.populate_pools import populate_similarity_pools
+from ..database.post_db import get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.subscription_pool_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post
@@ -75,6 +81,7 @@ def download_subscription_elements(subscription_pool, job_id=None):
         for element in page.items:
             if convert_network_subscription(element, source):
                 job_status['downloads'] += 1
+        _process_similarity(page.items)
         if not page.has_next:
             break
         page = page.next()
@@ -141,3 +148,16 @@ def expire_subscription_elements():
         if not page.has_next:
             break
         page = page.next()
+
+
+# #### Private
+
+def _process_similarity(elements):
+    def _process(post_ids):
+        posts = get_posts_by_id(post_ids)
+        for post in posts:
+            generate_post_similarity(post)
+            populate_similarity_pools(post)
+
+    post_ids = [element.post_id for element in elements]
+    threading.Thread(target=_process, args=(post_ids,)).start()

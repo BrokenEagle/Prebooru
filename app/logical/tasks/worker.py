@@ -122,7 +122,6 @@ def process_subscription(subscription_id, job_id):
         new_post_ids = [post.id for post in subscription.posts if post.id not in starting_post_ids]
         if len(new_post_ids):
             printer("Starting secondary threads.")
-            threading.Thread(target=process_similarity, args=(new_post_ids,)).start()
             threading.Thread(target=check_for_matching_danbooru_posts, args=(new_post_ids,)).start()
         threading.Timer(15, _query_unlock_subscription_job).start()  # Check later to give the DB time to catch up
 
