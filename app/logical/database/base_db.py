@@ -25,15 +25,21 @@ def safe_db_execute(func_name, module_name, scope_vars=None, **kwargs):
     try:
         data = kwargs['try_func'](scope_vars)
     except Exception as e:
-        kwargs['printer'](f"\a\n{func_name}: Exception occured in worker!\n", e)
-        kwargs['printer']("Unlocking the database...")
-        SESSION.rollback()
-        msg = kwargs['msg_func'](scope_vars, e)
-        log_error(f"{module_name}.func_name", msg)
-        kwargs['error_func'](scope_vars, e)
-        error = e
+        try:
+            kwargs['printer'](f"\a\n{func_name}: Exception occured in worker!\n", e)
+            kwargs['printer']("Unlocking the database...")
+            SESSION.rollback()
+            msg = kwargs['msg_func'](scope_vars, e)
+            log_error(f"{module_name}.func_name", msg)
+            kwargs['error_func'](scope_vars, e)
+            error = e
+        except Exception as e:
+            log_error(f"{module_name}.func_name", f"safe_db_execute - Exception in error block: {repr(e)}")
     finally:
-        return kwargs['finally_func'](scope_vars, data, error)
+        try:
+            return kwargs['finally_func'](scope_vars, data, error)
+        except Exception as e:
+            log_error(f"{module_name}.func_name", f"safe_db_execute - Exception in finally block: : {repr(e)}")
 
 
 def set_timesvalue(params, key):
