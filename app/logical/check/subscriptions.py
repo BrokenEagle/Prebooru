@@ -144,6 +144,8 @@ def expire_subscription_elements():
     # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
     q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
                                              SubscriptionPoolElement.keep.is_(None))
+    print("Soft delete - skipping:", q.count())
+    return
     page = q.limit_paginate(per_page=50)
     while True:
         print(f"expire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})")
