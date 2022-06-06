@@ -73,9 +73,12 @@ Prebooru.addTag = function (obj, type) {
 };
 
 Prebooru.selectAll = function(classname) {
+    let counter = 0;
     [...document.getElementsByClassName(classname)].forEach((input)=>{
         input.checked = true;
+        counter++;
     });
+    document.getElementById('image-select-counter').innerText = counter;
     document.dispatchEvent(Prebooru.updateInputsEvent);
 };
 
@@ -83,13 +86,17 @@ Prebooru.selectNone = function(classname) {
     [...document.getElementsByClassName(classname)].forEach((input)=>{
         input.checked = false;
     });
+    document.getElementById('image-select-counter').innerText = 0;
     document.dispatchEvent(Prebooru.updateInputsEvent);
 };
 
 Prebooru.selectInvert = function(classname) {
+    let counter = 0;
     [...document.getElementsByClassName(classname)].forEach((input)=>{
         input.checked = !input.checked;
+        counter += (input.checked ? 1 : 0);
     });
+    document.getElementById('image-select-counter').innerText = counter;
     document.dispatchEvent(Prebooru.updateInputsEvent);
 };
 

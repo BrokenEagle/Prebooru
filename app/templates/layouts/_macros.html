@@ -106,7 +106,7 @@
 
 {% macro image_select_controls(classname) -%}
     <div id="image-select-controls">
-        <strong>Controls:</strong>
+        <strong>Controls[&thinsp;<span id="image-select-counter">0</span>&thinsp;]:</strong>
         (
         <a href="javascript:Prebooru.selectAll('{{ classname }}')">All</a> |
         <a href="javascript:Prebooru.selectNone('{{ classname }}')">None</a> | 

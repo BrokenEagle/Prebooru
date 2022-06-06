@@ -256,6 +256,11 @@ div#image-select-controls {
     font-size: 20px;
     margin-top: 1em;
 }
+span#image-select-counter {
+    width: 2em;
+    display: inline-block;
+    text-align: center;
+}
 li.booru-banned,
 li.booru-deleted,
 li.artist-deleted {

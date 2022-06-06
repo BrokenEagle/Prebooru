@@ -9,6 +9,7 @@ SubscriptionPools.keepElement = function(obj) {
             } else {
                 Prebooru.message("Updated element.");
                 SubscriptionPools.replaceArticle(obj, data.html);
+                document.getElementById('image-select-counter').innerText = document.querySelectorAll('.subscription-element .checkbox-active').length;
             }
         });
     return false;
