@@ -77,3 +77,7 @@ def element_type_link(element_type):
     classes = ['element-type'] + [element_type + '-type'] + (['type-active'] if active_type == element_type else [])
     url = url_for_with_params('subscription_pool_element.index_html', type=element_type, page=None)
     return general_link(element_type.title(), url, **{'class': ' '.join(classes)})
+
+
+def redownload_element_link(text, element):
+    return general_link(text, url_for('subscription_pool_element.redownload_html', id=element.id), method='POST')

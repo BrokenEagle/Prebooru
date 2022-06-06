@@ -40,6 +40,11 @@ def update_subscription_pool_element_active(subscription_pool_element, active):
     SESSION.commit()
 
 
+def update_subscription_pool_element_deleted(subscription_pool_element, deleted):
+    subscription_pool_element.deleted = deleted
+    SESSION.commit()
+
+
 def batch_update_subscription_pool_element_keep(subscription_pool_elements, value):
     for subscription_pool_element in subscription_pool_elements:
         _update_subscription_pool_element_keep(subscription_pool_element, value)

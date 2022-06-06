@@ -13,6 +13,7 @@ from ..models import SubscriptionPoolElement, IllustUrl, Illust
 from ..logical.utility import search_url_for
 from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep,\
     batch_update_subscription_pool_element_keep
+from ..logical.records.subscription_rec import redownload_element
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace, get_page
 
@@ -152,3 +153,13 @@ def keep_json(id):
     update_subscription_pool_element_keep(element, value)
     html = render_template("subscription_pool_elements/_element_preview.html", element=element) if has_preview else render_template("subscription_pool_elements/_element_info.html", element=element)
     return {'error': False, 'item': element.to_json(), 'html': strip_whitespace(html)}
+
+
+@bp.route('/subscription_pool_elements/<int:id>/redownload', methods=['POST'])
+def redownload_html(id):
+    element = get_or_abort(SubscriptionPoolElement, id)
+    if element.post is None:
+        redownload_element(element)
+    else:
+        flash("Subscription element already has a post.", 'error')
+    return redirect(request.referrer)
