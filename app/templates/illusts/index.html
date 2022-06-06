@@ -1,6 +1,6 @@
 {% extends 'illusts/_base.html' %}
 {% from 'layouts/_macros.html' import page_navigation %}
-{% from 'posts/_macros.html' import multi_post_preview %}
+{% from 'posts/_macros.html' import multi_post_preview, post_preview %}
 {% from 'tags/_macros.html' import simple_tag_list %}
 
 {% block title %}Illusts{% endblock %}
@@ -20,7 +20,12 @@
             {% for illust in illusts.items %}
                 <tr id="illust-{{ illust.id }}">
                     <td>
-                        {{ multi_post_preview(illust, 'illust', True) }}
+                        {% if illust.posts | length > 1 %}
+                            {{ multi_post_preview(illust, 'illust', True) }}
+                        {% else %}
+                            {% set post = illust.posts[0] if illust.posts | length == 1 else None %}
+                            {{ post_preview(post, True) }}
+                        {% endif %}
                     </td>
                     <td>
                         <span><strong>{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</strong></span><br>
@@ -63,6 +68,6 @@
 
 {% block pagescript %}
 <script>
-Prebooru.initializeLazyLoad('.illust-preview');
+Prebooru.initializeLazyLoad('.illust-preview, .post');
 </script>
 {% endblock %}

@@ -133,6 +133,17 @@ div.no-post-preview {
 div.simple-tags-container {
     max-width: 25vw;
 }
+td article.post {
+    height: 260px;
+    width: 260px;
+}
+td article.post img {
+    max-height: 250px;
+    max-width: 250px;
+}
+td article.post.no-post {
+    height: 1em;
+}
 div.illust-preview {
     display: grid;
     grid-template-columns: repeat(2, 0fr);
