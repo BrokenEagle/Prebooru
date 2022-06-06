@@ -1,7 +1,7 @@
 # APP/CONTROLLERS/SUBSCRIPTION_POOL_ELEMENTS_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
-from flask import Blueprint, request, render_template, flash, redirect
+from flask import Blueprint, request, render_template, flash, redirect, url_for
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
@@ -14,7 +14,7 @@ from ..logical.utility import search_url_for
 from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep,\
     batch_update_subscription_pool_element_keep
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace
+    get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace, get_page
 
 
 # ## GLOBAL VARIABLES
@@ -92,6 +92,11 @@ def index_html():
             q = q.filter(SubscriptionPoolElement.keep.is_(None))
     q = q.options(INDEX_HTML_OPTIONS)
     subscription_pool_elements = paginate(q, request, MAX_LIMIT_HTML)
+    page = get_page(request)
+    if page is not None and page != 1 and len(subscription_pool_elements.items) == 0\
+            and page > subscription_pool_elements.pages:
+        return redirect(url_for('subscription_pool_element.index_html', page=subscription_pool_elements.pages,
+                                **{k: v for (k, v) in request.args.items() if k != 'page'}))
     return render_template("subscription_pool_elements/index.html",
                            subscription_pool_elements=subscription_pool_elements,
                            subscription_pool_element=SubscriptionPoolElement())
