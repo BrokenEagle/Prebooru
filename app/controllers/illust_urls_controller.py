@@ -9,8 +9,9 @@ from wtforms.validators import DataRequired
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl
 from ..logical.utility import set_error
-from ..logical.sources.base import get_image_site_id, get_media_source
+from ..logical.sources.base import get_image_site_id, get_media_source, get_source_by_id
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
+from ..logical.downloader.network import redownload_post
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, CustomNameForm, get_or_abort, get_or_error,\
     nullify_blanks, check_param_requirements, hide_input, set_default, parse_bool_parameter
@@ -227,3 +228,18 @@ def update_json(id):
     if type(illust_url) is dict:
         return illust_url
     return update(illust_url)
+
+
+# ###### MISC
+
+@bp.route('/illust_urls/<int:id>/redownload', methods=['POST'])
+def redownload_html(id):
+    illust_url = get_or_abort(IllustUrl, id)
+    post = illust_url.post
+    if post is None:
+        flash("Illust URL has no existing post.", 'error')
+        return redirect(request.referrer)
+    source = get_source_by_id(illust_url.site_id)
+    if not redownload_post(post, illust_url, source):
+        flash("Error redownloading post.", 'error')
+    return redirect(post.show_url)

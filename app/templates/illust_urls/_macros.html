@@ -15,6 +15,8 @@
                             <li><strong>Active:</strong> {{ illust_url.active | tojson }}</li>
                             {% if illust_url.post is none %}
                                 <li><strong>Upload( {{ helpers.illust_url.upload_media_link('image', illust_url) }} )</strong></li>
+                            {% else %}
+                                <li><strong>Redownload( {{ helpers.illust_url.redownload_post_link('image', illust_url) }} )</strong></li>
                             {% endif %}
                         </ul>
                     </div>
@@ -49,6 +51,8 @@
                 <li><strong>Active:</strong> {{ video_illust_url.active | tojson }}</li>
                 {% if video_illust_url.post is none %}
                     <li><strong>Upload( {{ helpers.illust_url.upload_media_link('video', video_illust_url) }} )</strong></li>
+                {% else %}
+                    <li><strong>Redownload( {{ helpers.illust_url.redownload_post_link('video', video_illust_url) }} )</strong></li>
                 {% endif %}
             </ul>
         </div>
