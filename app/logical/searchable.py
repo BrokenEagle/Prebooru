@@ -5,7 +5,8 @@ import re
 from sqlalchemy import and_, not_, func
 from sqlalchemy.orm import aliased, with_polymorphic
 from sqlalchemy.orm.relationships import RelationshipProperty
-from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance, ObjectAssociationProxyInstance
+from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance, ObjectAssociationProxyInstance,\
+    AmbiguousAssociationProxyInstance
 import sqlalchemy.sql.sqltypes as sqltypes
 
 # ## PACKAGE IMPORTS
@@ -36,7 +37,7 @@ TEXT_ARRAY_RE = '%%s_(%s)' % '|'.join(ALL_ARRAY_TYPES)
 # #### Test functions
 
 def get_property(attr, name, model):
-    if type(attr) is ObjectAssociationProxyInstance:
+    if type(attr) in [ObjectAssociationProxyInstance, AmbiguousAssociationProxyInstance]:
         name = attr.target_collection
         attr = getattr(model, name)
     if not hasattr(attr, 'property'):
