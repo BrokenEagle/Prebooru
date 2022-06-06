@@ -19,24 +19,24 @@ def check_all_posts_for_danbooru_id():
         if len(posts) == 0:
             return
         print("\n%d/%d" % (page, page_count))
-        if not check_posts_for_danbooru_id(posts, True):
+        if not check_posts_for_danbooru_id(posts):
             return
         max_id = max(post.id for post in posts)
         page += 1
 
 
-def check_posts_for_danbooru_id(posts, progress=False):
+def check_posts_for_danbooru_id(posts):
     post_md5s = [post.md5 for post in posts]
-    results = get_posts_by_md5s(post_md5s)
-    if results['error']:
-        print(results['message'])
-        return False
-    if len(results['posts']) > 0:
-        for post in posts:
-            danbooru_post = next(filter(lambda x: x['md5'] == post.md5, results['posts']), None)
-            if danbooru_post is None:
-                continue
-            update_post_from_parameters(post, {'danbooru_id': danbooru_post['id']})
-            if progress:
-                print(".", end="", flush=True)
+    for i in range(0, len(post_md5s), 100):
+        md5_sublist = post_md5s[i: i + 100]
+        results = get_posts_by_md5s(md5_sublist)
+        if results['error']:
+            print(results['message'])
+            return False
+        if len(results['posts']) > 0:
+            for post in posts:
+                danbooru_post = next(filter(lambda x: x['md5'] == post.md5, results['posts']), None)
+                if danbooru_post is None:
+                    continue
+                update_post_from_parameters(post, {'danbooru_id': danbooru_post['id']})
     return True
