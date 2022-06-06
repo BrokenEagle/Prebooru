@@ -85,6 +85,7 @@ def check_processing_subscriptions():
 
 def add_subscription_pool_error(pool, error):
     pool.errors.append(error)
+    pool.status = 'error'
     pool.checked = get_current_time()
     pool.requery = None
     pool.active = False
