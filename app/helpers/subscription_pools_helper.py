@@ -46,6 +46,12 @@ def process_subscription_link(subscription_pool):
     return general_link("Process subscription", url, method="POST")
 
 
+def get_last_job_status_link(subscription_pool):
+    job_id = "process_subscription-%d" % subscription_pool.id
+    url = url_for('subscription_pool.show_html', id=subscription_pool.id, job=job_id)
+    return general_link("Get last job status", url)
+
+
 def pool_status_link(subscription_pool):
     return 'idle' if subscription_pool.status == 'idle'\
                   else general_link(subscription_pool.status,
