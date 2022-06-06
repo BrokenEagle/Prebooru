@@ -4,18 +4,24 @@
 import os
 
 # ### PACKAGE IMPORTS
+from config import MEDIA_DIRECTORY
 from utility.file import create_directory, put_get_raw, move_file, delete_file
 
 # ### LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
-from ..media import load_image, create_sample, create_preview
+from ..media import load_image, create_sample, create_preview, create_video_screenshot
 from ..database.post_db import create_post_from_raw_parameters, delete_post, post_append_illust_url, get_post_by_md5
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.error_db import create_error_from_raw_parameters
 from ..database.archive_data_db import get_archive_data, create_archive_data, update_archive_data,\
     ARCHIVE_DATA_DIRECTORY
+
+
+# ## GLOBAL VARIABLES
+
+TEMP_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'temp')
 
 
 # ## FUNCTIONS
@@ -187,8 +193,12 @@ def _load_file(post):
     elif post.file_ext == 'gif':
         pass
     elif post.file_ext == 'mp4':
+        create_directory(TEMP_DIRECTORY)
+        save_path = os.path.join(TEMP_DIRECTORY, post.md5 + '.' + 'jpg')
+        create_video_screenshot(post.file_path, save_path)
+        buffer = put_get_raw(save_path, 'rb')
+        delete_file(save_path)
         has_sample = has_preview = True
         downsample_sample = post.has_sample
         downsample_preview = post.has_preview
-        pass
     return buffer, has_sample, has_preview, downsample_sample, downsample_preview
