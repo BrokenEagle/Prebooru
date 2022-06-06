@@ -25,11 +25,13 @@ T_SERVER_INFO = Table(
     Column('info', Unicode(255), nullable=False),
 )
 
-INFO_FIELDS = ['server_last_activity', 'user_last_activity']
+INFO_FIELDS = ['server_last_activity', 'user_last_activity', 'twitter_next_wait', 'pixiv_next_wait']
 
 FIELD_UPDATERS = {
-    'server_last_activity': lambda: datetime.datetime.isoformat(get_current_time()),
-    'user_last_activity': lambda: datetime.datetime.isoformat(get_current_time()),
+    'server_last_activity': lambda *args: datetime.datetime.isoformat(get_current_time()),
+    'user_last_activity': lambda *args: datetime.datetime.isoformat(get_current_time()),
+    'twitter_next_wait': lambda *args: str(get_current_time().timestamp() + (args[0] if len(args) else 0)),
+    'pixiv_next_wait': lambda *args: str(get_current_time().timestamp() + (args[0] if len(args) else 0)),
 }
 
 
@@ -100,6 +102,22 @@ def update_last_activity(type):
 
 def server_is_busy():
     return (get_last_activity('user') > minutes_ago(15)) or ((get_last_activity('server') > minutes_ago(5)) and is_any_job_locked())
+
+
+def get_next_wait(kind):
+    if not INITIALIZED:
+        return None
+    field = kind + '_next_wait'
+    next_wait = query_field(field)
+    return float(next_wait) if next_wait is not None else None
+
+
+def update_next_wait(kind, duration):
+    if not INITIALIZED:
+        return
+    field = kind + '_next_wait'
+    value = FIELD_UPDATERS[field](duration)
+    update_field(field, value)
 
 
 # #### Private

@@ -22,6 +22,7 @@ from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
 from ..database.illust_db import get_site_illust
+from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
 from ..sites import Site, get_site_domain, get_site_id
 
@@ -678,11 +679,13 @@ def reauthentication_check(response):
 
 @check_guest_auth
 def twitter_request(url, method='GET', wait=True):
-    global LAST_QUERY
-    if wait and (LAST_QUERY is not None) and (LAST_QUERY + MINIMUM_QUERY_INTERVAL > time.time()):
-        sleep_time = LAST_QUERY + MINIMUM_QUERY_INTERVAL - time.time()
-        print("Twitter request: sleeping -", sleep_time)
-        time.sleep(sleep_time)
+    if wait:
+        next_wait = get_next_wait('twitter')
+        update_next_wait('twitter', MINIMUM_QUERY_INTERVAL)
+        sleep_time = next_wait - get_current_time().timestamp()
+        if sleep_time > 0.0:
+            print("Twitter request: sleeping -", sleep_time)
+            time.sleep(sleep_time)
     reauthenticated = False
     for i in range(3):
         try:
@@ -692,9 +695,6 @@ def twitter_request(url, method='GET', wait=True):
             error = e
             time.sleep(5)
             continue
-        finally:
-            if wait:
-                LAST_QUERY = time.time()
         if response.status_code == 200:
             break
         if not reauthenticated and reauthentication_check(response):

@@ -90,6 +90,8 @@ API_JAR.set('PHPSESSID', PIXIV_PHPSESSID, domain='.pixiv.net', path='/', expires
 
 IMAGE_SERVER = 'https://i.pximg.net'
 
+MINIMUM_QUERY_INTERVAL = 2
+
 
 # ## FUNCTIONS
 
@@ -276,7 +278,14 @@ def normalize_image_url(image_url):
 
 #   Network
 
-def pixiv_request(url):
+def pixiv_request(url, wait=True):
+    if wait:
+        next_wait = get_next_wait('pixiv')
+        update_next_wait('pixiv', MINIMUM_QUERY_INTERVAL)
+        sleep_time = next_wait - get_current_time().timestamp()
+        if sleep_time > 0.0:
+            print("Pixiv request: sleeping -", sleep_time)
+            time.sleep(sleep_time)
     for i in range(3):
         try:
             response = requests.get(url, headers=API_HEADERS, cookies=API_JAR, timeout=10)
