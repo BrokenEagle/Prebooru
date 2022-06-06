@@ -39,11 +39,11 @@ def get_subscription_pool_form(**kwargs):
                                  custom_name='subscription_pool[artist_id]', validators=[DataRequired()])
         interval = FloatField('Interval', id='subscription-pool-interval',
                               custom_name='subscription_pool[interval]',
-                              description="How often to check the artist (hours, >1.0).")
+                              description="How often to check the artist (hours, >1.0). [Default: 24 hours]")
         expiration = FloatField('Expiration', id='subscription-pool-expiration',
                                 custom_name='subscription_pool[expiration]',
                                 description="""How long to wait before deleting the post/illust (days, >1.0).
-                                               Clear the field for no expiration.""")
+                                               Clear the field for no expiration. [Default: no expiration]""")
         active = BooleanField('Active', id='subscription-pool-active',
                               custom_name='subscription_pool[active]', default=True)
     return SubscriptionPoolForm(**kwargs)
