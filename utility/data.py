@@ -77,6 +77,11 @@ def safe_get(input_dict, *keys):
     return input_dict
 
 
+def safe_check(input_dict, valtype, *keys):
+    value = safe_get(input_dict, *keys)
+    return isinstance(value, valtype)
+
+
 def add_dict_entry(indict, key, entry):
     indict[key] = indict[key] + [entry] if key in indict else [entry]
 

@@ -13,7 +13,7 @@ import requests
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN
-from utility.data import safe_get, decode_json, fixup_crlf
+from utility.data import safe_get, decode_json, fixup_crlf, safe_check
 from utility.time import get_current_time, datetime_from_epoch, add_days, get_date
 from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
 
@@ -864,7 +864,7 @@ def get_tweet_commentary(twitter_data):
     text = fixup_crlf(SHORT_URL_REPLACE_RG.sub('', text).strip())
     media = safe_get(twitter_data, 'extended_entities', 'media')
     if media is not None and len(media):
-        alt_text_items = [(i + 1, item['ext_alt_text']) for (i, item) in enumerate(media) if 'ext_alt_text' in item]
+        alt_text_items = [(i + 1, item['ext_alt_text']) for (i, item) in enumerate(media) if safe_check(item, str, 'ext_alt_text')]
         if len(alt_text_items):
             text += '\r\n\r\n' + '\r\n'.join([f"IMAGE #{i}: {alt_text}" for (i, alt_text) in alt_text_items])
     return text
