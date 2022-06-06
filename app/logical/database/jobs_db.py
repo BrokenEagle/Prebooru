@@ -48,6 +48,7 @@ T_JOBS_STATUS = Table(
 # ### Create
 
 def create_job_tables():
+    T_JOBS_INFO.create(SCHEDULER_JOBSTORES.engine, True)
     T_JOBS_ENABLED.create(SCHEDULER_JOBSTORES.engine, True)
     T_JOBS_LOCK.create(SCHEDULER_JOBSTORES.engine, True)
     T_JOBS_TIME.create(SCHEDULER_JOBSTORES.engine, True)
