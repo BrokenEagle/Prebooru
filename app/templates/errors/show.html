@@ -10,6 +10,8 @@
                 <li><strong>{{ error.upload.show_link }}</strong></li>
             {% elif error.post is not none %}
                 <li><strong>{{ error.post.show_link }}</strong></li>
+            {% elif error.subscription_pool_element is not none %}
+                <li><strong>{{ error.subscription_pool_element.show_link }}</strong></li>
             {% endif %}
             <li><strong>Module:</strong> <code>{{ error.module }}</code></li>
             <li><strong>Message:</strong> {{ helpers.base.convert_to_html(error.message) }}</li>
