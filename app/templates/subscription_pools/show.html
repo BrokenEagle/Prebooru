@@ -43,6 +43,7 @@
                             document.getElementById('subscription-pool-job-records').innerText = data.item.records;
                             document.getElementById('subscription-pool-job-elements').innerText = data.item.elements;
                             document.getElementById('subscription-pool-job-illusts').innerText = data.item.illusts;
+                            document.getElementById('subscription-pool-job-downloads').innerText = data.item.downloads;
                             if (data.item.stage === 'done') {
                                 clearInterval(job_interval);
                             }
