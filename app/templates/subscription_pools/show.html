@@ -22,11 +22,13 @@
     {% if subscription_pool.status == 'manual' or subscription_pool.status == 'automatic' %}
         <script>
             const page_timer = setInterval(function () {
+                if (document.hidden) return;
                 window.location.reload();
                 clearInterval(page_timer);
             }, 15000);
             {% if job_status is not none and job_status['stage'] != 'done' %}
                 const job_interval = setInterval(function () {
+                    if (document.hidden) return;
                     let url = "{{ url_for('subscription_pool.status_json', id=subscription_pool.id, job=job_id) }}";
                     fetch(url)
                         .then((resp)=>resp.json())
