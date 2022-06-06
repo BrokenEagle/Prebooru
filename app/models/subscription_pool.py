@@ -3,6 +3,9 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
+# ## PACKAGE IMPORTS
+from utility.time import average_timedelta, humanized_timedelta, days_ago
+
 # ## LOCAL IMPORTS
 from .. import DB
 from .illust import Illust
@@ -63,6 +66,18 @@ class SubscriptionPool(JsonModel):
         q = q.order_by(Post.id.desc())
         q = q.limit(10)
         return q.all()
+
+    @memoized_property
+    def average_keep_interval(self):
+        datetimes = self._illust_query.filter(Illust.site_created > days_ago(365), SubscriptionPoolElement.keep == 'yes')\
+                                      .order_by(Illust.site_illust_id.desc())\
+                                      .with_entities(Illust.site_created)\
+                                      .all()
+        if len(datetimes) < 2:
+            return
+        datetimes = [x[0] for x in datetimes]
+        timedeltas = [datetimes[i-1] - datetimes[i] for i in range(1, len(datetimes))]
+        return humanized_timedelta(average_timedelta(timedeltas))
 
     @property
     def element_count(self):

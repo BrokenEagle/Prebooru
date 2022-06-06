@@ -5,7 +5,7 @@ from flask import url_for, request, Markup
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from .base_helper import general_link, url_for_with_params
+from .base_helper import general_link, url_for_with_params, val_or_none
 
 
 # ## GLOBAL VARIABLES
@@ -57,6 +57,14 @@ def pool_status_link(subscription_pool):
                   else general_link(subscription_pool.status,
                                     url_for('subscription_pool.reset_html', id=subscription_pool.id),
                                     method='PUT')
+
+
+# ###### Other functions
+
+def average_interval(subscription_pool):
+    if subscription_pool.element_count == 0:
+        return Markup('<em>N/A</em>')
+    return val_or_none(subscription_pool.average_keep_interval)
 
 
 # #### Elements

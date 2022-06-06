@@ -74,6 +74,10 @@ def get_date(timeval):
     return timeval.strftime("%Y-%m-%d")
 
 
+def average_timedelta(timedeltas):
+    return sum(timedeltas, datetime.timedelta(0)) / len(timedeltas)
+
+
 def humanized_timedelta(delta, precision=2):
     precision_str = "%%.%df " % precision
     if delta.days == 0:
