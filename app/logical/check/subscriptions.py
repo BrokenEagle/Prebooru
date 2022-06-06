@@ -26,6 +26,11 @@ from ..database.jobs_db import get_job_status_data, update_job_status
 from ..records.subscription_rec import update_subscription_elements
 from ..downloader.network import convert_network_subscription
 
+# ## GLOBAL VARIABLES
+
+ILLUST_PAGE_LIMIT = 10
+POST_PAGE_LIMIT = 5
+
 
 # ## FUNCTIONS
 
@@ -44,10 +49,10 @@ def download_subscription_illusts(subscription_pool, job_id=None):
     job_status['records'] = len(site_illust_ids)
     print(f"download_subscription_illusts [{subscription_pool.id}]: Total({len(site_illust_ids)})")
     for (i, item_id) in enumerate(site_illust_ids):
-        if (i % 20) == 0:
+        if (i % ILLUST_PAGE_LIMIT) == 0:
             total = len(site_illust_ids)
             first = i
-            last = min(i + 20, total)
+            last = min(i + ILLUST_PAGE_LIMIT, total)
             job_status['range'] = f"({first} - {last}) / {total}"
             update_job_status(job_id, job_status)
         data_params = source.get_illust_data(item_id)
@@ -73,7 +78,7 @@ def download_subscription_elements(subscription_pool, job_id=None):
     q = SubscriptionPoolElement.query.filter_by(pool_id=subscription_pool.id, post_id=None, active=True)
     q = q.options(selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionPoolElement.id.asc())
-    page = q.limit_paginate(per_page=5)
+    page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
     while True:
         print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
         job_status['range'] = f"({page.first} - {page.last}) / {page.count}"
@@ -96,7 +101,7 @@ def download_missing_elements():
                                        SubscriptionPool.status == 'idle')
     q = q.options(selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionPoolElement.id.asc())
-    page = q.limit_paginate()
+    page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
     while True:
         print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:
