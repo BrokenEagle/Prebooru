@@ -87,9 +87,9 @@ def download_subscription_elements(subscription_pool, job_id=None):
             if convert_network_subscription(element, source):
                 job_status['downloads'] += 1
         _process_similarity(page.items)
-        if not page.has_next:
+        if not page.has_prev:
             break
-        page = page.next()
+        page = page.prev()
     update_job_status(job_id, job_status)
 
 
@@ -108,12 +108,12 @@ def download_missing_elements():
             site_key = get_site_key(element.illust_url.site_id)
             source = SOURCEDICT[site_key]
             convert_network_subscription(element, source)
-        if not page.has_next:
+        if not page.has_prev:
             break
         if page.page > 10:
             print("download_missing_elements: Max pages reached!")
             break
-        page = page.next()
+        page = page.prev()
 
 
 def expire_subscription_elements():
