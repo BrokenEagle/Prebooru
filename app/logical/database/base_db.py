@@ -18,7 +18,7 @@ def safe_db_execute(func_name, module_name, scope_vars=None, **kwargs):
     for func_name in ['try_func', 'msg_func', 'error_func', 'finally_func', 'printer']:
         kwargs[func_name] = kwargs[func_name]\
                             if (func_name in kwargs) and (callable(kwargs[func_name]))\
-                            else (lambda *args: None)
+                            else (lambda *args: args[-1])
     scope_vars = scope_vars or {}
     data = None
     error = None
@@ -37,7 +37,7 @@ def safe_db_execute(func_name, module_name, scope_vars=None, **kwargs):
             log_error(f"{module_name}.func_name", f"safe_db_execute - Exception in error block: {repr(e)}")
     finally:
         try:
-            return kwargs['finally_func'](scope_vars, data, error)
+            return kwargs['finally_func'](scope_vars, error, data)
         except Exception as e:
             log_error(f"{module_name}.func_name", f"safe_db_execute - Exception in finally block: : {repr(e)}")
 

@@ -64,7 +64,7 @@ def process_upload(upload_id):
         upload = upload or Upload.find(upload_id)
         set_upload_status(upload, 'error')
 
-    def finally_func(scope_vars, data, error):
+    def finally_func(scope_vars, error, data):
         nonlocal upload
         upload = upload or Upload.find(upload_id)
         printer("Upload:", upload.status)
@@ -114,7 +114,7 @@ def process_subscription(subscription_id, job_id):
         update_subscription_pool_status(subscription, 'error')
         update_subscription_pool_active(subscription, False)
 
-    def finally_func(scope_vars, data, error):
+    def finally_func(scope_vars, error, data):
         nonlocal subscription
         subscription = subscription or SubscriptionPool.find(subscription_id)
         if error is None and subscription.status != 'error':

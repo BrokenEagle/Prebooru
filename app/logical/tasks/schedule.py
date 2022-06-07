@@ -251,7 +251,7 @@ def _process_pending_subscription(subscription, printer):
         update_subscription_pool_status(subscription, 'error')
         update_subscription_pool_active(subscription, False)
 
-    def finally_func(scope_vars, data, error):
+    def finally_func(scope_vars, error, data):
         nonlocal subscription
         if error is None and subscription.status != 'error':
             update_subscription_pool_status(subscription, 'idle')
