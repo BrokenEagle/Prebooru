@@ -605,12 +605,12 @@ def timeline_iterator(data, cursor, tweet_ids, last_id=None, **kwargs):
     return False
 
 
-def get_timeline(pageFunc, **kwargs):
+def get_timeline(page_func, **kwargs):
     page = 1
     cursor = [None]
     tweet_ids = []
     while True:
-        data = pageFunc(cursor=cursor[0], **kwargs)
+        data = page_func(cursor=cursor[0], **kwargs)
         if data['error']:
             return data['message']
         print("get_timeline:", page)
@@ -668,15 +668,20 @@ def reauthentication_check(response):
     return error_code in [200, 239]
 
 
+def check_request_wait(wait):
+    if not wait:
+        return
+    next_wait = get_next_wait('twitter')
+    update_next_wait('twitter', MINIMUM_QUERY_INTERVAL)
+    sleep_time = next_wait - get_current_time().timestamp()
+    if sleep_time > 0.0:
+        print("Twitter request: sleeping -", sleep_time)
+        time.sleep(sleep_time)
+
+
 @check_guest_auth
 def twitter_request(url, method='GET', wait=True):
-    if wait:
-        next_wait = get_next_wait('twitter')
-        update_next_wait('twitter', MINIMUM_QUERY_INTERVAL)
-        sleep_time = next_wait - get_current_time().timestamp()
-        if sleep_time > 0.0:
-            print("Twitter request: sleeping -", sleep_time)
-            time.sleep(sleep_time)
+    check_request_wait(wait)
     reauthenticated = False
     for i in range(3):
         try:
@@ -855,7 +860,9 @@ def get_tweet_commentary(twitter_data):
     text = fixup_crlf(SHORT_URL_REPLACE_RG.sub('', text).strip())
     media = safe_get(twitter_data, 'extended_entities', 'media')
     if media is not None and len(media):
-        alt_text_items = [(i + 1, item['ext_alt_text']) for (i, item) in enumerate(media) if safe_check(item, str, 'ext_alt_text')]
+        alt_text_items = [(i + 1, item['ext_alt_text'])
+                          for (i, item) in enumerate(media)
+                          if safe_check(item, str, 'ext_alt_text')]
         if len(alt_text_items):
             text += '\r\n\r\n' + '\r\n'.join([f"IMAGE #{i}: {alt_text}" for (i, alt_text) in alt_text_items])
     return text

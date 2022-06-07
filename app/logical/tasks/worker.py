@@ -1,8 +1,6 @@
 # APP/LOGICAL/TASKS/WORKER.PY
 
 # ## PYTHON IMPORTS
-import os
-import operator
 import itertools
 import threading
 
@@ -109,7 +107,6 @@ def process_subscription(subscription_id, job_id):
 
     def error_func(scope_vars, e):
         nonlocal subscription
-        print("process_subscription-error_func:", e)
         subscription = subscription or SubscriptionPool.find(subscription_id)
         update_subscription_pool_status(subscription, 'error')
         update_subscription_pool_active(subscription, False)
@@ -210,7 +207,5 @@ def process_file_upload(upload):
 # #### Private functions
 
 def _query_unlock_subscription_job():
-    print("_query_unlock_subscription_job-0")
     if not check_processing_subscriptions():
-        print("_query_unlock_subscription_job-1")
         update_job_lock_status('process_subscription', False)

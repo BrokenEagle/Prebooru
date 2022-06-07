@@ -30,12 +30,12 @@ SITE_DATA_LABELS = {
 # #### Form functions
 
 def form_class(form):
-    CLASS_MAP = {
+    class_map = {
         None: "",
         1: "pixiv-data",
         3: "twitter-data",
     }
-    return CLASS_MAP[form.site_id.data]
+    return class_map[form.site_id.data]
 
 
 # #### Iterator functions

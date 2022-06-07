@@ -10,7 +10,7 @@ WORKER_LOCKS = ['process_subscription']
 
 JOB_CONFIG = {
     'expunge_cache_records': {
-        'config':{
+        'config': {
             'id': 'expunge_cache_records',
             'hours': 8,
             'jitter': 3600,

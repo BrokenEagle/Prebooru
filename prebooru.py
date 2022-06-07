@@ -207,20 +207,20 @@ def kill_server(args):
     import psutil
     from config import DATA_DIRECTORY
     from utility.file import load_default, put_get_json
-    SERVER_PID_FILE = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
-    SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
-    if SERVER_PID is None:
+    server_pid_file = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
+    server_pid = next(iter(load_default(server_pid_file, [])), None)
+    if server_pid is None:
         print("No prebooru server is currently running.")
         return
     try:
-        proc = psutil.Process(int(SERVER_PID))
+        proc = psutil.Process(int(server_pid))
     except psutil.NoSuchProcess:
-        print(f"No server found with PID {SERVER_PID}.")
+        print(f"No server found with PID {server_pid}.")
     else:
         print("Killing server...")
         shutdown_server(proc)
     finally:
-        put_get_json(SERVER_PID_FILE, 'w', [])
+        put_get_json(server_pid_file, 'w', [])
 
 
 # #### Auxiliary functions
@@ -233,12 +233,12 @@ def watchdog_loop(watchdog_info):
     from werkzeug._reloader import _get_args_for_reloading
     from config import WATCHDOG_MAX_MEMORY_MB, WATCHDOG_POLLING_INTERVAL
 
-    WERKZEUG_RESTART_CODE = 3
+    werkzeug_restart_code = 3
     new_environ = os.environ.copy()
-    errorcode = WERKZEUG_RESTART_CODE
+    errorcode = werkzeug_restart_code
     last_checked = time.time()
     while True:
-        if errorcode == WERKZEUG_RESTART_CODE:
+        if errorcode == werkzeug_restart_code:
             unique_id = watchdog_info['unique_id'] = str(uuid.uuid4())
             process_arguments = [sys.executable, 'prebooru.py', 'server', '--unique-id', unique_id] +\
                 _get_args_for_reloading()[3:]
@@ -255,7 +255,7 @@ def watchdog_loop(watchdog_info):
         if (private_memory > WATCHDOG_MAX_MEMORY_MB):
             print("Server has exceded the allowed maximum memory... restarting.")
             if shutdown_server(proc, unique_id, True):
-                errorcode = WERKZEUG_RESTART_CODE
+                errorcode = werkzeug_restart_code
             else:
                 print("Server is busy... will try restarting again later.")
         last_checked = time.time()

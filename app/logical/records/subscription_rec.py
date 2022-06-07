@@ -38,7 +38,7 @@ def update_subscription_elements(subscription_pool, job_id=None):
         first = min(1, len(page_items)) + page_border
         last = page_border + len(page_items)
         job_status['range'] = f"({first} - {last}) / {total}"
-        print(f"update_subscription_elements:", job_status['range'])
+        print('update_subscription_elements:', job_status['range'])
         update_job_status(job_id, job_status)
         for illust_url in page_items:
             createparams = {
@@ -65,9 +65,10 @@ def redownload_element(element):
             return False
 
     def msg_func(scope_vars, error):
-        return f"Unhandled exception occurred on subscripton pool #{subscription_id}: {repr(error)}"
+        return f"Unhandled exception occurred on subscripton pool #{element.pool_id}: {repr(error)}"
 
     def error_func(scope_vars, error):
         update_subscription_pool_element_deleted(element, True)
 
-    return safe_db_execute('redownload_element', 'records.subscription_rec', try_func=try_func, msg_func=msg_func, error_func=error_func, printer=print)
+    return safe_db_execute('redownload_element', 'records.subscription_rec', try_func=try_func, msg_func=msg_func,
+                           error_func=error_func, printer=print)

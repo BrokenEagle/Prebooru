@@ -40,6 +40,8 @@ DATABASE_VERSION = '97683f50f096'
 PREBOORU_DB_URL = os.environ.get('PREBOORU_DB', 'sqlite:///%s' % DB_PATH)
 SCHEDULER_DB_URL = os.environ.get('SCHEDULER_JOBSTORES', r'sqlite:///%s' % JOBS_PATH)
 
+ENGINE_OPTIONS = {'connect_args': {'check_same_thread': False, 'timeout': 15}} if 'sqlite' in PREBOORU_DB_URL else {}
+
 NAMING_CONVENTION = {
     "ix": 'ix_%(column_0_label)s',
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -151,14 +153,14 @@ class MethodRewriteMiddleware(object):
 
 # ## INITIALIZATION
 
-SCHEDULER_JOBSTORES = SQLAlchemyJobStore(url=SCHEDULER_DB_URL + "?check_same_thread=true",
-                                         engine_options={'isolation_level': "AUTOCOMMIT"})
+SCHEDULER_JOBSTORES = SQLAlchemyJobStore(url=SCHEDULER_DB_URL + '?check_same_thread=true',
+                                         engine_options={'isolation_level': 'AUTOCOMMIT'})
 
 PREBOORU_APP = Flask("", template_folder=os.path.join('app', 'templates'), static_folder=os.path.join('app', 'static'))
 PREBOORU_APP.config.from_mapping(
     SQLALCHEMY_DATABASE_URI=PREBOORU_DB_URL,
     SQLALCHEMY_BINDS={},
-    SQLALCHEMY_ENGINE_OPTIONS={'connect_args': {"check_same_thread": False}} if 'sqlite' in PREBOORU_DB_URL else {},
+    SQLALCHEMY_ENGINE_OPTIONS=ENGINE_OPTIONS,
     JSON_SORT_KEYS=False,
     SQLALCHEMY_ECHO=False,
     SECRET_KEY='\xfb\x12\xdf\xa1@i\xd6>V\xc0\xbb\x8fp\x16#Z\x0b\x81\xeb\x16',
@@ -166,9 +168,9 @@ PREBOORU_APP.config.from_mapping(
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     EXPLAIN_TEMPLATE_LOADING=False,
     SEND_FILE_MAX_AGE_DEFAULT=43200,
-    SCHEDULER_JOBSTORES={"default": SCHEDULER_JOBSTORES},
-    SCHEDULER_EXECUTORS={"default": {"type": "processpool", "max_workers": 3}},
-    SCHEDULER_JOB_DEFAULTS={"coalesce": False, "max_instances": 1, 'misfire_grace_time': 30},
+    SCHEDULER_JOBSTORES={'default': SCHEDULER_JOBSTORES},
+    SCHEDULER_EXECUTORS={'default': {'type': 'processpool', 'max_workers': 3}},
+    SCHEDULER_JOB_DEFAULTS={'coalesce': False, 'max_instances': 1, 'misfire_grace_time': 30},
     SCHEDULER_MISFIRE_GRACE_TIME=30,
     SCHEDULER_API_ENABLED=True,
 )

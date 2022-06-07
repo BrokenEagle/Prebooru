@@ -166,25 +166,19 @@ def _delete_post_data(post, retdata):
 
 def _delete_media_files(sample_path, preview_path, retdata, file_path=None):
     print('_delete_media_files', file_path, sample_path, preview_path)
+    media_paths = {
+        'file': file_path,
+        'sample': sample_path,
+        'preview': preview_path,
+    }
     error_messages = []
-    if file_path is not None:
-        print(f"Deleting data file: {file_path}")
-        try:
-            delete_file(file_path)
-        except Exception as e:
-            error_messages.append("Error deleting data file: %s" % str(e))
-    if sample_path is not None:
-        print(f"Deleting sample file: {sample_path}")
-        try:
-            delete_file(sample_path)
-        except Exception as e:
-            error_messages.append("Error deleting sample file: %s" % str(e))
-    if preview_path is not None:
-        print(f"Deleting preview file: {preview_path}")
-        try:
-            delete_file(preview_path)
-        except Exception as e:
-            error_messages.append("Error deleting preview file: %s" % str(e))
+    for key in media_paths:
+        if media_paths[key] is not None:
+            print(f"Deleting {key} file: {media_paths[key]}")
+            try:
+                delete_file(media_paths[key])
+            except Exception as e:
+                error_messages.append(f"Error deleting {key} file: {str(e)}")
     if len(error_messages) > 0:
         return set_error(retdata, '\r\n'.join(error_messages))
     return retdata

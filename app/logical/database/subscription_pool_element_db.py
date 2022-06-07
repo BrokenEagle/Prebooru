@@ -7,7 +7,6 @@ from utility.time import days_from_now, get_current_time
 from ... import SESSION
 from ...models import SubscriptionPool, SubscriptionPoolElement
 from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
-from .post_db import delete_post
 from .base_db import update_column_attributes
 
 
@@ -91,17 +90,17 @@ def archive_subscription_post(element):
     SESSION.commit()
 
 
-def add_subscription_post(subscription_pool_element, post):
-    subscription_pool_element.post_id = post.id
-    subscription_pool_element.md5 = post.md5
-    SESSION.commit()
-
-
 def duplicate_subscription_post(element, md5):
     element.status = 'duplicate'
     element.expires = None
     element.active = False
     element.md5 = md5
+    SESSION.commit()
+
+
+def add_subscription_post(element, post):
+    element.post_id = post.id
+    element.md5 = post.md5
     SESSION.commit()
 
 

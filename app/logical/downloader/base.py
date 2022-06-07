@@ -25,7 +25,7 @@ from ..database.error_db import create_error, create_and_append_error, extend_er
 
 def convert_video_upload(illust_url, upload, source, create_video_func, post_type):
     if illust_url.sample is None:
-        msg = "Did not find thumbnail for video on illust #%d" % illust.id
+        msg = "Did not find thumbnail for video on illust #%d" % illust_url.illust_id
         create_and_append_error('logical.downloader.convert_video_upload', msg, upload)
         return False
     else:

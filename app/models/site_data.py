@@ -49,7 +49,7 @@ class PixivData(SiteData):
     #
     # Polymorphic models with columns that conflict must be declared like this
     @declared_attr
-    def replies(cls):
+    def replies(self):
         return SiteData.__table__.c.get('replies', DB.Column(DB.Integer, nullable=True))
 
     # ## Private
@@ -75,7 +75,7 @@ class TwitterData(SiteData):
     #
     # Polymorphic models with columns that conflict must be declared like this
     @declared_attr
-    def replies(cls):
+    def replies(self):
         return SiteData.__table__.c.get('replies', DB.Column(DB.Integer, nullable=True))
 
     # ## Private

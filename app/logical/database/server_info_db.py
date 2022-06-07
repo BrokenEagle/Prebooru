@@ -101,7 +101,9 @@ def update_last_activity(type):
 
 
 def server_is_busy():
-    return (get_last_activity('user') > minutes_ago(15)) or ((get_last_activity('server') > minutes_ago(5)) and is_any_job_locked())
+    return (((get_last_activity('user') > minutes_ago(15))
+            or (get_last_activity('server') > minutes_ago(5)))
+            and is_any_job_locked())
 
 
 def get_next_wait(kind):

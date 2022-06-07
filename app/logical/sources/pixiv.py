@@ -18,6 +18,7 @@ from utility.file import get_file_extension, get_http_filename
 # ## LOCAL IMPORTS
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, get_api_data, save_api_data
+from ..database.server_info_db import get_next_wait, update_next_wait
 from ..sites import Site, get_site_domain, get_site_id
 
 

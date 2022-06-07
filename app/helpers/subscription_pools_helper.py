@@ -82,7 +82,8 @@ def keep_element_link(subscription_element, value, format, has_preview):
     if format == 'html':
         addons['onclick'] = "return Prebooru.linkPost(this)"
     elif format == 'json':
-        addons['onclick'] = "return SubscriptionPools.keepElement(this)" if has_preview else "return Prebooru.keepElement(this)"
+        addons['onclick'] = "return SubscriptionPools.keepElement(this)" if has_preview\
+                            else "return Prebooru.keepElement(this)"
     return general_link(value, url, **addons)
 
 
@@ -94,4 +95,5 @@ def element_type_link(element_type):
 
 
 def redownload_element_link(text, element):
-    return general_link(text, url_for('subscription_pool_element.redownload_json', id=element.id), onclick="return SubscriptionPools.redownload(this)")
+    url = url_for('subscription_pool_element.redownload_json', id=element.id)
+    return general_link(text, url, onclick="return SubscriptionPools.redownload(this)")

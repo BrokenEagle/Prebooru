@@ -46,7 +46,6 @@
                 {% endif %}
                 {% if sample_illust_url is not none %}
                     <li><strong>Thumb URL:</strong> {{ helpers.base.url_link(illust_url.sample_url) }}</li>
-                {% endif %}
                 <li><strong>Dimensions:</strong> {{ illust_url.width }} x {{ illust_url.height }}</li>
                 <li><strong>Active:</strong> {{ illust_url.active | tojson }}</li>
                 {% if illust_url.post is none %}

@@ -2,7 +2,6 @@
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, flash, redirect, url_for
-from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
@@ -25,7 +24,9 @@ bp = Blueprint("subscription_pool_element", __name__)
 # #### Load options
 
 INDEX_HTML_OPTIONS = (
-    selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).selectinload(Illust.urls).lazyload('*'),
+    selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust)
+                                                    .selectinload(Illust.urls)
+                                                    .lazyload('*'),
     selectinload(SubscriptionPoolElement.post).lazyload('*'),
     selectinload(SubscriptionPoolElement.errors),
 )
@@ -151,7 +152,10 @@ def keep_json(id):
     if len(messages) > 0:
         return {'error': True, 'message': '<br>'.join(messages)}
     update_subscription_pool_element_keep(element, value)
-    html = render_template("subscription_pool_elements/_element_preview.html", element=element) if has_preview else render_template("subscription_pool_elements/_element_info.html", element=element)
+    if has_preview:
+        html = render_template("subscription_pool_elements/_element_preview.html", element=element)
+    else:
+        html = render_template("subscription_pool_elements/_element_info.html", element=element)
     return {'error': False, 'item': element.to_json(), 'html': strip_whitespace(html)}
 
 

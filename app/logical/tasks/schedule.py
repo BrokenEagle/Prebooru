@@ -18,7 +18,8 @@ from ..check.subscriptions import download_subscription_illusts, download_missin
     expire_subscription_elements
 from ..records.media_file_rec import batch_delete_media
 from ..database.base_db import safe_db_execute
-from ..database.subscription_pool_db import get_available_subscription, update_subscription_pool_status
+from ..database.subscription_pool_db import get_available_subscription, update_subscription_pool_status,\
+    update_subscription_pool_active
 from ..database.subscription_pool_element_db import total_missing_downloads, total_expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files

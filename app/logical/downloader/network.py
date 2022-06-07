@@ -143,7 +143,7 @@ def update_image_post(illust_url, post, source, *args):
     if isinstance(buffer, list):
         return buffer
     post_errors = []
-    image_file_ext = check_filetype(buffer, file_ext, post_errors)
+    check_filetype(buffer, file_ext, post_errors)
     image = load_image(buffer)
     if is_error(image):
         return post_errors + [image]
@@ -163,7 +163,7 @@ def update_video_post(illust_url, post, source, *args):
     if isinstance(buffer, list):
         return buffer
     post_errors = []
-    video_file_ext = check_filetype(buffer, file_ext, post_errors)
+    check_filetype(buffer, file_ext, post_errors)
     error = save_video(buffer, post)
     if error is not None:
         return post_errors + [error]

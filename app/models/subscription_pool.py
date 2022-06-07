@@ -69,7 +69,8 @@ class SubscriptionPool(JsonModel):
 
     @memoized_property
     def average_keep_interval(self):
-        datetimes = self._illust_query.filter(Illust.site_created > days_ago(365), SubscriptionPoolElement.keep == 'yes')\
+        datetimes = self._illust_query.filter(Illust.site_created > days_ago(365),
+                                              SubscriptionPoolElement.keep == 'yes')\
                                       .order_by(Illust.site_illust_id.desc())\
                                       .with_entities(Illust.site_created)\
                                       .all()

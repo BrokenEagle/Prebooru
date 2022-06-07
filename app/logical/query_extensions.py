@@ -22,8 +22,8 @@ class CountPaginate():
         self.per_page = per_page
         self.page = max(page, 1)
         self.offset = (page - 1) * per_page
-        self.items = self._GetItems()
-        self.count = self._GetCount()
+        self.items = self._get_items()
+        self.count = self._get_count()
         self.pages = ((self.count - 1) // per_page) + 1
 
     @property
@@ -48,10 +48,10 @@ class CountPaginate():
     def prev(self):
         return CountPaginate(query=self.query, page=self.page - 1, per_page=self.per_page) if self.has_prev else None
 
-    def _GetItems(self):
+    def _get_items(self):
         return self.query.limit(self.per_page).offset(self.offset).all()
 
-    def _GetCount(self):
+    def _get_count(self):
         # Easy way to get an exact copy of a query
         self._count_query = self.query.filter()
         if len(self._count_query._where_criteria) == 0:
@@ -71,8 +71,8 @@ class LimitPaginate():
         self.page = page
         self.next_id = next_id
         self.prev_id = prev_id
-        self.items = self._GetItems()
-        self.current_count = self._GetCount()
+        self.items = self._get_items()
+        self.current_count = self._get_count()
         self.count = count or self.current_count
         self.pages = ((self.current_count - 1) // per_page) + 1
         self.first = ((page - 1) * per_page) + 1
@@ -110,7 +110,7 @@ class LimitPaginate():
         return LimitPaginate(query=self.query, page=self.prev_num, per_page=self.per_page, count=self.count,
                              prev_id=self.prev_sequential_id) if self.has_prev else None
 
-    def _GetItems(self):
+    def _get_items(self):
         model = _query_model(self.query)
         q = self.query
         if self.next_id:
@@ -119,7 +119,7 @@ class LimitPaginate():
             q = q.filter(model.id > self.prev_id)
         return q.order_by(model.id.desc()).limit(self.per_page).all()
 
-    def _GetCount(self):
+    def _get_count(self):
         return self.query.count()
 
 

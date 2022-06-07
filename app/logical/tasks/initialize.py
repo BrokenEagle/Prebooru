@@ -16,7 +16,7 @@ from utility.print import buffered_print
 from ... import SCHEDULER
 from ..database.server_info_db import get_last_activity
 from ..database.jobs_db import create_job_tables, get_all_job_info, delete_job,\
-    create_job_enabled, get_all_job_enabled, update_job_enabled_status, delete_enabled,\
+    create_job_enabled, get_all_job_enabled,\
     create_job_lock, get_all_job_locks, update_job_lock_status, delete_lock,\
     create_job_timeval, get_all_job_timevals, update_job_timeval, delete_timeval
 from . import JOB_CONFIG, ALL_JOB_INFO, ALL_JOB_ENABLED, ALL_JOB_LOCKS, ALL_JOB_TIMEVALS
@@ -111,7 +111,9 @@ def reschedule_task(id, reschedule_soon):
         next_run_offset = max(jitter * random.random(), leeway)
         next_run_time = datetime.datetime.now() + datetime.timedelta(seconds=next_run_offset)
     else:
-        time_config = {k: v for (k, v) in JOB_CONFIG[id]['config'].items() if k in ['seconds', 'minutes', 'hours', 'days', 'weeks']}
+        time_config = {k: v
+                       for (k, v) in JOB_CONFIG[id]['config'].items()
+                       if k in ['seconds', 'minutes', 'hours', 'days', 'weeks']}
         next_run_time = datetime.datetime.now() + datetime.timedelta(**time_config)
     _reschedule_task(id, next_run_time)
 

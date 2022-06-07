@@ -165,49 +165,11 @@ def relationship_attribute_filters(query, model, attribute, params):
     filters = ()
     relation_property = get_property(relation, attribute, model)
     if (attribute + '_exists') in params:
-        if relation_property.secondaryjoin is not None:
-            raise Exception("Exists not available for fk relations. Use _has instead.")
-        primaryjoin = relation_property.primaryjoin
-        if primaryjoin.right.table == model.__table__:
-            if is_truthy(params[attribute + '_exists']):
-                filters += (primaryjoin.right.is_not(None),)
-            elif is_falsey(params[attribute + '_exists']):
-                filters += (primaryjoin.right.is_(None),)
-            else:
-                raise Exception("%s - value must be truthy or falsey" % (attribute + '_exists'))
-        elif primaryjoin.left.table == model.__table__:
-            subclause = relation_model.query.filter(primaryjoin.right.is_not(None)).with_entities(primaryjoin.right)
-            if is_truthy(params[attribute + '_exists']):
-                filters += (model.id.in_(subclause),)
-            elif is_falsey(params[attribute + '_exists']):
-                filters += (model.id.not_in(subclause),)
-            else:
-                raise Exception("%s - value must be truthy or falsey" % (attribute + '_exists'))
-        else:
-            raise Exception("Incorrect model configuration on %s with relation %s" % (repr(model), attribute))
+        filters += relationship_exists_filters(model, attribute, params, relation_model, relation_property)
     elif ('has_' + attribute) in params:
-        if relation_property.secondaryjoin is None:
-            raise Exception("Has not available for fk relations. Use _exists instead.")
-        primaryjoin = relation_property.primaryjoin
-        subquery = SESSION.query(primaryjoin.right.table).with_entities(primaryjoin.right)
-        subclause = model.id.in_(subquery)
-        if is_truthy(params['has_' + attribute]):
-            filters += (subclause,)
-        elif is_falsey(params['has_' + attribute]):
-            filters += (not_(subclause),)
-        else:
-            raise Exception("%s - value must be truthy or falsey" % ('has_' + attribute))
+        filters += relationship_has_filters(model, attribute, params, relation_property)
     elif ('count_' + attribute) in params:
-        if relation_property.secondaryjoin is None:
-            raise Exception("Count not available for fk relations.")
-        primaryjoin = relation_property.primaryjoin
-        value = params['count_' + attribute]
-        count_clause = relationship_count(model, primaryjoin, value)
-        if count_clause is not None:
-            query = query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right).group_by(model)\
-                         .having(count_clause)
-        else:
-            raise Exception("%s - invalid value: %s" % ('count_' + attribute, value))
+        query = relationship_count_filters(model, attribute, params, relation_property, query)
     if attribute in params:
         aliased_model = aliased(relation_model)
         query = query.unique_join(aliased_model, relation)
@@ -285,6 +247,58 @@ def boolean_filters(model, columnname, params):
     if columnname in params:
         return boolean_matching(model, columnname, params[columnname])
     return ()
+
+
+# #### Relationship filter functions
+
+def relationship_exists_filters(model, attribute, params, relation_model, relation_property):
+    if relation_property.secondaryjoin is not None:
+        raise Exception("Exists not available for fk relations. Use _has instead.")
+    primaryjoin = relation_property.primaryjoin
+    if primaryjoin.right.table == model.__table__:
+        if is_truthy(params[attribute + '_exists']):
+            return (primaryjoin.right.is_not(None),)
+        elif is_falsey(params[attribute + '_exists']):
+            return (primaryjoin.right.is_(None),)
+        else:
+            raise Exception("%s - value must be truthy or falsey" % (attribute + '_exists'))
+    elif primaryjoin.left.table == model.__table__:
+        subclause = relation_model.query.filter(primaryjoin.right.is_not(None)).with_entities(primaryjoin.right)
+        if is_truthy(params[attribute + '_exists']):
+            return (model.id.in_(subclause),)
+        elif is_falsey(params[attribute + '_exists']):
+            return (model.id.not_in(subclause),)
+        else:
+            raise Exception("%s - value must be truthy or falsey" % (attribute + '_exists'))
+    else:
+        raise Exception("Incorrect model configuration on %s with relation %s" % (repr(model), attribute))
+
+
+def relationship_has_filters(model, attribute, params, relation_property):
+    if relation_property.secondaryjoin is None:
+        raise Exception("Has not available for fk relations. Use _exists instead.")
+    primaryjoin = relation_property.primaryjoin
+    subquery = SESSION.query(primaryjoin.right.table).with_entities(primaryjoin.right)
+    subclause = model.id.in_(subquery)
+    if is_truthy(params['has_' + attribute]):
+        return (subclause,)
+    elif is_falsey(params['has_' + attribute]):
+        return (not_(subclause),)
+    else:
+        raise Exception("%s - value must be truthy or falsey" % ('has_' + attribute))
+
+
+def relationship_count_filters(model, attribute, params, relation_property, query):
+    if relation_property.secondaryjoin is None:
+        raise Exception("Count not available for fk relations.")
+    primaryjoin = relation_property.primaryjoin
+    value = params['count_' + attribute]
+    count_clause = relationship_count(model, primaryjoin, value)
+    if count_clause is not None:
+        return query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right).group_by(model)\
+                    .having(count_clause)
+    else:
+        raise Exception("%s - invalid value: %s" % ('count_' + attribute, value))
 
 
 # #### Type auxiliary functions

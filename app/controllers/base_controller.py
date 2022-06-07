@@ -235,9 +235,9 @@ def int_or_blank(data):
 
 
 def nullify_blanks(data):
-    def _Check(val):
+    def _check(val):
         return type(val) is str and val.strip() == ""
-    return {k: (v if not _Check(v) else None) for (k, v) in data.items()}
+    return {k: (v if not _check(v) else None) for (k, v) in data.items()}
 
 
 def set_default(indict, key, default):
