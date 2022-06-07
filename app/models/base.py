@@ -170,7 +170,7 @@ class JsonModel(DB.Model):
     @classmethod
     def relations(cls):
         if not hasattr(cls, '_relation_keys'):
-            primary_keys = [key for key in dir(cls) if not (key.startswith('_') and key.endswith('_'))]
+            primary_keys = [key for key in cls.__dict__.keys() if not (key.startswith('_') and key.endswith('_'))]
             setattr(cls, '_relation_keys', [])
             for key in primary_keys:
                 attr = getattr(cls, key)
