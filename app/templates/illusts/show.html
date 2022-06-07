@@ -13,7 +13,7 @@
         {% if illust.type == 'image' %}
             {{ image_urls_section(illust.ordered_urls) }}
         {% elif illust.type == 'video' %}
-            {{ video_urls_section(illust.video_illust_url, illust.thumb_illust_url) }}
+            {{ video_urls_section(illust.urls[0]) }}
         {% endif %}
     </div>
 {% endblock %}

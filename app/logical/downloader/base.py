@@ -23,14 +23,13 @@ from ..database.error_db import create_error, create_and_append_error, extend_er
 
 # #### Main execution functions
 
-def convert_video_upload(illust, upload, source, create_video_func, post_type):
-    video_illust_url, thumb_illust_url = source.VideoIllustDownloadUrls(illust)
-    if thumb_illust_url is None:
+def convert_video_upload(illust_url, upload, source, create_video_func, post_type):
+    if illust_url.sample is None:
         msg = "Did not find thumbnail for video on illust #%d" % illust.id
         create_and_append_error('logical.downloader.convert_video_upload', msg, upload)
         return False
     else:
-        post = create_video_func(video_illust_url, thumb_illust_url, upload, source, post_type)
+        post = create_video_func(illust_url, upload, source, post_type)
         return record_outcome(post, upload)
 
 

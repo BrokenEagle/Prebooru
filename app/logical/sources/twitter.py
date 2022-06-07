@@ -267,20 +267,6 @@ def image_illust_download_urls(illust):
     return list(filter(lambda x: image_url_mapper, illust.urls))
 
 
-def VideoIllustDownloadUrls(illust):
-    video_illust_url = next(filter(video_url_mapper, illust.urls))
-    thumb_illust_url = next(filter(image_url_mapper, illust.urls), None)
-    return video_illust_url, thumb_illust_url
-
-
-def video_illust_video_url(illust):
-    return next(filter(video_url_mapper, illust.urls), None)
-
-
-def video_illust_thumb_url(illust):
-    return next(filter(image_url_mapper, illust.urls), None)
-
-
 # Artist
 
 def artist_links(artist):
@@ -420,6 +406,11 @@ def normalized_image_url(image_url):
 def get_media_url(illust_url):
     return illust_url.url if illust_url.site_id == 0\
            else 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
+
+
+def get_sample_url(illust_url):
+    return illust_url.sample if illust_url.sample_id == 0\
+           else 'https://' + get_site_domain(illust_url.sample_id) + illust_url.sample
 
 
 def get_post_url(illust):
@@ -898,7 +889,15 @@ def get_illust_url_info(entry):
 
 
 def get_tweet_illust_urls(tweet):
-    return get_tweet_image_urls(tweet) + get_tweet_video_urls(tweet)
+    media_urls = get_tweet_image_urls(tweet)
+    video_urls = get_tweet_video_urls(tweet)
+    if len(video_urls):
+        video_urls[0].update(
+            sample_id=media_urls[0]['site_id'],
+            sample=media_urls[0]['url']
+        )
+        media_urls = video_urls
+    return media_urls
 
 
 def get_tweet_image_urls(tweet):

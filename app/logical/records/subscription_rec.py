@@ -41,7 +41,7 @@ def update_subscription_elements(subscription_pool, job_id=None):
             if illust.type == 'image':
                 illust_urls = sorted(illust.urls, key=lambda x: x.order)
             elif illust.type == 'video':
-                illust_urls = [illust.video_illust_url]
+                illust_urls = illust.urls[0]
             else:
                 print("Unknown illust type: %s" % illust.shortlink)
                 continue

@@ -46,6 +46,7 @@ def get_illust_url_form(**kwargs):
         illust_id = IntegerField('Illust ID', id='illust-url-illust_id', custom_name='illust_url[illust_id]',
                                  validators=[DataRequired()])
         url = StringField('URL', id='illust-url-url', custom_name='illust_url[url]', validators=[DataRequired()])
+        sample = StringField('Sample', id='illust-url-url', custom_name='illust_url[sample]')
         width = IntegerField('Width', id='illust-url-width', custom_name='illust_url[width]')
         height = IntegerField('Height', id='illust-url-height', custom_name='illust_url[height]')
         order = IntegerField('Order', id='illust-url-order', custom_name='illust_url[order]')
@@ -88,6 +89,8 @@ def convert_update_params(dataparams):
 def set_url_site(dataparams, source):
     dataparams['site_id'] = get_image_site_id(dataparams['url'])
     dataparams['url'] = source.partial_media_url(dataparams['url'])
+    dataparams['sample_id'] = get_image_site_id(dataparams['sample']) if dataparams['sample'] is not None else None
+    dataparams['sample'] = source.partial_media_url(dataparams['sample']) if dataparams['sample'] is not None else None
 
 
 # #### Route helpers

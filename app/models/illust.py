@@ -107,14 +107,6 @@ class Illust(JsonModel):
         else:
             return 'unknown'
 
-    @memoized_property
-    def video_illust_url(self):
-        return self._source.video_illust_video_url(self) if self.type == 'video' else None
-
-    @memoized_property
-    def thumb_illust_url(self):
-        return self._source.video_illust_thumb_url(self) if self.type == 'video' else None
-
     # ###### Private
 
     @memoized_property

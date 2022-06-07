@@ -51,7 +51,7 @@ def create_image_post(illust_url, upload, source):
     return post
 
 
-def create_video_post(illust_url, thumb_illust_url, upload, source):
+def create_video_post(illust_url, upload, source):
     file_ext = get_file_extension(upload.media_filepath)
     buffer = put_get_raw(upload.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url)

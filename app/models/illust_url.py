@@ -19,6 +19,8 @@ class IllustUrl(JsonModel):
     id = DB.Column(DB.Integer, primary_key=True)
     site_id = DB.Column(DB.Integer, nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
+    sample_id = DB.Column(DB.Integer, nullable=True)
+    sample = DB.Column(DB.String(255), nullable=True)
     width = DB.Column(DB.Integer, nullable=True)
     height = DB.Column(DB.Integer, nullable=True)
     order = DB.Column(DB.Integer, nullable=False)
@@ -43,12 +45,18 @@ class IllustUrl(JsonModel):
 
     @memoized_property
     def preview_url(self):
-        preview_illust_url = self if self.type == 'image' else self.illust.thumb_illust_url
-        return self._source.get_preview_url(preview_illust_url)
+        if self.type == 'image':
+            return self._source.get_preview_url(self)
+        elif self.type == 'video':
+            return self.sample_url
 
     @memoized_property
     def full_url(self):
         return self._source.get_media_url(self)
+
+    @memoized_property
+    def sample_url(self):
+        return self._source.get_sample_url(self)
 
     @memoized_property
     def _source(self):

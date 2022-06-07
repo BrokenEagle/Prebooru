@@ -43,8 +43,7 @@ def similar_search_links(post, format_url, proxy_url=None):
         source = get_source_by_id(illust_url.site_id)
         media_url = source.get_media_url(illust_url)
         if source.is_video_url(media_url):
-            _, thumb_illust_url = source.VideoIllustDownloadUrls(illust)
-            small_url = source.get_media_url(thumb_illust_url)
+            small_url = source.get_sample_url(illust_url)
         else:
             small_url = source.small_image_url(media_url)
         encoded_url = urllib.parse.quote_plus(small_url)

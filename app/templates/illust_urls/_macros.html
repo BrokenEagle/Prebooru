@@ -35,30 +35,30 @@
     </section>
 {%- endmacro %}
 
-{% macro video_urls_section(video_illust_url, sample_illust_url) -%}
+{% macro video_urls_section(illust_url) -%}
     <section id="video-posts">
         <h3>Video URLs</h3>
         <div class="video-post-info">
             <ul>
-                <li><strong>Edit( {{ helpers.illust_url.edit_video_links(video_illust_url, sample_illust_url) }} )</strong></li>
-                {% if video_illust_url is not none %}
-                    <li><strong>Video URL:</strong> {{ helpers.base.url_link(video_illust_url.full_url) }}</li>
+                <li><strong>Edit( {{ helpers.base.general_link('video', illust_url.edit_url) }} )</strong></li>
+                {% if illust_url is not none %}
+                    <li><strong>Video URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}</li>
                 {% endif %}
                 {% if sample_illust_url is not none %}
-                <li><strong>Thumb URL:</strong> {{ helpers.base.url_link(sample_illust_url.full_url) }}</li>
+                    <li><strong>Thumb URL:</strong> {{ helpers.base.url_link(illust_url.sample_url) }}</li>
                 {% endif %}
-                <li><strong>Dimensions:</strong> {{ video_illust_url.width }} x {{ video_illust_url.height }}</li>
-                <li><strong>Active:</strong> {{ video_illust_url.active | tojson }}</li>
-                {% if video_illust_url.post is none %}
-                    <li><strong>Upload( {{ helpers.illust_url.upload_media_link('video', video_illust_url) }} )</strong></li>
+                <li><strong>Dimensions:</strong> {{ illust_url.width }} x {{ illust_url.height }}</li>
+                <li><strong>Active:</strong> {{ illust_url.active | tojson }}</li>
+                {% if illust_url.post is none %}
+                    <li><strong>Upload( {{ helpers.illust_url.upload_media_link('video', illust_url) }} )</strong></li>
                 {% else %}
-                    <li><strong>Redownload( {{ helpers.illust_url.redownload_post_link('video', video_illust_url) }} )</strong></li>
+                    <li><strong>Redownload( {{ helpers.illust_url.redownload_post_link('video', illust_url) }} )</strong></li>
                 {% endif %}
             </ul>
         </div>
-        {% if video_illust_url.post is not none %}
+        {% if illust_url.post is not none %}
             <div class="video-post-preview">
-                {{ post_preview(video_illust_url.post) }}
+                {{ post_preview(illust_url.post) }}
             </div>
         {% else %}
             <div class="no-post-preview">
