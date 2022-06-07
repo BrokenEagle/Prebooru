@@ -155,11 +155,16 @@ def keep_json(id):
     return {'error': False, 'item': element.to_json(), 'html': strip_whitespace(html)}
 
 
-@bp.route('/subscription_pool_elements/<int:id>/redownload', methods=['POST'])
-def redownload_html(id):
+@bp.route('/subscription_pool_elements/<int:id>/redownload.json', methods=['POST'])
+def redownload_json(id):
     element = get_or_abort(SubscriptionPoolElement, id)
     if element.post is None:
-        redownload_element(element)
+        if not redownload_element(element) and element.status == 'error':
+            return {'error': True, 'message': "Error downloading element."}
     else:
-        flash("Subscription element already has a post.", 'error')
-    return redirect(request.referrer)
+        return {'error': True, 'message': "Subscription element already has a post."}
+    message = None
+    if element.status == 'duplicate':
+        message = 'Media already uploaded'
+    html = render_template("subscription_pool_elements/_element_preview.html", element=element)
+    return {'error': False, 'message': message, 'item': element.to_json(), 'html': strip_whitespace(html)}

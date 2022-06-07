@@ -15,6 +15,21 @@ SubscriptionPools.keepElement = function(obj) {
     return false;
 };
 
+SubscriptionPools.redownload = function(obj) {
+    fetch(obj.href, {method: 'POST'})
+        .then((resp)=>resp.json())
+        .then((data)=>{
+            if (data.error) {
+                Prebooru.error(data.message);
+            } else {
+                Prebooru.message("Updated element.");
+                SubscriptionPools.replaceArticle(obj, data.html);
+                document.getElementById('image-select-counter').innerText = document.querySelectorAll('.subscription-element .checkbox-active').length;
+            }
+        });
+    return false;
+};
+
 SubscriptionPools.replaceArticle = function(obj, html) {
     for (var curr = obj; curr.tagName !== 'ARTICLE' && curr.parentElement !== null; curr = curr.parentElement);
     curr.outerHTML = html;

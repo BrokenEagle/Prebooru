@@ -94,4 +94,4 @@ def element_type_link(element_type):
 
 
 def redownload_element_link(text, element):
-    return general_link(text, url_for('subscription_pool_element.redownload_html', id=element.id), method='POST')
+    return general_link(text, url_for('subscription_pool_element.redownload_json', id=element.id), onclick="return SubscriptionPools.redownload(this)")

@@ -10,7 +10,7 @@ from ..sites import get_site_key
 from ..sources import SOURCEDICT
 from ..downloader.network import convert_network_subscription
 from ..database.subscription_pool_element_db import create_subscription_pool_element_from_parameters,\
-    update_subscription_pool_element_deleted
+    update_subscription_pool_element_deleted, update_subscription_pool_element_status
 from ..database.jobs_db import get_job_status_data, update_job_status
 from ..database.base_db import safe_db_execute
 
@@ -55,18 +55,19 @@ def redownload_element(element):
     site_key = get_site_key(element.pool.artist.site_id)
     source = SOURCEDICT[site_key]
 
-    def try_func():
+    def try_func(scope_vars):
         nonlocal element, source
-        if convert_network_subscription(element, source, True):
-            flash('Element redownloaded.')
-            update_subscription_pool_element_deleted(element, False)
+        update_subscription_pool_element_deleted(element, False)
+        if convert_network_subscription(element, source):
+            update_subscription_pool_element_status(element, 'active')
+            return True
         else:
-            flash('Error downloading element.', 'error')
+            return False
 
     def msg_func(scope_vars, error):
         return f"Unhandled exception occurred on subscripton pool #{subscription_id}: {repr(error)}"
 
     def error_func(scope_vars, error):
-        flash(f"Unhandled exception occurred: {repr(error)}", 'error')
+        update_subscription_pool_element_deleted(element, True)
 
-    safe_db_execute('redownload_element', 'records.subscription_rec', try_func=try_func, msg_func=msg_func, error_func=error_func)
+    return safe_db_execute('redownload_element', 'records.subscription_rec', try_func=try_func, msg_func=msg_func, error_func=error_func, printer=print)
