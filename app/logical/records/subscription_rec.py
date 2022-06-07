@@ -1,8 +1,5 @@
 # APP/LOGICAL/RECORDS/SUBSCRIPTION_REC.PY
 
-# ## EXTERNAL IMPORTS
-from sqlalchemy.orm import selectinload
-
 # ## PACKAGE IMPORTS
 from utility.time import days_from_now
 
@@ -18,46 +15,39 @@ from ..database.jobs_db import get_job_status_data, update_job_status
 from ..database.base_db import safe_db_execute
 
 
+# ## GLOBAL VARIABLES
+
+ILLUST_URL_PAGE_LIMIT = 50
+
+
 # ## FUNCTIONS
 
 def update_subscription_elements(subscription_pool, job_id=None):
     job_status = get_job_status_data(job_id) or {'elements': 0}
-    q = Illust.query.filter_by(artist_id=subscription_pool.artist_id)
-    q = search_attributes(q, Illust, {'urls': {'has_post': 'false'}})
-    q = q.options(
-        selectinload(Illust.urls).options(
-            selectinload(IllustUrl.post).lazyload('*'),
-            selectinload(IllustUrl.subscription_pool_element).lazyload('*'),
-        )
-    )
-    q = q.order_by(Illust.site_illust_id.asc())
-    page = q.paginate(per_page=50)
+    q = IllustUrl.query.join(Illust).filter(Illust.artist_id == subscription_pool.artist_id)
+    q = search_attributes(q, IllustUrl, {'has_post': 'false', 'subscription_pool_element_exists': 'false'})
+    q = q.order_by(Illust.site_illust_id.asc(), IllustUrl.order.asc())
+    total = q.get_count()
+    page = 1
     job_status['stage'] = 'elements'
     while True:
-        print(f"update_subscription_elements: {page.first} - {page.last} / Total({page.total})")
-        job_status['range'] = f"({page.first} - {page.last}) / {page.total}"
-        update_job_status(job_id, job_status)
-        for illust in page.items:
-            if illust.type == 'image':
-                illust_urls = sorted(illust.urls, key=lambda x: x.order)
-            elif illust.type == 'video':
-                illust_urls = illust.urls[0]
-            else:
-                print("Unknown illust type: %s" % illust.shortlink)
-                continue
-            for illust_url in illust_urls:
-                if illust_url.post is not None or illust_url.subscription_pool_element is not None:
-                    continue
-                createparams = {
-                    'pool_id': subscription_pool.id,
-                    'illust_url_id': illust_url.id,
-                    'expires': days_from_now(subscription_pool.expiration) if subscription_pool.expiration else None
-                }
-                create_subscription_pool_element_from_parameters(createparams)
-                job_status['elements'] += 1
-        if not page.has_next:
+        page_items = q.limit(ILLUST_URL_PAGE_LIMIT).all()
+        if len(page_items) == 0:
             break
-        page = page.next()
+        page_border = (page - 1) * ILLUST_URL_PAGE_LIMIT
+        first = min(1, len(page_items)) + page_border
+        last = page_border + len(page_items)
+        job_status['range'] = f"({first} - {last}) / {total}"
+        print(f"update_subscription_elements:", job_status['range'])
+        update_job_status(job_id, job_status)
+        for illust_url in page_items:
+            createparams = {
+                'pool_id': subscription_pool.id,
+                'illust_url_id': illust_url.id,
+                'expires': days_from_now(subscription_pool.expiration) if subscription_pool.expiration else None
+            }
+            create_subscription_pool_element_from_parameters(createparams)
+            job_status['elements'] += 1
     update_job_status(job_id, job_status)
 
 
