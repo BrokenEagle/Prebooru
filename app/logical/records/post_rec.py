@@ -41,12 +41,12 @@ def delete_post_and_media(post):
     return retdata
 
 
-def archive_post_for_deletion(post):
+def archive_post_for_deletion(post, expires):
     """Soft delete. Preserve data at all costs."""
     retdata = {'error': False, 'is_deleted': False}
     sample_path = post.sample_path if post.has_sample else None
     preview_path = post.preview_path if post.has_preview else None
-    retdata = _archive_post_data(post, retdata)
+    retdata = _archive_post_data(post, retdata, expires)
     if retdata['error']:
         return retdata
     retdata = _move_post_file(post, retdata)
@@ -121,7 +121,7 @@ def relink_archived_post(data, post=None):
 
 # #### Private functions
 
-def _archive_post_data(post, retdata):
+def _archive_post_data(post, retdata, expires):
     data = {
         'body': post.column_dict(),
         'scalars': {},
@@ -136,9 +136,9 @@ def _archive_post_data(post, retdata):
     archive_data = get_archive_data('post', post.md5)
     try:
         if archive_data is None:
-            create_archive_data('post', post.md5, data, 30)
+            create_archive_data('post', post.md5, data, expires)
         else:
-            update_archive_data(archive_data, data, 30)
+            update_archive_data(archive_data, data, expires)
     except Exception as e:
         return set_error(retdata, "Error archiving data: %s" % str(e))
     return retdata

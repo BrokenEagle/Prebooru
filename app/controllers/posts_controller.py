@@ -26,6 +26,7 @@ ILLUST_POOLS_SUBQUERY = Post.query.join(IllustUrl, Post.illust_urls).join(Illust
 
 POOL_SEARCH_KEYS = ['has_pools', 'has_post_pools', 'has_illust_pools']
 
+DEFAULT_DELETE_EXPIRES = 30  # Days
 
 # #### Load options
 
@@ -133,7 +134,8 @@ def index_html():
 @bp.route('/posts/<int:id>', methods=['DELETE'])
 def delete_html(id):
     post = get_or_abort(Post, id)
-    results = archive_post_for_deletion(post)
+    expires = request.values.get('expires', DEFAULT_DELETE_EXPIRES, type=int)
+    results = archive_post_for_deletion(post, expires)
     if results['error']:
         flash(results['message'], 'error')
         if not results['is_deleted']:

@@ -82,7 +82,7 @@ def delete_subscription_post(element):
 
 def archive_subscription_post(element):
     if element.post is not None:
-        archive_post_for_deletion(element.post)
+        archive_post_for_deletion(element.post, None)
     element.expires = None
     element.active = False
     element.deleted = True
