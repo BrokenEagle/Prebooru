@@ -143,6 +143,7 @@ def expire_subscription_elements():
         page = page.next()
     # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
     q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
+                                             SubscriptionPoolElement.status == 'active',
                                              SubscriptionPoolElement.keep.is_(None))
     print("Soft delete - skipping:", q.count())
     return
