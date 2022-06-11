@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import os
+import sys
 import logging
 import itertools
 
@@ -10,8 +11,6 @@ from alembic import script, config
 from alembic.runtime import migration
 from sqlalchemy import MetaData, Table, Column, String, select
 
-# ## LOCAL IMPORTS
-from .. import DB
 
 # ## GLOBAL_VARIABLES
 
@@ -20,7 +19,14 @@ ALEMBIC_SCRIPT_FILE = os.path.join(os.getcwd(), 'migrations', 'alembic.ini')
 
 # ## FUNCTIONS
 
+def validate_python():
+    if sys.version_info == 2 or (sys.version_info.major == 3 and sys.version_info.minor < 7):
+        print("Python version must be at least 3.7 to run this application.")
+        exit(-1)
+
+
 def validate_version():
+    from .. import DB
     with DB.engine.begin() as conn:
         database_head = migration.MigrationContext.configure(conn).get_current_heads()[0]
     directory_head = script.ScriptDirectory.from_config(config.Config(ALEMBIC_SCRIPT_FILE)).get_heads()[0]
@@ -30,6 +36,7 @@ def validate_version():
 
 
 def validate_integrity():
+    from .. import DB
     engine = DB.get_engine(bind=None).engine
     connection = engine.connect()
     check = connection.execute("PRAGMA quick_check").first()

@@ -23,13 +23,7 @@ from config import DB_PATH, JOBS_PATH, DEBUG_MODE
 
 # ## LOCAL IMPORTS
 from .logical import query_extensions
-
-
-# ## VALIDATION
-
-if sys.version_info.major == 3 and sys.version_info.minor < 7:
-    print("Python version must be at least 3.7 to run this application.")
-    exit(-1)
+from .logical.validate import validate_python
 
 
 # ## GLOBAL VARIABLES
@@ -150,6 +144,9 @@ class MethodRewriteMiddleware(object):
 
 
 # ## INITIALIZATION
+
+# Validate Python before executing any application code
+validate_python()
 
 SCHEDULER_JOBSTORES = SQLAlchemyJobStore(url=SCHEDULER_DB_URL + '?check_same_thread=true',
                                          engine_options={'isolation_level': 'AUTOCOMMIT'})
