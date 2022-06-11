@@ -1,31 +1,32 @@
 # APP/LOGICAL/VALIDATE.PY
 
 # ## PYTHON IMPORTS
+import os
 import logging
 import itertools
 
 # ## EXTERNAL IMPORTS
+from alembic import script, config
+from alembic.runtime import migration
 from sqlalchemy import MetaData, Table, Column, String, select
 
 # ## LOCAL IMPORTS
-from .. import DB, DATABASE_VERSION
+from .. import DB
+
+# ## GLOBAL_VARIABLES
+
+ALEMBIC_SCRIPT_FILE = os.path.join(os.getcwd(), 'migrations', 'alembic.ini')
 
 
 # ## FUNCTIONS
 
 def validate_version():
-    t_alembic_version = Table('alembic_version', MetaData(), Column('version_num', String))
-    engine = DB.get_engine(bind=None).engine
-    connection = engine.connect()
-    try:
-        version = connection.execute(select([t_alembic_version.c.version_num])).first()[0]
-    except Exception:
-        logging.error("Error querying database for version number: %s", engine.url)
+    with DB.engine.begin() as conn:
+        database_head = migration.MigrationContext.configure(conn).get_current_heads()[0]
+    directory_head = script.ScriptDirectory.from_config(config.Config(ALEMBIC_SCRIPT_FILE)).get_heads()[0]
+    if database_head != directory_head:
+        logging.warning("Must upgrade the database: (current) %s -> (head) %s", database_head, directory_head)
         exit(-1)
-    if version != DATABASE_VERSION:
-        logging.warning("Must upgrade the database: %s -> %s", version, DATABASE_VERSION)
-        exit(-1)
-    connection.close()
 
 
 def validate_integrity():
