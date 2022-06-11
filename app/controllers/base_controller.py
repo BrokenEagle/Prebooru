@@ -6,7 +6,7 @@ import urllib
 from functools import reduce
 
 # ## EXTERNAL IMPORTS
-from flask import jsonify, abort, url_for
+from flask import jsonify, abort, url_for, render_template
 from sqlalchemy import not_
 from sqlalchemy.sql.expression import case
 from wtforms import Form
@@ -245,6 +245,10 @@ def set_default(indict, key, default):
 
 
 # #### Template helpers
+
+def render_template_ws(endpoint, **args):
+    return strip_whitespace(render_template(endpoint, **args))
+
 
 def strip_whitespace(html):
     return re.sub(r'\s+', ' ', html).replace('> <', '><').strip()

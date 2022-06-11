@@ -58,7 +58,7 @@
     {% set info_class = element.keep + '-info' if element.keep is not none else 'unsure-info' %}
     <div class="subscription-element-info {{info_class}}">
         <ul>
-            <li><strong>{{ element.pool_show_link }} {{ helpers.subscription_pool.element_search_link(element) }}</strong></li>
+            <li><strong>{{ element.pool_show_link }}&ensp;{{ helpers.subscription_pool.element_search_link(element) }}</strong></li>
             {% if show_illust %}
                 <li><strong>{{ element.illust_url.illust_show_link }}</strong></li>
             {% endif %}
