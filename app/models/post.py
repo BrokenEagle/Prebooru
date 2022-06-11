@@ -134,7 +134,7 @@ class Post(JsonModel):
     @property
     def sample_path(self):
         return os.path.join(MEDIA_DIRECTORY, 'sample', self._partial_file_path + 'jpg')\
-               if self.has_sample else self.file_path
+            if self.has_sample else self.file_path
 
     @property
     def preview_path(self):

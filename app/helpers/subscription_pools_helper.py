@@ -53,10 +53,10 @@ def get_last_job_status_link(subscription_pool):
 
 
 def pool_status_link(subscription_pool):
-    return 'idle' if subscription_pool.status == 'idle'\
-                  else general_link(subscription_pool.status,
-                                    url_for('subscription_pool.reset_html', id=subscription_pool.id),
-                                    method='PUT')
+    if subscription_pool.status == 'idle':
+        return 'idle'
+    url = url_for('subscription_pool.reset_html', id=subscription_pool.id)
+    return general_link(subscription_pool.status, url, method='PUT')
 
 
 # ###### Other functions

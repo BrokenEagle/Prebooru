@@ -53,8 +53,9 @@ def create_field(field, info):
 
 def update_field(field, info):
     with DB.engine.begin() as conn:
-        statement = T_SERVER_INFO.update().where(T_SERVER_INFO.c.field == field)\
-                           .values(info=info)
+        statement =\
+            T_SERVER_INFO.update().where(T_SERVER_INFO.c.field == field)\
+                         .values(info=info)
         conn.execute(statement)
 
 
@@ -101,9 +102,10 @@ def update_last_activity(type):
 
 
 def server_is_busy():
-    return (get_last_activity('user') > minutes_ago(15)) or\
-            ((get_last_activity('server') > minutes_ago(5))
-            and is_any_job_locked())
+    return any((
+        get_last_activity('user') > minutes_ago(15),
+        (get_last_activity('server') > minutes_ago(5)) and is_any_job_locked(),
+    ))
 
 
 def get_next_wait(kind):

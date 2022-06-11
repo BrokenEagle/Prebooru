@@ -101,8 +101,8 @@ def index_html():
         return redirect(url_for('subscription_pool_element.index_html', page=subscription_pool_elements.pages,
                                 **{k: v for (k, v) in request.args.items() if k != 'page'}))
     return render_template_ws("subscription_pool_elements/index.html",
-                           subscription_pool_elements=subscription_pool_elements,
-                           subscription_pool_element=SubscriptionPoolElement())
+                              subscription_pool_elements=subscription_pool_elements,
+                              subscription_pool_element=SubscriptionPoolElement())
 
 
 # ###### Misc

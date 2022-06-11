@@ -9,7 +9,6 @@ import itertools
 # ## EXTERNAL IMPORTS
 from alembic import script, config
 from alembic.runtime import migration
-from sqlalchemy import MetaData, Table, Column, String, select
 
 
 # ## GLOBAL_VARIABLES

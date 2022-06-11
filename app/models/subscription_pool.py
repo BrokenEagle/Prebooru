@@ -77,7 +77,7 @@ class SubscriptionPool(JsonModel):
         if len(datetimes) == 0:
             return
         datetimes = [get_current_time()] + [x[0] for x in datetimes]
-        timedeltas = [datetimes[i-1] - datetimes[i] for i in range(1, len(datetimes))]
+        timedeltas = [datetimes[i - 1] - datetimes[i] for i in range(1, len(datetimes))]
         return humanized_timedelta(average_timedelta(timedeltas))
 
     @property

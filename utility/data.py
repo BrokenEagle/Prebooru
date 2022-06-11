@@ -48,13 +48,13 @@ def display_case(string):
 
 
 def kebab_case(string):
-    string = re.sub(r'([a-z])([A-Z])', '\g<1>-\g<2>', string)
+    string = re.sub(r'([a-z])([A-Z])', r'\g<1>-\g<2>', string)
     string = re.sub(r'[\s_]+', '-', string)
     return string.lower()
 
 
 def snake_case(string):
-    string = re.sub(r'([a-z])([A-Z])', '\g<1>_\g<2>', string)
+    string = re.sub(r'([a-z])([A-Z])', r'\g<1>_\g<2>', string)
     string = re.sub(r'[\s-]+', '_', string)
     return string.lower()
 

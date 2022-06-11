@@ -405,12 +405,12 @@ def normalized_image_url(image_url):
 
 def get_media_url(illust_url):
     return illust_url.url if illust_url.site_id == 0\
-           else 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
+        else 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
 
 
 def get_sample_url(illust_url):
     return illust_url.sample if illust_url.sample_id == 0\
-           else 'https://' + get_site_domain(illust_url.sample_id) + illust_url.sample
+        else 'https://' + get_site_domain(illust_url.sample_id) + illust_url.sample
 
 
 def get_post_url(illust):

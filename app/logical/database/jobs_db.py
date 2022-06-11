@@ -86,29 +86,33 @@ def create_job_status(id, data):
 
 def update_job_next_run_time(id, timestamp):
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_INFO.update().where(T_JOBS_INFO.c.id == id)\
-                           .values(next_run_time=timestamp)
+        statement =\
+            T_JOBS_INFO.update().where(T_JOBS_INFO.c.id == id)\
+                       .values(next_run_time=timestamp)
         conn.execute(statement)
 
 
 def update_job_enabled_status(id, boolval):
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_ENABLED.update().where(T_JOBS_ENABLED.c.id == id)\
-                           .values(enabled=boolval)
+        statement =\
+            T_JOBS_ENABLED.update().where(T_JOBS_ENABLED.c.id == id)\
+                          .values(enabled=boolval)
         conn.execute(statement)
 
 
 def update_job_lock_status(id, boolval):
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_LOCK.update().where(T_JOBS_LOCK.c.id == id)\
-                           .values(locked=boolval)
+        statement =\
+            T_JOBS_LOCK.update().where(T_JOBS_LOCK.c.id == id)\
+                       .values(locked=boolval)
         conn.execute(statement)
 
 
 def update_job_timeval(id, timestamp):
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_TIME.update().where(T_JOBS_TIME.c.id == id)\
-                           .values(time=timestamp)
+        statement =\
+            T_JOBS_TIME.update().where(T_JOBS_TIME.c.id == id)\
+                       .values(time=timestamp)
         conn.execute(statement)
 
 
@@ -117,8 +121,9 @@ def update_job_status(id, data):
         return
     print('update_job_status', id, data)
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_STATUS.update().where(T_JOBS_STATUS.c.id == id)\
-                           .values(data=data)
+        statement =\
+            T_JOBS_STATUS.update().where(T_JOBS_STATUS.c.id == id)\
+                         .values(data=data)
         conn.execute(statement)
 
 

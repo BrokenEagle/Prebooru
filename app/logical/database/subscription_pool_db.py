@@ -74,7 +74,7 @@ def get_available_subscription():
     return SubscriptionPool.query.filter(SubscriptionPool.requery < get_current_time(),
                                          SubscriptionPool.active.is_(True),
                                          SubscriptionPool.status.not_in(['manual', 'automatic']))\
-                                        .limit(20).all()
+                           .limit(20).all()
 
 
 def check_processing_subscriptions():
