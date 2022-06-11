@@ -16,7 +16,7 @@ from ..logical.utility import set_error
 from ..logical.database.notation_db import create_notation_from_parameters, update_notation_from_parameters,\
     append_notation_to_item, delete_notation
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_or_abort, hide_input,\
+    get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, hide_input,\
     nullify_blanks, check_param_requirements
 
 
@@ -46,17 +46,32 @@ SHOW_HTML_OPTIONS = (
 )
 
 
-# #### Forms
+# #### Form
 
-def get_notation_form(**kwargs):
-    # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
-    class NotationForm(CustomNameForm):
-        body = TextAreaField('Body', id='notation-body', custom_name='notation[body]', validators=[DataRequired()])
-        pool_id = IntegerField('Pool ID', id='notation-pool-id', custom_name='notation[pool_id]')
-        artist_id = IntegerField('Artist ID', id='notation-artist-id', custom_name='notation[artist_id]')
-        illust_id = IntegerField('Illust ID', id='notation-illust-id', custom_name='notation[illust_id]')
-        post_id = IntegerField('Post ID', id='notation-pool-id', custom_name='notation[post_id]')
-    return NotationForm(**kwargs)
+FORM_CONFIG = {
+    'body': {
+        'field': TextAreaField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
+    },
+    'pool_id': {
+        'name': 'Pool ID',
+        'field': IntegerField,
+    },
+    'artist_id': {
+        'name': 'Artist ID',
+        'field': IntegerField,
+    },
+    'illust_id': {
+        'name': 'Illust ID',
+        'field': IntegerField,
+    },
+    'post_id': {
+        'name': 'Post ID',
+        'field': IntegerField,
+    },
+}
 
 
 # ## FUNCTIONS
@@ -75,6 +90,10 @@ def pool_filter(query, search):
 
 
 # #### Helper functions
+
+def get_notation_form(**kwargs):
+    return get_form('notation', FORM_CONFIG, **kwargs)
+
 
 def append_new_items(notation, dataparams):
     retdata = {'error': False}

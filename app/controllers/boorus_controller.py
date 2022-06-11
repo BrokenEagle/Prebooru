@@ -14,7 +14,7 @@ from ..logical.records.booru_rec import create_booru_from_source, update_booru_f
     update_booru_artists_from_source, archive_booru_for_deletion
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, get_data_params,\
-    check_param_requirements, nullify_blanks, CustomNameForm, parse_array_parameter, parse_bool_parameter,\
+    check_param_requirements, nullify_blanks, get_form, parse_array_parameter, parse_bool_parameter,\
     set_default
 
 
@@ -48,27 +48,42 @@ JSON_OPTIONS = (
 )
 
 
-# ## CLASSES
+# #### Form
 
-def get_booru_form(**kwargs):
-    # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
-    class BooruForm(CustomNameForm):
-        danbooru_id = IntegerField('Danbooru ID', id='booru-danbooru-id', custom_name='booru[danbooru_id]',
-                                   validators=[DataRequired()])
-        current_name = StringField('Current Name', id='booru-current-name', custom_name='booru[current_name]',
-                                   validators=[DataRequired()])
-        banned = BooleanField('Banned', id='booru-banned', custom_name='booru[banned]',
-                              validators=[DataRequired()])
-        deleted = BooleanField('Deleted', id='booru-deleted', custom_name='booru[deleted]',
-                               validators=[DataRequired()])
-        name_string = TextAreaField('Names', id='booru-name-string', custom_name='booru[name_string]',
-                                    description="Separated by whitespace.")
-    return BooruForm(**kwargs)
+FORM_CONFIG = {
+    'danbooru_id': {
+        'name': 'Danbooru ID',
+        'field': IntegerField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
+    },
+    'current_name': {
+        'field': StringField,
+    },
+    'banned': {
+        'field': BooleanField,
+    },
+    'deleted': {
+        'field': BooleanField,
+    },
+    'name_string': {
+        'name': 'Names',
+        'field': TextAreaField,
+        'kwargs': {
+            'description': "Separated by whitespace.",
+        },
+    },
+}
 
 
 # ## FUNCTIONS
 
 # #### Helper functions
+
+def get_booru_form(**kwargs):
+    return get_form('booru', FORM_CONFIG, **kwargs)
+
 
 def uniqueness_check(dataparams, artist):
     danbooru_id = dataparams['danbooru_id'] if 'danbooru_id' in dataparams else artist.danbooru_id

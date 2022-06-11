@@ -13,7 +13,7 @@ from ..logical.utility import set_error
 from ..logical.database.pool_db import create_pool_from_parameters, update_pool_from_parameters
 from ..logical.searchable import numeric_matching
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_page, get_limit, get_or_abort,\
+    get_params_value, paginate, default_order, get_data_params, get_form, get_page, get_limit, get_or_abort,\
     get_or_error, check_param_requirements, nullify_blanks, parse_bool_parameter, set_default
 
 
@@ -39,20 +39,31 @@ SHOW_HTML_POST_OPTIONS = (
 )
 
 
-# ## CLASSES
+# #### Form
 
-def get_pool_form(**kwargs):
-    # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
-    class PoolForm(CustomNameForm):
-        name = StringField('Name', id='pool-name', custom_name='pool[name]', validators=[DataRequired()])
-        series = BooleanField('Series', id='pool-series', custom_name='pool[series]',
-                              description="Enables pool navigation.")
-    return PoolForm(**kwargs)
+FORM_CONFIG = {
+    'name': {
+        'field': StringField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
+    },
+    'series': {
+        'field': BooleanField,
+        'kwargs': {
+            'description': "Enables pool navigation.",
+        },
+    },
+}
 
 
 # ## FUNCTIONS
 
 # #### Helper functions
+
+def get_pool_form(**kwargs):
+    return get_form('pool', FORM_CONFIG, **kwargs)
+
 
 def uniqueness_check(dataparams, pool):
     name = dataparams['name'] if 'name' in dataparams else pool.name

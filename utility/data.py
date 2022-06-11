@@ -43,6 +43,29 @@ def readable_bytes(bytes):
 
 # #### String functions
 
+def display_case(string):
+    return ' '.join(map(str.title, string.split('_')))
+
+
+def kebab_case(string):
+    string = re.sub(r'([a-z])([A-Z])', '\g<1>-\g<2>', string)
+    string = re.sub(r'[\s_]+', '-', string)
+    return string.lower()
+
+
+def snake_case(string):
+    string = re.sub(r'([a-z])([A-Z])', '\g<1>_\g<2>', string)
+    string = re.sub(r'[\s-]+', '_', string)
+    return string.lower()
+
+
+def camel_case(string):
+    def dashscore_repl(match):
+        return match.group(1).upper()
+    string = re.sub(r'[-_]([a-z])', dashscore_repl, string)
+    return string[0].upper() + string[1:]
+
+
 def fixup_crlf(text):
     return re.sub(r'(?<!\r)\n', '\r\n', text)
 

@@ -17,7 +17,7 @@ from ..models import Upload, Post, IllustUrl, Illust
 from ..logical.sources.base import get_post_source, get_preview_url
 from ..logical.database.upload_db import create_upload_from_parameters, set_upload_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, CustomNameForm, get_data_params, hide_input, parse_string_list,\
+    get_params_value, paginate, default_order, get_form, get_data_params, hide_input, parse_string_list,\
     nullify_blanks, set_default, get_or_abort, referrer_check
 
 
@@ -50,26 +50,40 @@ JSON_OPTIONS = (
 )
 
 
-# ## CLASSES
+# #### Form
 
-def get_upload_form(**kwargs):
-    # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
-    class UploadForm(CustomNameForm):
-        illust_url_id = IntegerField('Illust URL ID', id='upload-illust-url-id', custom_name='upload[illust_url_id]')
-        media_filepath = StringField('Media filepath', id='upload-media-filepath',
-                                     custom_name='upload[media_filepath]')
-        sample_filepath = StringField('Sample filepath', id='upload-sample-filepath',
-                                      custom_name='upload[sample_filepath]')
-        request_url = StringField('Request URL', id='upload-request-url', custom_name='upload[request_url]')
-        image_url_string = TextAreaField('Image URLs', id='upload-image-url-string',
-                                         custom_name='upload[image_url_string]',
-                                         description="Separated by carriage returns.")
-    return UploadForm(**kwargs)
+FORM_CONFIG = {
+    'illust_url_id': {
+        'name': 'Illust URL ID',
+        'field': IntegerField,
+    },
+    'media_filepath': {
+        'field': StringField,
+    },
+    'sample_filepath': {
+        'field': StringField,
+    },
+    'request_url': {
+        'name': 'Request URL',
+        'field': StringField,
+    },
+    'image_url_string': {
+        'name': 'Image URLs',
+        'field': TextAreaField,
+        'kwargs': {
+            'description': "Separated by carriage returns.",
+        },
+    },
+}
 
 
 # ## FUNCTIONS
 
 # #### Helper functions
+
+def get_upload_form(**kwargs):
+    return get_form('upload', FORM_CONFIG, **kwargs)
+
 
 def uniqueness_check(createparams):
     q = Upload.query

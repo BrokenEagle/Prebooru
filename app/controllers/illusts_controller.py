@@ -18,7 +18,7 @@ from ..logical.records.illust_rec import update_illust_from_source, archive_illu
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
     illust_delete_commentary
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
-    search_filter, default_order, paginate, get_data_params, CustomNameForm, get_or_abort, get_or_error,\
+    search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
     hide_input, int_or_blank, nullify_blanks, set_default, check_param_requirements, parse_array_parameter,\
     parse_bool_parameter
 
@@ -73,36 +73,91 @@ JSON_OPTIONS = (
 )
 
 
-# #### CLASSES
+# #### Form
 
-def get_illust_form(**kwargs):
-    # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
-    class IllustForm(CustomNameForm):
-        artist_id = IntegerField('Artist ID', id='illust-illust-id', custom_name='illust[artist_id]',
-                                 validators=[DataRequired()], description="This is the Prebooru artist ID.")
-        site_id = SelectField('Site', choices=[("", ""), ('1', 'Pixiv'), ('3', 'Twitter')], id='illust-site-id',
-                              custom_name='illust[site_id]', validators=[DataRequired()], coerce=int_or_blank)
-        site_illust_id = IntegerField('Site Illust ID', id='illust-site-illust-id',
-                                      custom_name='illust[site_illust_id]', validators=[DataRequired()])
-        site_created = StringField('Site Created', id='illust-site-created', custom_name='illust[site_created]',
-                                   description='Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).')
-        site_updated = StringField('Site Updated', id='illust-site-updated', custom_name='illust[site_updated]',
-                                   description='Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).')
-        site_uploaded = StringField('Site Uploaded', id='illust-site-uploaded', custom_name='illust[site_uploaded]',
-                                    description='Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).')
-        pages = IntegerField('Pages', id='illust-pages', custom_name='illust[pages]')
-        score = IntegerField('Score', id='illust-score', custom_name='illust[score]')
-        bookmarks = IntegerField('Bookmarks', id='illust-bookmarks', custom_name='illust[bookmarks]')
-        views = IntegerField('Views', id='illust-views', custom_name='illust[views]')
-        retweets = IntegerField('Retweets', id='illust-retweets', custom_name='illust[retweets]')
-        replies = IntegerField('Replies', id='illust-replies', custom_name='illust[replies]')
-        quotes = IntegerField('Quotes', id='illust-quotes', custom_name='illust[quotes]')
-        tag_string = TextAreaField('Tag string', id='illust-tag-string', custom_name='illust[tag_string]',
-                                   description="Separated by whitespace.")
-        title = StringField('Title', id='illust-title', custom_name='illust[title]')
-        commentary = TextAreaField('Commentary', id='illust-commentary', custom_name='illust[commentary]')
-        active = BooleanField('Active', id='illust-active', custom_name='illust[active]')
-    return IllustForm(**kwargs)
+FORM_CONFIG = {
+    'artist_id': {
+        'name': 'Artist ID',
+        'field': IntegerField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
+    },
+    'site_id': {
+        'name': 'Site',
+        'field': SelectField,
+        'kwargs': {
+            'choices': [("", ""), (1, 'Pixiv'), (3, 'Twitter')],
+            'validators': [DataRequired()],
+            'coerce': int_or_blank,
+        },
+    },
+    'site_illust_id': {
+        'name': 'Site Illust ID',
+        'field': IntegerField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
+    },
+    'site_created': {
+        'field': StringField,
+        'kwargs': {
+            'description': "Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).",
+        },
+    },
+    'site_updated': {
+        'field': StringField,
+        'kwargs': {
+            'description': "Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).",
+        },
+    },
+    'site_uploaded': {
+        'field': StringField,
+        'kwargs': {
+            'description': "Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).",
+        },
+    },
+    'pages': {
+        'field': IntegerField,
+    },
+    'score': {
+        'field': IntegerField,
+    },
+    'bookmarks': {
+        'field': IntegerField,
+    },
+    'views': {
+        'field': IntegerField,
+    },
+    'retweets': {
+        'field': IntegerField,
+    },
+    'replies': {
+        'field': IntegerField,
+    },
+    'quotes': {
+        'field': IntegerField,
+    },
+    'tag_string': {
+        'name': 'Tags',
+        'field': TextAreaField,
+        'kwargs': {
+            'description': "Separated by whitespace.",
+        },
+    },
+    'title': {
+        'field': StringField,
+    },
+    'commentary': {
+        'field': TextAreaField,
+    },
+    'active': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': True,
+        },
+    },
+}
 
 
 # ## FUNCTIONS
@@ -127,6 +182,10 @@ def pool_filter(query, search):
 
 
 # #### Helper functions
+
+def get_illust_form(**kwargs):
+    return get_form('illust', FORM_CONFIG, **kwargs)
+
 
 def uniqueness_check(dataparams, illust):
     site_id = dataparams['site_id'] if 'site_id' in dataparams else illust.site_id

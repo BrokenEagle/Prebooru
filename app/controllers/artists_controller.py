@@ -16,7 +16,7 @@ from ..logical.database.artist_db import create_artist_from_parameters, update_a
     artist_append_booru, artist_delete_profile
 from ..logical.database.booru_db import create_booru_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error,\
+    get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
     parse_array_parameter, check_param_requirements, int_or_blank, nullify_blanks, set_default, parse_bool_parameter,\
     hide_input
 
@@ -65,35 +65,75 @@ JSON_OPTIONS = (
 )
 
 
-# ## CLASSES
+# #### Form
 
-def get_artist_form(**kwargs):
-    # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
-    class ArtistForm(CustomNameForm):
-        site_id = SelectField('Site', choices=[("", ""), (1, 'Pixiv'), (3, 'Twitter')], id='artist-site-id',
-                              custom_name='artist[site_id]', validators=[DataRequired()], coerce=int_or_blank)
-        site_artist_id = IntegerField('Site Artist ID', id='artist-site-artist-id',
-                                      custom_name='artist[site_artist_id]', validators=[DataRequired()])
-        current_site_account = StringField('Current Site Account', id='artist-current-site-account',
-                                           custom_name='artist[current_site_account]')
-        site_created = StringField('Site Created', id='artist-site-created', custom_name='artist[site_created]',
-                                   description='Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).')
-        site_account_string = TextAreaField('Site Accounts', id='artist-site-account-string',
-                                            custom_name='artist[site_account_string]',
-                                            description="Separated by whitespace.")
-        name_string = TextAreaField('Site Names', id='artist-name-string', custom_name='artist[name_string]',
-                                    description="Separated by carriage returns.")
-        webpage_string = TextAreaField('Webpages', id='artist-webpage-string', custom_name='artist[webpage_string]',
-                                       description="Separated by carriage returns. " +
-                                       "Prepend with '-' to mark as inactive.")
-        profile = TextAreaField('Profile', id='artist-profile', custom_name='artist[profile]')
-        active = BooleanField('Active', id='artist-active', custom_name='artist[active]', default=True)
-    return ArtistForm(**kwargs)
+FORM_CONFIG = {
+    'site_id': {
+        'name': 'Site',
+        'field': SelectField,
+        'kwargs': {
+            'choices': [("", ""), (1, 'Pixiv'), (3, 'Twitter')],
+            'validators': [DataRequired()],
+            'coerce': int_or_blank,
+        },
+    },
+    'site_artist_id': {
+        'name': 'Site Artist ID',
+        'field': IntegerField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
+    },
+    'current_site_account': {
+        'field': StringField,
+    },
+    'site_created': {
+        'field': StringField,
+        'kwargs': {
+            'description': "Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).",
+        },
+    },
+    'site_account_string': {
+        'name': 'Site Accounts',
+        'field': TextAreaField,
+        'kwargs': {
+            'description': "Separated by whitespace.",
+        },
+    },
+    'name_string': {
+        'name': 'Site Names',
+        'field': TextAreaField,
+        'kwargs': {
+            'description': "Separated by carriage returns.",
+        },
+    },
+    'webpage_string': {
+        'name': 'Webpages',
+        'field': TextAreaField,
+        'kwargs': {
+            'description': "Separated by carriage returns. Prepend with '-' to mark as inactive.",
+        },
+    },
+    'profile': {
+        'name': 'Profile',
+        'field': TextAreaField,
+    },
+    'active': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': True,
+        },
+    },
+}
 
 
 # ## FUNCTIONS
 
 # #### Helper functions
+
+def get_artist_form(**kwargs):
+    return get_form('artist', FORM_CONFIG, **kwargs)
+
 
 def uniqueness_check(dataparams, artist):
     site_id = dataparams['site_id'] if 'site_id' in dataparams else artist.site_id

@@ -16,7 +16,7 @@ from ..logical.database.subscription_pool_db import create_subscription_pool_fro
 from ..logical.database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status,\
     update_job_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_data_params, CustomNameForm, get_or_abort, get_or_error,\
+    get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
     check_param_requirements, nullify_blanks, parse_bool_parameter, set_default, hide_input, parse_type
 
 
@@ -30,28 +30,45 @@ VALUES_MAP = {
 }
 
 
-# ## CLASSES
+# #### Form
 
-def get_subscription_pool_form(**kwargs):
-    # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
-    class SubscriptionPoolForm(CustomNameForm):
-        artist_id = IntegerField('Artist ID', id='subscription-pool-artist-id',
-                                 custom_name='subscription_pool[artist_id]', validators=[DataRequired()])
-        interval = FloatField('Interval', id='subscription-pool-interval',
-                              custom_name='subscription_pool[interval]',
-                              description="How often to check the artist (hours, >1.0). [Default: 24 hours]")
-        expiration = FloatField('Expiration', id='subscription-pool-expiration',
-                                custom_name='subscription_pool[expiration]',
-                                description="""How long to wait before deleting the post/illust (days, >1.0).
-                                               Clear the field for no expiration. [Default: no expiration]""")
-        active = BooleanField('Active', id='subscription-pool-active',
-                              custom_name='subscription_pool[active]', default=True)
-    return SubscriptionPoolForm(**kwargs)
+FORM_CONFIG = {
+    'artist_id': {
+        'name': 'Artist ID',
+        'field': IntegerField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
+    },
+    'interval': {
+        'field': FloatField,
+        'kwargs': {
+            'description': "How often to check the artist (hours, >1.0). [Default: 24 hours]",
+        },
+    },
+    'expiration': {
+        'field': FloatField,
+        'kwargs': {
+            'description': """How long to wait before deleting the post/illust (days, >1.0).
+                              Clear the field for no expiration. [Default: no expiration]""",
+        },
+    },
+    'active': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': True,
+        },
+    },
+}
 
 
 # ## FUNCTIONS
 
 # #### Helper functions
+
+def get_subscription_pool_form(**kwargs):
+    return get_form('subscription_pool', FORM_CONFIG, **kwargs)
+
 
 def parameter_validation(dataparams):
     errors = []

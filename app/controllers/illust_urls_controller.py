@@ -38,25 +38,48 @@ INDEX_HTML_OPTIONS = (
 )
 
 
-# ## CLASSES
+# #### Form
 
-def get_illust_url_form(**kwargs):
-    # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
-    class IllustUrlForm(CustomNameForm):
-        illust_id = IntegerField('Illust ID', id='illust-url-illust_id', custom_name='illust_url[illust_id]',
-                                 validators=[DataRequired()])
-        url = StringField('URL', id='illust-url-url', custom_name='illust_url[url]', validators=[DataRequired()])
-        sample = StringField('Sample', id='illust-url-url', custom_name='illust_url[sample]')
-        width = IntegerField('Width', id='illust-url-width', custom_name='illust_url[width]')
-        height = IntegerField('Height', id='illust-url-height', custom_name='illust_url[height]')
-        order = IntegerField('Order', id='illust-url-order', custom_name='illust_url[order]')
-        active = BooleanField('Active', id='illust-url-active', custom_name='illust_url[active]', default=True)
-    return IllustUrlForm(**kwargs)
+FORM_CONFIG = {
+    'illust_id': {
+        'name': 'Illust_id',
+        'field': IntegerField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
+    },
+    'url': {
+        'name': 'URL',
+        'field': StringField,
+    },
+    'sample': {
+        'field': StringField,
+    },
+    'width': {
+        'field': IntegerField,
+    },
+    'height': {
+        'field': IntegerField,
+    },
+    'order': {
+        'field': IntegerField,
+    },
+    'active': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': True,
+        },
+    },
+}
 
 
 # ## FUNCTIONS
 
 # #### Helper functions
+
+def get_illust_url_form(**kwargs):
+    return get_form('illust_url', FORM_CONFIG, **kwargs)
+
 
 def uniqueness_check(dataparams, illust_url):
     illust_id = dataparams['illust_id'] if 'illust_id' in dataparams else illust_url.illust_id
