@@ -8,6 +8,7 @@ from flask import Markup, url_for, request
 
 # ## PACKAGE IMPORTS
 from config import DANBOORU_HOSTNAME
+from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
@@ -50,6 +51,10 @@ def similar_search_links(post, format_url, proxy_url=None):
         href_url = format_url + encoded_url
         image_links.append(external_link(illust.shortlink, href_url))
     return Markup(' | ').join(image_links)
+
+
+def image_title(post):
+    return f"( {post.width} x {post.height} ) : {post.file_ext.upper()} @ {readable_bytes(post.size)}"
 
 
 # ###### SHOW

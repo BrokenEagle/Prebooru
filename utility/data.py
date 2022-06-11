@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 import re
 import json
+import math
 import hashlib
 
 
@@ -32,6 +33,12 @@ def decode_json(string):
         print("Invalid data!")
         return
     return data
+
+
+def readable_bytes(bytes):
+    i = math.floor(math.log(bytes) / math.log(1024))
+    sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+    return str(set_precision((bytes / math.pow(1024, i)), 2)) + ' ' + sizes[i]
 
 
 # #### String functions
