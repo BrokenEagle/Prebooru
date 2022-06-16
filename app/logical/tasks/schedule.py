@@ -207,7 +207,7 @@ def delete_orphan_images_task():
 def vacuum_analyze_database_task():
     if server_is_busy():
         print("Vaccuum/Analyze: Server busy, rescheduling....")
-        reschedule_task('vacuum_analyze_database', JOB_CONFIG, JOB_LEEWAY)
+        reschedule_task('vacuum_analyze_database', True)
         return
     if not _set_db_semaphore('vacuum_analyze_database'):
         print("Task scheduler - Vacuum/analyze DB: already running")
