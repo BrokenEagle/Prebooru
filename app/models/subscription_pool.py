@@ -4,7 +4,7 @@
 from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
-from utility.time import average_timedelta, humanized_timedelta, days_ago
+from utility.time import average_timedelta, humanized_timedelta, days_ago, get_current_time
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -74,9 +74,9 @@ class SubscriptionPool(JsonModel):
                                       .order_by(Illust.site_illust_id.desc())\
                                       .with_entities(Illust.site_created)\
                                       .all()
-        if len(datetimes) < 2:
+        if len(datetimes) == 0:
             return
-        datetimes = [x[0] for x in datetimes]
+        datetimes = [get_current_time()] + [x[0] for x in datetimes]
         timedeltas = [datetimes[i-1] - datetimes[i] for i in range(1, len(datetimes))]
         return humanized_timedelta(average_timedelta(timedeltas))
 
