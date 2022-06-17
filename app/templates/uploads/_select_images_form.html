@@ -10,7 +10,7 @@
         <div class="select-image-block">
             <div class="input">
                 <label for="select-post-{{ loop.index }}">
-                    <input type="checkbox" class="select-image-input" id="select-post-{{ loop.index }}" name="upload[image_urls][]" value="{{ url_data['full_url'] }}">
+                    <input type="checkbox" class="select-image-input" id="select-post-{{ loop.index }}" name="upload[image_urls][]" value="{{ url_data['full_url'] }}" onchange="return Prebooru.changeInput(this)">
                 </label>
             </div>
             <article class="post select-post">

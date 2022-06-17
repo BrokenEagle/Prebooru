@@ -100,6 +100,11 @@ Prebooru.selectInvert = function(classname) {
     document.dispatchEvent(Prebooru.updateInputsEvent);
 };
 
+Prebooru.changeInput = function(obj) {
+    let counter = Number(document.getElementById('image-select-counter').innerText);
+    document.getElementById('image-select-counter').innerText = counter + (obj.checked ? 1 : -1);
+};
+
 Prebooru.copyFileLink = function(obj) {
     prompt('Copy file link:', obj.dataset.filePath);
     return false;
