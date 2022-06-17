@@ -6,6 +6,7 @@ from utility.file import put_get_raw
 
 # ## LOCAL IMPORTS
 from ...models import Post
+from ..searchable import search_attributes
 from ..database.post_db import update_post_from_parameters
 from ..sources.danbooru import get_posts_by_md5s
 from ..downloader.network import redownload_post
@@ -15,7 +16,8 @@ from ..downloader.network import redownload_post
 
 def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
-    query = Post.query.filter(Post.danbooru_id == None)  # noqa: E711
+    query = Post.query.filter(Post.danbooru_id.is_(None))
+    query = search_attributes(query, Post, {'subscription_pool_element_exists': 'false'})
     max_id = 0
     page = 1
     page_count = (query.get_count() // 100) + 1
