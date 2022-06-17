@@ -17,8 +17,8 @@ from .base_helper import general_link, url_for_with_params, val_or_none
 # ###### URL functions
 
 def post_search(subscription_pool):
-    return search_url_for('post.index_html', base_args={'type': 'subscription'},
-                          subscription_pool_element={'pool_id': subscription_pool.id})
+    return search_url_for('post.index_html', type='subscription_post',
+                          illust_urls={'illust': {'artist': {'subscription_pool': {'id': subscription_pool.id}}}})
 
 
 def illust_search(subscription_pool):

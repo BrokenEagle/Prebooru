@@ -105,7 +105,10 @@ class SubscriptionPool(JsonModel):
 
     @property
     def _post_query(self):
-        return Post.query.join(SubscriptionPoolElement).filter(SubscriptionPoolElement.pool_id == self.id)
+        from .artist import Artist
+        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust)\
+                   .join(Artist, Illust.artist).join(SubscriptionPool, Artist.subscription_pool)\
+                   .filter(SubscriptionPool.id == self.id, Post.type == 'subscription_post')
 
 
 # ## INITIALIZATION
