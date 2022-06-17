@@ -104,12 +104,23 @@ def get_posts_by_md5s(md5_list):
     request_url = '/posts.json'
     params = {
         'tags': 'md5:' + ','.join(md5_list),
-        'limit': 100,
+        'limit': 200,  # Maximum number of posts
     }
-    data = danbooru_request(request_url, params)
-    if data['error']:
-        return data
-    return {'error': False, 'posts': [post for post in data['json'] if 'md5' in post]}
+    method = 'get'
+    if len(md5_list) > 100:
+        params['_method'] = 'get'
+        method = 'post'
+    all_posts = []
+    while True:
+        data = danbooru_request(request_url, params, method=method)
+        if data['error']:
+            return data
+        posts = [post for post in data['json'] if 'md5' in post]
+        all_posts.extend(posts)
+        if len(data) < 200:
+            break
+        params['page'] = 'b' + str(min(post['id'] for post in posts))
+    return {'error': False, 'posts': all_posts}
 
 
 def get_uploads_by_md5(md5):
