@@ -24,7 +24,7 @@ ILLUST_POOLS_SUBQUERY = Post.query.join(IllustUrl, Post.illust_urls).join(Illust
                             .join(PoolIllust, Illust._pools).filter(Illust.id == PoolIllust.illust_id)\
                             .with_entities(Post.id)
 
-POOL_SEARCH_KEYS = ['has_pools', 'has_post_pools', 'has_illust_pools']
+POOL_SEARCH_KEYS = ['has_any_pool', 'has_post_pool', 'has_illust_pool']
 
 DEFAULT_DELETE_EXPIRES = 30  # Days
 
@@ -62,11 +62,11 @@ MAX_LIMIT_HTML = 100
 def pool_filter(query, search):
     pool_search_key = next((key for key in POOL_SEARCH_KEYS if key in search), None)
     if pool_search_key is not None and eval_bool_string(search[pool_search_key]) is not None:
-        if pool_search_key == 'has_pools':
+        if pool_search_key == 'has_any_pool':
             subclause = or_(Post.id.in_(POST_POOLS_SUBQUERY), Post.id.in_(ILLUST_POOLS_SUBQUERY))
-        elif pool_search_key == 'has_post_pools':
+        elif pool_search_key == 'has_post_pool':
             subclause = Post.id.in_(POST_POOLS_SUBQUERY)
-        elif pool_search_key == 'has_illust_pools':
+        elif pool_search_key == 'has_illust_pool':
             subclause = Post.id.in_(ILLUST_POOLS_SUBQUERY)
         if is_falsey(search[pool_search_key]):
             subclause = not_(subclause)
