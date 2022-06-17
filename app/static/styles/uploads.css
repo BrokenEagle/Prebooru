@@ -83,8 +83,12 @@ div.select-image-block {
     margin: 5px;
 }
 div.select-image-block div.input label {
-    padding: 0.5em;
     margin-top: 0;
+    margin-bottom: 5px;
+    border: 1px solid #8DD;
+    border-radius: 25px;
+    background: #E0F0F0;
+    padding: 5px;
 }
 div.select-image-block div.missing-image {
     font-size: 150%;
