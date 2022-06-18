@@ -231,7 +231,10 @@ def index():
     q = Illust.query
     q = search_filter(q, search, negative_search)
     q = pool_filter(q, search)
-    q = default_order(q, search)
+    if 'order' in search and search['order'] in ['site']:
+        q = q.order_by(Illust.site_illust_id.desc())
+    else:
+        q = default_order(q, search)
     return q
 
 
