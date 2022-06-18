@@ -42,7 +42,6 @@ SubscriptionPools.toggleCheckbox = function(obj) {
     } else {
         curr.classList.remove('checkbox-active');
     }
-    Prebooru.changeInput(obj);
 };
 
 SubscriptionPools.updateAllInputs = function() {

@@ -100,7 +100,7 @@ Prebooru.selectInvert = function(classname) {
     document.dispatchEvent(Prebooru.updateInputsEvent);
 };
 
-Prebooru.changeInput = function(obj) {
+Prebooru.selectClick = function(obj) {
     let counter = Number(document.getElementById('image-select-counter').innerText);
     document.getElementById('image-select-counter').innerText = counter + (obj.checked ? 1 : -1);
 };
