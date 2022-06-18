@@ -4,13 +4,14 @@
 import threading
 
 # ## EXTERNAL IMPORTS
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time, hours_from_now
 
 # ## LOCAL IMPORTS
-from ...models import SubscriptionPool, SubscriptionPoolElement, IllustUrl
+from ...models import SubscriptionPool, SubscriptionPoolElement, IllustUrl, Post
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
 from ..similarity.generate_data import generate_post_similarity
@@ -117,9 +118,11 @@ def download_missing_elements():
 
 
 def expire_subscription_elements():
-    # First pass - Unlink all "yes" elements
-    q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
-                                             SubscriptionPoolElement.keep == 'yes')
+    # First pass - Unlink all "yes" elements or those that were manually downloaded by the user
+    q = SubscriptionPoolElement.query.join(Post, SubscriptionPoolElement.post)\
+                               .filter(or_(and_(SubscriptionPoolElement.expires < get_current_time(),
+                                       SubscriptionPoolElement.keep == 'yes')),
+                                       Post.type == 'user_post')
     page = q.limit_paginate(per_page=100)
     while True:
         print(f"expire_subscription_elements-unlink: {page.first} - {page.last} / Total({page.count})")
