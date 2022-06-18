@@ -81,7 +81,7 @@ def format_time_ago(timeval):
     if timeval is not None:
         text = time_ago(timeval)
         timestring = timeval.isoformat()
-        return Markup(f'<time date="{timestring}" title="{timestring}">{text}</time>')
+        return Markup(f'<time datetime="{timestring}" title="{timestring}">{text}</time>')
     return Markup('<em>N/A</em>')
 
 
@@ -89,7 +89,7 @@ def format_expires(timeval):
     if timeval is not None:
         text = time_from_now(timeval)
         timestring = timeval.isoformat()
-        return Markup(f'<time date="{timestring}" title="{timestring}">{text}</time>')
+        return Markup(f'<time datetime="{timestring}" title="{timestring}">{text}</time>')
     return Markup('<em>N/A</em>')
 
 
