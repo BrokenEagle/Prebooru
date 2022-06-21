@@ -26,7 +26,8 @@
                         </div>
                     {% else %}
                         <div class="no-post-preview">
-                            <span class="explanation">No post.</span>
+                            <img src="{{ illust_url.preview_url }}" onerror="Prebooru.onImageError(this)">
+                            <div><strong>(no post)</strong></div>
                         </div>
                     {% endif %}
                 </div>

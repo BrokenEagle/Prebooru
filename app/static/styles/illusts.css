@@ -117,14 +117,17 @@ div.video-post-preview {
     margin-top: 1em;
 }
 div.no-post-preview {
-    font-size: 20px;
-    width: 300px;
-    height: 300px;
+    width: 310px;
+    height: 330px;
     background-color: #EEE;
     border: 1px solid #CCC;
     text-align: center;
-    padding-top: 1em;
     margin-top: 1em;
+}
+div.no-post-preview img {
+    padding: 4px;
+    max-width: 300px;
+    max-height: 300px;
 }
 /****INDEX Page****/
 div.simple-tags-container {
