@@ -289,39 +289,44 @@ def relationship_has_filters(model, attribute, params, relation_property):
 
 
 def relationship_count_filters(model, attribute, params, relation_property, query):
-    if relation_property.secondaryjoin is None:
-        raise Exception("Count not available for fk relations.")
     primaryjoin = relation_property.primaryjoin
+    if relation_property.secondaryjoin is None:
+        leftside = primaryjoin.right
+        rightside = primaryjoin.left
+        query = query.join(primaryjoin.right.table, primaryjoin)
+    else:
+        leftside = primaryjoin.left
+        rightside = primaryjoin.right
+        query = query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)
     value = params['count_' + attribute]
-    count_clause = relationship_count(model, primaryjoin, value)
+    count_clause = relationship_count(model, rightside, value)
     if count_clause is not None:
-        return query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right).group_by(model)\
-                    .having(count_clause)
+        return query.group_by(model).having(count_clause)
     else:
         raise Exception("%s - invalid value: %s" % ('count_' + attribute, value))
 
 
 # #### Type auxiliary functions
 
-def relationship_count(model, primaryjoin, value):
+def relationship_count(model, rightside, value):
     match = re.match(r'^\d+$', value)
     if match:
-        return func.count(primaryjoin.right) == int(value)
+        return func.count(rightside) == int(value)
     match = re.match(r'^<=(\d+)$', value)
     if match:
-        return func.count(primaryjoin.right) <= int(match.group(1))
+        return func.count(rightside) <= int(match.group(1))
     match = re.match(r'^<(\d+)$', value)
     if match:
-        return func.count(primaryjoin.right) < int(match.group(1))
+        return func.count(rightside) < int(match.group(1))
     match = re.match(r'^>=(\d+)$', value)
     if match:
-        return func.count(primaryjoin.right) >= int(match.group(1))
+        return func.count(rightside) >= int(match.group(1))
     match = re.match(r'^>(\d+)$', value)
     if match:
-        return func.count(primaryjoin.right) > int(match.group(1))
+        return func.count(rightside) > int(match.group(1))
     match = re.match(r'^!=(\d+)$', value)
     if match:
-        return func.count(primaryjoin.right) != int(match.group(1))
+        return func.count(rightside) != int(match.group(1))
 
 
 def numeric_matching(model, columnname, value):
