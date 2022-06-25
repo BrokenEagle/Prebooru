@@ -91,7 +91,7 @@ def get_artists_by_multiple_urls(url_list):
         'only': 'url,artist',
         'limit': 1000,
     }
-    data = danbooru_request(request_url, params)
+    data = danbooru_request(request_url, params, long=True)
     if data['error']:
         return data
     retdata = {}
