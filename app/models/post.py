@@ -71,6 +71,7 @@ class Post(JsonModel):
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
     type = DB.Column(DB.String(50), nullable=False)
+    alternate = DB.Column(DB.Boolean, nullable=False)
 
     # #### Relationships
     illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True,

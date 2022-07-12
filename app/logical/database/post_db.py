@@ -13,7 +13,7 @@ from .similarity_pool_db import delete_similarity_pool_by_post_id
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type']
+COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type', 'alternate']
 CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type']
 UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
 
@@ -26,7 +26,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
 
 def create_post_from_parameters(createparams):
     current_time = get_current_time()
-    post = Post(created=current_time)
+    post = Post(created=current_time, alternate=False)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(post, update_columns, createparams)
@@ -52,6 +52,11 @@ def update_post_from_parameters(post, updateparams):
     if any(update_results):
         print("[%s]: updated" % post.shortlink)
         SESSION.commit()
+
+
+def set_post_alternate(post, alternate):
+    post.alternate = alternate
+    SESSION.commit()
 
 
 # ###### Delete
