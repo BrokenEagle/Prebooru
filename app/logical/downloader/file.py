@@ -21,19 +21,19 @@ def convert_file_upload(upload, source):
             msg = "Must include sample filepath on video uploads (illust #%d)." % illust.id
             create_and_append_error('logical.downloader.file.convert_file_upload', msg, upload)
         else:
-            return convert_video_upload(illust, upload, source, create_video_post)
+            return convert_video_upload(illust, upload, source, create_video_post, 'user_post')
     elif source.illust_has_images(illust):
-        return convert_image_upload([illust_url], upload, source, create_image_post)
+        return convert_image_upload([illust_url], upload, source, create_image_post, 'user_post')
     create_and_append_error('logical.downloader.file.convert_file_upload', "No valid illust URLs.", upload)
     return False
 
 # #### Post creation functions
 
 
-def create_image_post(illust_url, upload, source):
-    file_ext = get_file_extension(upload.media_filepath)
-    buffer = put_get_raw(upload.media_filepath, 'rb')
-    md5 = check_existing(buffer, illust_url)
+def create_image_post(illust_url, record, source, post_type):
+    file_ext = get_file_extension(record.media_filepath)
+    buffer = put_get_raw(record.media_filepath, 'rb')
+    md5 = check_existing(buffer, illust_url, record)
     if is_error(md5):
         return [md5]
     post_errors = []
@@ -45,7 +45,7 @@ def create_image_post(illust_url, upload, source):
     temppost = Post(md5=md5, file_ext=image_file_ext, width=image_width, height=image_height)
     if not save_image(buffer, image, temppost, post_errors):
         return post_errors
-    post = create_post_and_add_illust_url(illust_url, image_width, image_height, image_file_ext, md5, len(buffer))
+    post = create_post_and_add_illust_url(illust_url, image_width, image_height, image_file_ext, md5, len(buffer), post_type)
     if len(post_errors):
         extend_errors(post, post_errors)
     return post
