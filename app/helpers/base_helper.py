@@ -142,8 +142,9 @@ def show_link(model_type, model_id):
     return general_link("%s #%d" % (model_type, model_id), url_for(model_type + '.show_html', id=model_id))
 
 
-def url_link(url):
-    return external_link(url, url)
+def url_link(url, breakslash=False):
+    text = break_backslash(url) if breakslash else url
+    return external_link(text, url)
 
 
 def page_link(text, endpoint, page):
@@ -254,6 +255,10 @@ def has_error_messages(messages):
 
 def break_period(text):
     return Markup(text.replace('.', '.<wbr>'))
+
+
+def break_backslash(text):
+    return Markup(text.replace('\\', '\\<wbr>'))
 
 
 # #### Private functions

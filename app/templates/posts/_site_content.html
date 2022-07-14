@@ -12,7 +12,7 @@
             <li><strong>MD5:</strong> {{ post.md5 }}</li>
             <li><strong>Sources:</strong>
                 {% call(illust_url) items_list(post.illust_urls) %}
-                    {{ helpers.base.url_link(illust_url.full_url) }}
+                    {{ helpers.base.url_link(illust_url.full_url, True) }}
                 {% endcall %}
             </li>
         </ul>
