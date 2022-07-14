@@ -1,7 +1,11 @@
 # APP/LOGICAL/DATABASE/BASE_DB.PY
 
 # ## PYTHON IMPORTS
+import time
 import datetime
+
+# ## EXTERNAL IMPORTS
+import sqlalchemy
 
 # ## PACKAGE IMPORTS
 from utility.time import process_utc_timestring
@@ -30,14 +34,18 @@ def safe_db_execute(func_name, module_name, scope_vars=None, **kwargs):
             SESSION.rollback()
             msg = kwargs['msg_func'](scope_vars, e)
             log_error(f"{module_name}.func_name", msg)
+            _handle_db_exception(e)
             kwargs['error_func'](scope_vars, e)
             error = e
         except Exception as e:
+            SESSION.rollback()
             log_error(f"{module_name}.func_name", f"safe_db_execute - Exception in error block: {repr(e)}")
+            _handle_db_exception(e)
     finally:
         try:
             return kwargs['finally_func'](scope_vars, error, data)
         except Exception as e:
+            SESSION.rollback()
             log_error(f"{module_name}.func_name", f"safe_db_execute - Exception in finally block: : {repr(e)}")
 
 
@@ -130,6 +138,13 @@ def _safe_db_commit(item, func_name, message):
         error_message = (message + ' : %s\n\t%s') % (e, str(item))
         safe_print("\a%s : %s" % (func_name, error_message))
         print("Unlocking the database...")
-        log_error(func_name, error_message)
         SESSION.rollback()
+        log_error(func_name, error_message)
+        _handle_db_exception(e)
         raise
+
+
+def _handle_db_exception(error):
+    if isinstance(error, sqlalchemy.exc.OperationalError) and error.code == 'e3q8':
+        print("!!!Sleeping for DB lock!!!")
+        time.sleep(30)
