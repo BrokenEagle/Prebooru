@@ -132,7 +132,7 @@ div.subscription-element-info.maybe-info {
 div.subscription-element-info.no-info {
     border-color: red;
 }
-div.subscription-element-info.unsure-info {
+div.subscription-element-info.undecided-info {
     border-color: #DDD;
 }
 div.subscription-element-info a.keep-link {

@@ -91,7 +91,7 @@ def index_html():
             q = q.filter(SubscriptionPoolElement.post_id.__ne__(None))
         if element_type in ['yes', 'no', 'maybe']:
             q = q.filter(SubscriptionPoolElement.keep == element_type)
-        elif element_type == 'unsure' or element_type is None:
+        elif element_type == 'undecided' or element_type is None:
             q = q.filter(SubscriptionPoolElement.keep.is_(None))
     q = q.options(INDEX_HTML_OPTIONS)
     subscription_pool_elements = paginate(q, request, MAX_LIMIT_HTML)

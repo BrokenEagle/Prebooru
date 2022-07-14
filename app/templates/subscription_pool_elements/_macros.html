@@ -55,7 +55,7 @@
 {%- endmacro %}
 
 {% macro subscription_pool_element_info(element, show_illust, has_preview) -%}
-    {% set info_class = element.keep + '-info' if element.keep is not none else 'unsure-info' %}
+    {% set info_class = element.keep + '-info' if element.keep is not none else 'undecided-info' %}
     <div class="subscription-element-info {{info_class}}">
         <ul>
             <li><strong>{{ element.pool_show_link }}&ensp;{{ helpers.subscription_pool.element_search_link(element) }}</strong></li>
