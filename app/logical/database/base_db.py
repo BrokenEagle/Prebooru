@@ -33,20 +33,20 @@ def safe_db_execute(func_name, module_name, scope_vars=None, **kwargs):
             kwargs['printer']("Unlocking the database...")
             SESSION.rollback()
             msg = kwargs['msg_func'](scope_vars, e)
-            log_error(f"{module_name}.func_name", msg)
+            log_error(f"{module_name}.{func_name}", msg)
             _handle_db_exception(e)
             kwargs['error_func'](scope_vars, e)
             error = e
         except Exception as e:
             SESSION.rollback()
-            log_error(f"{module_name}.func_name", f"safe_db_execute - Exception in error block: {repr(e)}")
+            log_error(f"{module_name}.{func_name}", f"safe_db_execute - Exception in error block: {repr(e)}")
             _handle_db_exception(e)
     finally:
         try:
             return kwargs['finally_func'](scope_vars, error, data)
         except Exception as e:
             SESSION.rollback()
-            log_error(f"{module_name}.func_name", f"safe_db_execute - Exception in finally block: : {repr(e)}")
+            log_error(f"{module_name}.{func_name}", f"safe_db_execute - Exception in finally block: : {repr(e)}")
 
 
 def set_timesvalue(params, key):
@@ -75,7 +75,7 @@ def update_column_attributes(item, attrs, dataparams):
     if item.id is None:
         SESSION.add(item)
     if is_dirty:
-        _safe_db_commit(item, 'base_db.update_column_attributes', "Error on record create/update")
+        _safe_db_commit(item, 'update_column_attributes', "Error on record create/update")
     return is_dirty
 
 
@@ -103,7 +103,7 @@ def update_relationship_collections(item, relationships, updateparams):
             collection.remove(remove_item)
             is_dirty = True
     if is_dirty:
-        _safe_db_commit(item, 'base_db.update_relationship_collections', "Error on adding/removing collection values")
+        _safe_db_commit(item, 'update_relationship_collections', "Error on adding/removing collection values")
     return is_dirty
 
 
@@ -125,7 +125,7 @@ def append_relationship_collections(item, relationships, updateparams):
             collection.append(add_item)
             is_dirty = True
     if is_dirty:
-        _safe_db_commit(item, 'base_db.append_relationship_collections', "Error on adding collection value")
+        _safe_db_commit(item, 'append_relationship_collections', "Error on adding collection value")
     return is_dirty
 
 
@@ -139,7 +139,7 @@ def _safe_db_commit(item, func_name, message):
         safe_print("\a%s : %s" % (func_name, error_message))
         print("Unlocking the database...")
         SESSION.rollback()
-        log_error(func_name, error_message)
+        log_error(f'database.base_db.{func_name}', error_message)
         _handle_db_exception(e)
         raise
 
