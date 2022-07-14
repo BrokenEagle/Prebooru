@@ -5,6 +5,7 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.time import average_timedelta, humanized_timedelta, days_ago, get_current_time
+from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -79,6 +80,14 @@ class SubscriptionPool(JsonModel):
         datetimes = [get_current_time()] + [x[0] for x in datetimes]
         timedeltas = [datetimes[i - 1] - datetimes[i] for i in range(1, len(datetimes))]
         return humanized_timedelta(average_timedelta(timedeltas))
+
+    @memoized_property
+    def total_storage(self):
+        filesizes = self._post_query.with_entities(Post.size).all()
+        if len(filesizes) == 0:
+            return
+        total_bytes = sum([x[0] for x in filesizes])
+        return readable_bytes(total_bytes)
 
     @property
     def element_count(self):

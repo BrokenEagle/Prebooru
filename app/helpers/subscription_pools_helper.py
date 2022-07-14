@@ -67,6 +67,12 @@ def average_interval(subscription_pool):
     return val_or_none(subscription_pool.average_keep_interval)
 
 
+def total_storage(subscription_pool):
+    if subscription_pool.post_count == 0:
+        return Markup('<em>N/A</em>')
+    return subscription_pool.total_storage
+
+
 # #### Elements
 
 def keep_element_val(subscription_element):
