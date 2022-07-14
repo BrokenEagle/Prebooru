@@ -5,6 +5,7 @@ import os
 import re
 
 # ## PACKAGE IMPORTS
+from config import ALTERNATE_MEDIA_DIRECTORY
 from utility.print import buffered_print
 from utility.file import get_directory_listing, delete_file
 
@@ -16,6 +17,7 @@ from ..check.posts import check_all_posts_for_danbooru_id
 from ..check.booru_artists import check_all_artists_for_boorus
 from ..check.subscriptions import download_subscription_illusts, download_missing_elements,\
     expire_subscription_elements
+from ..records.post_rec import relocate_old_posts_to_alternate
 from ..records.media_file_rec import batch_delete_media
 from ..database.base_db import safe_db_execute
 from ..database.subscription_pool_db import get_available_subscription, update_subscription_pool_status,\
@@ -174,6 +176,30 @@ def process_expired_subscription_elements():
         printer("No subscriptions elements to process.")
     printer.print()
     _free_db_semaphore('process_expired_subscription_elements')
+
+
+@SCHEDULER.task("interval", **JOB_CONFIG['relocate_old_posts']['config'])
+def relocate_old_posts_task():
+    if not get_job_enabled_status('relocate_old_posts'):
+        print("Task scheduler - Relocate Old Posts: disabled")
+        return
+    if not _set_db_semaphore('relocate_old_posts'):
+        print("Task scheduler - Relocate Old Posts: already running")
+        return
+    printer = buffered_print("Relocate Old Posts")
+    printer("PID:", os.getpid())
+    if ALTERNATE_MEDIA_DIRECTORY is None:
+        printer("Alternate media directory not configured.")
+    elif not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+        printer("Alternate media directory not found.")
+    else:
+        posts_moved = relocate_old_posts_to_alternate()
+        if posts_moved is None:
+            printer("Alternate move days not configured.")
+        else:
+            printer("Posts moved:", posts_moved)
+    printer.print()
+    _free_db_semaphore('relocate_old_posts')
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['delete_orphan_images']['config'])

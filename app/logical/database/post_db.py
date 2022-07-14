@@ -1,7 +1,7 @@
 # APP/LOGICAL/DATABASE/POST_DB.PY
 
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time
+from utility.time import get_current_time, days_ago
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -87,6 +87,11 @@ def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, siz
     return post
 
 
+def copy_post(post):
+    """Return an uncommitted copy of the post."""
+    return Post(**post.column_dict())
+
+
 # #### Query functions
 
 def get_posts_by_id(ids):
@@ -99,3 +104,7 @@ def get_posts_by_id(ids):
 
 def get_post_by_md5(md5):
     return Post.query.filter_by(md5=md5).first()
+
+
+def alternate_posts_query(days):
+    return Post.query.filter(Post.created < days_ago(days), Post.alternate == False)

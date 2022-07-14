@@ -27,12 +27,12 @@ def date_time_or_null(value):
 
 # #### Network functions
 
-def _external_server_url(urlpath):
-    return 'http://' + SERVER_INFO.addr + ':' + str(IMAGE_PORT) + '/images/' + urlpath
+def _external_server_url(urlpath, subtype):
+    return 'http://' + SERVER_INFO.addr + ':' + str(IMAGE_PORT) + f'/{subtype}/' + urlpath
 
 
-def _internal_server_url(urlpath):
-    return url_for('media.send_file', path=urlpath)
+def _internal_server_url(urlpath, subtype):
+    return url_for('media.send_file', subtype=subtype, path=urlpath)
 
 
 image_server_url = _external_server_url if HAS_EXTERNAL_IMAGE_SERVER else _internal_server_url

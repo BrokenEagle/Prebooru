@@ -4,14 +4,15 @@
 import os
 
 # ### PACKAGE IMPORTS
-from config import MEDIA_DIRECTORY
-from utility.file import create_directory, put_get_raw, move_file, delete_file
+from config import MEDIA_DIRECTORY, ALTERNATE_MOVE_DAYS
+from utility.file import create_directory, put_get_raw, copy_file, delete_file
 
 # ### LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
 from ..media import load_image, create_sample, create_preview, create_video_screenshot
-from ..database.post_db import create_post_from_raw_parameters, delete_post, post_append_illust_url, get_post_by_md5
+from ..database.post_db import create_post_from_raw_parameters, delete_post, post_append_illust_url, get_post_by_md5,\
+    set_post_alternate, alternate_posts_query, copy_post
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.error_db import create_error_from_raw_parameters
@@ -25,6 +26,25 @@ TEMP_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'temp')
 
 
 # ## FUNCTIONS
+
+def move_post_media_to_alternate(post):
+    temppost = copy_post(post)
+    temppost.alternate = True
+    copy_file(post.file_path, temppost.file_path, True)
+    if post.has_sample:
+        copy_file(post.sample_path, temppost.sample_path)
+    if post.has_preview:
+        copy_file(post.preview_path, temppost.preview_path)
+    # Commit post as alternate location at this point since the files have been safely copied over
+    set_post_alternate(post, True)
+    # Any errors after this point will just leave orphan images, which can always be cleaned up later
+    temppost.alternate = False
+    delete_file(temppost.file_path)
+    if post.has_sample:
+        delete_file(temppost.sample_path)
+    if post.has_preview:
+        delete_file(temppost.preview_path)
+
 
 def delete_post_and_media(post):
     """Hard delete. Continue as long as post record gets deleted."""
@@ -117,6 +137,21 @@ def relink_archived_post(data, post=None):
         illust_url = get_illust_url_by_url(site_id=link_data['site_id'], partial_url=link_data['url'])
         if illust_url is not None:
             post_append_illust_url(post, illust_url)
+
+
+def relocate_old_posts_to_alternate():
+    if ALTERNATE_MOVE_DAYS is None:
+        return
+    query = alternate_posts_query(ALTERNATE_MOVE_DAYS)
+    page = query.limit_paginate(per_page=100)
+    while True:
+        print(f"relocate_old_posts_to_alternate: {page.first} - {page.last} / Total({page.count})")
+        for post in page.items:
+            print(f"Moving {post.shortlink}")
+            move_post_media_to_alternate(post)
+        if not page.has_next:
+            return page.count
+        page = page.next()
 
 
 # #### Private functions

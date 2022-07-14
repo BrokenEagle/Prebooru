@@ -8,7 +8,7 @@
 """All backslashes ('\') in a filepath need to be double escaped ('\\')"""
 
 WORKING_DIRECTORY = "C:\\Temp\\"
-
+ALTERNATE_MEDIA_DIRECTORY = None
 
 '''LINUX'''
 """Filepaths need to end with a forwardslash ('/')"""
@@ -64,6 +64,8 @@ WATCHDOG_MAX_MEMORY_MB = 2048
 WATCHDOG_POLLING_INTERVAL = 60
 
 # ## OTHER VARIABLES
+
+ALTERNATE_MOVE_DAYS = None
 
 MAXIMUM_PAGINATE_LIMIT = 1000
 DEFAULT_PAGINATE_LIMIT = 20

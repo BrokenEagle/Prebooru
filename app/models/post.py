@@ -10,7 +10,7 @@ from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
-from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
+from config import MEDIA_DIRECTORY, ALTERNATE_MEDIA_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -113,34 +113,49 @@ class Post(JsonModel):
         return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1]
 
     @property
+    def is_alternate(self):
+        return self.alternate and ALTERNATE_MEDIA_DIRECTORY is not None
+
+    @property
+    def suburl_path(self):
+        return 'media' if not self.is_alternate else 'alternate'
+
+    @property
     def file_url(self):
-        return image_server_url('data' + self._partial_network_path + self.file_ext)
+        return image_server_url('data' + self._partial_network_path + self.file_ext, subtype=self.suburl_path)
 
     @property
     def sample_url(self):
-        return image_server_url('sample' + self._partial_network_path + 'jpg') if self.has_sample else self.file_url
+        if self.has_sample:
+            return image_server_url('sample' + self._partial_network_path + 'jpg', subtype=self.suburl_path)
+        return self.file_url
 
     @property
     def preview_url(self):
         if self.has_preview:
-            return image_server_url('preview' + self._partial_network_path + 'jpg')
+            return image_server_url('preview' + self._partial_network_path + 'jpg', subtype=self.suburl_path)
         elif self.is_video:
             return self.sample_url
         return self.file_url
 
     @property
+    def subdirectory_path(self):
+        return MEDIA_DIRECTORY if not self.is_alternate else ALTERNATE_MEDIA_DIRECTORY
+
+    @property
     def file_path(self):
-        return os.path.join(MEDIA_DIRECTORY, 'data', self._partial_file_path + self.file_ext)
+        return os.path.join(self.subdirectory_path, 'data', self._partial_file_path + self.file_ext)
 
     @property
     def sample_path(self):
-        return os.path.join(MEDIA_DIRECTORY, 'sample', self._partial_file_path + 'jpg')\
-            if self.has_sample else self.file_path
+        if self.has_sample:
+            return os.path.join(self.subdirectory_path, 'sample', self._partial_file_path + 'jpg')
+        return self.file_path
 
     @property
     def preview_path(self):
         if self.has_preview:
-            return os.path.join(MEDIA_DIRECTORY, 'preview', self._partial_file_path + 'jpg')
+            return os.path.join(self.subdirectory_path, 'preview', self._partial_file_path + 'jpg')
         elif self.is_video:
             return self.sample_path
         return self.file_path

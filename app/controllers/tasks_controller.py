@@ -68,7 +68,7 @@ def _initialize():
     from ..logical.tasks.schedule import check_all_boorus_task, check_all_artists_for_boorus_task,\
         check_all_posts_for_danbooru_id_task, expunge_cache_records_task, expunge_archive_records_task,\
         delete_orphan_images_task, vacuum_analyze_database_task, check_pending_subscriptions, check_pending_downloads,\
-        process_expired_subscription_elements
+        process_expired_subscription_elements, relocate_old_posts_task
     TASK_MAP = {
         'check_all_boorus': check_all_boorus_task,
         'check_all_artists_for_boorus': check_all_artists_for_boorus_task,
@@ -78,6 +78,7 @@ def _initialize():
         'process_expired_subscription_elements': process_expired_subscription_elements,
         'expunge_cache_records': expunge_cache_records_task,
         'expunge_archive_records': expunge_archive_records_task,
+        'relocate_old_posts': relocate_old_posts_task,
         'delete_orphan_images': delete_orphan_images_task,
         'vacuum_analyze_database': vacuum_analyze_database_task,
     }

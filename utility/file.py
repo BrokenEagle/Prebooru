@@ -7,7 +7,7 @@ import json
 import pathlib
 
 # ## LOCAL IMPORTS
-from .data import decode_unicode, decode_json
+from .data import decode_unicode, decode_json, get_buffer_checksum
 
 
 # ## FUNCTIONS
@@ -92,15 +92,27 @@ def load_default(filepath, defaultvalue, binary=False, unicode=False):
     return defaultvalue
 
 
-def move_file(old_filepath, new_filepath):
+def copy_file(old_filepath, new_filepath, safe=False):
     if os.path.exists(old_filepath):
-        os.rename(old_filepath, new_filepath)
-        # Time to let the OS move the file to prevent OS errors
-        time.sleep(0.2)
+        buffer = put_get_raw(old_filepath, 'rb')
+        put_get_raw(new_filepath, 'wb', buffer)
+        if safe:
+            checksum = get_buffer_checksum(buffer)
+            buffer2 = put_get_raw(new_filepath, 'rb')
+            checksum2 = get_buffer_checksum(buffer2)
+            if checksum != checksum2:
+                raise Exception(f"Error moving file from {old_filepath} to {new_filepath}")
+        # Time to let the OS copy the file to prevent OS errors
+        time.sleep(0.1)
 
 
 def delete_file(filepath):
     if os.path.exists(filepath):
         os.remove(filepath)
         # Time to let the OS remove the file to prevent OS errors
-        time.sleep(0.2)
+        time.sleep(0.1)
+
+
+def move_file(old_filepath, new_filepath, safe=False):
+    copy_file(old_filepath, new_filepath, safe)
+    delete_file(old_filepath)
