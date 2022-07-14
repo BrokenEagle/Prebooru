@@ -110,7 +110,7 @@ class Post(JsonModel):
 
     @memoized_property
     def has_preview(self):
-        return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1]
+        return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1] or self.is_video
 
     @property
     def is_alternate(self):
@@ -134,8 +134,6 @@ class Post(JsonModel):
     def preview_url(self):
         if self.has_preview:
             return image_server_url('preview' + self._partial_network_path + 'jpg', subtype=self.suburl_path)
-        elif self.is_video:
-            return self.sample_url
         return self.file_url
 
     @property
@@ -156,8 +154,6 @@ class Post(JsonModel):
     def preview_path(self):
         if self.has_preview:
             return os.path.join(self.subdirectory_path, 'preview', self._partial_file_path + 'jpg')
-        elif self.is_video:
-            return self.sample_path
         return self.file_path
 
     @memoized_property

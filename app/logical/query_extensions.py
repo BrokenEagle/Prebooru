@@ -25,6 +25,8 @@ class CountPaginate():
         self.items = self._get_items()
         self.count = self._get_count()
         self.pages = ((self.count - 1) // per_page) + 1
+        self.first = ((page - 1) * per_page) + 1
+        self.last = min(page * per_page, self.count)
 
     @property
     def has_next(self):
