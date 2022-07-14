@@ -119,10 +119,9 @@ def download_missing_elements():
 
 def expire_subscription_elements():
     # First pass - Unlink all "yes" elements or those that were manually downloaded by the user
-    q = SubscriptionPoolElement.query.join(Post, SubscriptionPoolElement.post)\
-                               .filter(or_(and_(SubscriptionPoolElement.expires < get_current_time(),
-                                       SubscriptionPoolElement.keep == 'yes')),
-                                       Post.type == 'user_post')
+    expired_clause = and_(SubscriptionPoolElement.expires < get_current_time(), SubscriptionPoolElement.keep == 'yes')
+    user_clause = (Post.type == 'user_post')
+    q = SubscriptionPoolElement.query.join(Post, SubscriptionPoolElement.post).filter(or_(expired_clause, user_clause))
     page = q.limit_paginate(per_page=100)
     while True:
         print(f"expire_subscription_elements-unlink: {page.first} - {page.last} / Total({page.count})")
