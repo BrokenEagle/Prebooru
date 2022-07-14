@@ -673,6 +673,8 @@ def check_request_wait(wait):
         return
     next_wait = get_next_wait('twitter')
     update_next_wait('twitter', MINIMUM_QUERY_INTERVAL)
+    if next_wait is None:
+        return
     sleep_time = next_wait - get_current_time().timestamp()
     if sleep_time > 0.0:
         print("Twitter request: sleeping -", sleep_time)
