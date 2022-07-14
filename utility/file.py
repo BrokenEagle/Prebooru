@@ -39,6 +39,14 @@ def get_directory_listing(directory):
         raise
 
 
+def get_subdirectory_listing(directory):
+    try:
+        return [filename for filename in next(os.walk(directory))[1]]
+    except Exception as e:
+        print("Error with subdirectory listing:", directory, e)
+        raise
+
+
 def create_directory(filepath):
     """Create the directory path if it doesn't already exist"""
     directory = get_directory_path(filepath)
