@@ -1,7 +1,7 @@
 # APP/LOGICAL/DATABASE/SUBSCRIPTION_POOL_DB.PY
 
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time
+from utility.time import get_current_time, hours_from_now
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -40,6 +40,8 @@ def update_subscription_pool_from_parameters(pool, updateparams):
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(pool, update_columns, updateparams))
+    if pool.requery is not None and pool.requery > hours_from_now(pool.interval):
+        update_subscription_pool_requery(pool, hours_from_now(pool.interval))
     if any(update_results):
         print("[%s]: updated" % pool.shortlink)
         pool.updated = get_current_time()
