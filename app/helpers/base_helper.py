@@ -143,7 +143,7 @@ def show_link(model_type, model_id):
 
 
 def url_link(url, breakslash=False):
-    text = break_backslash(url) if breakslash else url
+    text = break_forwardslash(url) if breakslash else url
     return external_link(text, url)
 
 
@@ -257,8 +257,8 @@ def break_period(text):
     return Markup(text.replace('.', '.<wbr>'))
 
 
-def break_backslash(text):
-    return Markup(text.replace('\\', '\\<wbr>'))
+def break_forwardslash(text):
+    return Markup(text.replace('/', '/<wbr>'))
 
 
 # #### Private functions
