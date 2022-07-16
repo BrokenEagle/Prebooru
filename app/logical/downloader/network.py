@@ -39,7 +39,7 @@ def convert_network_subscription(subscription, source):
 def redownload_post(post, illust_url, source):
     illust = illust_url.illust
     if source.illust_has_videos(illust):
-        return convert_video_upload(illust, post, source, update_video_post, None)
+        return convert_video_upload(illust_url, post, source, update_video_post, None)
     elif source.illust_has_images(illust):
         return convert_image_upload([illust_url], post, source, update_image_post, None)
     create_and_append_error('downloader.network.redownload_post', "No valid illust URLs.", post)
