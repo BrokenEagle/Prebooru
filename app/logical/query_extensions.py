@@ -25,6 +25,7 @@ class CountPaginate():
         self.items = self._get_items()
         self.count = self._get_count()
         self.pages = ((self.count - 1) // per_page) + 1
+        self.total = self.pages
         self.first = ((page - 1) * per_page) + 1
         self.last = min(page * per_page, self.count)
 
@@ -77,6 +78,7 @@ class LimitPaginate():
         self.current_count = self._get_count()
         self.count = count or self.current_count
         self.pages = ((self.current_count - 1) // per_page) + 1
+        self.total = ((self.count - 1) // per_page) + 1
         self.first = ((page - 1) * per_page) + 1
         self.last = min(page * per_page, self.count)
 

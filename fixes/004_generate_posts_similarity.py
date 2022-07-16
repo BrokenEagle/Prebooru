@@ -17,28 +17,44 @@ def initialize():
     from app.logical.similarity.generate_data import generate_post_similarity
 
 
-def main(args):
-    if args.missing:
-        primaryjoin = Post.similarity_data.property.primaryjoin
-        subquery = Post.query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)\
-                       .filter(primaryjoin.left == primaryjoin.right).with_entities(Post.id)
-        subclause = Post.id.in_(subquery)
-        page = Post.query.filter(not_(subclause)).count_paginate(per_page=100)
+def standard_generate_posts_similarity(args):
+    if args.expunge:
+        SimilarityData.query.delete()
+        SESSION.commit()
+        max_post_id = 0
     else:
-        if args.expunge:
-            SimilarityData.query.delete()
-            SESSION.commit()
-            max_post_id = 0
-        else:
-            max_post_id = SESSION.query(func.max(SimilarityData.post_id)).scalar() or 0
-        page = Post.query.filter(Post.id > max_post_id).count_paginate(per_page=100)
+        max_post_id = SESSION.query(func.max(SimilarityData.post_id)).scalar() or 0
+    page = Post.query.filter(Post.id > max_post_id).count_paginate(per_page=100)
     while True:
-        print("\n%d/%d\n" % (page.page, page.pages))
+        print("\n%d/%d\n" % (page.page, page.total))
         for post in page.items:
             generate_post_similarity(post)
         if not page.has_next:
             break
         page = page.next()
+
+
+def missing_generate_posts_similarity(args):
+    primaryjoin = Post.similarity_data.property.primaryjoin
+    subquery = Post.query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)\
+                   .filter(primaryjoin.left == primaryjoin.right).with_entities(Post.id)
+    subclause = Post.id.in_(subquery)
+    query = Post.query.filter(not_(subclause)).order_by(Post.id.asc())
+    page = query.limit_paginate(per_page=100)
+    while True:
+        print("\n%d/%d\n" % (page.page, page.total))
+        for post in page.items:
+            generate_post_similarity(post)
+        if not page.has_prev:
+            break
+        page = page.prev()
+
+
+def main(args):
+    if args.missing:
+        missing_generate_posts_similarity(args)
+    else:
+        standard_generate_posts_similarity(args)
 
 
 # ## EXECUTION START
