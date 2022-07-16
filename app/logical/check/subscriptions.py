@@ -109,6 +109,7 @@ def download_missing_elements():
             site_key = get_site_key(element.illust_url.site_id)
             source = SOURCEDICT[site_key]
             convert_network_subscription(element, source)
+        _process_similarity(page.items)
         if not page.has_prev:
             break
         if page.page > 10:
