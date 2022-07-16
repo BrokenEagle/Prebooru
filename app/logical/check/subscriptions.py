@@ -31,6 +31,7 @@ from ..downloader.network import convert_network_subscription
 
 ILLUST_PAGE_LIMIT = 10
 POST_PAGE_LIMIT = 5
+EXPIRE_PAGE_LIMIT = 10
 
 
 # ## FUNCTIONS
@@ -130,7 +131,7 @@ def expire_subscription_elements():
         for element in page.items:
             print(f"Unlinking {element.shortlink}")
             unlink_subscription_post(element)
-        if not page.has_next:
+        if not page.has_next or page.page > EXPIRE_PAGE_LIMIT:
             break
         page = page.next()
     # Second pass - Hard delete all "no" element posts
@@ -143,7 +144,7 @@ def expire_subscription_elements():
         for element in page.items:
             print(f"Deleting post of {element.shortlink}")
             delete_subscription_post(element)
-        if not page.has_next:
+        if not page.has_next or page.page > EXPIRE_PAGE_LIMIT:
             break
         page = page.next()
     # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
@@ -159,7 +160,7 @@ def expire_subscription_elements():
         for element in page.items:
             print(f"Archiving post of {element.shortlink}")
             archive_subscription_post(element)
-        if not page.has_next:
+        if not page.has_next or page.page > EXPIRE_PAGE_LIMIT:
             break
         page = page.next()
 
