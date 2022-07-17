@@ -5,7 +5,7 @@ import os
 
 # ### PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, ALTERNATE_MOVE_DAYS
-from utility.file import create_directory, put_get_raw, copy_file, delete_file
+from utility.file import create_directory, put_get_raw, copy_file, delete_file, move_file
 
 # ### LOCAL IMPORTS
 from ... import SESSION
