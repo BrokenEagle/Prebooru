@@ -123,6 +123,7 @@ def expire_subscription_elements():
     expired_clause = and_(SubscriptionPoolElement.expires < get_current_time(), SubscriptionPoolElement.keep == 'yes')
     user_clause = (Post.type == 'user_post')
     q = SubscriptionPoolElement.query.join(Post, SubscriptionPoolElement.post).filter(or_(expired_clause, user_clause))
+    q = q.order_by(SubscriptionPoolElement.id.desc())
     page = q.limit_paginate(per_page=100)
     while True:
         print(f"expire_subscription_elements-unlink: {page.first} - {page.last} / Total({page.count})")
@@ -135,6 +136,7 @@ def expire_subscription_elements():
     # Second pass - Hard delete all "no" element posts
     q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
                                              SubscriptionPoolElement.keep == 'no')
+    q = q.order_by(SubscriptionPoolElement.id.desc())
     page = q.limit_paginate(per_page=50)
     while True:
         print(f"expire_subscription_elements-delete: {page.first} - {page.last} / Total({page.count})")
@@ -150,6 +152,7 @@ def expire_subscription_elements():
                                              SubscriptionPoolElement.keep.is_(None))
     print("Soft delete - skipping:", q.count())
     return
+    q = q.order_by(SubscriptionPoolElement.id.desc())
     page = q.limit_paginate(per_page=50)
     while True:
         print(f"expire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})")
