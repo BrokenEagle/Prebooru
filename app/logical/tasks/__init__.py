@@ -76,10 +76,10 @@ JOB_CONFIG = {
     'relocate_old_posts': {
         'config': {
             'id': 'relocate_old_posts',
-            'days': 1,
-            'jitter': 3600,
+            'hours': 4,
+            'jitter': 1200,
         },
-        'leeway': 300,
+        'leeway': 600,
     },
     'delete_orphan_images': {
         'config': {

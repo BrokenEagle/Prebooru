@@ -1,0 +1,66 @@
+{% extends 'similarity_pool_elements/_base.html' %}
+{% from 'layouts/_macros.html' import image_select_controls, page_navigation %}
+{% from 'posts/_macros.html' import post_preview %}
+{% from 'similarity_pool_elements/_macros.html' import similarity_element_preview %}
+
+{% block title %}Similarity Pool Elements{% endblock %}
+
+{% block content %}
+    <div id="similarity-pool-elements-container">
+        <div id="similarity-page-controls" style="position: relative; width 95%; height: 4em;">
+            <div id="similarity-pool-controls" style="position: absolute; right: 2em; bottom: 1em;">
+                {% call image_select_controls('similar-element-input') %}
+                    <strong>[ <a class="warning-link" href="javascript:SubmitForm()">DELETE</a> ]</strong>
+                {% endcall %}
+            </div>
+        </div>
+        <form id="form" method="POST" action="/similarity_pool_elements/batch">
+            <input type="hidden" name="_method" value="get">
+            {% for element in similarity_pool_elements.items %}
+                <article style="display: inline-block; border: 1px solid #CCC; width: 900px; border-radius: 50px; margin: 0 1em 1em 0;">
+                    <div style="margin: 1em; display: flex;">
+                        <label for="similarity-element-{{ element.id }}" style="padding: 0.5em; width: 72%;">
+                            <input type="checkbox" class="similar-element-input" id="similarity-element-{{ element.id }}" name="similarity_element[id][]" value="{{ element.id }}" onchange="return SimilarityPools.toggleCheckbox(this)" onclick="return Prebooru.selectClick(this)">
+                        </label>
+                        <div style="width: 28%; font-size: 24px; text-align: right; padding-right: 1em;">
+                            (&thinsp;{{ helpers.similarity_pool.delete_element_link(element, True) }}&thinsp;)
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid #AAA;">
+                        <div style="display: inline-block; border-right: 1px solid #AAA; vertical-align: top; padding: 5px;">
+                            {{ post_preview(element.pool.post) }}
+                        </div>
+                        <div style="display: inline-block; vertical-align: top; padding: 5px;">
+                            {{ post_preview(element.post) }}
+                        </div>
+                        <div style="display: inline-block; font-size: 20px; vertical-align: top; padding-top: 1em;">
+                            <span style="font-weight: bold;">(L) {{ element.pool.post.show_link }}</span><br>
+                            &emsp;<strong>Size:</strong> {{ element.pool.post.size }} @ {{ element.pool.post.file_ext.upper() }}<br>
+                            &emsp;<strong>WxH:</strong> ( {{ element.pool.post.width }} x {{ element.pool.post.height }} )<br><br>
+                            <span style="font-weight: bold;">(R) {{ element.post.show_link }}</span><br>
+                            &emsp;<strong>Size:</strong> {{ element.post.size }} @ {{ element.post.file_ext.upper() }}<br>
+                            &emsp;<strong>WxH:</strong> ( {{ element.post.width }} x {{ element.post.height }} )<br><br>
+                            <span style="font-size: 150%;"><strong>Score:</strong> {{ element.score }}</span>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </form>
+    </div>
+{% endblock %}
+
+{% block pages %}{{ page_navigation(similarity_pool_elements) }}{% endblock %}
+
+{% block pagescript %}
+<script>
+function SubmitForm() {
+    if (confirm("Remove all selected similarity elements?")) {
+        document.getElementById('form').submit();
+    }
+}
+(function(){
+    document.addEventListener('prebooru:update-inputs', SimilarityPools.updateAllInputs);
+})();
+Prebooru.initializeLazyLoad('.similar-post-block');
+</script>
+{% endblock %}

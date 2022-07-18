@@ -139,18 +139,18 @@ def relink_archived_post(data, post=None):
             post_append_illust_url(post, illust_url)
 
 
-def relocate_old_posts_to_alternate():
+def relocate_old_posts_to_alternate(max_pages=None):
     if ALTERNATE_MOVE_DAYS is None:
         return
     query = alternate_posts_query(ALTERNATE_MOVE_DAYS)
-    page = query.limit_paginate(per_page=100)
+    page = query.limit_paginate(per_page=50)
     while True:
         print(f"relocate_old_posts_to_alternate: {page.first} - {page.last} / Total({page.count})")
         for post in page.items:
             print(f"Moving {post.shortlink}")
             move_post_media_to_alternate(post)
-        if not page.has_next:
-            return page.count
+        if not page.has_next or (max_pages is not None and page.page >= max_pages):
+            return page.count if not page.has_next else max_pages * 50
         page = page.next()
 
 

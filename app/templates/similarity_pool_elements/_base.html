@@ -1,0 +1,7 @@
+{% extends 'layouts/base.html' %}
+
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/similarity_pool_elements.css') }}">{% endblock %}
+
+{% block linkscript %}<script src="{{ url_for('static', filename='javascript/similarity_pools.js') }}"></script>{% endblock %}
+
+{% block secondary_links %}{% include "similarity_pool_elements/_secondary_links.html" %}{% endblock %}

@@ -193,7 +193,7 @@ def relocate_old_posts_task():
     elif not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
         printer("Alternate media directory not found.")
     else:
-        posts_moved = relocate_old_posts_to_alternate()
+        posts_moved = relocate_old_posts_to_alternate(10)
         if posts_moved is None:
             printer("Alternate move days not configured.")
         else:

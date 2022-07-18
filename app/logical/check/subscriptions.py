@@ -105,7 +105,7 @@ def download_missing_elements():
     q = q.order_by(SubscriptionPoolElement.id.asc())
     page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
     while True:
-        print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
+        print(f"download_missing_elements: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:
             site_key = get_site_key(element.illust_url.site_id)
             source = SOURCEDICT[site_key]
@@ -169,10 +169,12 @@ def expire_subscription_elements():
 
 def _process_similarity(elements):
     def _process(post_ids):
+        print('_process_similarity._process', post_ids)
         posts = get_posts_by_id(post_ids)
         for post in posts:
             generate_post_similarity(post)
             populate_similarity_pools(post)
 
     post_ids = [element.post_id for element in elements]
+    print('_process_similarity', post_ids)
     threading.Thread(target=_process, args=(post_ids,)).start()

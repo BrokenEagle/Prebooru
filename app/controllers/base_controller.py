@@ -142,7 +142,6 @@ def get_page(request):
 
 
 def get_limit(request, max_limit=MAXIMUM_PAGINATE_LIMIT):
-    print("get_limit", max_limit, request.args.get('limit'))
     return min(int(request.args['limit']), max_limit) if 'limit' in request.args else DEFAULT_PAGINATE_LIMIT
 
 

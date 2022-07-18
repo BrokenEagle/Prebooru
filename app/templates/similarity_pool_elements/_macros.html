@@ -1,0 +1,17 @@
+{% from 'posts/_macros.html' import post_preview %}
+
+{% macro similarity_element_preview(element) -%}
+    <article id="similarity-element-{{ element.id }}" class="similarity-element">
+        <div class="input">
+            <label for="similar-post-{{ element.post.id }}">
+                <input type="checkbox" class="similar-post-input" id="similar-post-{{ element.post.id }}" name="similarity_pool_element[id][]" value="{{ element.id }}">
+            </label>
+        </div>
+        <div class="similar-post-controls">
+            <strong>{{ helpers.similarity_pool.sibling_pool_link(element) }}</strong>&nbsp;
+            (&thinsp;{{ helpers.similarity_pool.delete_element_link(element) }}&thinsp;)
+        </div>
+        {{ post_preview(element.post, True) }}
+        <div><strong>Score:</strong> {{ element.score }}</div>
+    </article>
+{%- endmacro %}
