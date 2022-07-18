@@ -16,6 +16,7 @@ class SimilarityPoolElement(JsonModel):
     sibling_id = DB.Column(DB.Integer, DB.ForeignKey('similarity_pool_element.id'), nullable=True)
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False)
     score = DB.Column(DB.Float, nullable=False)
+    main = DB.Column(DB.Boolean, nullable=False)
 
     # #### Relationships
     # pool <- SimilarityPool (MtO)

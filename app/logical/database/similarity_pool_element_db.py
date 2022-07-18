@@ -8,9 +8,9 @@ from .base_db import update_column_attributes
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['pool_id', 'post_id', 'score']
+COLUMN_ATTRIBUTES = ['pool_id', 'post_id', 'score', 'main']
 
-CREATE_ALLOWED_ATTRIBUTES = ['pool_id', 'post_id', 'score']
+CREATE_ALLOWED_ATTRIBUTES = ['pool_id', 'post_id', 'score', 'main']
 
 
 # ## FUNCTIONS
@@ -33,6 +33,11 @@ def create_similarity_pool_element_from_parameters(createparams):
 def update_similarity_pool_element_pairing(similarity_pool_element_1, similarity_pool_element_2):
     similarity_pool_element_1.sibling_id = similarity_pool_element_2.id
     similarity_pool_element_2.sibling_id = similarity_pool_element_1.id
+    SESSION.commit()
+
+
+def set_similarity_element_main(element, val):
+    element.main = val
     SESSION.commit()
 
 
