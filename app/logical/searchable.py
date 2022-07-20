@@ -291,11 +291,9 @@ def relationship_has_filters(model, attribute, params, relation_property):
 def relationship_count_filters(model, attribute, params, relation_property, query):
     primaryjoin = relation_property.primaryjoin
     if relation_property.secondaryjoin is None:
-        leftside = primaryjoin.right
         rightside = primaryjoin.left
         query = query.join(primaryjoin.right.table, primaryjoin)
     else:
-        leftside = primaryjoin.left
         rightside = primaryjoin.right
         query = query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)
     value = params['count_' + attribute]

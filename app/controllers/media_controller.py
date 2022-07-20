@@ -16,6 +16,7 @@ DIRECTORIES = {
     'alternate': ALTERNATE_MEDIA_DIRECTORY,
 }
 
+
 # ## FUNCTIONS
 
 # #### Route functions

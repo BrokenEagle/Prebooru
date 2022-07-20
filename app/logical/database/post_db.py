@@ -107,4 +107,4 @@ def get_post_by_md5(md5):
 
 
 def alternate_posts_query(days):
-    return Post.query.filter(Post.created < days_ago(days), Post.alternate == False)
+    return Post.query.filter(Post.created < days_ago(days), Post.alternate.is_(False))

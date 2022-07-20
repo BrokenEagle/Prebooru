@@ -68,8 +68,8 @@ def index_html():
     q = q.options(INDEX_HTML_OPTIONS)
     similarity_pool_elements = paginate(q, request, MAX_LIMIT_HTML)
     return render_template("similarity_pool_elements/index.html",
-                              similarity_pool_elements=similarity_pool_elements,
-                              similarity_pool_element=SimilarityPoolElement())
+                           similarity_pool_elements=similarity_pool_elements,
+                           similarity_pool_element=SimilarityPoolElement())
 
 
 # ###### DELETE
