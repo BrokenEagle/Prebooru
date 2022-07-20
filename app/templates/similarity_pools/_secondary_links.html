@@ -1,0 +1,10 @@
+{% from 'layouts/_macros.html' import subnav_link_to %}
+
+<menu id="secondary-menu">
+    {{ subnav_link_to("Listing", 'similarity_pool.index_html') }}
+    {{ subnav_link_to("Elements", 'similarity_pool_element.index_html') }}
+    {% if similarity_pool.id is not none %}
+        |
+        {{ subnav_link_to("Show", 'similarity_pool.show_html', id=similarity_pool.id) }}
+    {% endif %}
+</menu>

@@ -1,0 +1,46 @@
+/****INDEX Page****/
+td.post-column article.post {
+    width: 204px;
+    height: 204px;
+}
+td.post-column article.post img {
+    max-height: 200px;
+    max-width: 200px;
+}
+td.matches-column article.post {
+    width: 154px;
+    height: 154px;
+}
+td.matches-column article.post img {
+    max-height: 150px;
+    max-width: 150px;
+}
+article.overflow {
+    display: inline-block;
+    background-color: grey;
+    padding: 5px;
+    width: 140px;
+    height: 140px;
+}
+article.overflow > span {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+/****SHOW Page****/
+div#similarity-pool-heading {
+    font-size: 32px;
+}
+div#similarity-pool-content {
+    margin-top: 1em;
+}
+div.similar-post-block div.input label {
+    padding: 0.5em;
+    margin-top: 0;
+}
+div.similar-post-block article.post {
+    text-align: left;
+}
+div.similar-post-controls {
+    margin-bottom: 0.5em;
+}

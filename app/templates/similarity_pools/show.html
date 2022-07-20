@@ -1,13 +1,6 @@
-{% extends 'layouts/base.html' %}
+{% extends 'similarity_pools/_base.html' %}
 {% from 'layouts/_macros.html' import image_select_controls, page_navigation %}
 {% from 'posts/_macros.html' import post_preview %}
-
-{% block css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/similar_pools.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/similar_posts.css') }}">
-{% endblock %}
-
-{% block linkscript %}<script src="{{ url_for('static', filename='javascript/similarity_posts.js') }}"></script>{% endblock %}
 
 {% block title %}{{ similarity_pool.header }}{% endblock %}
 
