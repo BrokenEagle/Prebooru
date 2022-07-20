@@ -103,6 +103,12 @@ def update_artist_from_parameters(artist, updateparams):
         SESSION.commit()
 
 
+def inactivate_artist(artist):
+    artist.active = False
+    artist.requery = None
+    SESSION.commit()
+
+
 # #### Auxiliary functions
 
 def update_artist_webpages(artist, params):

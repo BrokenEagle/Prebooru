@@ -21,6 +21,7 @@ from utility.file import get_file_extension, get_http_filename, load_default, pu
 from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
+from ..database.artist_db import inactivate_artist
 from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
@@ -587,6 +588,9 @@ def get_twitter_scroll_bottom_cursor(data):
 def timeline_iterator(data, cursor, tweet_ids, last_id=None, **kwargs):
     tweets = get_global_objects(data['body'], 'tweets')
     if len(tweets) == 0:
+        # Only check on the first iteration
+        if cursor[0] is None and len(get_global_objects(data['body'], 'users')) == 0:
+            return
         print("Reached end of timeline!")
         return True
     tweets = [tweet for tweet in tweets if safe_get(tweet, 'entities', 'media')]
@@ -614,7 +618,10 @@ def get_timeline(page_func, **kwargs):
         if data['error']:
             return data['message']
         print("get_timeline:", page)
-        if timeline_iterator(data, cursor, tweet_ids, **kwargs):
+        result = timeline_iterator(data, cursor, tweet_ids, **kwargs)
+        if result is None:
+            return
+        elif result:
             return sorted(tweet_ids, key=int, reverse=True)
         page += 1
 
@@ -1005,12 +1012,12 @@ def get_artist_parameters_from_twuser(twuser):
 
 # #### Data lookup functions
 
-def get_artist_api_data(site_artist_id):
+def get_artist_api_data(site_artist_id, reterror=False):
     twuser = get_api_artist(site_artist_id, SITE_ID)
     if twuser is None:
         twuser = get_twitter_artist(site_artist_id)
         if is_error(twuser):
-            return
+            return twuser if reterror else None
         save_api_data([twuser], 'id_str', SITE_ID, 'artist')
     return twuser
 
@@ -1057,6 +1064,12 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
     tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id, job_id=job_id, job_status=job_status)
     if is_error(tweet_ids):
         return tweet_ids
+    # Only the media timeline is checked for errors on empty, as the search timeline will likely have empty results
+    if tweet_ids is None:
+        twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
+        if is_error(twuser):
+            inactivate_artist(artist)
+            return twuser
     if len(tweet_ids) == 0:
         return []
     if last_id is not None:  # Only check the full timeline the first time
@@ -1075,7 +1088,7 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
                                                     job_id=job_id, job_status=job_status)
         if is_error(temp_ids):
             return temp_ids
-        tweet_ids += temp_ids
+        tweet_ids += temp_ids if temp_ids is not None else []
         timeval = next_timeval
     update_job_status(job_id, job_status)
     return tweet_ids
