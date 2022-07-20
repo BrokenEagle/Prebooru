@@ -105,7 +105,7 @@ def download_missing_elements():
     q = q.order_by(SubscriptionPoolElement.id.asc())
     page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
     while True:
-        print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
+        print(f"download_missing_elements: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:
             site_key = get_site_key(element.illust_url.site_id)
             source = SOURCEDICT[site_key]

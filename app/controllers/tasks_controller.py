@@ -63,7 +63,6 @@ def run_html(name):
 
 def _initialize():
     global TASK_MAP
-    print("tasks_controller._initialize")
     #  Schedule is only importable after the app has been fully initialized, so wait until the first app request
     from ..logical.tasks.schedule import check_all_boorus_task, check_all_artists_for_boorus_task,\
         check_all_posts_for_danbooru_id_task, expunge_cache_records_task, expunge_archive_records_task,\

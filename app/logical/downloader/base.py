@@ -69,12 +69,12 @@ def load_image(buffer):
         file_imgdata = BytesIO(buffer)
         image = Image.open(file_imgdata)
     except Exception as e:
-        return create_error('logical.downloader.base.load_image', "Error processing image data: %s" % repr(e))
+        return create_error('downloader.base.load_image', "Error processing image data: %s" % repr(e))
     return image
 
 
-def create_post_error(module, message, post_errors):
-    error = create_error(module, message)
+def create_post_error(function, message, post_errors, module='downloader.base'):
+    error = create_error(f'{module}.{function}', message)
     post_errors.append(error)
 
 
@@ -99,11 +99,11 @@ def check_filetype(buffer, file_ext, post_errors):
         guess = filetype.guess(buffer)
     except Exception as e:
         msg = "Error reading file headers: %s" % repr(e)
-        create_post_error('logical.downloader.base.check_filetype', msg, post_errors)
+        create_post_error('check_filetype', msg, post_errors)
         return file_ext
     if guess and guess.extension != file_ext:
         msg = "Mismatching file extensions: Reported - %s, Actual - %s" % (file_ext, guess.extension)
-        create_post_error('logical.downloader.base.check_filetype', msg, post_errors)
+        create_post_error('check_filetype', msg, post_errors)
         file_ext = guess.extension
     return file_ext
 
@@ -113,7 +113,7 @@ def check_image_dimensions(image, illust_url, post_errors):
        (illust_url.height and image.height != illust_url.height):
         msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
               (illust_url.width, illust_url.height, image.width, image.height)
-        create_post_error('logical.downloader.base.save_image', msg, post_errors)
+        create_post_error('save_image', msg, post_errors)
     return image.width, image.height
 
 
@@ -122,22 +122,22 @@ def check_video_dimensions(post, illust_url, post_errors):
         probe = ffmpeg.probe(post.file_path)
     except FileNotFoundError:
         msg = "Must install ffprobe.exe. See Github page for details."
-        create_post_error('logical.downloader.base.check_video_dimensions', msg, post_errors)
+        create_post_error('check_video_dimensions', msg, post_errors)
         return illust_url.width, illust_url.height
     except Exception as e:
         msg = "Error reading video metadata: %s" % repr(e)
-        create_post_error('logical.downloader.base.check_video_dimensions', msg, post_errors)
+        create_post_error('check_video_dimensions', msg, post_errors)
         return illust_url.width, illust_url.height
     video_stream = next(filter(lambda x: x['codec_type'] == 'video', probe['streams']), None)
     if video_stream is None:
         msg = "No video streams found: %e" % illust_url.url
-        create_post_error('logical.downloader.base.check_video_dimensions', msg, post_errors)
+        create_post_error('check_video_dimensions', msg, post_errors)
         return illust_url.width, illust_url.height
     if (illust_url.width and video_stream['width'] != illust_url.width) or\
        (illust_url.height and video_stream['height'] != illust_url.height):
         msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
               (illust_url.width, illust_url.height, video_stream['width'], video_stream['height'])
-        create_post_error('logical.downloader.base.check_video_dimensions', msg, post_errors)
+        create_post_error('check_video_dimensions', msg, post_errors)
     return video_stream['width'], video_stream['height']
 
 
@@ -152,7 +152,7 @@ def create_preview(image, post, downsample=True):
         print("Saving preview:", post.preview_path)
         preview.save(post.preview_path, "JPEG")
     except Exception as e:
-        return create_error('logical.downloader.base.create_preview', "Error creating preview: %s" % repr(e))
+        return create_error('downloader.base.create_preview', "Error creating preview: %s" % repr(e))
 
 
 def create_sample(image, post, downsample=True):
@@ -164,7 +164,7 @@ def create_sample(image, post, downsample=True):
         print("Saving sample:", post.sample_path)
         sample.save(post.sample_path, "JPEG")
     except Exception as e:
-        return create_error('logical.downloader.base.create_sample', "Error creating sample: %s" % repr(e))
+        return create_error('downloader.base.create_sample', "Error creating sample: %s" % repr(e))
 
 
 def create_data(buffer, post):
@@ -182,7 +182,7 @@ def save_image(buffer, image, post, post_errors):
         create_data(buffer, post)
     except Exception as e:
         msg = "Error saving image to disk: %s" % repr(e)
-        create_post_error('logical.downloader.base.save_image', msg, post_errors)
+        create_post_error('save_image', msg, post_errors)
         return False
     if post.has_preview:
         error = create_preview(image, post)
@@ -201,7 +201,7 @@ def save_video(buffer, post):
     try:
         create_data(buffer, post)
     except Exception as e:
-        return create_error('logical.downloader.base.save_video', "Error saving video to disk: %s" % repr(e))
+        return create_error('downloader.base.save_video', "Error saving video to disk: %s" % repr(e))
 
 
 def save_thumb(buffer, post, post_errors):

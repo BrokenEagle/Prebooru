@@ -183,7 +183,6 @@ def append_item_index_json():
 def remove_item_show_html(id):
     tag = get_or_abort(Tag, id)
     results = remove_item(tag)
-    print(results)
     if results['error']:
         flash(results['message'], 'error')
     else:

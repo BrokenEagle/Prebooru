@@ -63,23 +63,22 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record):
 def _before_request():
     from app.logical.database.server_info_db import update_last_activity
     msg = f"\nBefore request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
-    print(msg, end="", flush=True)
+    logging.info(msg)
     SERVER_INFO.active_requests += 1
-    print("Endpoint:", request.endpoint)
     if request.endpoint != 'shutdown':
         try:
             update_last_activity('user')
         except Exception as e:
             # Don't fail the request if the database is locked
-            print(f"Unable to update last activity:\r\n {e}")
+            logging.warning(f"Unable to update last activity:\r\n {e}")
     return None if SERVER_INFO.allow_requests else ""
 
 
 def _teardown_request(error=None):
     if error is not None:
-        print(f"\nRequest error: {error}\n")
+        logging.warning(f"\nRequest error: {error}\n")
     msg = f"\nAfter request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
-    print(msg, end="", flush=True)
+    logging.info(msg)
     SERVER_INFO.active_requests = max(SERVER_INFO.active_requests - 1, 0)
 
 
@@ -130,7 +129,7 @@ class MethodRewriteMiddleware(object):
 
     def __call__(self, environ, start_response):
         SERVER_INFO.addr = environ['HTTP_HOST'].split(':')[0]
-        print(f"\nMiddleware: Server addr - {SERVER_INFO.addr}\n", end="", flush=True)
+        logging.info(f"\nMiddleware: Server addr - {SERVER_INFO.addr}\n", end="", flush=True)
         if environ['REQUEST_METHOD'] == 'POST':
             environ['wsgi.input'] = stream = BytesIO(get_input_stream(environ).read())
             _, form, _ = parse_form_data(environ)
