@@ -9,7 +9,7 @@
                 <div class="similar-post-block">
                     <div class="similar-heading">
                         <strong>{{ helpers.similarity_pool.sibling_pool_link(similarity_element) }}</strong>
-                        &ensp;(&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element) }}&thinsp;)
+                        &ensp;(&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element, True) }}&thinsp;)
                     </div>
                     <article class="post similar-post">
                         <a href="{{ similarity_element.post.show_url }}">

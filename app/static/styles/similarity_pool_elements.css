@@ -1,0 +1,47 @@
+/****INDEX page****/
+form#form label {
+    margin-top: 0;
+    margin-bottom: 5px;
+    border: 1px solid #8DD;
+    border-radius: 25px;
+    background: #E0F0F0;
+    padding: 0.5em;
+    width: 72%;
+}
+form#form div.checkbox-active label {
+    background: linear-gradient(270deg, dodgerblue, transparent);
+}
+article.similarity-element-multi-preview {
+    display: inline-block;
+    border: 1px solid #CCC;
+    width: 900px;
+    border-radius: 50px;
+    margin: 0 1em 1em 0;
+}
+div.similarity-element-preview-controls {
+    display: flex;
+    margin: 1em;
+}
+div.similarity-element-preview-delete {
+    width: 28%;
+    font-size: 24px;
+    text-align: right;
+    padding-right: 1em;
+}
+div.similarity-element-preview-display {
+    border-top: 1px solid #AAA;
+}
+div.similarity-element-post {
+    display: inline-block;
+    vertical-align: top;
+    padding: 5px;
+}
+div.similarity-element-post:first-of-type {
+    border-right: 1px solid #AAA;
+}
+div.similarity-element-info-block {
+    display: inline-block;
+    font-size: 20px;
+    vertical-align: top;
+    padding-top: 1em;
+}
