@@ -32,7 +32,7 @@ class MediaFile(JsonModel):
 
     @property
     def file_url(self):
-        return image_server_url(self._partial_network_path, 'media')
+        return image_server_url(self._partial_network_path, 'main')
 
     @property
     def file_path(self):

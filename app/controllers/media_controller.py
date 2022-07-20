@@ -12,7 +12,7 @@ from config import MEDIA_DIRECTORY, ALTERNATE_MEDIA_DIRECTORY
 bp = Blueprint("media", __name__)
 
 DIRECTORIES = {
-    'media': MEDIA_DIRECTORY,
+    'main': MEDIA_DIRECTORY,
     'alternate': ALTERNATE_MEDIA_DIRECTORY,
 }
 
@@ -22,7 +22,7 @@ DIRECTORIES = {
 
 # ###### MISC
 
-@bp.route('/<subtype>/<path:path>')
+@bp.route('/media/<subtype>/<path:path>')
 def send_file(subtype, path):
     directory = DIRECTORIES[subtype]
     print(directory, path)

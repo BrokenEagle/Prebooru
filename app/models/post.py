@@ -118,7 +118,7 @@ class Post(JsonModel):
 
     @property
     def suburl_path(self):
-        return 'media' if not self.is_alternate else 'alternate'
+        return 'main' if not self.is_alternate else 'alternate'
 
     @property
     def file_url(self):
