@@ -15,7 +15,7 @@ JOB_CONFIG = {
             'hours': 8,
             'jitter': 3600,
         },
-        'leeway': 300,
+        'leeway': 60,
     },
     'expunge_archive_records': {
         'config': {
@@ -47,7 +47,7 @@ JOB_CONFIG = {
             'days': 1,
             'jitter': 3600,
         },
-        'leeway': 300,
+        'leeway': 600,
     },
     'check_pending_subscriptions': {
         'config': {
@@ -71,7 +71,7 @@ JOB_CONFIG = {
             'hours': 4,
             'jitter': 1200,
         },
-        'leeway': 300,
+        'leeway': 600,
     },
     'relocate_old_posts': {
         'config': {
@@ -95,7 +95,7 @@ JOB_CONFIG = {
             'weeks': 1,
             'jitter': 3600,
         },
-        'leeway': 300,
+        'leeway': 60,
     },
 }
 
