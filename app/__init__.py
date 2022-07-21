@@ -44,6 +44,9 @@ NAMING_CONVENTION = {
 
 SERVER_INFO = SimpleNamespace(addr="127.0.0.1", allow_requests=True, active_requests=0, unique_id=None)
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+logger.addHandler(logging.StreamHandler())
 
 # ## FUNCTIONS
 
@@ -56,29 +59,29 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record):
         cursor.execute("PRAGMA journal_mode")
         mode = cursor.fetchone()
         if mode != ('wal',):
-            logging.error("Unable to set journal mode to WAL")
+            logger.error("Unable to set journal mode to WAL")
     cursor.close()
 
 
 def _before_request():
     from app.logical.database.server_info_db import update_last_activity
     msg = f"\nBefore request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
-    logging.info(msg)
+    logger.info(msg)
     SERVER_INFO.active_requests += 1
     if request.endpoint != 'shutdown':
         try:
             update_last_activity('user')
         except Exception as e:
             # Don't fail the request if the database is locked
-            logging.warning(f"Unable to update last activity:\r\n {e}")
+            logger.warning(f"Unable to update last activity:\r\n {e}")
     return None if SERVER_INFO.allow_requests else ""
 
 
 def _teardown_request(error=None):
     if error is not None:
-        logging.warning(f"\nRequest error: {error}\n")
+        logger.warning(f"\nRequest error: {error}\n")
     msg = f"\nAfter request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
-    logging.info(msg)
+    logger.info(msg)
     SERVER_INFO.active_requests = max(SERVER_INFO.active_requests - 1, 0)
 
 
@@ -129,7 +132,7 @@ class MethodRewriteMiddleware(object):
 
     def __call__(self, environ, start_response):
         SERVER_INFO.addr = environ['HTTP_HOST'].split(':')[0]
-        logging.info(f"\nMiddleware: Server addr - {SERVER_INFO.addr}\n", end="", flush=True)
+        logger.info(f"\nMiddleware: Server addr - {SERVER_INFO.addr}\n")
         if environ['REQUEST_METHOD'] == 'POST':
             environ['wsgi.input'] = stream = BytesIO(get_input_stream(environ).read())
             _, form, _ = parse_form_data(environ)

@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 import os
 import time
+import logging
 
 # ## GLOBAL VARIABLES
 
@@ -140,7 +141,6 @@ def start_server(args):
         else:
             Flaskwork(PREBOORU_APP)
     if args.logging:
-        import logging
         logging.basicConfig()
         logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
         logging.getLogger('apscheduler').setLevel(logging.DEBUG)
@@ -161,6 +161,8 @@ def start_server(args):
         put_get_json(SERVER_PID_FILE, 'w', [SERVER_PID])
     PREBOORU_APP.name = 'prebooru'
     SCHEDULER.start()
+    if not args.logging:
+        logging.getLogger().handlers = []
     if args.public:
         PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT, host="0.0.0.0")
     else:
