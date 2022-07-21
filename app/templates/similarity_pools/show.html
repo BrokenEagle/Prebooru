@@ -1,6 +1,7 @@
 {% extends 'similarity_pools/_base.html' %}
 {% from 'layouts/_macros.html' import image_select_controls, page_navigation %}
 {% from 'posts/_macros.html' import post_preview %}
+{% from 'similarity_pools/_macros.html' import similar_pool_post %}
 
 {% block title %}{{ similarity_pool.header }}{% endblock %}
 
@@ -18,19 +19,7 @@
         <form id="form" method="POST" action="{{ url_for('similarity_pool_element.batch_delete_html') }}">
             <div id="similar-posts-container">
                 {% for similarity_element in elements.items %}
-                    <div class="similar-post-block">
-                        <div class="input">
-                            <label for="similar-post-{{ similarity_element.post.id }}">
-                                <input type="checkbox" class="similar-post-input" id="similar-post-{{ similarity_element.post.id }}" name="similarity_pool_element[id][]" value="{{ similarity_element.id }}">
-                            </label>
-                        </div>
-                        <div class="similar-post-controls">
-                            <strong>{{ helpers.similarity_pool.sibling_pool_link(similarity_element) }}</strong>&nbsp;
-                            (&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element, False) }}&thinsp;)
-                        </div>
-                        {{ post_preview(similarity_element.post, True) }}
-                        <div><strong>Score:</strong> {{ similarity_element.score }}</div>
-                    </div>
+                    {{ similar_pool_post(similarity_element) }}
                 {% endfor %}
             </div>
         </form>
@@ -40,11 +29,14 @@
 
 {% block pagescript %}
 <script>
-    function SubmitForm() {
-        if (confirm("Remove posts from similarity pool?")) {
-            document.getElementById('form').submit();
-        }
+function SubmitForm() {
+    if (confirm("Remove posts from similarity pool?")) {
+        document.getElementById('form').submit();
     }
-    Prebooru.initializeLazyLoad('.similar-post-block');
+}
+(function(){
+    document.addEventListener('prebooru:update-inputs', SimilarityPools.updateAllInputs);
+})();
+Prebooru.initializeLazyLoad('.similar-post-block');
 </script>
 {% endblock %}

@@ -1,3 +1,5 @@
+{% from 'posts/_macros.html' import post_preview %}
+
 {% macro similar_posts(post) -%}
     {% if post.similarity_pool is not none %}
         <div id="similar-posts-heading" class="heading">
@@ -27,4 +29,24 @@
             {% endfor %}
         </div>
     {% endif %}
+{%- endmacro %}
+
+{% macro similar_pool_post(similarity_element) -%}
+    {% with post = similarity_element.post %}
+        <article class="similar-post-block">
+            <div class="input">
+                <label for="similar-post-{{post.id }}">
+                    <input type="checkbox" class="similar-post-input" id="similar-post-{{ similarity_element.post.id }}" name="similarity_pool_element[id][]" value="{{ similarity_element.id }}" onchange="return SimilarityPools.toggleCheckbox(this)" onclick="return Prebooru.selectClick(this)">
+                </label>
+            </div>
+            <div class="similar-post-controls">
+                <div><strong>{{ helpers.similarity_pool.sibling_pool_link(similarity_element) }}</strong></div>
+                <div style="width: 65%; text-align: right;">(&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element, True) }}&thinsp;)</div>
+            </div>
+            {{ post_preview(post, True) }}
+            <div><strong>Size/Type:</strong> {{ post.size }} @ {{ post.file_ext.upper() }}</div>
+            <div><strong>Dimensions:</strong> ( {{ post.width }} x {{ post.height }} )</div>
+            <div style="font-size: 150%;"><strong>Score:</strong> {{ similarity_element.score }}</div>
+        </article>
+    {% endwith %}
 {%- endmacro %}

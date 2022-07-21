@@ -34,13 +34,35 @@ div#similarity-pool-heading {
 div#similarity-pool-content {
     margin-top: 1em;
 }
-div.similar-post-block div.input label {
+form#form label {
+    border: 1px solid #8DD;
+    border-radius: 25px;
+    background: #E0F0F0;
+    padding: 0.5em;
+}
+form#form div.checkbox-active label {
+    background: linear-gradient(270deg, dodgerblue, transparent);
+}
+div#similar-posts-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1em;
+    font-size: 20px;
+}
+article.similar-post-block {
+    width: 320px;
+    margin: 0.5em;
+    padding: 5px;
+    border: 1px solid #EEE;
+}
+article.similar-post-block div.input label {
     padding: 0.5em;
     margin-top: 0;
 }
-div.similar-post-block article.post {
+article.similar-post-block article.post {
     text-align: left;
 }
 div.similar-post-controls {
+    display: flex;
     margin-bottom: 0.5em;
 }
