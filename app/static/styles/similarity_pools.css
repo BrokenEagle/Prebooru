@@ -66,3 +66,6 @@ div.similar-post-controls {
     display: flex;
     margin-bottom: 0.5em;
 }
+div.similar-post-controls > div {
+    flex-basis: 50%;
+}

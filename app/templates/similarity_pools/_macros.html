@@ -41,7 +41,7 @@
             </div>
             <div class="similar-post-controls">
                 <div><strong>{{ helpers.similarity_pool.sibling_pool_link(similarity_element) }}</strong></div>
-                <div style="width: 65%; text-align: right;">(&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element, True) }}&thinsp;)</div>
+                <div style="text-align: right;">(&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element, True) }}&thinsp;)</div>
             </div>
             {{ post_preview(post, True) }}
             <div><strong>Size/Type:</strong> {{ post.size }} @ {{ post.file_ext.upper() }}</div>
