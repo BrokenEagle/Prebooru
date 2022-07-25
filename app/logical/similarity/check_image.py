@@ -49,7 +49,6 @@ def check_all_image_urls_similarity(image_urls, min_score, size, include_posts=F
 
 
 def check_media_file_similarity(media_file, min_score, include_posts=False, sim_clause=None):
-    print('check_media_file_similarity', sim_clause)
     if type(media_file) is str:
         return media_file
     image = get_image(media_file.file_path)
