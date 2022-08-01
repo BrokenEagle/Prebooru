@@ -7,7 +7,7 @@
         <ul>
             <li><strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(post) }}</li>
             <li><strong>Created:</strong> {{ helpers.base.format_timestamp(post.created) }}</li>
-            <li><strong>Type/Size:</strong> {{ post.file_ext.upper() }} @ {{ post.size }} bytes</li>
+            <li><strong>Type/Size:</strong> {{ post.size }} bytes @ {{ post.file_ext.upper() }}</li>
             <li><strong>Dimensions:</strong> ({{ post.width }} x {{ post.height }})</li>
             <li><strong>MD5:</strong> {{ post.md5 }}</li>
             <li><strong>Sources:</strong>
