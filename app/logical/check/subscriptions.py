@@ -33,6 +33,7 @@ ILLUST_PAGE_LIMIT = 10
 POST_PAGE_LIMIT = 5
 EXPIRE_PAGE_LIMIT = 10
 
+SIMILARITY_SEMAPHORE = threading.Semaphore(2)
 
 # ## FUNCTIONS
 
@@ -169,10 +170,14 @@ def expire_subscription_elements():
 
 def _process_similarity(elements):
     def _process(post_ids):
-        posts = get_posts_by_id(post_ids)
-        for post in posts:
-            generate_post_similarity(post)
-            populate_similarity_pools(post)
+        SIMILARITY_SEMAPHORE.acquire()
+        try:
+            posts = get_posts_by_id(post_ids)
+            for post in posts:
+                generate_post_similarity(post)
+                populate_similarity_pools(post)
+        finally:
+            SIMILARITY_SEMAPHORE.release()
 
     post_ids = [element.post_id for element in elements]
     threading.Thread(target=_process, args=(post_ids,)).start()

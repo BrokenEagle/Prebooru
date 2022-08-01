@@ -33,7 +33,10 @@ def index():
     search = get_params_value(params, 'search', True)
     q = SimilarityPool.query
     q = search_filter(q, search)
-    q = default_order(q, search)
+    if search.get('order') == 'count':
+        q = q.order_by(SimilarityPool.element_count.desc())
+    else:
+        q = default_order(q, search)
     return q
 
 
