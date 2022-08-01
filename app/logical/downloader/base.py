@@ -70,7 +70,13 @@ def load_image(buffer):
         image = Image.open(file_imgdata)
     except Exception as e:
         return create_error('downloader.base.load_image', "Error processing image data: %s" % repr(e))
-    return image
+    try:
+        if check_alpha(image):
+            return convert_alpha(image)
+        else:
+            return image
+    except Exception as e:
+        return create_error('downloader.base.load_image', "Error removing alpha transparency: %s" % repr(e))
 
 
 def create_post_error(function, message, post_errors, module='downloader.base'):
@@ -81,6 +87,17 @@ def create_post_error(function, message, post_errors, module='downloader.base'):
 def get_pixel_hash(image):
     data = image.tobytes()
     return get_buffer_checksum(data)
+
+
+def check_alpha(image):
+    return image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info)
+
+
+def convert_alpha(image):
+    alpha = image.copy().convert('RGBA').getchannel('A')
+    bg = Image.new('RGBA', image.size, (255,255,255,255))
+    bg.paste(image, mask=alpha)
+    return bg
 
 
 # #### Validation functions
