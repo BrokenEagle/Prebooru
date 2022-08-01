@@ -6,7 +6,7 @@ from ...models import Post
 from ..database.post_db import create_post_and_add_illust_url
 from ..database.error_db import create_error, create_and_append_error, append_error, extend_errors, is_error
 from .base import convert_image_upload, convert_video_upload, load_image, check_existing, check_filetype,\
-    check_image_dimensions, check_video_dimensions, save_image, save_video, save_thumb
+    check_image_dimensions, check_video_dimensions, save_image, save_video, save_thumb, get_pixel_hash
 
 
 # ## FUNCTIONS
@@ -98,8 +98,9 @@ def create_image_post(illust_url, record, source, post_type):
     temppost = Post(md5=md5, file_ext=image_file_ext, width=image_width, height=image_height)
     if not save_image(buffer, image, temppost, post_errors):
         return post_errors
+    pixel_md5 = get_pixel_hash(image)
     post = create_post_and_add_illust_url(illust_url, image_width, image_height, image_file_ext, md5, len(buffer),
-                                          post_type)
+                                          post_type, pixel_md5)
     if len(post_errors):
         extend_errors(post, post_errors)
     return post
@@ -127,7 +128,7 @@ def create_video_post(illust_url, record, source, post_type):
         return post_errors + thumb_binary
     save_thumb(thumb_binary, temppost, post_errors)
     post = create_post_and_add_illust_url(illust_url, video_width, video_height, video_file_ext, md5, len(buffer),
-                                          post_type)
+                                          post_type, None)
     if len(post_errors):
         extend_errors(post, post_errors)
     return post

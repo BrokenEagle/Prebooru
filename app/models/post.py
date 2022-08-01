@@ -72,6 +72,7 @@ class Post(JsonModel):
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
     type = DB.Column(DB.String(50), nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
+    pixel_md5 = DB.Column(DB.String(255), nullable=True)
 
     # #### Relationships
     illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True,

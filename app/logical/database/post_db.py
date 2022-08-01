@@ -13,8 +13,8 @@ from .similarity_pool_db import delete_similarity_pool_by_post_id
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type', 'alternate']
-CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type']
+COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type', 'alternate', 'pixel_md5']
+CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type', 'pixel_md5']
 UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
 
 
@@ -71,8 +71,16 @@ def delete_post(post):
 
 # #### Misc functions
 
-def create_post(width, height, file_ext, md5, size, post_type):
-    params = {'width': width, 'height': height, 'file_ext': file_ext, 'md5': md5, 'size': size, 'type': post_type}
+def create_post(width, height, file_ext, md5, size, post_type, pixel_md5):
+    params = {
+        'width': width,
+        'height': height,
+        'file_ext': file_ext,
+        'md5': md5,
+        'size': size,
+        'type': post_type,
+        'pixel_md5': pixel_md5,
+    }
     return create_post_from_parameters(params)
 
 
@@ -81,8 +89,8 @@ def post_append_illust_url(post, illust_url):
     SESSION.commit()
 
 
-def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size, post_type):
-    post = create_post(width, height, file_ext, md5, size, post_type)
+def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size, post_type, pixel_md5):
+    post = create_post(width, height, file_ext, md5, size, post_type, pixel_md5)
     post_append_illust_url(post, illust_url)
     return post
 

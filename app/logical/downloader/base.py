@@ -78,6 +78,11 @@ def create_post_error(function, message, post_errors, module='downloader.base'):
     post_errors.append(error)
 
 
+def get_pixel_hash(image):
+    data = image.tobytes()
+    return get_buffer_checksum(data)
+
+
 # #### Validation functions
 
 def check_existing(buffer, illust_url, record):
