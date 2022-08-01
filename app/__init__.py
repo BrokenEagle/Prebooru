@@ -32,7 +32,13 @@ from .logical.validate import validate_python
 PREBOORU_DB_URL = os.environ.get('PREBOORU_DB', 'sqlite:///%s' % DB_PATH)
 SCHEDULER_DB_URL = os.environ.get('SCHEDULER_JOBSTORES', r'sqlite:///%s' % JOBS_PATH)
 
-ENGINE_OPTIONS = {'connect_args': {'check_same_thread': False, 'timeout': 15}, 'echo_pool': True, 'pool_recycle': 12} if 'sqlite' in PREBOORU_DB_URL else {}
+ENGINE_OPTIONS = {
+    'connect_args': {
+        'check_same_thread': False,
+        'timeout': 15},
+    'echo_pool': True,
+    'pool_recycle': 12}\
+    if 'sqlite' in PREBOORU_DB_URL else {}
 
 NAMING_CONVENTION = {
     "ix": 'ix_%(column_0_label)s',
@@ -47,6 +53,7 @@ SERVER_INFO = SimpleNamespace(addr="127.0.0.1", allow_requests=True, active_requ
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 logger.addHandler(logging.StreamHandler())
+
 
 # ## FUNCTIONS
 

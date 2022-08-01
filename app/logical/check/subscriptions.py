@@ -1,7 +1,6 @@
 # APP/LOGICAL/CHECK/SUBSCRIPTIONS.PY
 
 # ## PYTHON IMPORTS
-import time
 import threading
 
 # ## EXTERNAL IMPORTS
@@ -35,6 +34,7 @@ POST_PAGE_LIMIT = 5
 EXPIRE_PAGE_LIMIT = 10
 
 SIMILARITY_SEMAPHORE = threading.Semaphore(2)
+
 
 # ## FUNCTIONS
 

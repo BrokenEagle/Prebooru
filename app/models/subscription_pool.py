@@ -140,6 +140,7 @@ class SubscriptionPool(JsonModel):
             self._main_bytes = sum([x[0] for x in filesizes if x[1] is False])
             self._alternate_bytes = sum([x[0] for x in filesizes if x[1] is True])
 
+
 # ## INITIALIZATION
 
 def initialize():

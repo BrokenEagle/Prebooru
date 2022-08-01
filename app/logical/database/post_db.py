@@ -13,7 +13,8 @@ from .similarity_pool_db import delete_similarity_pool_by_post_id
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type', 'alternate', 'pixel_md5']
+COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type', 'alternate',
+                     'pixel_md5']
 CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type', 'pixel_md5']
 UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
 

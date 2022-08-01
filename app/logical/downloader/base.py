@@ -95,7 +95,7 @@ def check_alpha(image):
 
 def convert_alpha(image):
     alpha = image.copy().convert('RGBA').getchannel('A')
-    bg = Image.new('RGBA', image.size, (255,255,255,255))
+    bg = Image.new('RGBA', image.size, (255, 255, 255, 255))
     bg.paste(image, mask=alpha)
     return bg
 
