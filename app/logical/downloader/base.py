@@ -90,7 +90,15 @@ def get_pixel_hash(image):
 
 
 def check_alpha(image):
-    return image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info)
+    if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
+        try:
+            channel = image.getchannel('A')
+        except Exception:
+            print("Error getting Alpha channel... assuming transparency present.")
+            return True
+        else:
+            return any(pixel for pixel in channel.getdata() if pixel < 255)
+    return False
 
 
 def convert_alpha(image):
