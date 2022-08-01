@@ -7,7 +7,12 @@
                 <li><strong>Last ID:</strong> {{ helpers.base.val_or_none(subscription_pool.last_id) }}</li>
                 <li><strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription_pool.checked) }}</li>
                 <li><strong>Average interval:</strong> {{ helpers.subscription_pool.average_interval(subscription_pool) }}</li>
-                <li><strong>Total storage:</strong> {{ helpers.subscription_pool.total_storage(subscription_pool) }}</li>
+                <li><strong>Total storage:</strong> {{ helpers.subscription_pool.storage_bytes(subscription_pool) }}
+                    <ul>
+                        <li><strong>Main:</strong> {{ helpers.subscription_pool.storage_bytes(subscription_pool, 'main') }}</li>
+                        <li><strong>Alternate:</strong> {{ helpers.subscription_pool.storage_bytes(subscription_pool, 'alternate') }}</li>
+                    </ul>
+                </li>
             </ul>
         </section>
         <section id="subscription-pool-settings">

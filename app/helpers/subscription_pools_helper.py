@@ -3,6 +3,9 @@
 # ## EXTERNAL IMPORTS
 from flask import url_for, request, Markup
 
+# ## PACKAGE IMPORTS
+from utility.data import readable_bytes
+
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
 from .base_helper import general_link, url_for_with_params, val_or_none
@@ -67,10 +70,14 @@ def average_interval(subscription_pool):
     return val_or_none(subscription_pool.average_keep_interval)
 
 
-def total_storage(subscription_pool):
-    if subscription_pool.post_count == 0:
-        return Markup('<em>N/A</em>')
-    return subscription_pool.total_storage
+def storage_bytes(subscription_pool, type=None):
+    switcher = {
+        None: 'total_bytes',
+        'main': 'main_bytes',
+        'alternate': 'alternate_bytes',
+    }
+    size = getattr(subscription_pool, switcher[type])
+    return readable_bytes(size) if size > 0 else Markup('<em>N/A</em>')
 
 
 # #### Elements

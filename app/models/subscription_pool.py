@@ -5,7 +5,6 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.time import average_timedelta, humanized_timedelta, days_ago, get_current_time
-from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -81,13 +80,20 @@ class SubscriptionPool(JsonModel):
         timedeltas = [datetimes[i - 1] - datetimes[i] for i in range(1, len(datetimes))]
         return humanized_timedelta(average_timedelta(timedeltas))
 
-    @memoized_property
-    def total_storage(self):
-        filesizes = self._post_query.with_entities(Post.size).all()
-        if len(filesizes) == 0:
-            return
-        total_bytes = sum([x[0] for x in filesizes])
-        return readable_bytes(total_bytes)
+    @property
+    def total_bytes(self):
+        self._populate_storage_sizes()
+        return self._total_bytes
+
+    @property
+    def main_bytes(self):
+        self._populate_storage_sizes()
+        return self._main_bytes
+
+    @property
+    def alternate_bytes(self):
+        self._populate_storage_sizes()
+        return self._alternate_bytes
 
     @property
     def element_count(self):
@@ -119,6 +125,16 @@ class SubscriptionPool(JsonModel):
                    .join(Artist, Illust.artist).join(SubscriptionPool, Artist.subscription_pool)\
                    .filter(SubscriptionPool.id == self.id, Post.type == 'subscription_post')
 
+    def _populate_storage_sizes(self):
+        if hasattr(self, '_total_bytes'):
+            return
+        if self.post_count == 0:
+            self._total_bytes = self._main_bytes = self._alternate_bytes = 0
+        else:
+            filesizes = self._post_query.with_entities(Post.size, Post.alternate).all()
+            self._total_bytes = sum([x[0] for x in filesizes])
+            self._main_bytes = sum([x[0] for x in filesizes if x[1] is False])
+            self._alternate_bytes = sum([x[0] for x in filesizes if x[1] is True])
 
 # ## INITIALIZATION
 
