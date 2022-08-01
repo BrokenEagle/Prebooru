@@ -48,6 +48,16 @@ function SubmitForm(value) {
 }
 (function(){
     document.addEventListener('prebooru:update-inputs', SubscriptionPools.updateAllInputs);
+    setTimeout(()=>{
+        document.querySelectorAll('.subscription-element input[type=checkbox]').forEach((input)=>{
+            if (input.checked) {
+                for (var curr = input; curr !== null && (curr.tagName !== 'DIV' || !curr.classList.contains('input')); curr = curr.parentElement);
+                if (curr !== null) {
+                    curr.classList.add('checkbox-active');
+                }
+            }
+        });
+    }, 500);
 })();
 Prebooru.initializeLazyLoad('.subscription-element');
 </script>
