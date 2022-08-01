@@ -49,6 +49,12 @@ def process_subscription_link(subscription_pool):
     return general_link("Process subscription", url, method="POST")
 
 
+def delay_subscription_link(subscription_pool):
+    url = url_for('subscription_pool.delay_html', id=subscription_pool.id)
+    addons = {'onclick': 'return SubscriptionPools.delaySubscriptionElements(this)'}
+    return general_link("Delay expiration", url, **addons)
+
+
 def get_last_job_status_link(subscription_pool):
     job_id = "process_subscription-%d" % subscription_pool.id
     url = url_for('subscription_pool.show_html', id=subscription_pool.id, job=job_id)

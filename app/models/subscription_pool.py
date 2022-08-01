@@ -67,6 +67,10 @@ class SubscriptionPool(JsonModel):
         q = q.limit(10)
         return q.all()
 
+    @property
+    def active_elements(self):
+        return self._element_query.filter(SubscriptionPoolElement.active.is_(True)).all()
+
     @memoized_property
     def average_keep_interval(self):
         datetimes = self._illust_query.filter(Illust.site_created > days_ago(365),

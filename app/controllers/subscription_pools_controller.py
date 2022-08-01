@@ -12,7 +12,7 @@ from ..models import SubscriptionPool, Artist
 from ..logical.utility import set_error
 from ..logical.tasks.worker import process_subscription
 from ..logical.database.subscription_pool_db import create_subscription_pool_from_parameters,\
-    update_subscription_pool_from_parameters, update_subscription_pool_status
+    update_subscription_pool_from_parameters, update_subscription_pool_status, delay_subscription_pool_elements
 from ..logical.database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status,\
     update_job_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -283,3 +283,15 @@ def status_json(id):
     if job_status is None:
         return {'error': True, 'message': "Job with ID %s not found." % job_id}
     return {'error': False, 'item': job_status}
+
+
+@bp.route('/subscription_pools/<int:id>/delay', methods=['POST'])
+def delay_html(id):
+    subscription_pool = get_or_abort(SubscriptionPool, id)
+    delay_days = request.values.get('days', type=float)
+    if delay_days is None:
+        flash("No days parameter present.", 'error')
+    else:
+        delay_subscription_pool_elements(subscription_pool, delay_days)
+        flash("Updated elements.")
+    return redirect(request.referrer)

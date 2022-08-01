@@ -1,7 +1,7 @@
 # APP/LOGICAL/DATABASE/SUBSCRIPTION_POOL_DB.PY
 
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time, hours_from_now
+from utility.time import get_current_time, hours_from_now, add_days
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -91,4 +91,16 @@ def add_subscription_pool_error(pool, error):
     pool.checked = get_current_time()
     pool.requery = None
     pool.active = False
+    SESSION.commit()
+
+
+def delay_subscription_pool_elements(subscription_pool, delay_days):
+    current_time = get_current_time()
+    for element in subscription_pool.active_elements:
+        if element.keep == 'maybe':
+            continue
+        if delay_days == 0:
+            element.expires = None
+        else:
+            element.expires = add_days(max(element.expires or current_time, current_time), delay_days)
     SESSION.commit()
