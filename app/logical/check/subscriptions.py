@@ -1,6 +1,7 @@
 # APP/LOGICAL/CHECK/SUBSCRIPTIONS.PY
 
 # ## PYTHON IMPORTS
+import time
 import threading
 
 # ## EXTERNAL IMPORTS
@@ -121,6 +122,7 @@ def download_missing_elements():
 
 
 def expire_subscription_elements():
+    retdata = {'unlink': 0, 'delete': 0, 'archive': 0}
     # First pass - Unlink all "yes" elements or those that were manually downloaded by the user
     expired_clause = and_(SubscriptionPoolElement.expires < get_current_time(), SubscriptionPoolElement.keep == 'yes')
     user_clause = (Post.type == 'user_post')
@@ -132,6 +134,7 @@ def expire_subscription_elements():
         for element in page.items:
             print(f"Unlinking {element.shortlink}")
             unlink_subscription_post(element)
+            retdata['unlink'] += 1
         if not page.has_next or page.page > EXPIRE_PAGE_LIMIT:
             break
         page = page.next()
@@ -139,12 +142,13 @@ def expire_subscription_elements():
     q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
                                              SubscriptionPoolElement.keep == 'no')
     q = q.order_by(SubscriptionPoolElement.id.desc())
-    page = q.limit_paginate(per_page=50)
+    page = q.limit_paginate(per_page=25)
     while True:
         print(f"expire_subscription_elements-delete: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:
             print(f"Deleting post of {element.shortlink}")
             delete_subscription_post(element)
+            retdata['delete'] += 1
         if not page.has_next or page.page > EXPIRE_PAGE_LIMIT:
             break
         page = page.next()
@@ -153,9 +157,9 @@ def expire_subscription_elements():
                                              SubscriptionPoolElement.status == 'active',
                                              SubscriptionPoolElement.keep.is_(None))
     print("Soft delete - skipping:", q.count())
-    return
+    return retdata
     q = q.order_by(SubscriptionPoolElement.id.desc())
-    page = q.limit_paginate(per_page=50)
+    page = q.limit_paginate(per_page=25)
     while True:
         print(f"expire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:

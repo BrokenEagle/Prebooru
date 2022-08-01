@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 import os
 import re
+import time
 
 # ## PACKAGE IMPORTS
 from config import ALTERNATE_MEDIA_DIRECTORY
@@ -170,8 +171,11 @@ def process_expired_subscription_elements():
     total = total_expired_subscription_elements()
     if total > 0:
         printer("Expired subscriptions elements:", total)
-        safe_db_execute('process_expired_subscription_elements', 'tasks.schedule', printer=printer,
-                        try_func=(lambda data: expire_subscription_elements()))
+        start = time.time()
+        data = safe_db_execute('process_expired_subscription_elements', 'tasks.schedule', printer=printer,
+                               try_func=(lambda data: expire_subscription_elements()))
+        print("expire_subscription_elements results:", data)
+        print("Task duration:", time.time() - start)
     else:
         printer("No subscriptions elements to process.")
     printer.print()
@@ -193,11 +197,13 @@ def relocate_old_posts_task():
     elif not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
         printer("Alternate media directory not found.")
     else:
+        start = time.time()
         posts_moved = relocate_old_posts_to_alternate(10)
         if posts_moved is None:
             printer("Alternate move days not configured.")
         else:
             printer("Posts moved:", posts_moved)
+        printer("Task duration:", time.time() - start)
     printer.print()
     _free_db_semaphore('relocate_old_posts')
 
