@@ -9,6 +9,9 @@ a.no-link {
     color: red;
 }
 /****INDEX Page****/
+section#content.c-subscription-pool-element.a-index {
+    min-width: 80em;
+}
 div#subscription-page-controls {
     position: relative;
     width: 95%;
