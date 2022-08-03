@@ -77,6 +77,11 @@ def parameter_validation(dataparams):
         errors.append("Interval must be greater than 1.0 hours.")
     if dataparams['expiration'] is not None and dataparams['expiration'] < 1.0:
         errors.append("Expiration must be greater than 1.0 days if it exists.")
+    artist = Artist.find(dataparams['artist_id'])
+    if artist is None:
+        errors.append(f"Artist #{dataparams['artist_id']} does not exist.")
+    elif artist.subscription_pool is not None:
+        errors.append(f"{artist.subscription_pool.shortlink} already exists for {artist.shortlink}.")
     return errors
 
 
