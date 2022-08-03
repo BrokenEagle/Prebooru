@@ -60,14 +60,14 @@ def get_media_extension(illust_url, source):
 # #### Network functions
 
 def download_media(illust_url, source, record, sample):
-    download_url = source.get_full_url(illust_url) if not sample else source.get_sample_url(illust_url)
+    download_url = source.get_full_url(illust_url) if not sample else source.get_sample_url(illust_url, True)
     buffer = _download_media(download_url, source)
     if not is_error(buffer):
         return buffer
     elif sample:
         return [buffer]
     error = buffer
-    alternate_url = source.get_alternate_url(illust_url)
+    alternate_url = source.get_alternate_url(illust_url) if not sample else source.get_sample_url(illust_url, False)
     if alternate_url is None:
         return [error]
     buffer = _download_media(alternate_url, source)
