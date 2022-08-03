@@ -12,6 +12,7 @@ from ..models import SubscriptionPoolElement, IllustUrl, Illust
 from ..logical.utility import search_url_for
 from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep,\
     batch_update_subscription_pool_element_keep
+from ..logical.database.post_db import get_posts_by_md5s
 from ..logical.records.subscription_rec import redownload_element
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace, get_page,\
@@ -100,6 +101,13 @@ def index_html():
             and page > subscription_pool_elements.pages:
         return redirect(url_for('subscription_pool_element.index_html', page=subscription_pool_elements.pages,
                                 **{k: v for (k, v) in request.args.items() if k != 'page'}))
+    missing_md5s = set(element.md5 for element in subscription_pool_elements.items if element.post is None)
+    if len(missing_md5s):
+        missing_posts = get_posts_by_md5s(list(missing_md5s))
+        for item in subscription_pool_elements.items:
+            if item.md5 in missing_md5s:
+                post_match = next((post for post in missing_posts if post.md5 == item.md5), None)
+                setattr(item, 'post_match', post_match)
     return render_template_ws("subscription_pool_elements/index.html",
                               subscription_pool_elements=subscription_pool_elements,
                               subscription_pool_element=SubscriptionPoolElement())

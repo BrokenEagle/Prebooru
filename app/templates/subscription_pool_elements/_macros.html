@@ -35,10 +35,11 @@
             <div class="subscription-no-post">
                 <h4 class="heading">{{ element.status | title }} post&emsp;({{ element.illust_url.type }})</h4>
                 <div class="preview">
+                    {% set preview_url = element.post_match.preview_url if element.post_match is not none else element.illust_url.preview_url %}
                     {% if lazyload %}
-                        <img data-src="{{ element.illust_url.preview_url }}" onerror="Prebooru.onImageError(this)">
+                        <img data-src="{{ preview_url }}" onerror="Prebooru.onImageError(this)">
                     {% else %}
-                        <img src="{{ element.illust_url.preview_url }}" onerror="Prebooru.onImageError(this)">
+                        <img src="{{ preview_url }}" onerror="Prebooru.onImageError(this)">
                     {% endif %}
                 </div>
                 <ul>

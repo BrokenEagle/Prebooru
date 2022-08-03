@@ -66,7 +66,7 @@ class Post(JsonModel):
     width = DB.Column(DB.Integer, nullable=False)
     height = DB.Column(DB.Integer, nullable=False)
     file_ext = DB.Column(DB.String(6), nullable=False)
-    md5 = DB.Column(DB.String(255), nullable=False)
+    md5 = DB.Column(DB.String(255), index=True, unique=True, nullable=False)
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(DB.DateTime(timezone=False), nullable=False)
