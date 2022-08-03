@@ -115,6 +115,8 @@ class Illust(JsonModel):
         site_key = get_site_key(self.site_id)
         return SOURCEDICT[site_key]
 
+    __table_args__ = (DB.UniqueConstraint('site_id', 'site_illust_id'),)
+
     # ## methods
 
     def delete(self):

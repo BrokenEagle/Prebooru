@@ -36,7 +36,7 @@ class Booru(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    danbooru_id = DB.Column(DB.Integer, nullable=False)
+    danbooru_id = DB.Column(DB.Integer, unique=True, nullable=False)
     current_name = DB.Column(DB.String(255), nullable=False)
     banned = DB.Column(DB.Boolean, nullable=False)
     deleted = DB.Column(DB.Boolean, nullable=False)
