@@ -1,8 +1,10 @@
+{% from "boorus/_macros.html" import boorus_section %}
 {% from "artists/_macros.html" import artists_section %}
 {% from "errors/_macros.html" import errors_section %}
 {% from "layouts/_macros.html" import timestamps_section %}
 
 <div id="subscription-pool-sidebar">
+    {{ boorus_section(subscription_pool.artist.boorus, 'subscription-pool-boorus') }}
     {{ artists_section(subscription_pool.artist, 'subscription-pool-artist') }}
     {{ errors_section(subscription_pool.errors, 'subscription-pool-errors') }}
     {{ timestamps_section(subscription_pool, 'subscription-pool-timestamps') }}
