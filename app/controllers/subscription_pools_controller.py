@@ -12,7 +12,8 @@ from ..models import SubscriptionPool, Artist
 from ..logical.utility import set_error
 from ..logical.tasks.worker import process_subscription
 from ..logical.database.subscription_pool_db import create_subscription_pool_from_parameters,\
-    update_subscription_pool_from_parameters, update_subscription_pool_status, delay_subscription_pool_elements
+    update_subscription_pool_from_parameters, update_subscription_pool_status, delay_subscription_pool_elements,\
+    delete_subscription_pool
 from ..logical.database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status,\
     update_job_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -235,6 +236,17 @@ def update_json(id):
     if type(subscription_pool) is dict:
         return subscription_pool
     return update(subscription_pool)
+
+
+# ###### DELETE
+
+@bp.route('/subscription_pools/<int:id>', methods=['DELETE'])
+def delete_html(id):
+    subscription_pool = get_or_abort(SubscriptionPool, id)
+    artist = subscription_pool.artist
+    delete_subscription_pool(subscription_pool)
+    flash("Subscription pool deleted.")
+    return redirect(artist.show_url)
 
 
 # ###### Misc

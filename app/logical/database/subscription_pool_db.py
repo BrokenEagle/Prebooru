@@ -69,6 +69,13 @@ def update_subscription_pool_last_info(pool, last_id):
     SESSION.commit()
 
 
+# ###### Delete
+
+def delete_subscription_pool(pool):
+    SESSION.delete(pool)
+    SESSION.commit()
+
+
 # #### Query
 
 def get_available_subscription():

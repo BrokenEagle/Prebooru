@@ -8,5 +8,6 @@
         |
         {{ subnav_link_to("Show", 'subscription_pool.show_html', id=subscription_pool.id) }}
         {{ subnav_link_to("Edit", 'subscription_pool.edit_html', id=subscription_pool.id) }}
+        {{ subnav_link_to("Delete", 'subscription_pool.delete_html', id=subscription_pool.id, attrs={'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
     {% endif %}
 </menu>
