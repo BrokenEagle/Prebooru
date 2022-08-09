@@ -2,22 +2,30 @@
 {% from 'posts/_macros.html' import related_posts  %}
 {% from 'similarity_pools/_macros.html' import similar_posts %}
 
-{% block linkscript %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='javascript/similarity_posts.js') }}"></script>
-{% endblock %}
-
 {% block title %}Post # {{ post.id }}{% endblock %}
 
 {% block content %}
     <div id="sidebar-container">
         {% include "posts/_sidebar.html" %}
         <div id="post-content">
-            <section id="image-container" onclick="ResizeImage(this)" class="fullsize">
-                <picture>
-                    <img src="{{ post.sample_url }}" onerror="Prebooru.onImageError(this)">
-                </picture>
-            </section>
+            {% if post.is_video %}
+                <section id="media-container" class="video loading">
+                    <video controls autoplay width="{{ post.width }}" height="{{ post.height }}" data-src="{{ post.video_sample_url }}" data-original="{{ post.file_url}}"></video>
+                    <picture style="position: relative; width: {{ post.width }}px; height: {{ post.height }}px;">
+                        <img class="thumbnail" src="{{ post.sample_url }}" onerror="Prebooru.onImageError(this)">
+                        <img class="play-icon" src="{{ url_for('static', filename='play.svg') }}" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto;">
+                    </picture>
+                    <div class="load-original">
+                        <a href="#" onclick="LoadOriginal(this)">Click to load original</a>
+                    <div>
+                </section>
+            {% else %}
+                <section id="media-container" onclick="ResizeImage(this)" class="image fullsize">
+                    <picture>
+                        <img src="{{ post.sample_url }}" onerror="Prebooru.onImageError(this)">
+                    </picture>
+                </section>
+            {% endif %}
             {% include "posts/_site_content.html" %}
         </div>
     </div>
@@ -30,9 +38,40 @@
 {% endblock %}
 
 {% block pagescript %}
-    <script>
-        function ResizeImage(obj) {
-            obj.classList.toggle('fullsize');
-        }
-    </script>
+<script>
+    {% if not post.is_video %}
+function ResizeImage(obj) {
+    obj.classList.toggle('fullsize');
+}
+    {% else %}
+function LoadOriginal(obj) {
+    let video = document.querySelector('#media-container video');
+    video.src = video.dataset.original;
+    obj.style.setProperty('display', 'none')
+}
+(function InitializePlay() {
+    const norm_width = {{ [125, post.width // 4] | min }};
+    const norm_height = {{ [125, post.height // 4] | min }};
+    const expand_width = {{ [150, 1.25 * post.width // 4] | min }};
+    const expand_height = {{ [150, 1.25 * post.height // 4] | min }};
+    let container = document.querySelector('#media-container');
+    let icon = container.querySelector('.play-icon');
+    let video = container.querySelector('video');
+    icon.width = norm_width;
+    icon.height = norm_height;
+    icon.onmouseenter = function () {
+        icon.width = expand_width;
+        icon.height = expand_height;
+    };
+    icon.onmouseleave = function () {
+        icon.width = norm_width;
+        icon.height = norm_height;
+    };
+    icon.onclick = function () {
+        container.classList.replace('loading', 'playing');
+        video.src = video.dataset.src;
+    };
+})();
+    {% endif %}
+</script>
 {% endblock %}

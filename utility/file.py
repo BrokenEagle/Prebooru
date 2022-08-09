@@ -47,11 +47,18 @@ def get_subdirectory_listing(directory):
         raise
 
 
-def create_directory(filepath):
+def create_directory(filepath, isdir=False):
     """Create the directory path if it doesn't already exist"""
-    directory = get_directory_path(filepath)
+    directory = get_directory_path(filepath) if not isdir else filepath
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+
+def delete_directory(filepath):
+    if os.path.exists(filepath):
+        os.rmdir(filepath)
+        # Time to let the OS remove the directory to prevent OS errors
+        time.sleep(0.01)
 
 
 def put_get_raw(filepath, optype, data=None, unicode=False):
@@ -118,7 +125,7 @@ def delete_file(filepath):
     if os.path.exists(filepath):
         os.remove(filepath)
         # Time to let the OS remove the file to prevent OS errors
-        time.sleep(0.1)
+        time.sleep(0.01)
 
 
 def move_file(old_filepath, new_filepath, safe=False):

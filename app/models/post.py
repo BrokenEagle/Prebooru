@@ -138,6 +138,16 @@ class Post(JsonModel):
         return self.file_url
 
     @property
+    def video_sample_url(self):
+        if self.is_video:
+            return image_server_url('video_sample' + self._partial_network_path + 'webm', subtype=self.suburl_path)
+
+    @property
+    def video_preview_url(self):
+        if self.is_video:
+            return image_server_url('video_preview' + self._partial_network_path + 'webp', subtype=self.suburl_path)\
+
+    @property
     def subdirectory_path(self):
         return MEDIA_DIRECTORY if not self.is_alternate else ALTERNATE_MEDIA_DIRECTORY
 
@@ -156,6 +166,17 @@ class Post(JsonModel):
         if self.has_preview:
             return os.path.join(self.subdirectory_path, 'preview', self._partial_file_path + 'jpg')
         return self.file_path
+
+    @property
+    def video_sample_path(self):
+        if self.is_video:
+            return os.path.join(self.subdirectory_path, 'video_sample', self._partial_file_path + 'webm')
+        return self.file_path
+
+    @property
+    def video_preview_path(self):
+        if self.is_video:
+            return os.path.join(self.subdirectory_path, 'video_preview', self._partial_file_path + 'webp')
 
     @memoized_property
     def related_posts(self):

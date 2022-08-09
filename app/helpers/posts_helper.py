@@ -53,6 +53,20 @@ def similar_search_links(post, format_url, proxy_url=None):
     return Markup(' | ').join(image_links)
 
 
+def post_preview_link(post, lazyload):
+    addons = {
+        'data-src': post.preview_url,
+        'onerror': 'Prebooru.onImageError(this)',
+        'title': image_title(post),
+    }
+    if not lazyload:
+        addons['src'] = post.preview_url
+    if post.is_video:
+        addons['data-video'] = post.video_preview_url
+    attrs = ['%s="%s"' % (k, v) for (k, v) in addons.items()]
+    return Markup('<img %s>' % ' '.join(attrs))
+
+
 def image_title(post):
     return f"( {post.width} x {post.height} ) : {post.file_ext.upper()} @ {readable_bytes(post.size)}"
 

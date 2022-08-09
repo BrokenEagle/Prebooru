@@ -17,7 +17,7 @@
 {%- endmacro %}
 
 {% macro subscription_element_preview(element, lazyload) -%}
-    <article id="subscription-element-{{ element.id }}" class="subscription-element">
+    <article id="subscription-element-{{ element.id }}" class="subscription-element subscription-{{ element.illust_url.type}}">
         {% if element.post is not none %}
             <div class="subscription-element-display">
                 <div class="input">

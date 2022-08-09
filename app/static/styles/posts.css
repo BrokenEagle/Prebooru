@@ -59,12 +59,40 @@ div.post-commentaries-container {
 div.post-commentaries-block {
     margin: 0.25em;
 }
-section#image-container {
-    cursor: pointer;
+section#media-container {
     margin-right: 1em;
     margin-bottom: 1em;
 }
-section#image-container.fullsize img {
+section#media-container.loading video {
+    display: none;
+}
+section#media-container.playing video {
+    display: block;
+}
+section#media-container.loading picture {
+    display: block;
+}
+section#media-container.playing picture {
+    display: none;
+}
+section#media-container div.load-original {
+    padding-top: 5px;
+    height: 1.25em;
+}
+section#media-container.loading div.load-original a {
+    display: none;
+}
+section#media-container img.thumbnail {
+    height: 100%;
+    width: auto;
+}
+section#media-container img.play-icon {
+    cursor: pointer;
+}
+section#media-container.image {
+    cursor: pointer;
+}
+section#media-container.fullsize img {
     max-height: 100vh;
     width: auto;
 }

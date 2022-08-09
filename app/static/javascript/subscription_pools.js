@@ -1,6 +1,8 @@
 const SubscriptionPools = {};
 
 SubscriptionPools.keepElement = function(obj) {
+    let $element = Prebooru.closest(obj, '.subscription-element');
+    let $post = $element.querySelector('.post');
     fetch(obj.href, {method: 'POST'})
         .then((resp)=>resp.json())
         .then((data)=>{
@@ -9,7 +11,11 @@ SubscriptionPools.keepElement = function(obj) {
             } else {
                 Prebooru.message("Updated element.");
                 SubscriptionPools.replaceArticle(obj, data.html);
+                if ($post.classList.contains('video-post')) {
+                    Prebooru.initializeVideoPreviews('#' + $post.id);
+                }
                 document.getElementById('image-select-counter').innerText = document.querySelectorAll('.subscription-element .checkbox-active').length;
+                Prebooru.dispatchEvent('prebooru:preview-reloaded', {target: Prebooru.closest(obj, '.subscription-element'), data});
             }
         });
     return false;

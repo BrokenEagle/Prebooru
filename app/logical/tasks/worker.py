@@ -26,6 +26,7 @@ from ..database.subscription_pool_db import update_subscription_pool_status, upd
 from ..database.error_db import create_and_append_error, append_error
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_lock_status
 from ..sources.base import get_post_source, get_source_by_id
+from ..media import convert_mp4_to_webp, convert_mp4_to_webm
 from ..downloader.network import convert_network_upload
 from ..downloader.file import convert_file_upload
 
@@ -73,6 +74,9 @@ def process_upload(upload_id):
             threading.Thread(target=process_similarity, args=(post_ids,)).start()
             threading.Thread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
             threading.Thread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
+            video_post_ids = [post.id for post in upload.posts if post.is_video]
+            if len(video_post_ids):
+                threading.Thread(target=process_videos, args=(video_post_ids,)).start()
 
     safe_db_execute('process_upload', 'tasks.worker', try_func=try_func, msg_func=msg_func, error_func=error_func,
                     finally_func=finally_func, printer=printer)
@@ -138,6 +142,20 @@ def process_similarity(post_ids):
     for post in posts:
         generate_post_similarity(post, printer=printer)
         populate_similarity_pools(post, printer=printer)
+    printer.print()
+
+
+def process_videos(post_ids):
+    printer = buffered_print("Process Videos")
+    posts = get_posts_by_id(post_ids)
+    printer("Videos to process:", len(posts))
+    mp4_count = 0
+    for post in posts:
+        if post.file_ext == 'mp4':
+            convert_mp4_to_webp(post.file_path, post.video_preview_path)
+            convert_mp4_to_webm(post.file_path, post.video_sample_path)
+            mp4_count += 1
+    printer(f"MP4s processed: {mp4_count}")
     printer.print()
 
 

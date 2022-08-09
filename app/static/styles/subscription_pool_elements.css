@@ -72,6 +72,12 @@ div.element-illust-type {
     font-size: 20px;
     font-weight: bold;
 }
+article.subscription-image div.element-illust-type {
+    color: darkblue;
+}
+article.subscription-video div.element-illust-type {
+    color: darkgreen;
+}
 div.subscription-element-info {
     font-size: 16px;
     border: 2px solid;
@@ -142,13 +148,23 @@ article.subscription-element div.errors-list {
 form#form label {
     margin-top: 0;
     margin-bottom: 5px;
-    border: 1px solid #8DD;
+    border: 1px solid;
     border-radius: 25px;
-    background: #E0F0F0;
     padding: 5px;
 }
-form#form div.checkbox-active label {
+form#form article.subscription-image label {
+    background: #E0F0F0;
+    border-color: #8DD;
+}
+form#form article.subscription-video label {
+    background: #F0F0E0;
+    border-color: #DD8;
+}
+form#form article.subscription-image div.checkbox-active label {
     background: linear-gradient(270deg, dodgerblue, transparent);
+}
+form#form article.subscription-video div.checkbox-active label {
+    background: linear-gradient(270deg, forestgreen, transparent);
 }
 /****SHOW Page****/
 div#sidebar-container {

@@ -1,13 +1,7 @@
 {% macro post_preview(post, lazyload=False) -%}
-    <article class="post {{ 'no-post' if post is none else ""}}">
+    <article id="post-{{post.id}}" class="post {{ 'no-post' if post is none else ""}} {{ 'video-post' if post.is_video else "" }}">
         {% if post is not none %}
-            <a href="{{ post.show_url }}">
-                {% if lazyload %}
-                    <img data-src="{{ post.preview_url }}" onerror="Prebooru.onImageError(this)" title="{{ helpers.post.image_title(post) }}">
-                {% else %}
-                    <img src="{{ post.preview_url }}" onerror="Prebooru.onImageError(this)" title="{{ helpers.post.image_title(post) }}">
-                {% endif %}
-            </a>
+            <a href="{{ post.show_url }}">{{ helpers.post.post_preview_link(post, lazyload) }}</a>
         {% else %}
             <span class="explanation">No post.</span>
         {% endif %}

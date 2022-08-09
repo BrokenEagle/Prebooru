@@ -26,6 +26,7 @@ from ..database.error_db import is_error
 from ..database.jobs_db import get_job_status_data, update_job_status
 from ..records.subscription_rec import update_subscription_elements
 from ..downloader.network import convert_network_subscription
+from ..logger import log_error
 
 # ## GLOBAL VARIABLES
 
@@ -34,6 +35,7 @@ POST_PAGE_LIMIT = 5
 EXPIRE_PAGE_LIMIT = 10
 
 SIMILARITY_SEMAPHORE = threading.Semaphore(2)
+VIDEO_SEMAPHORE = threading.Semaphore(1)
 
 
 # ## FUNCTIONS
@@ -91,6 +93,7 @@ def download_subscription_elements(subscription_pool, job_id=None):
             if convert_network_subscription(element, source):
                 job_status['downloads'] += 1
         _process_similarity(page.items)
+        _process_videos(page.items)
         if not page.has_prev:
             break
         page = page.prev()
@@ -113,6 +116,7 @@ def download_missing_elements(manual=False):
             source = SOURCEDICT[site_key]
             convert_network_subscription(element, source)
         _process_similarity(page.items)
+        _process_videos(page.items)
         if not page.has_prev:
             break
         if not manual and page.page > 10:
@@ -186,3 +190,20 @@ def _process_similarity(elements):
 
     post_ids = [element.post_id for element in elements]
     threading.Thread(target=_process, args=(post_ids,)).start()
+
+
+def _process_videos(elements):
+    from ..tasks.worker import process_videos
+    def _process(post_ids):
+        VIDEO_SEMAPHORE.acquire()
+        try:
+            process_videos(post_ids)
+        except Exception as e:
+            log_error('check.subscriptions.process_videos', "Error processing videos on subscription: %s" % str(e))
+        finally:
+            VIDEO_SEMAPHORE.release()
+
+    posts = [element.post for element in elements if element.post is not None]
+    video_post_ids = [post.id for post in posts if post.is_video]
+    if len(video_post_ids):
+        threading.Thread(target=_process, args=(video_post_ids,)).start()

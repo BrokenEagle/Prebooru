@@ -2,6 +2,11 @@ const Prebooru = {};
 
 Prebooru.updateInputsEvent = new CustomEvent('prebooru:update-inputs');
 
+Prebooru.dispatchEvent = function (name, data) {
+    let event = new CustomEvent(name, {detail: data});
+    document.dispatchEvent(event);
+};
+
 Prebooru.postRequest = function(url, args) {
     let form = document.createElement('form');
     form.method = 'POST';
@@ -149,6 +154,14 @@ Prebooru.onImageError = function (obj) {
     console.log("Error:", obj, obj.src, retries);
 };
 
+Prebooru.onVideoError = function (obj) {
+    console.warn("Error loading video preview", obj.postName);
+    obj.onMouseEnter = null;
+    obj.onMouseLeave = null;
+    obj.videoToImage?.(obj);
+    obj.videoPreviewTimeout = false;
+};
+
 Prebooru.keepElement = function(obj) {
     fetch(obj.href, {method: 'POST'})
         .then((resp)=>resp.json())
@@ -163,6 +176,11 @@ Prebooru.keepElement = function(obj) {
     return false;
 };
 
+Prebooru.closest = function(obj, selector) {
+    for (var curr = obj; curr && !curr.matches(selector); curr = curr.parentElement);
+    return curr;
+};
+
 Prebooru.replaceDiv = function(obj, html) {
     for (var curr = obj; curr.tagName !== 'DIV' && curr.parentElement !== null; curr = curr.parentElement);
     curr.outerHTML = html;
@@ -172,7 +190,7 @@ Prebooru.initializeLazyLoad = function (container_selector) {
     let obs = new IntersectionObserver(function (entries, observer) {
         entries.forEach((entry)=>{
             if (entry.isIntersecting) {
-                entry.target.querySelectorAll('img').forEach((image) => {
+                entry.target.querySelectorAll('img[data-src]').forEach((image) => {
                     image.src = image.dataset.src;
                 });
                 observer.unobserve(entry.target);
@@ -182,8 +200,65 @@ Prebooru.initializeLazyLoad = function (container_selector) {
         rootMargin: '150px',
     });
     document.querySelectorAll(container_selector).forEach((preview)=>{
-        if (preview.querySelectorAll('img').length > 0) {
+        if (preview.querySelectorAll('img[data-src]').length > 0) {
             obs.observe(preview);
         }
     });
-}
+};
+
+Prebooru.coordinateInBox = function(coord, box) {
+    return coord.x > box.left && coord.x < box.right && coord.y > box.top && coord.y < box.bottom;
+};
+
+Prebooru.initializeVideoPreviews = function (container_selector) {
+    function getWindowBox() {
+        return {top: window.pageYOffset, bottom: window.pageYOffset + window.innerHeight, left: window.pageXOffset, right: window.pageXOffset + window.innerWidth};
+    }
+    function getImageBox(image) {
+        return {top: image.offsetTop, bottom: image.offsetTop + image.offsetHeight, left: image.offsetLeft, right: image.offsetLeft + image.offsetWidth};
+    }
+    function imageToVideo(image, post_name) {
+        console.log("Changing from image to video on", image.postName);
+        image.oldOnerror = image.onerror;
+        image.src = image.dataset.video;
+    }
+    function videoToImage(image, post_name) {
+        console.log("Changing from video to image on", image.postName);
+        image.onerror = image.oldOnerror;
+        image.src = image.dataset.src;
+    }
+    function onMouseEnter(event) {
+        let image = event.target;
+        if (image.enteredPopup || Number.isInteger(image.videoPreviewTimeout)) return;
+        image.videoPreviewTimeout = setTimeout(()=>{
+            imageToVideo(image);
+            image.videoPreviewTimeout = true;
+        }, 500);
+    }
+    function onMouseLeave(event) {
+        let image = event.target;
+        let coord = {x: event.pageX, y: event.pageY};
+        if (!Prebooru.coordinateInBox(coord, getWindowBox())) {
+            console.log("Outside screen on", image.postName);
+        } else if (Prebooru.coordinateInBox(coord, getImageBox(image))) {
+            console.log("Encountered popup on", image.postName);
+            image.enteredPopup = true;
+            return;
+        }
+        image.enteredPopup = false;
+        if (Number.isInteger(image.videoPreviewTimeout)) {
+            clearTimeout(image.videoPreviewTimeout);
+            image.videoPreviewTimeout = null;
+        } else if (image.videoPreviewTimeout === true) {
+            videoToImage(image);
+        }
+    }
+    document.querySelectorAll(container_selector).forEach((preview)=>{
+        let image = preview.querySelector('img');
+        image.onmouseenter = onMouseEnter;
+        image.onmouseleave = onMouseLeave;
+        image.postName = preview.id;
+        image.imageToVideo = imageToVideo;
+        image.videoToImage = videoToImage;
+    });
+};

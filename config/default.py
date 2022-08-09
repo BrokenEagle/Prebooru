@@ -20,6 +20,7 @@ WORKING_DIRECTORY = "/tmp/"
 """Subdirectory paths should not begin or end with a directory separator ('\' or '/')"""
 DATA_FILEPATH = "data"
 MEDIA_FILEPATH = "media"
+TEMP_FILEPATH = "temp"
 
 """Path for loading the .env to load environment variables from. Can either be a relative or an absolute path"""
 DOTENV_FILEPATH = None
@@ -30,6 +31,12 @@ DOTENV_FILEPATH = None
 PREVIEW_DIMENSIONS = (300, 300)
 SAMPLE_DIMENSIONS = (1280, 1920)
 
+# ## VIDEO VARIABLES
+
+MP4_SKIP_FRAMES = 5  # How many frames to skip between, e.g. 5 means every 1 in 5 frames will be used
+MP4_MIN_FRAMES = 50  # Minimum number of frames before they will be skipped
+WEBP_QUALITY = 5  # 0 - 100, higher numbers are better quality, but higher filesizes as well
+WEBP_LOOPS = 1
 
 # ## DATABASE VARIABLES
 
