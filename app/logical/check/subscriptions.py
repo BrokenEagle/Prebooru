@@ -14,8 +14,6 @@ from utility.time import get_current_time, hours_from_now
 from ...models import SubscriptionPool, SubscriptionPoolElement, IllustUrl, Post
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
-from ..similarity.generate_data import generate_post_similarity
-from ..similarity.populate_pools import populate_similarity_pools
 from ..database.post_db import get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.subscription_pool_element_db import unlink_subscription_post, delete_subscription_post,\
@@ -178,13 +176,13 @@ def expire_subscription_elements(manual):
 # #### Private
 
 def _process_similarity(elements):
+    from ..tasks.worker import process_similarity
     def _process(post_ids):
         SIMILARITY_SEMAPHORE.acquire()
         try:
-            posts = get_posts_by_id(post_ids)
-            for post in posts:
-                generate_post_similarity(post)
-                populate_similarity_pools(post)
+            process_similarity(post_ids)
+        except:
+            log_error('check.subscriptions.process_similarity', "Error processing similarity on subscription: %s" % str(e))
         finally:
             SIMILARITY_SEMAPHORE.release()
 
