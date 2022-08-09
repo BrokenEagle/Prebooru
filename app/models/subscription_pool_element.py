@@ -3,14 +3,14 @@
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
-from .base import JsonModel
+from .base import JsonModel, secondarytable
 
 
 # ## GLOBAL VARIABLES
 
 # Many-to-many tables
 
-SubscriptionPoolElementErrors = DB.Table(
+SubscriptionPoolElementErrors = secondarytable(
     'subscription_pool_element_errors',
     DB.Column('subscription_pool_element_id', DB.Integer, DB.ForeignKey('subscription_pool_element.id'),
               primary_key=True),

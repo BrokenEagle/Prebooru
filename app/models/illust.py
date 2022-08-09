@@ -13,26 +13,26 @@ from .site_data import SiteData
 from .description import Description
 from .notation import Notation
 from .pool_element import PoolIllust
-from .base import JsonModel, polymorphic_accessor_factory, classproperty
+from .base import JsonModel, secondarytable, polymorphic_accessor_factory, classproperty
 
 
 # ## GLOBAL VARIABLES
 
 # Many-to-many tables
 
-IllustTags = DB.Table(
+IllustTags = secondarytable(
     'illust_tags',
     DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
     DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
 )
 
-IllustCommentaries = DB.Table(
+IllustCommentaries = secondarytable(
     'illust_commentaries',
     DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
     DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
 )
 
-IllustNotations = DB.Table(
+IllustNotations = secondarytable(
     'illust_notations',
     DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
     DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),

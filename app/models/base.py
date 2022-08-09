@@ -14,7 +14,7 @@ from sqlalchemy.ext.associationproxy import _AssociationList
 from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 
 # ## LOCAL IMPORTS
-from .. import DB, SERVER_INFO
+from .. import DB, SESSION, SERVER_INFO
 
 
 # ## FUNCTIONS
@@ -80,6 +80,13 @@ def classproperty(cached=False):
     return _decorator
 
 
+def secondarytable(*args):
+    table = DB.Table(*args)
+    table.rowid = DB.column("rowid")
+    table.query = SESSION.query(table)
+    return table
+
+
 # ## CLASSES
 
 class CacheClassProperty:
@@ -96,6 +103,32 @@ class CacheClassProperty:
             # Overwrites the class method with the value
             setattr(owner_cls, self.func.__name__, val)
         return val
+
+
+class StaticProperty:
+    """Decorator for a static property.
+    """
+    def __init__(self, fget=None, fset=None, fdel=None):
+        self.fget = fget
+        self.fset = fset
+        self.fdel = fdel
+
+    def setter(self, fset):
+        self.fset = fset
+        return self
+
+    def deleter(self, fdel):
+        self.fdel = fdel
+        return self
+
+    def __get__(self, instance, owner=None):
+        return self.fget()
+
+    def __set__(self, instance, value):
+        return self.fset(value)
+
+    def __delete__(self, instance):
+        return self.fdel()
 
 
 class JsonModel(DB.Model):
@@ -235,6 +268,10 @@ class JsonModel(DB.Model):
     @classproperty(cached=False)
     def json_attributes(cls):
         return cls.basic_attributes
+
+    @StaticProperty
+    def rowid():
+        return DB.column("rowid")
 
     # Private
 

@@ -24,32 +24,32 @@ from .pool_element import PoolPost, pool_element_delete
 from .similarity_data import SimilarityData
 from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
-from .base import JsonModel, image_server_url, classproperty
+from .base import JsonModel, secondarytable, image_server_url, classproperty
 
 
 # ## GLOBAL VARIABLES
 
 # Many-to-many tables
 
-PostIllustUrls = DB.Table(
+PostIllustUrls = secondarytable(
     'post_illust_urls',
     DB.Column('illust_url_id', DB.Integer, DB.ForeignKey('illust_url.id'), primary_key=True),
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
 )
 
-PostErrors = DB.Table(
+PostErrors = secondarytable(
     'post_errors',
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
 )
 
-PostNotations = DB.Table(
+PostNotations = secondarytable(
     'post_notations',
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
     DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),
 )
 
-PostTags = DB.Table(
+PostTags = secondarytable(
     'post_tags',
     DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),

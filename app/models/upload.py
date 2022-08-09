@@ -10,24 +10,24 @@ from ..logical.utility import unique_objects
 from .upload_url import UploadUrl
 from .post import Post
 from .error import Error
-from .base import JsonModel, classproperty
+from .base import JsonModel, secondarytable, classproperty
 
 
 # ## GLOBAL VARIABLES
 
 # Many-to-many tables
 
-UploadUrls = DB.Table(
+UploadUrls = secondarytable(
     'upload_urls',
     DB.Column('upload_id', DB.Integer, DB.ForeignKey('upload.id'), primary_key=True),
     DB.Column('upload_url_id', DB.Integer, DB.ForeignKey('upload_url.id'), primary_key=True),
 )
-UploadErrors = DB.Table(
+UploadErrors = secondarytable(
     'upload_errors',
     DB.Column('upload_id', DB.Integer, DB.ForeignKey('upload.id'), primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
 )
-UploadPosts = DB.Table(
+UploadPosts = secondarytable(
     'upload_posts',
     DB.Column('upload_id', DB.Integer, DB.ForeignKey('upload.id'), primary_key=True),
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),

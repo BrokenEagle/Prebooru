@@ -15,9 +15,10 @@ SHUTDOWN_ERROR_FILE = 'prebooru-shutdown-error.txt'
 # #### Initialization functions
 
 def initialize_server():
-    global PREBOORU_APP, SCHEDULER, load_default, put_get_json, validate_version, validate_integrity
+    global PREBOORU_APP, SCHEDULER, load_default, put_get_json, validate_version, validate_integrity,\
+        validate_foreign_keys
     from app import PREBOORU_APP, SCHEDULER
-    from app.logical.validate import validate_version, validate_integrity
+    from app.logical.validate import validate_version, validate_integrity, validate_foreign_keys
     initialize_environment()
     initialize_controllers()
     initialize_helpers()
@@ -156,6 +157,7 @@ def start_server(args):
         initialize_server_fields()
         validate_version()
         validate_integrity()
+        validate_foreign_keys()
         print("\n========== Starting server - Prebooru-%s ==========" % VERSION)
         SERVER_PID = os.getpid()
         put_get_json(SERVER_PID_FILE, 'w', [SERVER_PID])

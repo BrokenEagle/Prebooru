@@ -15,30 +15,30 @@ from .subscription_pool import SubscriptionPool
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel, classproperty
+from .base import JsonModel, secondarytable, classproperty
 
 
 # ## GLOBAL VARIABLES
 
-ArtistNames = DB.Table(
+ArtistNames = secondarytable(
     'artist_names',
     DB.Column('label_id', DB.Integer, DB.ForeignKey('label.id'), primary_key=True),
     DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
 )
 
-ArtistSiteAccounts = DB.Table(
+ArtistSiteAccounts = secondarytable(
     'artist_site_accounts',
     DB.Column('label_id', DB.Integer, DB.ForeignKey('label.id'), primary_key=True),
     DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
 )
 
-ArtistProfiles = DB.Table(
+ArtistProfiles = secondarytable(
     'artist_profiles',
     DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
     DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
 )
 
-ArtistNotations = DB.Table(
+ArtistNotations = secondarytable(
     'artist_notations',
     DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),
     DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),

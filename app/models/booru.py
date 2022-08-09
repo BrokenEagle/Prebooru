@@ -11,18 +11,18 @@ from .illust import Illust
 from .illust_url import IllustUrl
 from .post import Post
 from .label import Label
-from .base import JsonModel, classproperty
+from .base import JsonModel, secondarytable, classproperty
 
 
 # ## GLOBAL VARIABLES
 
-BooruNames = DB.Table(
+BooruNames = secondarytable(
     'booru_names',
     DB.Column('label_id', DB.Integer, DB.ForeignKey('label.id'), primary_key=True),
     DB.Column('booru_id', DB.Integer, DB.ForeignKey('booru.id'), primary_key=True),
 )
 
-BooruArtists = DB.Table(
+BooruArtists = secondarytable(
     'booru_artists',
     DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
     DB.Column('booru_id', DB.Integer, DB.ForeignKey('booru.id'), primary_key=True),

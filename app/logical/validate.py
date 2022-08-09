@@ -49,4 +49,35 @@ def validate_integrity():
             print("    %s: %s" % (name, status))
         exit(-1)
     else:
-        print("\nDatabase: OK")
+        print("\nDatabase: OK\n")
+
+
+def validate_foreign_keys():
+    from .. import DB
+    from ..models import TABLES
+    TABLE_FKEYS = {}
+    engine = DB.get_engine(bind=None).engine
+    connection = engine.connect()
+    errors = connection.execute("PRAGMA foreign_key_check").fetchall()
+    if len(errors) > 0:
+        logging.error("The database has orphaned foreign keys")
+        print("\n    %-40s %-10s %-40s %s" % ("Table", "Row ID", "Parent", "FKey ID"))
+        for (i, error) in enumerate(errors):
+            print("%02d. %-40s %-10d %-40s %d" % ((i + 1,) + tuple(error)))
+        print('\n')
+        for (i, error) in enumerate(errors):
+            print(f"Error record #{i + 1}")
+            name, rowid, parent, fkid = error
+            model = TABLES[name]
+            record = model.query.filter(model.rowid == rowid).first()
+            print(record)
+            if name in TABLE_FKEYS:
+                fkeys = TABLE_FKEYS[name]
+            else:
+                fkeys = TABLE_FKEYS[name] = connection.execute(f"PRAGMA foreign_key_list({name})").fetchall()
+            error_fkey = next(fkey for fkey in fkeys if fkey[0] == fkid)
+            print("FKEY", error_fkey)
+            print('--------------------------------------------------\n')
+        exit(-1)
+    else:
+        print("\nForeign Keys: OK\n")

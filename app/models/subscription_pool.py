@@ -13,14 +13,14 @@ from .illust import IllustUrl
 from .post import Post
 from .error import Error
 from .subscription_pool_element import SubscriptionPoolElement
-from .base import JsonModel
+from .base import JsonModel, secondarytable
 
 
 # ## GLOBAL VARIABLES
 
 # Many-to-many tables
 
-SubscriptionPoolErrors = DB.Table(
+SubscriptionPoolErrors = secondarytable(
     'subscription_pool_errors',
     DB.Column('subscription_pool_id', DB.Integer, DB.ForeignKey('subscription_pool.id'), primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
