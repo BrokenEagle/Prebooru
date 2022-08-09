@@ -6,7 +6,7 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import SimilarityPool
-from .similarity_pool_element_db import batch_delete_similarity_pool_element
+from .similarity_pool_element_db import get_similarity_elements_by_post_id, batch_delete_similarity_pool_element
 from .base_db import update_column_attributes
 
 
@@ -57,7 +57,14 @@ def delete_similarity_pool_by_post_id(post_id):
     similarity_pool = SimilarityPool.query.filter(SimilarityPool.post_id == post_id).first()
     if similarity_pool is None:
         return
-    batch_delete_similarity_pool_element(similarity_pool.elements)
+    sibling_elements = get_similarity_elements_by_post_id(post_id)
+    total_elements = similarity_pool.elements + sibling_elements
+    if len(total_elements) > 0:
+        sibling_pool_ids = [element.pool_id for element in sibling_elements]
+        batch_delete_similarity_pool_element(similarity_pool.elements + sibling_elements)
+        sibling_pools = SimilarityPool.query.filter(SimilarityPool.id.in_(sibling_pool_ids)).all()
+        for pool in sibling_pools:
+            pool.element_count = pool._get_element_count()
     SESSION.delete(similarity_pool)
     SESSION.commit()
 

@@ -61,17 +61,14 @@ def delete_similarity_pool_element(similarity_pool_element):
 
 
 def batch_delete_similarity_pool_element(similarity_pool_elements):
-    if len(similarity_pool_elements) == 0:
-        return
-    # Get all of the affected pools to update their counts. This could maybe be done better
-    sibling_pools = [element.sibling.pool for element in similarity_pool_elements if element.sibling_id is not None]
-    similarity_pools = unique_objects([similarity_pool_elements[0].pool] + sibling_pools)
-    pool_element_ids = [element.id for element in similarity_pool_elements]
-    pool_element_ids += [element.sibling_id for element in similarity_pool_elements if element.sibling_id is not None]
-    SimilarityPoolElement.query.filter(SimilarityPoolElement.id.in_(pool_element_ids)).update({'sibling_id': None})
+    element_ids = [element.id for element in similarity_pool_elements]
+    SimilarityPoolElement.query.filter(SimilarityPoolElement.id.in_(element_ids)).update({'sibling_id': None})
     SESSION.commit()
-    SimilarityPoolElement.query.filter(SimilarityPoolElement.id.in_(pool_element_ids)).delete()
+    SimilarityPoolElement.query.filter(SimilarityPoolElement.id.in_(element_ids)).delete()
     SESSION.commit()
-    for pool in similarity_pools:
-        pool.element_count = pool._get_element_count()
-    SESSION.commit()
+
+
+# ###### Query
+
+def get_similarity_elements_by_post_id(post_id):
+    return SimilarityPoolElement.query.filter_by(post_id=post_id).all()
