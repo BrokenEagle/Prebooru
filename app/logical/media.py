@@ -94,7 +94,7 @@ def convert_mp4_to_webp(file_path, save_path):
             still_reading = video_capture.grab()
         if not still_reading:
             break
-        frame_count +=1
+        frame_count += 1
     print("Opening captured images")
     frames = [Image.open(os.path.join(capture_directory, file)) for file in files]
     if frames[0].width > PREVIEW_DIMENSIONS[0] or frames[1].height > PREVIEW_DIMENSIONS[1]:
@@ -141,6 +141,6 @@ def convert_mp4_to_webm(file_path, save_path, width=None, height=None):
     try:
         stream.run(quiet=True)
     except Exception as e:
-        msg = f"Exception creating video sample media: %s" % str(e)
+        msg = "Exception creating video sample media: %s" % str(e)
         print(msg)
         return msg

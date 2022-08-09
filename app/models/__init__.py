@@ -47,6 +47,7 @@ from .domain import Domain  # noqa: F401
 NONCE = None
 TABLES = {}
 
+
 # ## FUNCTIONS
 
 def initialize():
@@ -58,13 +59,15 @@ def initialize():
     for mod in modules:
         mod.initialize()
 
-    models = [
-        Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,
-        IllustCommentaries, IllustNotations, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles, ArtistNotations,
-        Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations, PostTags, UploadUrl, Upload,
-        UploadUrls, UploadErrors, UploadPosts, Notation, Pool, PoolElement, PoolPost, PoolIllust, PoolNotation, SubscriptionPool,
-        SubscriptionPoolErrors, SubscriptionPoolElement, SubscriptionPoolElementErrors, SimilarityData, SimilarityPool, SimilarityPoolElement,
-        ApiData, ArchiveData, MediaFile, Domain,
+    models =\
+        [
+            Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,
+            IllustCommentaries, IllustNotations, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
+            ArtistNotations, Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations,
+            PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, UploadPosts, Notation, Pool, PoolElement, PoolPost,
+            PoolIllust, PoolNotation, SubscriptionPool, SubscriptionPoolErrors, SubscriptionPoolElement,
+            SubscriptionPoolElementErrors, SimilarityData, SimilarityPool, SimilarityPoolElement, ApiData, ArchiveData,
+            MediaFile, Domain,
         ]
     for model in models:
         if hasattr(model, '__table__'):

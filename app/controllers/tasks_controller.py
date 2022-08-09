@@ -1,8 +1,5 @@
 # APP/CONTROLLERS/TASKS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
-import threading
-
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, render_template, request, flash, redirect
 

@@ -14,7 +14,6 @@ from utility.time import get_current_time, hours_from_now
 from ...models import SubscriptionPool, SubscriptionPoolElement, IllustUrl, Post
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
-from ..database.post_db import get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.subscription_pool_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post
@@ -178,12 +177,14 @@ def expire_subscription_elements(manual):
 
 def _process_similarity(elements):
     from ..tasks.worker import process_similarity
+
     def _process(post_ids):
         SIMILARITY_SEMAPHORE.acquire()
         try:
             process_similarity(post_ids)
-        except:
-            log_error('check.subscriptions.process_similarity', "Error processing similarity on subscription: %s" % str(e))
+        except Exception as e:
+            msg = "Error processing similarity on subscription: %s" % str(e)
+            log_error('check.subscriptions.process_similarity', msg)
         finally:
             SIMILARITY_SEMAPHORE.release()
 
@@ -193,12 +194,14 @@ def _process_similarity(elements):
 
 def _process_videos(elements):
     from ..tasks.worker import process_videos
+
     def _process(post_ids):
         VIDEO_SEMAPHORE.acquire()
         try:
             process_videos(post_ids)
         except Exception as e:
-            log_error('check.subscriptions.process_videos', "Error processing videos on subscription: %s" % str(e))
+            msg = "Error processing videos on subscription: %s" % str(e)
+            log_error('check.subscriptions.process_videos', msg)
         finally:
             VIDEO_SEMAPHORE.release()
 

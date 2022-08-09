@@ -145,7 +145,7 @@ class Post(JsonModel):
     @property
     def video_preview_url(self):
         if self.is_video:
-            return image_server_url('video_preview' + self._partial_network_path + 'webp', subtype=self.suburl_path)\
+            return image_server_url('video_preview' + self._partial_network_path + 'webp', subtype=self.suburl_path)
 
     @property
     def subdirectory_path(self):

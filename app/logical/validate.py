@@ -55,7 +55,7 @@ def validate_integrity():
 def validate_foreign_keys():
     from .. import DB
     from ..models import TABLES
-    TABLE_FKEYS = {}
+    table_fkeys = {}
     engine = DB.get_engine(bind=None).engine
     connection = engine.connect()
     errors = connection.execute("PRAGMA foreign_key_check").fetchall()
@@ -71,10 +71,10 @@ def validate_foreign_keys():
             model = TABLES[name]
             record = model.query.filter(model.rowid == rowid).first()
             print(record)
-            if name in TABLE_FKEYS:
-                fkeys = TABLE_FKEYS[name]
+            if name in table_fkeys:
+                fkeys = table_fkeys[name]
             else:
-                fkeys = TABLE_FKEYS[name] = connection.execute(f"PRAGMA foreign_key_list({name})").fetchall()
+                fkeys = table_fkeys[name] = connection.execute(f"PRAGMA foreign_key_list({name})").fetchall()
             error_fkey = next(fkey for fkey in fkeys if fkey[0] == fkid)
             print("FKEY", error_fkey)
             print('--------------------------------------------------\n')

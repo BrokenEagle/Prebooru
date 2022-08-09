@@ -119,7 +119,7 @@ def update_job_manual_status(id, boolval):
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement =\
             T_JOBS_MANUAL.update().where(T_JOBS_MANUAL.c.id == id)\
-                          .values(manual=boolval)
+                         .values(manual=boolval)
         conn.execute(statement)
 
 

@@ -2,7 +2,6 @@
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import unique_objects
 from ...models import SimilarityPoolElement
 from .base_db import update_column_attributes
 

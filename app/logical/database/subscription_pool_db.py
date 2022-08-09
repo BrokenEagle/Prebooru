@@ -18,6 +18,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration', 'active']
 
 MAXIMUM_PROCESS_SUBSCRIPTIONS = 10
 
+
 # ## FUNCTIONS
 
 # #### Route DB functions
@@ -82,8 +83,8 @@ def delete_subscription_pool(pool):
 def get_available_subscription(unlimited):
     # Return only subscriptions which have already been processed manually (requery is not None)
     query = SubscriptionPool.query.filter(SubscriptionPool.requery < get_current_time(),
-                                         SubscriptionPool.active.is_(True),
-                                         SubscriptionPool.status.not_in(['manual', 'automatic']))
+                                          SubscriptionPool.active.is_(True),
+                                          SubscriptionPool.status.not_in(['manual', 'automatic']))
     if not unlimited:
         query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
     return query.all()

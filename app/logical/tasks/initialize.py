@@ -42,36 +42,9 @@ def initialize_all_tasks():
 
 def initialize_task_jobs():
     create_job_tables()
-    info = _get_initial_job_info()
-    enabled = _get_initial_job_enabled()
-    manual = _get_initial_job_manual()
-    locks = _get_initial_job_locks()
-    timevals = _get_initial_job_timevals()
-    for key in ALL_JOB_TIMEVALS:
-        if key not in timevals.keys():
-            create_job_timeval(key)
-        else:
-            update_job_timeval(key, 0.0)
-    for key in ALL_JOB_INFO:
-        if key in info:
-            task_config = JOB_CONFIG[key]['config']
-            if info[key] > datetime.datetime.now():
-                task_config['next_run_time'] = info[key]
-            else:
-                print("Task Scheduler - Missed job:", key)
-                next_run_time = max(task_config['jitter'] * random.random(), JOB_CONFIG[key]['leeway'])
-                task_config['next_run_time'] = datetime.datetime.now() + datetime.timedelta(seconds=next_run_time)
-    for key in ALL_JOB_ENABLED:
-        if key not in enabled.keys():
-            create_job_enabled(key)
-    for key in ALL_JOB_MANUAL:
-        if key not in manual.keys():
-            create_job_manual(key)
-    for key in ALL_JOB_LOCKS:
-        if key not in locks.keys():
-            create_job_lock(key)
-        else:
-            update_job_lock_status(key, False)
+    _update_job_info()
+    _create_or_update_timevals()
+    _create_missing_booleans()
 
 
 def initialize_task_display():
@@ -243,3 +216,42 @@ def _check_timeout(info, timevals, printer):
             info[id] = next_run_time
         else:
             update_job_timeval(id, info[id].timestamp())
+
+
+def _update_job_info():
+    info = _get_initial_job_info()
+    for key in ALL_JOB_INFO:
+        if key in info:
+            task_config = JOB_CONFIG[key]['config']
+            if info[key] > datetime.datetime.now():
+                task_config['next_run_time'] = info[key]
+            else:
+                print("Task Scheduler - Missed job:", key)
+                next_run_time = max(task_config['jitter'] * random.random(), JOB_CONFIG[key]['leeway'])
+                task_config['next_run_time'] = datetime.datetime.now() + datetime.timedelta(seconds=next_run_time)
+
+
+def _create_or_update_timevals():
+    timevals = _get_initial_job_timevals()
+    for key in ALL_JOB_TIMEVALS:
+        if key not in timevals.keys():
+            create_job_timeval(key)
+        else:
+            update_job_timeval(key, 0.0)
+
+
+def _create_missing_booleans():
+    enabled = _get_initial_job_enabled()
+    manual = _get_initial_job_manual()
+    locks = _get_initial_job_locks()
+    for key in ALL_JOB_ENABLED:
+        if key not in enabled.keys():
+            create_job_enabled(key)
+    for key in ALL_JOB_MANUAL:
+        if key not in manual.keys():
+            create_job_manual(key)
+    for key in ALL_JOB_LOCKS:
+        if key not in locks.keys():
+            create_job_lock(key)
+        else:
+            update_job_lock_status(key, False)
