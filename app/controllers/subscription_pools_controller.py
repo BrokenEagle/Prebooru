@@ -71,12 +71,14 @@ def get_subscription_pool_form(**kwargs):
     return get_form('subscription_pool', FORM_CONFIG, **kwargs)
 
 
-def parameter_validation(dataparams):
+def parameter_validation(dataparams, is_update):
     errors = []
     if dataparams['interval'] < 1.0:
         errors.append("Interval must be greater than 1.0 hours.")
     if dataparams['expiration'] is not None and dataparams['expiration'] < 1.0:
         errors.append("Expiration must be greater than 1.0 days if it exists.")
+    if is_update:
+        return errors
     artist = Artist.find(dataparams['artist_id'])
     if artist is None:
         errors.append(f"Artist #{dataparams['artist_id']} does not exist.")
@@ -126,7 +128,7 @@ def create():
     errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
-    errors = parameter_validation(createparams)
+    errors = parameter_validation(createparams, False)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
     subscription_pool = create_subscription_pool_from_parameters(createparams)
@@ -138,7 +140,7 @@ def update(subscription_pool):
     dataparams = get_data_params(request, 'subscription_pool')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
-    errors = parameter_validation(updateparams)
+    errors = parameter_validation(updateparams, True)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
     update_subscription_pool_from_parameters(subscription_pool, updateparams)
