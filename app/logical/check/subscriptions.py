@@ -133,7 +133,7 @@ def expire_subscription_elements(manual):
     q = q.order_by(SubscriptionPoolElement.id.desc())
     page = q.limit_paginate(per_page=100)
     while True:
-        print(f"expire_subscription_elements-unlink: {page.first} - {page.last} / Total({page.count})")
+        print(f"\nexpire_subscription_elements-unlink: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Unlinking {element.shortlink}")
             unlink_subscription_post(element)
@@ -147,7 +147,7 @@ def expire_subscription_elements(manual):
     q = q.order_by(SubscriptionPoolElement.id.desc())
     page = q.limit_paginate(per_page=25)
     while True:
-        print(f"expire_subscription_elements-delete: {page.first} - {page.last} / Total({page.count})")
+        print(f"\nexpire_subscription_elements-delete: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Deleting post of {element.shortlink}")
             delete_subscription_post(element)
@@ -159,7 +159,7 @@ def expire_subscription_elements(manual):
     q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
                                              SubscriptionPoolElement.status == 'active',
                                              SubscriptionPoolElement.keep.is_(None))
-    print("Soft delete - skipping:", q.count())
+    print("\nSoft delete - skipping:", q.count(), '\n')
     return retdata
     q = q.order_by(SubscriptionPoolElement.id.desc())
     page = q.limit_paginate(per_page=25)
@@ -168,6 +168,7 @@ def expire_subscription_elements(manual):
         for element in page.items:
             print(f"Archiving post of {element.shortlink}")
             archive_subscription_post(element)
+            retdata['archive'] += 1
         if not page.has_next or page.page > max_pages:
             break
         page = page.next()
