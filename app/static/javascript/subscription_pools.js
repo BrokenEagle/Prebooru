@@ -59,3 +59,8 @@ SubscriptionPools.updateAllInputs = function() {
 SubscriptionPools.delaySubscriptionElements = function(obj) {
     return Prebooru.promptArgPost(obj, "Enter the number of days to delay active elements (0 removes expiration):", 'days');
 };
+
+SubscriptionPools.dragKeepClick = function(obj) {
+    obj.click();
+    return false;
+};

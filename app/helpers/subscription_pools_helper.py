@@ -103,6 +103,7 @@ def keep_element_link(subscription_element, value, format, has_preview):
     elif format == 'json':
         addons['onclick'] = "return SubscriptionPools.keepElement(this)" if has_preview\
                             else "return Prebooru.keepElement(this)"
+        addons['ondragstart'] = "return SubscriptionPools.dragKeepClick(this)"
     return general_link(value, url, **addons)
 
 
