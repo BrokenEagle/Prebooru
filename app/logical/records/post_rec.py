@@ -10,6 +10,7 @@ from utility.file import create_directory, put_get_raw, copy_file, delete_file, 
 # ### LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
+from ..network import get_http_file
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm
 from ..database.post_db import create_post_from_raw_parameters, delete_post, post_append_illust_url, get_post_by_md5,\
@@ -130,7 +131,15 @@ def reinstantiate_archived_post(data):
 def create_sample_preview_files(post, retdata=None):
     retdata = retdata or {'error': False}
     errors = []
-    buffer, has_sample, has_preview, downsample_sample, downsample_preview = _load_file(post)
+    buffer = None
+    if post.is_video:
+        buffer = _get_video_thumb_binary(post)
+    if buffer is not None:
+        has_sample = has_preview = True
+        downsample_sample = post.has_sample
+        downsample_preview = post.has_preview
+    else:
+        buffer, has_sample, has_preview, downsample_sample, downsample_preview = _load_file(post)
     if type(buffer) is str:
         return set_error(retdata, buffer)
     image = load_image(buffer)
@@ -289,3 +298,15 @@ def _load_file(post):
         downsample_sample = post.has_sample
         downsample_preview = post.has_preview
     return buffer, has_sample, has_preview, downsample_sample, downsample_preview
+
+
+def _get_video_thumb_binary(post):
+    for illust_url in post.illust_urls:
+        source = illust_url._source
+        download_url = source.get_sample_url(illust_url)
+        print("Downloading", download_url)
+        buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
+        if isinstance(buffer, str):
+            create_error('records.post_rec._get_video_thumb_binary', "Download URL: %s => %s" % (download_url, buffer))
+            continue
+        return buffer
