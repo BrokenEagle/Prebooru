@@ -1071,9 +1071,11 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
         if is_error(twuser):
             inactivate_artist(artist)
             return twuser
-    if len(tweet_ids) == 0:
+        # The timeline was empty of any tweets
         return []
-    if last_id is not None:  # Only check the full timeline the first time
+    # Only continue on if this is the initial full process (last ID is null)
+    if len(tweet_ids) == 0 or last_id is not None:
+        # No tweet IDs means that no new results were found, but the timeline was not empty
         return tweet_ids
     lowest_tweet_id = min(tweet_ids)
     timestamp = snowflake_to_epoch(lowest_tweet_id)
