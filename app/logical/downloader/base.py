@@ -7,11 +7,11 @@ from PIL import Image
 from io import BytesIO
 
 # ## PACKAGE IMPORTS
-from config import PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from utility.data import get_buffer_checksum
 from utility.file import create_directory, put_get_raw
 
 # ## LOCAL IMPORTS
+from ..media import create_preview, create_sample, create_data
 from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
 from ..database.subscription_pool_element_db import add_subscription_post, update_subscription_pool_element_active,\
     check_deleted_subscription_post, update_subscription_pool_element_status, duplicate_subscription_post
@@ -173,34 +173,22 @@ def check_video_dimensions(post, illust_url, post_errors):
 
 # #### Create media functions
 
-def create_preview(image, post, downsample=True):
-    try:
-        preview = image.copy().convert("RGB")
-        if downsample:
-            preview.thumbnail(PREVIEW_DIMENSIONS)
-        create_directory(post.preview_path)
-        print("Saving preview:", post.preview_path)
-        preview.save(post.preview_path, "JPEG")
-    except Exception as e:
-        return create_error('downloader.base.create_preview', "Error creating preview: %s" % repr(e))
+def create_post_preview(image, post, downsample=True):
+    result = create_preview(image, post.preview_path, downsample)
+    if result is not None:
+        return create_error('downloader.base.create_post_preview', result)
 
 
-def create_sample(image, post, downsample=True):
-    try:
-        sample = image.copy().convert("RGB")
-        if downsample:
-            sample.thumbnail(SAMPLE_DIMENSIONS)
-        create_directory(post.sample_path)
-        print("Saving sample:", post.sample_path)
-        sample.save(post.sample_path, "JPEG")
-    except Exception as e:
-        return create_error('downloader.base.create_sample', "Error creating sample: %s" % repr(e))
+def create_post_sample(image, post, downsample=True):
+    result = create_sample(image, post.sample_path, downsample)
+    if result is not None:
+        return create_error('downloader.base.create_post_sample', result)
 
 
-def create_data(buffer, post):
-    create_directory(post.file_path)
-    print("Saving data:", post.file_path)
-    put_get_raw(post.file_path, 'wb', buffer)
+def create_post_data(buffer, post):
+    result = create_data(buffer, post.file_path)
+    if result is not None:
+        return create_error('downloader.base.create_post_data', result)
 
 
 # #### Save functions
@@ -208,18 +196,16 @@ def create_data(buffer, post):
 # ###### Image illust
 
 def save_image(buffer, image, post, post_errors):
-    try:
-        create_data(buffer, post)
-    except Exception as e:
-        msg = "Error saving image to disk: %s" % repr(e)
-        create_post_error('save_image', msg, post_errors)
+    error = create_post_data(buffer, post)
+    if error is not None:
+        post_errors.append(error)
         return False
     if post.has_preview:
-        error = create_preview(image, post)
+        error = create_post_preview(image, post)
         if error is not None:
             post_errors.append(error)
     if post.has_sample:
-        error = create_sample(image, post)
+        error = create_post_sample(image, post)
         if error is not None:
             post_errors.append(error)
     return True
@@ -228,10 +214,7 @@ def save_image(buffer, image, post, post_errors):
 # ###### Video illust
 
 def save_video(buffer, post):
-    try:
-        create_data(buffer, post)
-    except Exception as e:
-        return create_error('downloader.base.save_video', "Error saving video to disk: %s" % repr(e))
+    return create_post_data(buffer, post)
 
 
 def save_thumb(buffer, post, post_errors):
@@ -242,10 +225,10 @@ def save_thumb(buffer, post, post_errors):
     post.width = image.width
     post.height = image.height
     downsample = post.has_preview
-    error = create_preview(image, post, downsample)
+    error = create_post_preview(image, post, downsample)
     if error is not None:
         post_errors.append(error)
     downsample = post.has_sample
-    error = create_sample(image, post, downsample)
+    error = create_post_sample(image, post, downsample)
     if error is not None:
         post_errors.append(error)
