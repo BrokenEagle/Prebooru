@@ -23,6 +23,7 @@ from ..database.archive_data_db import get_archive_data, create_archive_data, up
 # ## GLOBAL VARIABLES
 
 TEMP_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'temp')
+RELOCATE_PAGE_LIMIT = 10
 
 
 # ## FUNCTIONS
@@ -139,9 +140,11 @@ def relink_archived_post(data, post=None):
             post_append_illust_url(post, illust_url)
 
 
-def relocate_old_posts_to_alternate(max_pages=None):
+def relocate_old_posts_to_alternate(manual):
     if ALTERNATE_MOVE_DAYS is None:
         return
+    moved = 0
+    max_pages = RELOCATE_PAGE_LIMIT if not manual else float('inf')
     query = alternate_posts_query(ALTERNATE_MOVE_DAYS)
     page = query.limit_paginate(per_page=50)
     while True:
@@ -149,8 +152,9 @@ def relocate_old_posts_to_alternate(max_pages=None):
         for post in page.items:
             print(f"Moving {post.shortlink}")
             move_post_media_to_alternate(post)
-        if not page.has_next or (max_pages is not None and page.page >= max_pages):
-            return page.count if not page.has_next else max_pages * 50
+            moved += 1
+        if not page.has_next or page.page > max_pages:
+            return moved
         page = page.next()
 
 

@@ -28,6 +28,14 @@ T_JOBS_LOCK = Table(
     Column('locked', Boolean(), nullable=False),
 )
 
+T_JOBS_MANUAL = Table(
+    'job_manual',
+    MetaData(),
+    Column('id', Unicode(255), primary_key=True),
+    Column('manual', Boolean(), nullable=False),
+)
+
+
 T_JOBS_TIME = Table(
     'job_times',
     MetaData(),
@@ -51,6 +59,7 @@ def create_job_tables():
     T_JOBS_INFO.create(SCHEDULER_JOBSTORES.engine, True)
     T_JOBS_ENABLED.create(SCHEDULER_JOBSTORES.engine, True)
     T_JOBS_LOCK.create(SCHEDULER_JOBSTORES.engine, True)
+    T_JOBS_MANUAL.create(SCHEDULER_JOBSTORES.engine, True)
     T_JOBS_TIME.create(SCHEDULER_JOBSTORES.engine, True)
     T_JOBS_STATUS.create(SCHEDULER_JOBSTORES.engine, True)
 
@@ -58,6 +67,12 @@ def create_job_tables():
 def create_job_enabled(id):
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = T_JOBS_ENABLED.insert().values(id=id, enabled=True)
+        conn.execute(statement)
+
+
+def create_job_manual(id):
+    with SCHEDULER_JOBSTORES.engine.begin() as conn:
+        statement = T_JOBS_MANUAL.insert().values(id=id, manual=False)
         conn.execute(statement)
 
 
@@ -97,6 +112,14 @@ def update_job_enabled_status(id, boolval):
         statement =\
             T_JOBS_ENABLED.update().where(T_JOBS_ENABLED.c.id == id)\
                           .values(enabled=boolval)
+        conn.execute(statement)
+
+
+def update_job_manual_status(id, boolval):
+    with SCHEDULER_JOBSTORES.engine.begin() as conn:
+        statement =\
+            T_JOBS_MANUAL.update().where(T_JOBS_MANUAL.c.id == id)\
+                          .values(manual=boolval)
         conn.execute(statement)
 
 
@@ -141,6 +164,12 @@ def delete_enabled(id):
         conn.execute(statement)
 
 
+def delete_manual(id):
+    with SCHEDULER_JOBSTORES.engine.begin() as conn:
+        statement = T_JOBS_MANUAL.delete().where(T_JOBS_MANUAL.c.id == id)
+        conn.execute(statement)
+
+
 def delete_lock(id):
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = T_JOBS_LOCK.delete().where(T_JOBS_LOCK.c.id == id)
@@ -177,9 +206,23 @@ def get_all_job_enabled():
         return {f[0]: f[1] for f in enabled}
 
 
+def get_all_job_manual():
+    with SCHEDULER_JOBSTORES.engine.begin() as conn:
+        statement = select([T_JOBS_MANUAL.c.id, T_JOBS_MANUAL.c.manual])
+        manual = conn.execute(statement).fetchall()
+        return {f[0]: f[1] for f in manual}
+
+
 def get_job_enabled_status(id):
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = select([T_JOBS_ENABLED.c.enabled]).where(T_JOBS_ENABLED.c.id == id)
+        status = conn.execute(statement).fetchone()
+        return status[0] if status is not None else None
+
+
+def get_job_manual_status(id):
+    with SCHEDULER_JOBSTORES.engine.begin() as conn:
+        statement = select([T_JOBS_MANUAL.c.manual]).where(T_JOBS_MANUAL.c.id == id)
         status = conn.execute(statement).fetchone()
         return status[0] if status is not None else None
 

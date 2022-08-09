@@ -103,5 +103,6 @@ JOB_CONFIG = {
 
 ALL_JOB_INFO = list(JOB_CONFIG.keys()) + ['heartbeat']
 ALL_JOB_ENABLED = list(JOB_CONFIG.keys())
+ALL_JOB_MANUAL = list(JOB_CONFIG.keys())
 ALL_JOB_LOCKS = WORKER_LOCKS + list(JOB_CONFIG.keys())
 ALL_JOB_TIMEVALS = list(JOB_CONFIG.keys())

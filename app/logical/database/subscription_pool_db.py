@@ -16,6 +16,7 @@ COLUMN_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'last_id', 'requery'
 CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'active']
 UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration', 'active']
 
+MAXIMUM_PROCESS_SUBSCRIPTIONS = 10
 
 # ## FUNCTIONS
 
@@ -78,12 +79,14 @@ def delete_subscription_pool(pool):
 
 # #### Query
 
-def get_available_subscription():
+def get_available_subscription(unlimited):
     # Return only subscriptions which have already been processed manually (requery is not None)
-    return SubscriptionPool.query.filter(SubscriptionPool.requery < get_current_time(),
+    query = SubscriptionPool.query.filter(SubscriptionPool.requery < get_current_time(),
                                          SubscriptionPool.active.is_(True),
-                                         SubscriptionPool.status.not_in(['manual', 'automatic']))\
-                           .limit(20).all()
+                                         SubscriptionPool.status.not_in(['manual', 'automatic']))
+    if not unlimited:
+        query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
+    return query.all()
 
 
 def check_processing_subscriptions():

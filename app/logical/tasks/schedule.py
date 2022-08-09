@@ -27,7 +27,8 @@ from ..database.subscription_pool_element_db import total_missing_downloads, tot
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_data_db import expired_archive_data_count, delete_expired_archive_data
-from ..database.jobs_db import get_job_enabled_status, update_job_lock_status, get_job_lock_status
+from ..database.jobs_db import get_job_enabled_status, update_job_lock_status, get_job_lock_status,\
+    get_job_manual_status
 from ..database.server_info_db import update_last_activity, server_is_busy
 from .initialize import reschedule_task
 from . import JOB_CONFIG
@@ -128,13 +129,15 @@ def check_pending_subscriptions():
     if not _set_db_semaphore('check_pending_subscriptions'):
         print("Task scheduler - Check All Pending Subscriptions: already running")
         return
+    manual = get_job_manual_status('check_pending_subscriptions')
     printer = buffered_print("Check All Pending Subscriptions")
     printer("PID:", os.getpid())
-    subscriptions = get_available_subscription()
-    for subscription in subscriptions:
-        printer("Processing subscription:", subscription.id)
-        _process_pending_subscription(subscription, printer)
-    if not subscriptions:
+    subscriptions = get_available_subscription(manual)
+    if len(subscriptions) > 0:
+        for subscription in subscriptions:
+            printer("Processing subscription:", subscription.id)
+            _process_pending_subscription(subscription, manual, printer)
+    else:
         printer("No subscriptions to process.")
     printer.print()
     _free_db_semaphore('check_pending_subscriptions')
@@ -153,7 +156,8 @@ def check_pending_downloads():
     total = total_missing_downloads()
     printer("Missing downloads:", total)
     if total > 0:
-        download_missing_elements()
+        manual = get_job_manual_status('check_pending_downloads')
+        download_missing_elements(manual)
     printer.print()
     _free_db_semaphore('check_pending_downloads')
 
@@ -170,10 +174,11 @@ def process_expired_subscription_elements():
     printer("PID:", os.getpid())
     total = total_expired_subscription_elements()
     if total > 0:
+        manual = get_job_manual_status('process_expired_subscription_elements')
         printer("Expired subscriptions elements:", total)
         start = time.time()
         data = safe_db_execute('process_expired_subscription_elements', 'tasks.schedule', printer=printer,
-                               try_func=(lambda data: expire_subscription_elements()))
+                               try_func=(lambda data: expire_subscription_elements(manual)))
         print("expire_subscription_elements results:", data)
         print("Task duration:", time.time() - start)
     else:
@@ -197,8 +202,9 @@ def relocate_old_posts_task():
     elif not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
         printer("Alternate media directory not found.")
     else:
+        manual = get_job_manual_status('relocate_old_posts')
         start = time.time()
-        posts_moved = relocate_old_posts_to_alternate(10)
+        posts_moved = relocate_old_posts_to_alternate(manual)
         if posts_moved is None:
             printer("Alternate move days not configured.")
         else:

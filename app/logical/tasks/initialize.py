@@ -16,10 +16,11 @@ from utility.print import buffered_print
 from ... import SCHEDULER
 from ..database.server_info_db import get_last_activity
 from ..database.jobs_db import create_job_tables, get_all_job_info, delete_job,\
-    create_job_enabled, get_all_job_enabled,\
+    create_job_enabled, get_all_job_enabled, get_all_job_manual, create_job_manual,\
     create_job_lock, get_all_job_locks, update_job_lock_status, delete_lock,\
     create_job_timeval, get_all_job_timevals, update_job_timeval, delete_timeval
-from . import JOB_CONFIG, ALL_JOB_INFO, ALL_JOB_ENABLED, ALL_JOB_LOCKS, ALL_JOB_TIMEVALS
+from . import JOB_CONFIG, ALL_JOB_INFO, ALL_JOB_ENABLED, ALL_JOB_LOCKS, ALL_JOB_TIMEVALS,\
+    ALL_JOB_MANUAL
 
 
 # ## GLOBAL VARIABLES
@@ -43,6 +44,7 @@ def initialize_task_jobs():
     create_job_tables()
     info = _get_initial_job_info()
     enabled = _get_initial_job_enabled()
+    manual = _get_initial_job_manual()
     locks = _get_initial_job_locks()
     timevals = _get_initial_job_timevals()
     for key in ALL_JOB_TIMEVALS:
@@ -62,6 +64,9 @@ def initialize_task_jobs():
     for key in ALL_JOB_ENABLED:
         if key not in enabled.keys():
             create_job_enabled(key)
+    for key in ALL_JOB_MANUAL:
+        if key not in manual.keys():
+            create_job_manual(key)
     for key in ALL_JOB_LOCKS:
         if key not in locks.keys():
             create_job_lock(key)
@@ -94,11 +99,12 @@ def recheck_schedule_interval(reschedule):
     printer("Server last activity:", time_ago(server_activity) if server_activity is not None else None)
     info = get_all_job_info()
     locks = get_all_job_locks()
+    manual = get_all_job_locks()
     timevals = get_all_job_timevals()
     if reschedule:
         _check_timeout(info, timevals, printer)
         _deconflict_tasks(info, printer)
-        _unlock_tasks(info, locks, printer)
+        _unlock_tasks(info, locks, manual, printer)
     _print_tasks(info, printer)
     LAST_CHECK = time.time()
     printer.print()
@@ -138,6 +144,15 @@ def _get_initial_job_enabled():
             print("Task Scheduler - Deleting unused enabled:", id)
             delete_lock(id)
     return enabled
+
+
+def _get_initial_job_manual():
+    manual = get_all_job_manual()
+    for id in manual:
+        if id not in ALL_JOB_MANUAL:
+            print("Task Scheduler - Deleting unused manual:", id)
+            delete_lock(id)
+    return manual
 
 
 def _get_initial_job_locks():
@@ -201,12 +216,12 @@ def _deconflict_tasks(info, printer):
             timeval += datetime.timedelta(seconds=leeway * 2)
 
 
-def _unlock_tasks(info, locks, printer):
+def _unlock_tasks(info, locks, manual, printer):
     for id in JOB_CONFIG:
         timeval = info[id]
         leeway = JOB_CONFIG[id]['leeway']
         # Check if the task is still locked but the next run time is outside the leeway window
-        if locks[id] and (timeval + datetime.timedelta(seconds=leeway)) > datetime.datetime.now():
+        if locks[id] and not manual[id] and (timeval + datetime.timedelta(seconds=leeway)) > datetime.datetime.now():
             task_title = id.replace('_', ' ').title()
             printer("Unlocking task - %s" % task_title)
             update_job_lock_status(id, False)

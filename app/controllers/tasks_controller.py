@@ -10,9 +10,10 @@ from flask import Blueprint, render_template, request, flash, redirect
 from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
+from .. import SCHEDULER
 from ..logical.tasks.initialize import reschedule_task
 from ..logical.database.jobs_db import get_all_job_enabled, get_all_job_locks, get_all_job_info,\
-    update_job_enabled_status
+    update_job_enabled_status, update_job_manual_status
 
 
 # ## GLOBAL VARIABLES
@@ -52,7 +53,7 @@ def update_html(name):
 def run_html(name):
     if name in TASK_MAP:
         flash("Running task '%s'." % name)
-        threading.Thread(target=TASK_MAP[name]).start()
+        SCHEDULER.add_job("%s-task" % name, _run_program, args=(TASK_MAP[name], name))
         reschedule_task(name, False)
     else:
         flash("Invalid task name.", 'error')
@@ -81,6 +82,14 @@ def _initialize():
         'delete_orphan_images': delete_orphan_images_task,
         'vacuum_analyze_database': vacuum_analyze_database_task,
     }
+
+
+def _run_program(func, name):
+    update_job_manual_status(name, True)
+    try:
+        func()
+    finally:
+        update_job_manual_status(name, False)
 
 
 # ## INITIALIZE

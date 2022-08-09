@@ -97,7 +97,7 @@ def download_subscription_elements(subscription_pool, job_id=None):
     update_job_status(job_id, job_status)
 
 
-def download_missing_elements():
+def download_missing_elements(manual=False):
     q = SubscriptionPoolElement.query.join(SubscriptionPool)\
                                .filter(SubscriptionPoolElement.post_id.is_(None),
                                        SubscriptionPoolElement.active.is_(True),
@@ -115,14 +115,15 @@ def download_missing_elements():
         _process_similarity(page.items)
         if not page.has_prev:
             break
-        if page.page > 10:
+        if not manual and page.page > 10:
             print("download_missing_elements: Max pages reached!")
             break
         page = page.prev()
 
 
-def expire_subscription_elements():
+def expire_subscription_elements(manual):
     retdata = {'unlink': 0, 'delete': 0, 'archive': 0}
+    max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
     # First pass - Unlink all "yes" elements or those that were manually downloaded by the user
     expired_clause = and_(SubscriptionPoolElement.expires < get_current_time(), SubscriptionPoolElement.keep == 'yes')
     user_clause = (Post.type == 'user_post')
@@ -135,7 +136,7 @@ def expire_subscription_elements():
             print(f"Unlinking {element.shortlink}")
             unlink_subscription_post(element)
             retdata['unlink'] += 1
-        if not page.has_next or page.page > EXPIRE_PAGE_LIMIT:
+        if not page.has_next or page.page > max_pages:
             break
         page = page.next()
     # Second pass - Hard delete all "no" element posts
@@ -149,7 +150,7 @@ def expire_subscription_elements():
             print(f"Deleting post of {element.shortlink}")
             delete_subscription_post(element)
             retdata['delete'] += 1
-        if not page.has_next or page.page > EXPIRE_PAGE_LIMIT:
+        if not page.has_next or page.page > max_pages:
             break
         page = page.next()
     # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
@@ -165,7 +166,7 @@ def expire_subscription_elements():
         for element in page.items:
             print(f"Archiving post of {element.shortlink}")
             archive_subscription_post(element)
-        if not page.has_next or page.page > EXPIRE_PAGE_LIMIT:
+        if not page.has_next or page.page > max_pages:
             break
         page = page.next()
 
