@@ -27,18 +27,20 @@ def check_all_artists_for_boorus():
     max_id = 0
     page = 1
     page_count = (query.get_count() // 100) + 1
+    booru_dict = {}
     while True:
         artists = query.filter(Artist.id > max_id).limit(100).all()
         if len(artists) == 0:
             return
         print("\n%d/%d" % (page, page_count))
-        if not check_artists_for_boorus(artists):
+        if not check_artists_for_boorus(artists, booru_dict):
             return
         max_id = max(artist.id for artist in artists)
         page += 1
 
 
-def check_artists_for_boorus(artists):
+def check_artists_for_boorus(artists, booru_dict=None):
+    booru_dict = booru_dict if booru_dict is not None else {}
     query_urls = [artist.booru_search_url for artist in artists]
     results = get_artists_by_multiple_urls(query_urls)
     if results['error']:
@@ -46,17 +48,18 @@ def check_artists_for_boorus(artists):
         return False
     if len(results['data']) > 0:
         danb_artists = itertools.chain(*[results['data'][url] for url in results['data']])
-        danb_artist_ids = set(artist['id'] for artist in danb_artists)
+        danb_artist_ids = set(artist['id'] for artist in danb_artists if artist['id'] not in booru_dict)
         boorus = Booru.query.filter(Booru.danbooru_id.in_(danb_artist_ids)).all()
+        booru_dict.update({booru.danbooru_id: booru for booru in boorus})
         for url in results['data']:
-            add_danbooru_artists(url, results['data'][url], boorus, artists)
+            add_danbooru_artists(url, results['data'][url], booru_dict, artists)
     return True
 
 
-def add_danbooru_artists(url, danbooru_artists, db_boorus, db_artists):
+def add_danbooru_artists(url, danbooru_artists, booru_dict, db_artists):
     artist = next(filter(lambda x: x.booru_search_url == url, db_artists))
     for data in danbooru_artists:
-        booru = next(filter(lambda x: x.danbooru_id == data['id'], db_boorus), None)
+        booru = booru_dict.get(data['id'])
         if booru is None:
             params =\
                 {
@@ -66,4 +69,5 @@ def add_danbooru_artists(url, danbooru_artists, db_boorus, db_artists):
                     'deleted': data['is_deleted'],
                 }
             booru = create_booru_from_parameters(params)
+            booru_dict[data['id']] = booru
         booru_append_artist(booru, artist)
