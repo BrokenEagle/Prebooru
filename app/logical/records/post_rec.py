@@ -158,9 +158,9 @@ def create_sample_preview_files(post, retdata=None):
     return retdata
 
 
-def create_video_sample_preview_files(post, retdata):
+def create_video_sample_preview_files(post, retdata=None):
     convert_mp4_to_webp(post.file_path, post.video_preview_path)
-    convert_mp4_to_webm(post.file_path, post.video_s_path)
+    convert_mp4_to_webm(post.file_path, post.video_sample_path)
     return retdata
 
 
