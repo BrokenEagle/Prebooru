@@ -136,7 +136,7 @@ def check_pending_subscriptions():
     if len(subscriptions) > 0:
         for subscription in subscriptions:
             printer("Processing subscription:", subscription.id)
-            _process_pending_subscription(subscription, manual, printer)
+            _process_pending_subscription(subscription, printer)
     else:
         printer("No subscriptions to process.")
     printer.print()
