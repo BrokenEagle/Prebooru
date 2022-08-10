@@ -11,7 +11,7 @@
     </div>
     <div id="illust-posts">
         {% if illust.type == 'image' %}
-            {{ image_urls_section(illust.ordered_urls) }}
+            {{ image_urls_section(illust.ordered_urls, illust) }}
         {% elif illust.type == 'video' %}
             {{ video_urls_section(illust.urls[0]) }}
         {% endif %}

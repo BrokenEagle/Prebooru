@@ -1,6 +1,6 @@
 {% from 'posts/_macros.html' import post_preview %}
 
-{% macro image_urls_section(illust_urls) -%}
+{% macro image_urls_section(illust_urls, illust) -%}
     <section id="image-posts">
         <h3>Image URLs</h3>
         <div id="image-posts-container">
@@ -15,7 +15,7 @@
                             <li><strong>Active:</strong> {{ illust_url.active | tojson }}</li>
                             {% if illust_url.post is none %}
                                 <li><strong>Upload( {{ helpers.illust_url.upload_media_link('image', illust_url) }} )</strong></li>
-                            {% else %}
+                            {% elif illust_url.active and illust.active %}
                                 <li><strong>Redownload( {{ helpers.illust_url.redownload_post_link('image', illust_url) }} )</strong></li>
                             {% endif %}
                         </ul>
@@ -24,7 +24,7 @@
                         <div class="image-post-preview">
                             {{ post_preview(illust_url.post, True) }}
                         </div>
-                    {% else %}
+                    {% elif illust_url.active and illust.active %}
                         <div class="no-post-preview">
                             <img src="{{ illust_url.preview_url }}" onerror="Prebooru.onImageError(this)">
                             <div><strong>(no post)</strong></div>
