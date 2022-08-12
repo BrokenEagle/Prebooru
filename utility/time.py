@@ -20,18 +20,17 @@ def local_datetime_to_utc(timeval):
 
 def process_utc_timestring(timestring):
     try:
-        return datetime.datetime.fromisoformat(timestring.replace('Z', '+00:00')).replace(tzinfo=None)
+        return _normalize_time(datetime.datetime.fromisoformat(timestring.replace('Z', '+00:00')).replace(tzinfo=None))
     except Exception:
         logging.error('Failed parse datetime string')
 
 
 def datetime_from_epoch(timestamp):
-    return datetime.datetime.fromtimestamp(timestamp)
+    return _normalize_time(datetime.datetime.fromtimestamp(timestamp))
 
 
 def get_current_time():
-    t = datetime.datetime.utcnow()
-    return t - datetime.timedelta(microseconds=t.microsecond)
+    return _normalize_time(datetime.datetime.utcnow())
 
 
 def add_days(timeval, days):
@@ -67,7 +66,7 @@ def minutes_ago(minutes):
 
 
 def seconds_from_now_local(seconds):
-    return datetime.datetime.now() + datetime.timedelta(seconds=seconds)
+    return _normalize_time(datetime.datetime.now() + datetime.timedelta(seconds=seconds))
 
 
 def get_date(timeval):
@@ -108,3 +107,9 @@ def time_from_now(timeval, precision=2):
     if delta < datetime.timedelta(0):
         return "already past"
     return humanized_timedelta(delta, precision) + " from now"
+
+
+# ## Private
+
+def _normalize_time(timeval):
+    return timeval - datetime.timedelta(microseconds=timeval.microsecond)
