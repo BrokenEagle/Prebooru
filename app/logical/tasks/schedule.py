@@ -30,7 +30,7 @@ from ..database.archive_data_db import expired_archive_data_count, delete_expire
 from ..database.jobs_db import get_job_enabled_status, update_job_lock_status, get_job_lock_status,\
     get_job_manual_status
 from ..database.server_info_db import update_last_activity, server_is_busy
-from .initialize import reschedule_task
+from .initialize import reschedule_from_child
 from . import JOB_CONFIG
 
 
@@ -245,7 +245,7 @@ def delete_orphan_images_task():
 def vacuum_analyze_database_task():
     if server_is_busy():
         print("Vaccuum/Analyze: Server busy, rescheduling....")
-        reschedule_task('vacuum_analyze_database', True)
+        reschedule_from_child('vacuum_analyze_database')
         return
     if not _set_db_semaphore('vacuum_analyze_database'):
         print("Task scheduler - Vacuum/analyze DB: already running")

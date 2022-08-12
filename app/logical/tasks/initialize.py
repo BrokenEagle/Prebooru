@@ -10,10 +10,12 @@ import datetime
 # ## PACKAGE IMPORTS
 from utility import RepeatTimer
 from utility.time import time_ago
-from utility.print import buffered_print
+from utility.print import buffered_print, print_error
 
 # ## LOCAL IMPORTS
 from ... import SCHEDULER
+from ..logger import log_error
+from ..network import prebooru_json_request
 from ..database.server_info_db import get_last_activity
 from ..database.jobs_db import create_job_tables, get_all_job_info, delete_job,\
     create_job_enabled, get_all_job_enabled, get_all_job_manual, create_job_manual,\
@@ -95,6 +97,16 @@ def reschedule_task(id, reschedule_soon):
                        if k in ['seconds', 'minutes', 'hours', 'days', 'weeks']}
         next_run_time = datetime.datetime.now() + datetime.timedelta(**time_config)
     _reschedule_task(id, next_run_time)
+
+
+def reschedule_from_child(id):
+    """A child does not have access to the scheduler, so it must notify the parent."""
+    result = prebooru_json_request(f'/tasks/{id}/reschedule', 'post', data={'soon': 'true'})
+    if result is not None:
+        print_error('reschedule_from_child', result)
+        log_error('tasks.initialize.reschedule_from_child', str(result))
+        return False
+    return True
 
 
 # #### Private

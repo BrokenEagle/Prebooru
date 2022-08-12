@@ -29,3 +29,24 @@ def get_http_data(serverfilepath, method='get', **args):
             time.sleep(15)
             continue
     return "HTTP %d - %s" % (response.status_code, response.reason)
+
+
+def send_prebooru_request(path, method, **args):
+    send_url = f'http://127.0.0.1:{PREBOORU_PORT}' + path
+    return get_http_data(send_url, method=method, **args)
+
+
+def prebooru_json_request(path, method, **args):
+    content = send_prebooru_request(path + '.json', method, **args)
+    if isinstance(content, str):
+        return content
+    elif isinstance(content, bytes):
+        try:
+            data = json.loads(content)
+        except Exception as e:
+            return "Unable to read request [%s]: %s" % (str(e), content)
+        if 'error' in data:
+            return data['message'] if data['error'] else None
+        return data
+    else:
+        return "Unrecognized response."

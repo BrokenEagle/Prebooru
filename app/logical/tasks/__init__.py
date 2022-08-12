@@ -93,7 +93,7 @@ JOB_CONFIG = {
         'config': {
             'id': 'vacuum_analyze_database',
             'weeks': 1,
-            'jitter': 3600,
+            'jitter': 900,
         },
         'leeway': 60,
     },
