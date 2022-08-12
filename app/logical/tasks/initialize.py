@@ -9,7 +9,7 @@ import datetime
 
 # ## PACKAGE IMPORTS
 from utility import RepeatTimer
-from utility.time import time_ago
+from utility.time import time_ago, seconds_from_now_local, process_utc_timestring
 from utility.print import buffered_print, print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
@@ -87,10 +87,7 @@ def recheck_schedule_interval(reschedule):
 
 def reschedule_task(id, reschedule_soon):
     if reschedule_soon:
-        jitter = JOB_CONFIG[id]['config']['jitter']
-        leeway = JOB_CONFIG[id]['leeway']
-        next_run_offset = max(jitter * random.random(), leeway)
-        next_run_time = datetime.datetime.now() + datetime.timedelta(seconds=next_run_offset)
+        next_run_time = _reschedule_soon_runtime(id)
     else:
         time_config = {k: v
                        for (k, v) in JOB_CONFIG[id]['config'].items()
@@ -101,12 +98,13 @@ def reschedule_task(id, reschedule_soon):
 
 def reschedule_from_child(id):
     """A child does not have access to the scheduler, so it must notify the parent."""
-    result = prebooru_json_request(f'/tasks/{id}/reschedule', 'post', data={'soon': 'true'})
-    if result is not None:
-        print_error('reschedule_from_child', result)
-        log_error('tasks.initialize.reschedule_from_child', str(result))
-        return False
-    return True
+    next_run_time = _reschedule_soon_runtime(id)
+    result = prebooru_json_request(f'/scheduler/jobs/{id}', 'patch', json={'next_run_time': next_run_time.isoformat(timespec='seconds')})
+    if not isinstance(result, dict):
+        print_error(f'reschedule_from_child-{id}', result)
+        log_error('tasks.initialize.reschedule_from_child', f"Error rescheduling {id}:\n" + str(result))
+    if result.get('id') != id or process_utc_timestring(result.get('next_run_time')) != next_run_time:
+        print_warning(f'reschedule_from_child-{id}', next_run_time, result)
 
 
 # #### Private
@@ -171,6 +169,13 @@ def _reschedule_task(id, next_run_time):
     SCHEDULER.modify_job(id, 'default', next_run_time=next_run_time)
     # update_job_next_run_time(id, next_run_time.timestamp())
     update_job_timeval(id, next_run_time.timestamp())
+
+
+def _reschedule_soon_runtime(id):
+    jitter = JOB_CONFIG[id]['config']['jitter']
+    leeway = JOB_CONFIG[id]['leeway']
+    next_run_offset = max(jitter * random.random(), leeway)
+    return seconds_from_now_local(next_run_offset)
 
 
 def _print_tasks(info, printer):

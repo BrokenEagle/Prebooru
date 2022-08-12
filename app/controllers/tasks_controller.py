@@ -46,16 +46,6 @@ def update_html(name):
     return redirect(request.referrer)
 
 
-@bp.route('/tasks/<name>/reschedule.json', methods=['POST'])
-def reschedule_json(name):
-    if name in TASK_MAP:
-        soon = request.values.get('soon', type=eval_bool_string, default=False)
-        reschedule_task(name, soon)
-    else:
-        return {'error': True, 'message': "Invalid task name."}
-    return {'error': False}
-
-
 @bp.route('/tasks/<name>/run', methods=['POST'])
 def run_html(name):
     if name in TASK_MAP:

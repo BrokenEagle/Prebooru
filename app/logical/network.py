@@ -37,7 +37,7 @@ def send_prebooru_request(path, method, **args):
 
 
 def prebooru_json_request(path, method, **args):
-    content = send_prebooru_request(path + '.json', method, **args)
+    content = send_prebooru_request(path, method, **args)
     if isinstance(content, str):
         return content
     elif isinstance(content, bytes):
