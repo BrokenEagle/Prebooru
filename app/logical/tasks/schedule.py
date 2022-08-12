@@ -243,7 +243,8 @@ def delete_orphan_images_task():
 
 @SCHEDULER.task('interval', **JOB_CONFIG['vacuum_analyze_database']['config'])
 def vacuum_analyze_database_task():
-    if server_is_busy():
+    manual = get_job_manual_status('vacuum_analyze_database')
+    if not manual and server_is_busy():
         print("Vaccuum/Analyze: Server busy, rescheduling....")
         reschedule_from_child('vacuum_analyze_database')
         return
