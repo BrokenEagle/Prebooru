@@ -253,9 +253,11 @@ def vacuum_analyze_database_task():
         return
     printer = buffered_print("Vacuum/analyze DB")
     printer("PID:", os.getpid())
+    start_time = time.time()
     with DB.engine.begin() as connection:
         connection.execute("VACUUM")
         connection.execute("ANALYZE")
+    printer("Execution time:", time.time() - start_time)
     printer.print()
     _free_db_semaphore('vacuum_analyze_database')
 
