@@ -53,7 +53,7 @@ class SubscriptionPool(JsonModel):
 
     # ## Property methods
 
-    @property
+    @memoized_property
     def posts(self):
         q = self._post_query
         q = q.order_by(Post.id.desc())
@@ -67,7 +67,7 @@ class SubscriptionPool(JsonModel):
         q = q.limit(10)
         return q.all()
 
-    @property
+    @memoized_property
     def active_elements(self):
         return self._element_query.filter(SubscriptionPoolElement.active.is_(True)).all()
 
@@ -99,15 +99,15 @@ class SubscriptionPool(JsonModel):
         self._populate_storage_sizes()
         return self._alternate_bytes
 
-    @property
+    @memoized_property
     def element_count(self):
         return self._element_query.get_count()
 
-    @property
+    @memoized_property
     def illust_count(self):
         return self._illust_query.distinct().relation_count()
 
-    @property
+    @memoized_property
     def post_count(self):
         return self._post_query.distinct().relation_count()
 
