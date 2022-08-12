@@ -65,7 +65,7 @@ def initialize_task_cleanup():
 
 def recheck_schedule_interval(reschedule):
     global LAST_CHECK
-    printer = buffered_print("Recheck Schedule Interval")
+    printer = buffered_print("Recheck Schedule Interval", header=False)
     printer("PID:", os.getpid())
     printer("Local time:", datetime.datetime.now().ctime())
     user_activity = get_last_activity('user')

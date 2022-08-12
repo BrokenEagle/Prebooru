@@ -66,7 +66,7 @@ def set_association_attributes(params, associations):
 
 def update_column_attributes(item, attrs, dataparams):
     """For updating column attributes with scalar values"""
-    printer = buffered_print('update_column_attributes', safe=True)
+    printer = buffered_print('update_column_attributes', safe=True, header=False)
     is_dirty = False
     for attr in attrs:
         if getattr(item, attr) != dataparams[attr]:
@@ -83,7 +83,7 @@ def update_column_attributes(item, attrs, dataparams):
 
 def update_relationship_collections(item, relationships, updateparams):
     """For updating multiple values to collection relationships with scalar values"""
-    printer = buffered_print('update_relationship_collections', safe=True)
+    printer = buffered_print('update_relationship_collections', safe=True, header=False)
     is_dirty = False
     for attr, subattr, model in relationships:
         if updateparams[attr] is None:
@@ -112,7 +112,7 @@ def update_relationship_collections(item, relationships, updateparams):
 
 def append_relationship_collections(item, relationships, updateparams):
     """For appending a single value to collection relationships with scalar values"""
-    printer = buffered_print('append_relationship_collections', safe=True)
+    printer = buffered_print('append_relationship_collections', safe=True, header=False)
     is_dirty = False
     for attr, subattr, model in relationships:
         if updateparams[attr] is None:

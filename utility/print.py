@@ -24,10 +24,10 @@ def print_error(*args, **kwargs):
     print(colorama.Fore.RED + colorama.Style.BRIGHT + _coalesce_arguments(args) + colorama.Style.RESET_ALL, **kwargs)
 
 
-def buffered_print(name, safe=False, sep=" ", end="\n"):
-    header = name + " - " + uuid.uuid1().hex
-    print("\n++++++++++ %s ++++++++++\n" % header, flush=True)
-    print_func = safe_print if safe else print
+def buffered_print(name, safe=False, header=True, sep=" ", end="\n"):
+    buffer_key = name + " - " + uuid.uuid1().hex
+    if header:
+        print("\n++++++++++ %s ++++++++++\n" % buffer_key, flush=True)
     print_buffer = []
 
     def accumulator(*args):
@@ -36,7 +36,7 @@ def buffered_print(name, safe=False, sep=" ", end="\n"):
 
     def printer():
         nonlocal print_buffer
-        top_header = "========== %s ==========" % header
+        top_header = "========== %s ==========" % buffer_key
         print_buffer = ["\n", top_header, "\n"] + print_buffer
         print_buffer += [("=" * len(top_header)), "\n"]
         print_str = sep.join(map(str, print_buffer))
