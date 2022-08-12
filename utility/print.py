@@ -2,20 +2,26 @@
 
 # ## PYTHON IMPORTS
 import uuid
+import colorama
 import traceback
 
 
 # ## FUNCTIONS
 
 def safe_print(*args, **kwargs):
-    temp = ''
-    for arg in args:
-        if type(arg) is str:
-            temp += arg + ' '
-        else:
-            temp += repr(arg) + ' '
-    temp.strip()
-    print(temp.encode('ascii', 'backslashreplace').decode(), **kwargs)
+    print(_coalesce_arguments(args).encode('ascii', 'backslashreplace').decode(), **kwargs)
+
+
+def print_info(*args, **kwargs):
+    print(colorama.Fore.GREEN + colorama.Style.BRIGHT + _coalesce_arguments(args) + colorama.Style.RESET_ALL, **kwargs)
+
+
+def print_warn(*args, **kwargs):
+    print(colorama.Fore.YELLOW + colorama.Style.BRIGHT + _coalesce_arguments(args) + colorama.Style.RESET_ALL, **kwargs)
+
+
+def print_error(*args, **kwargs):
+    print(colorama.Fore.RED + colorama.Style.BRIGHT + _coalesce_arguments(args) + colorama.Style.RESET_ALL, **kwargs)
 
 
 def buffered_print(name, safe=False, sep=" ", end="\n"):
@@ -40,6 +46,18 @@ def buffered_print(name, safe=False, sep=" ", end="\n"):
     return accumulator
 
 
-def error_print(error):
+def exception_print(error):
     print(repr(error))
     traceback.print_tb(error.__traceback__)
+
+
+# #### Private
+
+def _coalesce_arguments(args):
+    temp = ''
+    for arg in args:
+        if type(arg) is str:
+            temp += arg + ' '
+        else:
+            temp += repr(arg) + ' '
+    return temp.strip()

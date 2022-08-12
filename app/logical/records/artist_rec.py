@@ -1,7 +1,7 @@
 # APP/LOGICAL/RECORDS/ARTIST_REC.PY
 
 # ## PACKAGE IMPORTS
-from utility.print import error_print
+from utility.print import exception_print
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -58,7 +58,7 @@ def recreate_archived_artist(data):
     try:
         artist = create_artist_from_raw_parameters(data['body'])
     except Exception as e:
-        error_print(e)
+        exception_print(e)
         return set_error(retdata, "Error creating artist: %s" % repr(e))
     retdata['item'] = artist.to_json()
     relink_archived_artist(data, artist)

@@ -1,7 +1,7 @@
 # APP/LOGICAL/RECORDS/BOORU_REC.PY
 
 # ## PACKAGE IMPORTS
-from utility.print import error_print
+from utility.print import exception_print
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -82,7 +82,7 @@ def recreate_archived_booru(data):
     try:
         booru = create_booru_from_raw_parameters(data['body'])
     except Exception as e:
-        error_print(e)
+        exception_print(e)
         return set_error(retdata, "Error creating booru: %s" % repr(e))
     retdata['item'] = booru.to_json()
     return retdata

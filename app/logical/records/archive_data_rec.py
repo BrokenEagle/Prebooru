@@ -5,7 +5,7 @@ import os
 import logging
 
 # ## PACKAGE IMPORTS
-from utility.print import error_print
+from utility.print import exception_print
 from utility.file import delete_file
 
 # ## LOCAL IMPORTS
@@ -58,4 +58,4 @@ def remove_archive_media_file(archive_data):
         delete_file(filepath)
     except Exception as e:
         logging.error("Error deleting sample.")
-        error_print(e)
+        exception_print(e)
