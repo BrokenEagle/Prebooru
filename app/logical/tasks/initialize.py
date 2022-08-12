@@ -10,7 +10,7 @@ import datetime
 # ## PACKAGE IMPORTS
 from utility import RepeatTimer
 from utility.time import time_ago
-from utility.print import buffered_print, print_error
+from utility.print import buffered_print, print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
 from ... import SCHEDULER
@@ -36,7 +36,7 @@ RECHECK = None
 # #### Main functions
 
 def initialize_all_tasks():
-    print("\nInitializing tasks.")
+    print_info("\nInitializing tasks.")
     initialize_task_jobs()
     initialize_task_display()
     initialize_task_cleanup()
@@ -238,7 +238,7 @@ def _update_job_info():
             if info[key] > datetime.datetime.now():
                 task_config['next_run_time'] = info[key]
             else:
-                print("Task Scheduler - Missed job:", key)
+                print_warning("Task Scheduler - Missed job:", key)
                 next_run_time = max(task_config['jitter'] * random.random(), JOB_CONFIG[key]['leeway'])
                 task_config['next_run_time'] = datetime.datetime.now() + datetime.timedelta(seconds=next_run_time)
 

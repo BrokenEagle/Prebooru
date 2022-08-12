@@ -10,6 +10,8 @@ import itertools
 from alembic import script, config
 from alembic.runtime import migration
 
+# ## PACKAGE IMPORTS
+from utility.print import print_info, print_warning, print_error
 
 # ## GLOBAL_VARIABLES
 
@@ -20,7 +22,7 @@ ALEMBIC_SCRIPT_FILE = os.path.join(os.getcwd(), 'migrations', 'alembic.ini')
 
 def validate_python():
     if sys.version_info == 2 or (sys.version_info.major == 3 and sys.version_info.minor < 7):
-        print("Python version must be at least 3.7 to run this application.")
+        print_error("Python version must be at least 3.7 to run this application.")
         exit(-1)
 
 
@@ -49,7 +51,7 @@ def validate_integrity():
             print("    %s: %s" % (name, status))
         exit(-1)
     else:
-        print("\nDatabase: OK\n")
+        print_info("\nDatabase: OK\n")
 
 
 def validate_foreign_keys():
@@ -63,10 +65,10 @@ def validate_foreign_keys():
         logging.error("The database has orphaned foreign keys")
         print("\n    %-40s %-10s %-40s %s" % ("Table", "Row ID", "Parent", "FKey ID"))
         for (i, error) in enumerate(errors):
-            print("%02d. %-40s %-10d %-40s %d" % ((i + 1,) + tuple(error)))
+            print_warning("%02d. %-40s %-10d %-40s %d" % ((i + 1,) + tuple(error)))
         print('\n')
         for (i, error) in enumerate(errors):
-            print(f"Error record #{i + 1}")
+            print_warning(f"Error record #{i + 1}")
             name, rowid, parent, fkid = error
             model = TABLES[name]
             record = model.query.filter(model.rowid == rowid).first()
@@ -80,4 +82,4 @@ def validate_foreign_keys():
             print('--------------------------------------------------\n')
         exit(-1)
     else:
-        print("\nForeign Keys: OK\n")
+        print_info("\nForeign Keys: OK\n")
