@@ -8,7 +8,7 @@ from utility.data import get_buffer_checksum
 from utility.file import create_directory, put_get_raw, delete_file
 
 # ## LOCAL IMPORTS
-from ..network import get_http_file
+from ..network import get_http_data
 from ..database.media_file_db import create_media_file_from_parameters, batch_delete_media_files,\
     get_media_file_by_url, get_media_files_by_md5s, update_media_file_expires
 
@@ -44,7 +44,7 @@ def get_or_create_media(download_url, source):
 
 
 def create_media(download_url, source):
-    buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
+    buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
     if type(buffer) is str:
         return buffer
     md5 = get_buffer_checksum(buffer)

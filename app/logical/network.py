@@ -2,16 +2,22 @@
 
 # ## PYTHON IMPORTS
 import time
+import json
 import requests
+
+# ## PACKAGE IMPORTS
+from config import PREBOORU_PORT
 
 
 # ## FUNCTIONS
 
-def get_http_file(serverfilepath, headers=None, timeout=10):
-    headers = headers if headers is not None else {}
+def get_http_data(serverfilepath, method='get', **args):
+    if 'timeout' not in args:
+        args['timeout'] = 10
+    request_method = getattr(requests, method)
     for i in range(4):
         try:
-            response = requests.get(serverfilepath, headers=headers, timeout=timeout)
+            response = request_method(serverfilepath, **args)
         except requests.exceptions.ReadTimeout:
             continue
         except Exception as e:

@@ -10,7 +10,7 @@ from utility.file import create_directory, put_get_raw, copy_file, delete_file, 
 # ### LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
-from ..network import get_http_file
+from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm
 from ..database.post_db import create_post_from_raw_parameters, delete_post, post_append_illust_url, get_post_by_md5,\
@@ -305,7 +305,7 @@ def _get_video_thumb_binary(post):
         source = illust_url._source
         download_url = source.get_sample_url(illust_url)
         print("Downloading", download_url)
-        buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
+        buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
         if isinstance(buffer, str):
             create_error('records.post_rec._get_video_thumb_binary', "Download URL: %s => %s" % (download_url, buffer))
             continue

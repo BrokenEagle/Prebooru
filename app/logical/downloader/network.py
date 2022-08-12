@@ -1,7 +1,7 @@
 # APP/LOGICAL/DOWNLOADER/NETWORK.PY
 
 # ## LOCAL IMPORTS
-from ..network import get_http_file
+from ..network import get_http_data
 from ...models import Post
 from ..database.post_db import create_post_and_add_illust_url
 from ..database.error_db import create_error, create_and_append_error, append_error, extend_errors, is_error
@@ -182,7 +182,7 @@ def update_video_post(illust_url, post, source, *args):
 
 def _download_media(download_url, source):
     print("Downloading", download_url)
-    buffer = get_http_file(download_url, headers=source.IMAGE_HEADERS)
+    buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
     if isinstance(buffer, str):
         return create_error('downloader.network.download_media', "Download URL: %s => %s" % (download_url, buffer))
     return buffer
