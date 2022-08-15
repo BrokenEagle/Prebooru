@@ -874,7 +874,7 @@ def get_tweet_commentary(twitter_data):
                           for (i, item) in enumerate(media)
                           if safe_check(item, str, 'ext_alt_text')]
         if len(alt_text_items):
-            text += '\r\n\r\n' + '\r\n'.join([f"IMAGE #{i}: {alt_text}" for (i, alt_text) in alt_text_items])
+            text += '\r\n\r\n' + '\r\n'.join(["{IMAGE #%d}\r\n%s" % (i, alt_text) for (i, alt_text) in alt_text_items])
     return text
 
 
