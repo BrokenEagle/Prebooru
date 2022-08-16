@@ -9,22 +9,22 @@ from PIL import Image
 # ## FUNCTIONS
 
 def initialize():
-    global ArchiveData, MEDIA_DIRECTORY, TEMP_DIRECTORY, create_directory, move_file, create_preview,\
+    global Archive, MEDIA_DIRECTORY, TEMP_DIRECTORY, create_directory, move_file, create_preview,\
         create_video_screenshot, put_get_raw, delete_file, check_alpha, convert_alpha
     sys.path.append(os.path.abspath('.'))
-    from app.models import ArchiveData
+    from app.models import Archive
     from app.logical.media import create_preview, create_video_screenshot, check_alpha, convert_alpha
     from config import MEDIA_DIRECTORY, TEMP_DIRECTORY
     from utility.file import create_directory, move_file, delete_file, put_get_raw
 
 
 def main():
-    query = ArchiveData.query.filter(ArchiveData.type == 'post')
+    query = Archive.query.filter(Archive.type == 'post')
     page = query.count_paginate(per_page=25)
     while True:
         print(f"setup_archives_for_post_previews: {page.first} - {page.last} / Total({page.count})")
         for archive in page.items:
-            filename = archive.data_key + '.' + archive.data['body']['file_ext']
+            filename = archive.key + '.' + archive.data['body']['file_ext']
             old_path = os.path.join(MEDIA_DIRECTORY, 'archive', filename)
             if os.path.exists(old_path):
                 print("Moving", archive.shortlink)
