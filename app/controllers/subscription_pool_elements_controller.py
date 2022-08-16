@@ -12,8 +12,8 @@ from ..models import SubscriptionPoolElement, IllustUrl, Illust
 from ..logical.utility import search_url_for
 from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep,\
     batch_update_subscription_pool_element_keep
-from ..logical.database.post_db import get_posts_by_md5s
-from ..logical.database.archive_db import get_archive_posts_by_md5s
+from ..logical.database.post_db import get_posts_by_md5s, get_post_by_md5
+from ..logical.database.archive_db import get_archive_posts_by_md5s, get_archive
 from ..logical.records.subscription_rec import redownload_element
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace, get_page,\
@@ -178,14 +178,21 @@ def keep_json(id):
 
 @bp.route('/subscription_pool_elements/<int:id>/redownload.json', methods=['POST'])
 def redownload_json(id):
-    element = get_or_abort(SubscriptionPoolElement, id)
-    if element.post is None:
-        if not redownload_element(element) and element.status == 'error':
-            return {'error': True, 'message': "Error downloading element."}
-    else:
+    element = get_or_error(SubscriptionPoolElement, id)
+    if isinstance(element, dict):
+        return element
+    if element.post is not None:
         return {'error': True, 'message': "Subscription element already has a post."}
-    message = None
-    if element.status == 'duplicate':
-        message = 'Media already uploaded'
-    html = render_template_ws("subscription_pool_elements/_element_preview.html", element=element)
-    return {'error': False, 'message': message, 'item': element.to_json(), 'html': strip_whitespace(html)}
+    results = redownload_element(element)
+    return _json_preview(results, element)
+
+
+# #### Private functions
+
+def _json_preview(results, element):
+    if element.post is None:
+        element.post_match = get_post_by_md5(element.md5)
+        element.archive_match = get_archive('post', element.md5) if element.post_match is None else None
+    results['item'] = element.to_json()
+    results['html'] = render_template_ws("subscription_pool_elements/_element_preview.html", element=element)
+    return results

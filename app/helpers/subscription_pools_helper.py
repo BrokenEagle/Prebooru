@@ -119,16 +119,15 @@ def element_preview_link(element, lazyload):
     return Markup('<img %s>' % ' '.join(attrs))
 
 
-def keep_element_link(subscription_element, value, format, has_preview):
+def keep_element_link(subscription_element, value, has_preview):
     preview = 'yes' if has_preview else 'no'
-    url = url_for('subscription_pool_element.keep_' + format, id=subscription_element.id, keep=value, preview=preview)
-    addons = {'class': value + '-link keep-link'}
-    if format == 'html':
-        addons['onclick'] = "return Prebooru.linkPost(this)"
-    elif format == 'json':
-        addons['onclick'] = "return SubscriptionPools.keepElement(this)" if has_preview\
-                            else "return Prebooru.keepElement(this)"
-        addons['ondragstart'] = "return SubscriptionPools.dragKeepClick(this)"
+    url = url_for('subscription_pool_element.keep_json', id=subscription_element.id, keep=value, preview=preview)
+    addons = {
+        'class': value + '-link keep-link',
+        'onclick': 'return SubscriptionPools.networkHandler(this)',
+        'ondragstart': 'return SubscriptionPools.dragKeepClick(this)',
+        'data-preview': str(has_preview).lower(),
+    }
     return general_link(value, url, **addons)
 
 
@@ -139,6 +138,10 @@ def element_type_link(element_type):
     return general_link(element_type.title(), url, **{'class': ' '.join(classes)})
 
 
-def redownload_element_link(text, element):
-    url = url_for('subscription_pool_element.redownload_json', id=element.id)
-    return general_link(text, url, onclick="return SubscriptionPools.redownload(this)")
+def nopost_function_link(name, element):
+    url = url_for(f'subscription_pool_element.{name}_json', id=element.id)
+    addons = {
+        'onclick': 'return SubscriptionPools.networkHandler(this)',
+        'data-preview': 'true',
+    }
+    return general_link(name, url, **addons)

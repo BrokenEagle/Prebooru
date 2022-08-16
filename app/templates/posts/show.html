@@ -2,6 +2,13 @@
 {% from 'posts/_macros.html' import related_posts  %}
 {% from 'similarity_pools/_macros.html' import similar_posts %}
 
+{% block linkscript %}
+    {{ super() }}
+    {% if post.subscription_pool_element is not none %}
+        <script src="{{ url_for('static', filename='javascript/subscription_pools.js') }}"></script>
+    {% endif %}
+{% endblock %}
+
 {% block title %}Post # {{ post.id }}{% endblock %}
 
 {% block content %}

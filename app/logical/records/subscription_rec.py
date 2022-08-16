@@ -58,11 +58,15 @@ def redownload_element(element):
     def try_func(scope_vars):
         nonlocal element, source
         update_subscription_pool_element_deleted(element, False)
+        initial_errors = [error.id for error in element.errors]
         if convert_network_subscription(element, source):
             update_subscription_pool_element_status(element, 'active')
-            return True
+            return {'error': False}
         else:
-            return False
+            update_subscription_pool_element_status(element, 'error')
+            new_errors = [error for error in element.errors if error.id not in initial_errors]
+            msg = '; '.join(f"{error.module}: {error.message}" for error in new_errors) or "Unknown error."
+            return {'error': True, 'message': msg}
 
     def msg_func(scope_vars, error):
         return f"Unhandled exception occurred on subscripton pool #{element.pool_id}: {repr(error)}"
@@ -70,5 +74,6 @@ def redownload_element(element):
     def error_func(scope_vars, error):
         update_subscription_pool_element_deleted(element, True)
 
-    return safe_db_execute('redownload_element', 'records.subscription_rec', try_func=try_func, msg_func=msg_func,
-                           error_func=error_func, printer=print)
+    results = safe_db_execute('redownload_element', 'records.subscription_rec', try_func=try_func, msg_func=msg_func,
+                              error_func=error_func, printer=print)
+    return results

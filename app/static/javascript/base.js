@@ -162,20 +162,6 @@ Prebooru.onVideoError = function (obj) {
     obj.videoPreviewTimeout = false;
 };
 
-Prebooru.keepElement = function(obj) {
-    fetch(obj.href, {method: 'POST'})
-        .then((resp)=>resp.json())
-        .then((data)=>{
-            if (data.error) {
-                Prebooru.error(data.message);
-            } else {
-                Prebooru.message("Updated element.");
-                Prebooru.replaceDiv(obj, data.html);
-            }
-        });
-    return false;
-};
-
 Prebooru.closest = function(obj, selector) {
     for (var curr = obj; curr && !curr.matches(selector); curr = curr.parentElement);
     return curr;

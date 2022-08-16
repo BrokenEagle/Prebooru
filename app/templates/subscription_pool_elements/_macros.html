@@ -42,7 +42,7 @@
                     <li><strong>{{ element.illust_url.illust_show_link }}</strong></li>
                     <li><strong>{{ helpers.base.url_link(element.illust_url.full_url) }}</strong></li>
                     <li><strong>MD5:</strong> <code>{{ helpers.base.val_or_none(element.md5) }}</code></li>
-                    <li><strong>[ {{ helpers.subscription_pool.redownload_element_link('redownload', element) }} ]</strong></li>
+                    <li><strong>[ {{ helpers.subscription_pool.nopost_function_link('redownload', element) }} ]</strong></li>
                 </ul>
                 {{ error_list(element.errors) }}
             </div>
@@ -63,9 +63,9 @@
             </li>
             <li><strong>
                 Keep:
-                    {{ helpers.subscription_pool.keep_element_link(element, 'yes', 'json', has_preview) -}} |
-                    {{- helpers.subscription_pool.keep_element_link(element, 'maybe', 'json', has_preview) -}} |
-                    {{- helpers.subscription_pool.keep_element_link(element, 'no', 'json', has_preview) }}
+                    {{ helpers.subscription_pool.keep_element_link(element, 'yes', has_preview) -}} |
+                    {{- helpers.subscription_pool.keep_element_link(element, 'maybe', has_preview) -}} |
+                    {{- helpers.subscription_pool.keep_element_link(element, 'no', has_preview) }}
             </strong></li>
         </ul>
     </div>

@@ -1,8 +1,9 @@
 const SubscriptionPools = {};
 
-SubscriptionPools.keepElement = function(obj) {
-    let $element = Prebooru.closest(obj, '.subscription-element');
-    let $post = $element.querySelector('.post');
+SubscriptionPools.networkHandler = function(obj) {
+    let has_preview = JSON.parse(obj.dataset.preview);
+    let replace_selector = has_preview ? '.subscription-element' : '.subscription-element-info';
+    let $element = Prebooru.closest(obj, replace_selector);
     fetch(obj.href, {method: 'POST'})
         .then((resp)=>resp.json())
         .then((data)=>{
@@ -10,35 +11,20 @@ SubscriptionPools.keepElement = function(obj) {
                 Prebooru.error(data.message);
             } else {
                 Prebooru.message("Updated element.");
-                SubscriptionPools.replaceArticle(obj, data.html);
-                if ($post.classList.contains('video-post')) {
-                    Prebooru.initializeVideoPreviews('#' + $post.id);
+            }
+            if (data.html) {
+                $element.outerHTML = data.html;
+                if (has_preview) {
+                    let $post = $element.querySelector('.post');
+                    if ($post?.classList.contains('video-post')) {
+                        Prebooru.initializeVideoPreviews('#' + $post.id);
+                    }
+                    document.getElementById('image-select-counter').innerText = document.querySelectorAll('.subscription-element .checkbox-active').length;
+                    Prebooru.dispatchEvent('prebooru:preview-reloaded', {target: $element, data});
                 }
-                document.getElementById('image-select-counter').innerText = document.querySelectorAll('.subscription-element .checkbox-active').length;
-                Prebooru.dispatchEvent('prebooru:preview-reloaded', {target: Prebooru.closest(obj, '.subscription-element'), data});
             }
         });
     return false;
-};
-
-SubscriptionPools.redownload = function(obj) {
-    fetch(obj.href, {method: 'POST'})
-        .then((resp)=>resp.json())
-        .then((data)=>{
-            if (data.error) {
-                Prebooru.error(data.message);
-            } else {
-                Prebooru.message("Updated element.");
-                SubscriptionPools.replaceArticle(obj, data.html);
-                document.getElementById('image-select-counter').innerText = document.querySelectorAll('.subscription-element .checkbox-active').length;
-            }
-        });
-    return false;
-};
-
-SubscriptionPools.replaceArticle = function(obj, html) {
-    for (var curr = obj; curr.tagName !== 'ARTICLE' && curr.parentElement !== null; curr = curr.parentElement);
-    curr.outerHTML = html;
 };
 
 SubscriptionPools.toggleCheckbox = function(obj) {
