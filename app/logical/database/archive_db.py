@@ -98,29 +98,43 @@ def process_archive_data(data):
 # #### Private functions
 
 def _encode_json_data(data):
+    tempdata = {}
     for key in list(data.keys()):
         if type(data[key]) is dict:
-            data[key] = _encode_json_data(data[key])
+            tempdata[key] = _encode_json_data(data[key])
         elif type(data[key]) is list:
+            tempdata[key] = []
             for i in range(0, len(data[key])):
                 if type(data[key][i]) is dict:
-                    data[key][i] = _encode_json_data(data[key][i])
+                    list_item = _encode_json_data(data[key][i])
+                else:
+                    list_item = data[key][i]
+                tempdata[key].append(list_item)
         elif type(data[key]) is datetime.datetime:
-            data[key] = datetime.datetime.isoformat(data[key])
-    return data
+            tempdata[key] = datetime.datetime.isoformat(data[key])
+        else:
+            tempdata[key] = data[key]
+    return tempdata
 
 
 def _decode_json_data(data):
+    tempdata = {}
     for key in list(data.keys()):
         if type(data[key]) is dict:
-            data[key] = _decode_json_data(data[key])
+            tempdata[key] = _decode_json_data(data[key])
         elif type(data[key]) is list:
+            tempdata[key] = []
             for i in range(0, len(data[key])):
                 if type(data[key][i]) is dict:
-                    data[key][i] = _decode_json_data(data[key][i])
+                    list_item = _decode_json_data(data[key][i])
+                else:
+                    list_item = data[key][i]
+                tempdata[key].append(list_item)
         elif type(data[key]) is str and ISODATETIME_RG.match(data[key]):
             date_item = process_utc_timestring(data[key])
             if date_item is None:
-                raise
-            data[key] = date_item
-    return data
+                raise Exception("Unable to decode timestring.")
+            tempdata[key] = date_item
+        else:
+            tempdata[key] = data[key]
+    return tempdata
