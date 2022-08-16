@@ -11,12 +11,12 @@ from utility.time import get_current_time, days_from_now, process_utc_timestring
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import ArchiveData
+from ...models import Archive
 
 
 # ## GLOBAL DATA
 
-ARCHIVE_DATA_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'archive')
+ARCHIVE_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'archive')
 
 ISODATETIME_RG = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
 
@@ -25,14 +25,14 @@ ISODATETIME_RG = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
 
 # ###### CREATE
 
-def create_archive_data(type, data_key, data, days):
+def create_archive(type, key, data, days):
     data = {
         'type': type,
-        'data_key': data_key,
+        'key': key,
         'data': _encode_json_data(data),
         'expires': days_from_now(days) if days is not None else None,
     }
-    archive_item = ArchiveData(**data)
+    archive_item = Archive(**data)
     SESSION.add(archive_item)
     SESSION.commit()
     return archive_item
@@ -40,45 +40,45 @@ def create_archive_data(type, data_key, data, days):
 
 # ###### UPDATE
 
-def update_archive_data(archive_data, data, days):
-    archive_data.data = _encode_json_data(data)
-    archive_data.expires = days_from_now(days) if days is not None else None
+def update_archive(archive, data, days):
+    archive.data = _encode_json_data(data)
+    archive.expires = days_from_now(days) if days is not None else None
     SESSION.commit()
 
 
-def set_archive_data_permenant(item):
+def set_archive_permenant(item):
     item.expires = None
     SESSION.commit()
 
 
-def set_archive_data_temporary(item, days):
+def set_archive_temporary(item, days):
     item.expires = days_from_now(days)
     SESSION.commit()
 
 
 # ###### DELETE
 
-def delete_expired_archive_data():
+def delete_expired_archive():
     from ..records.archive_rec import remove_archive_media_file
-    ArchiveData.query.filter(ArchiveData.type != 'post', ArchiveData.expires < get_current_time()).delete()
+    Archive.query.filter(Archive.type != 'post', Archive.expires < get_current_time()).delete()
     SESSION.commit()
-    expired_data = ArchiveData.query.filter(ArchiveData.type == 'post', ArchiveData.expires < get_current_time()).all()
+    expired_data = Archive.query.filter(Archive.type == 'post', Archive.expires < get_current_time()).all()
     if len(expired_data) == 0:
         return
-    for archive_data in expired_data:
-        remove_archive_media_file(archive_data)
-    ArchiveData.query.filter(ArchiveData.id.in_([data.id for data in expired_data])).delete()
+    for archive in expired_data:
+        remove_archive_media_file(archive)
+    Archive.query.filter(Archive.id.in_([data.id for data in expired_data])).delete()
     SESSION.commit()
 
 
 # #### Query functions
 
-def get_archive_data(type, data_key):
-    return ArchiveData.query.filter_by(type=type, data_key=data_key).first()
+def get_archive(type, key):
+    return Archive.query.filter_by(type=type, key=key).first()
 
 
-def expired_archive_data_count():
-    return ArchiveData.query.filter(ArchiveData.expires < get_current_time()).get_count()
+def expired_archive_count():
+    return Archive.query.filter(Archive.expires < get_current_time()).get_count()
 
 
 # #### Misc functions

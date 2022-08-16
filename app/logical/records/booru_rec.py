@@ -11,7 +11,7 @@ from ..sources.danbooru import get_artist_by_id
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
     get_booru, create_booru_from_raw_parameters, delete_booru
-from ..database.archive_db import get_archive_data, create_archive_data, update_archive_data
+from ..database.archive_db import get_archive, create_archive, update_archive
 
 
 # ## FUNCTIONS
@@ -100,12 +100,12 @@ def _archive_booru_data(booru, retdata):
         'links': {},
     }
     data_key = '%d' % (booru.danbooru_id)
-    archive_data = get_archive_data('booru', data_key)
+    archive = get_archive('booru', data_key)
     try:
-        if archive_data is None:
-            create_archive_data('booru', data_key, data, 30)
+        if archive is None:
+            create_archive('booru', data_key, data, 30)
         else:
-            update_archive_data(archive_data, data, 30)
+            update_archive(archive, data, 30)
     except Exception as e:
         return set_error(retdata, "Error archiving data: %s" % str(e))
     return retdata

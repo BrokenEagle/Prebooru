@@ -18,8 +18,8 @@ from ..database.post_db import create_post_from_raw_parameters, delete_post, pos
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.error_db import create_error_from_raw_parameters, create_error
-from ..database.archive_db import get_archive_data, create_archive_data, update_archive_data,\
-    ARCHIVE_DATA_DIRECTORY
+from ..database.archive_db import get_archive, create_archive, update_archive,\
+    ARCHIVE_DIRECTORY
 
 
 # ## GLOBAL VARIABLES
@@ -207,19 +207,19 @@ def _archive_post_data(post, retdata, expires):
             'illusts': [{'url': illust_url.url, 'site_id': illust_url.site_id} for illust_url in post.illust_urls],
         },
     }
-    archive_data = get_archive_data('post', post.md5)
+    archive = get_archive('post', post.md5)
     try:
-        if archive_data is None:
-            create_archive_data('post', post.md5, data, expires)
+        if archive is None:
+            create_archive('post', post.md5, data, expires)
         else:
-            update_archive_data(archive_data, data, expires)
+            update_archive(archive, data, expires)
     except Exception as e:
         return set_error(retdata, "Error archiving data: %s" % str(e))
     return retdata
 
 
 def _move_post_file(post, retdata, reverse=False):
-    archive_path = os.path.join(ARCHIVE_DATA_DIRECTORY, post.md5 + '.' + post.file_ext)
+    archive_path = os.path.join(ARCHIVE_DIRECTORY, post.md5 + '.' + post.file_ext)
     to_path, from_path = (archive_path, post.file_path) if not reverse else (post.file_path, archive_path)
     create_directory(archive_path)
     try:

@@ -10,7 +10,7 @@ from ..database.artist_db import create_artist_from_parameters, update_artist_fr
     create_artist_from_raw_parameters, artist_append_booru, delete_artist
 from ..database.booru_db import get_booru
 from ..database.notation_db import create_notation_from_raw_parameters
-from ..database.archive_db import get_archive_data, create_archive_data, update_archive_data
+from ..database.archive_db import get_archive, create_archive, update_archive
 
 
 # ## FUNCTIONS
@@ -100,12 +100,12 @@ def _archive_artist_data(artist, retdata):
         },
     }
     data_key = '%d-%d' % (artist.site_id, artist.site_artist_id)
-    archive_data = get_archive_data('artist', data_key)
+    archive = get_archive('artist', data_key)
     try:
-        if archive_data is None:
-            create_archive_data('artist', data_key, data, 30)
+        if archive is None:
+            create_archive('artist', data_key, data, 30)
         else:
-            update_archive_data(archive_data, data, 30)
+            update_archive(archive, data, 30)
     except Exception as e:
         return set_error(retdata, "Error archiving data: %s" % str(e))
     return retdata

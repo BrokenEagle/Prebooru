@@ -1,10 +1,10 @@
 {% extends 'archives/_base.html' %}
 {% from 'layouts/_macros.html' import page_navigation %}
 
-{% block title %}Archive Data{% endblock %}
+{% block title %}Archives{% endblock %}
 
 {% block content %}
-    <table id="archive-data-table" class="striped" width="100%">
+    <table id="archive-table" class="striped" width="100%">
         <thead>
             <tr>
                 <th width="10%">ID</th>
@@ -15,25 +15,25 @@
             </tr>
         </thead>
         <tbody>
-            {% for archive_datum in archive_data.items %}
-                <tr id="archive-data-{{ archive_datum.id }}">
-                    <td>{{ archive_datum.show_link }}</td>
+            {% for item in archives.items %}
+                <tr id="archive-{{ item.id }}">
+                    <td>{{ item.show_link }}</td>
                     <td>
-                        <strong>Type:</strong> {{ archive_datum.type | title }}<br>
-                        <strong>Data key:</strong> {{ archive_datum.data_key}}
+                        <strong>Type:</strong> {{ item.type | title }}<br>
+                        <strong>Data key:</strong> {{ item.data_key}}
                     </td>
-                    <td><div class="json-data">{{ archive_datum.data | tojson(indent=4) }}</div></td>
-                    <td>{{ helpers.base.format_timestamp(archive_datum.expires) }}</td>
+                    <td><div class="json-data">{{ item.data | tojson(indent=4) }}</div></td>
+                    <td>{{ helpers.base.format_timestamp(item.expires) }}</td>
                     <td>
-                        {{ helpers.archive_data.reinstantiate_item_link(archive_datum) }}
-                        {% if helpers.archive_data.has_relink(archive_datum) %}
-                            <br>{{ helpers.archive_data.relink_item_link(archive_datum) }}
+                        {{ helpers.archive.reinstantiate_item_link(item) }}
+                        {% if helpers.archive.has_relink(item) %}
+                            <br>{{ helpers.archive.relink_item_link(item) }}
                         {% endif %}
                         <br>
-                        {% if archive_datum.expires is none %}
-                            {{ helpers.archive_data.set_temporary_link(archive_datum) }}
+                        {% if item.expires is none %}
+                            {{ helpers.archive.set_temporary_link(item) }}
                         {% else %}
-                            {{ helpers.archive_data.set_permenant_link(archive_datum) }}
+                            {{ helpers.archive.set_permenant_link(item) }}
                         {% endif %}
                     </td>
                 </tr>
@@ -42,4 +42,4 @@
     </table>
 {% endblock %}
 
-{% block pages %}{{ page_navigation(archive_data) }}{% endblock %}
+{% block pages %}{{ page_navigation(archives) }}{% endblock %}

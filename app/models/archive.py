@@ -7,13 +7,13 @@ from .base import JsonModel, classproperty
 
 # ## CLASSES
 
-class ArchiveData(JsonModel):
+class Archive(JsonModel):
     # ## Declarations
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     type = DB.Column(DB.String(255), nullable=False)
-    data_key = DB.Column(DB.String(255), nullable=False)
+    key = DB.Column(DB.String(255), nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
     expires = DB.Column(DB.DateTime(timezone=False), nullable=True)
 
@@ -22,3 +22,9 @@ class ArchiveData(JsonModel):
     @classproperty(cached=True)
     def searchable_attributes(cls):
         return [x for x in super().searchable_attributes if x not in ['data']]
+
+    # ###### Private
+
+    __table_args__ = (
+        DB.Index(None, 'type', 'key', unique=True),
+    )

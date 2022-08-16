@@ -12,7 +12,7 @@ from ..database.illust_db import create_illust_from_parameters, update_illust_fr
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.notation_db import create_notation_from_raw_parameters
-from ..database.archive_db import get_archive_data, create_archive_data, update_archive_data
+from ..database.archive_db import get_archive, create_archive, update_archive
 from .artist_rec import create_artist_from_source
 
 
@@ -115,12 +115,12 @@ def _archive_illust_data(illust, retdata):
         },
     }
     data_key = '%d-%d' % (illust.site_id, illust.site_illust_id)
-    archive_data = get_archive_data('illust', data_key)
+    archive = get_archive('illust', data_key)
     try:
-        if archive_data is None:
-            create_archive_data('illust', data_key, data, 30)
+        if archive is None:
+            create_archive('illust', data_key, data, 30)
         else:
-            update_archive_data(archive_data, data, 30)
+            update_archive(archive, data, 30)
     except Exception as e:
         return set_error(retdata, "Error archiving data: %s" % str(e))
     return retdata
