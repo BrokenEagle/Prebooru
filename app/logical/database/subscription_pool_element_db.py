@@ -108,12 +108,6 @@ def duplicate_subscription_post(element, md5):
     SESSION.commit()
 
 
-def add_subscription_post(element, post):
-    element.post_id = post.id
-    element.md5 = post.md5
-    SESSION.commit()
-
-
 # #### Query
 
 def get_elements_by_id(id_list):

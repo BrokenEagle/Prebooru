@@ -12,7 +12,7 @@ from utility.data import get_buffer_checksum
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data
 from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
-from ..database.subscription_pool_element_db import add_subscription_post, update_subscription_pool_element_active,\
+from ..database.subscription_pool_element_db import link_subscription_post, update_subscription_pool_element_active,\
     check_deleted_subscription_post, update_subscription_pool_element_status, duplicate_subscription_post
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.error_db import create_error, create_and_append_error, extend_errors, is_error
@@ -59,7 +59,7 @@ def record_outcome(post, record):
         upload_append_post(record, post)
         add_upload_success(record)
     elif record.model_name == 'subscription_pool_element':
-        add_subscription_post(record, post)
+        link_subscription_post(record, post)
     return True
 
 
