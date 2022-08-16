@@ -13,6 +13,7 @@ from ..logical.utility import search_url_for
 from ..logical.database.subscription_pool_element_db import get_elements_by_id, update_subscription_pool_element_keep,\
     batch_update_subscription_pool_element_keep
 from ..logical.database.post_db import get_posts_by_md5s
+from ..logical.database.archive_db import get_archive_posts_by_md5s
 from ..logical.records.subscription_rec import redownload_element
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace, get_page,\
@@ -95,21 +96,28 @@ def index_html():
         elif element_type == 'undecided' or element_type is None:
             q = q.filter(SubscriptionPoolElement.keep.is_(None))
     q = q.options(INDEX_HTML_OPTIONS)
-    subscription_pool_elements = paginate(q, request, MAX_LIMIT_HTML)
+    elements = paginate(q, request, MAX_LIMIT_HTML)
     page = get_page(request)
-    if page is not None and page != 1 and len(subscription_pool_elements.items) == 0\
-            and page > subscription_pool_elements.pages:
-        return redirect(url_for('subscription_pool_element.index_html', page=subscription_pool_elements.pages,
+    if page is not None and page != 1 and len(elements.items) == 0\
+            and page > elements.pages:
+        return redirect(url_for('subscription_pool_element.index_html', page=elements.pages,
                                 **{k: v for (k, v) in request.args.items() if k != 'page'}))
-    missing_md5s = set(element.md5 for element in subscription_pool_elements.items if element.post is None)
-    if len(missing_md5s):
-        missing_posts = get_posts_by_md5s(list(missing_md5s))
-        for item in subscription_pool_elements.items:
-            if item.md5 in missing_md5s:
-                post_match = next((post for post in missing_posts if post.md5 == item.md5), None)
-                setattr(item, 'post_match', post_match)
+    missing_md5s = set(element.md5 for element in elements.items
+                       if element.post is None and element.status in ['unlinked', 'duplicate'])
+    missing_posts = get_posts_by_md5s(list(missing_md5s)) if len(missing_md5s) else []
+    archive_md5s = set(element.md5 for element in elements.items if element.status == 'archived')
+    archives = get_archive_posts_by_md5s(list(archive_md5s)) if len(archive_md5s) else []
+    for item in elements.items:
+        post_match = None
+        if item.md5 in missing_md5s:
+            post_match = next((post for post in missing_posts if post.md5 == item.md5), None)
+        setattr(item, 'post_match', post_match)
+        archive_match = None
+        if item.md5 in archive_md5s:
+            archive_match = next((archive for archive in archives if archive.key == item.md5), None)
+        setattr(item, 'archive_match', archive_match)
     return render_template_ws("subscription_pool_elements/index.html",
-                              subscription_pool_elements=subscription_pool_elements,
+                              subscription_pool_elements=elements,
                               subscription_pool_element=SubscriptionPoolElement())
 
 
