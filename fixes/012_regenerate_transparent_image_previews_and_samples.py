@@ -13,7 +13,7 @@ def initialize():
     global Post, check_alpha, convert_alpha, create_preview, create_sample
     sys.path.append(os.path.abspath('.'))
     from app.models import Post
-    from app.logical.downloader.base import check_alpha, convert_alpha, create_preview, create_sample
+    from app.logical.media import check_alpha, convert_alpha, create_preview, create_sample
 
 
 def main(args):
@@ -30,9 +30,9 @@ def main(args):
                 print("Fixing alpha post:", post.shortlink)
                 nonalpha_image = convert_alpha(image)
                 if post.has_sample:
-                    create_sample(nonalpha_image, post)
+                    create_sample(nonalpha_image, post.sample_path)
                 if post.has_preview:
-                    create_preview(nonalpha_image, post)
+                    create_preview(nonalpha_image, post.preview_path)
         if not page.has_next:
             break
         page = page.next()

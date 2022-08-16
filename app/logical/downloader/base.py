@@ -3,14 +3,12 @@
 # ## PYTHON IMPORTS
 import ffmpeg
 import filetype
-from PIL import Image
-from io import BytesIO
 
 # ## PACKAGE IMPORTS
 from utility.data import get_buffer_checksum
 
 # ## LOCAL IMPORTS
-from ..media import create_preview, create_sample, create_data
+from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image
 from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
 from ..database.subscription_pool_element_db import link_subscription_post, update_subscription_pool_element_active,\
     check_deleted_subscription_post, update_subscription_pool_element_status, duplicate_subscription_post
@@ -63,48 +61,22 @@ def record_outcome(post, record):
     return True
 
 
-def load_image(buffer):
-    try:
-        file_imgdata = BytesIO(buffer)
-        image = Image.open(file_imgdata)
-    except Exception as e:
-        return create_error('downloader.base.load_image', "Error processing image data: %s" % repr(e))
+def load_post_image(buffer):
+    image = load_image(buffer)
+    if isinstance(image, str):
+        return create_error('downloader.base.load_post_image', image)
     try:
         if check_alpha(image):
             return convert_alpha(image)
         else:
             return image
     except Exception as e:
-        return create_error('downloader.base.load_image', "Error removing alpha transparency: %s" % repr(e))
+        return create_error('downloader.base.load_post_image', "Error removing alpha transparency: %s" % repr(e))
 
 
 def create_post_error(function, message, post_errors, module='downloader.base'):
     error = create_error(f'{module}.{function}', message)
     post_errors.append(error)
-
-
-def get_pixel_hash(image):
-    data = image.tobytes()
-    return get_buffer_checksum(data)
-
-
-def check_alpha(image):
-    if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
-        try:
-            channel = image.getchannel('A')
-        except Exception:
-            print("Error getting Alpha channel... assuming transparency present.")
-            return True
-        else:
-            return any(pixel for pixel in channel.getdata() if pixel < 255)
-    return False
-
-
-def convert_alpha(image):
-    alpha = image.copy().convert('RGBA').getchannel('A')
-    bg = Image.new('RGBA', image.size, (255, 255, 255, 255))
-    bg.paste(image, mask=alpha)
-    return bg
 
 
 # #### Validation functions
@@ -217,7 +189,7 @@ def save_video(buffer, post):
 
 
 def save_thumb(buffer, post, post_errors):
-    image = load_image(buffer)
+    image = load_post_image(buffer)
     if is_error(image):
         post_errors.append(image)
         return

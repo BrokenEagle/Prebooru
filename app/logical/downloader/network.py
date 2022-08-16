@@ -2,11 +2,12 @@
 
 # ## LOCAL IMPORTS
 from ..network import get_http_data
+from ..media import get_pixel_hash
 from ...models import Post
 from ..database.post_db import create_post_and_add_illust_url
 from ..database.error_db import create_error, create_and_append_error, append_error, extend_errors, is_error
-from .base import convert_image_upload, convert_video_upload, load_image, check_existing, check_filetype,\
-    check_image_dimensions, check_video_dimensions, save_image, save_video, save_thumb, get_pixel_hash
+from .base import convert_image_upload, convert_video_upload, load_post_image, check_existing, check_filetype,\
+    check_image_dimensions, check_video_dimensions, save_image, save_video, save_thumb
 
 
 # ## FUNCTIONS
@@ -91,7 +92,7 @@ def create_image_post(illust_url, record, source, post_type):
         return [md5]
     post_errors = []
     image_file_ext = check_filetype(buffer, file_ext, post_errors)
-    image = load_image(buffer)
+    image = load_post_image(buffer)
     if is_error(image):
         return post_errors + [image]
     image_width, image_height = check_image_dimensions(image, illust_url, post_errors)
@@ -145,7 +146,7 @@ def update_image_post(illust_url, post, source, *args):
         return buffer
     post_errors = []
     check_filetype(buffer, file_ext, post_errors)
-    image = load_image(buffer)
+    image = load_post_image(buffer)
     if is_error(image):
         return post_errors + [image]
     image_width, image_height = check_image_dimensions(image, illust_url, post_errors)

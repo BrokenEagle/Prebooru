@@ -12,6 +12,7 @@ from io import BytesIO
 from config import TEMP_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS, MP4_SKIP_FRAMES, MP4_MIN_FRAMES,\
     WEBP_QUALITY, WEBP_LOOPS
 from utility.file import create_directory, delete_directory, delete_file, put_get_raw
+from utility.data import get_buffer_checksum
 
 
 # ## GLOBAL VARIABLES
@@ -20,6 +21,30 @@ MILLISECONDS_PER_SECOND = 1000
 
 
 # ## FUNCTIONS
+
+def check_alpha(image):
+    if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
+        try:
+            channel = image.getchannel('A')
+        except Exception:
+            print("Error getting Alpha channel... assuming transparency present.")
+            return True
+        else:
+            return any(pixel for pixel in channel.getdata() if pixel < 255)
+    return False
+
+
+def convert_alpha(image):
+    alpha = image.copy().convert('RGBA').getchannel('A')
+    bg = Image.new('RGBA', image.size, (255, 255, 255, 255))
+    bg.paste(image, mask=alpha)
+    return bg
+
+
+def get_pixel_hash(image):
+    data = image.tobytes()
+    return get_buffer_checksum(data)
+
 
 def load_image(buffer):
     try:
