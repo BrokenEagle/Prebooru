@@ -13,20 +13,22 @@ def generate_post_similarity(post, printer=print):
         'post_id': post.id,
         'ratio': ratio,
     }
-    preview_image = get_image(post.preview_path)
-    preview_image_hash = get_image_hash(preview_image)
-    printer("Generate similarity (post #%d): PREVIEW" % post.id)
-    simdata_items = [create_similarity_data_from_parameters({'image_hash': preview_image_hash, **params})]
+    simdata_items = []
+    if post.has_preview:
+        preview_image = get_image(post.preview_path)
+        preview_image_hash = get_image_hash(preview_image)
+        printer("Generate similarity (post #%d): PREVIEW" % post.id)
+        simdata_items.append(create_similarity_data_from_parameters({'image_hash': preview_image_hash, **params}))
     if post.file_ext != 'mp4':
         full_image = get_image(post.file_path)
         full_image_hash = get_image_hash(full_image)
-        if len(check_similarity_match_scores(simdata_items, full_image_hash, 90.0)) == 0:
+        if len(simdata_items) == 0 or len(check_similarity_match_scores(simdata_items, full_image_hash, 90.0)) == 0:
             printer("Generate similarity (post #%d): FULL" % post.id)
             simdata_items.append(create_similarity_data_from_parameters({'image_hash': full_image_hash, **params}))
-    if post.file_path != post.sample_path:
+    if post.has_sample:
         sample_image = get_image(post.sample_path)
         sample_image_hash = get_image_hash(sample_image)
-        if len(check_similarity_match_scores(simdata_items, sample_image_hash, 90.0)) == 0:
+        if len(simdata_items) == 0 or len(check_similarity_match_scores(simdata_items, sample_image_hash, 90.0)) == 0:
             printer("Generate similarity (post #%d): SAMPLE" % post.id)
             simdata_items.append(create_similarity_data_from_parameters({'image_hash': sample_image_hash, **params}))
     return simdata_items
