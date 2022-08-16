@@ -104,7 +104,7 @@ div.subscription-element-archive a {
     color: white;
     padding: 5px 20px;
 }
-article.subscription-archive.subscription-image div.subscription-element-archive {
+article.subscription-archive div.subscription-element-archive {
     border: 2px dotted #CCC;
     background-color: #EEE;
 }
