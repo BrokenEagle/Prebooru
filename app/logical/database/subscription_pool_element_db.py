@@ -62,6 +62,16 @@ def update_subscription_pool_element_status(subscription_pool_element, value):
 
 # #### Misc
 
+def link_subscription_post(element, post):
+    element.post = post
+    element.active = True
+    element.md5 = post.md5
+    element.status = 'active'
+    element.expires = None
+    _update_subscription_pool_element_keep(element, None)
+    SESSION.commit()
+
+
 def unlink_subscription_post(element):
     element.post_id = None
     element.expires = None

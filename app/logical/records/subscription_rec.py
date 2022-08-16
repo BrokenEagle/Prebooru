@@ -10,7 +10,8 @@ from ..sites import get_site_key
 from ..sources import SOURCEDICT
 from ..downloader.network import convert_network_subscription
 from ..database.subscription_pool_element_db import create_subscription_pool_element_from_parameters,\
-    update_subscription_pool_element_deleted, update_subscription_pool_element_status
+    update_subscription_pool_element_deleted, update_subscription_pool_element_status, link_subscription_post
+from ..database.post_db import get_post_by_md5
 from ..database.jobs_db import get_job_status_data, update_job_status
 from ..database.base_db import safe_db_execute
 
@@ -77,3 +78,16 @@ def redownload_element(element):
     results = safe_db_execute('redownload_element', 'records.subscription_rec', try_func=try_func, msg_func=msg_func,
                               error_func=error_func, printer=print)
     return results
+
+
+def relink_element(element):
+    post = get_post_by_md5(element.md5)
+    if post is None:
+        update_subscription_pool_element_deleted(element, True)
+        if get_archive('post', element.md5) is not None:
+            update_subscription_pool_element_status(element, 'archived')
+        else:
+            update_subscription_pool_element_status(element, 'deleted')
+        return {'error': True, 'message': f'Post with MD5 {element.md5} does not exist.'}
+    link_subscription_post(element, post)
+    return {'error': False}

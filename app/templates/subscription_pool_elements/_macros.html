@@ -42,7 +42,11 @@
                     <li><strong>{{ element.illust_url.illust_show_link }}</strong></li>
                     <li><strong>{{ helpers.base.url_link(element.illust_url.full_url) }}</strong></li>
                     <li><strong>MD5:</strong> <code>{{ helpers.base.val_or_none(element.md5) }}</code></li>
-                    <li><strong>[ {{ helpers.subscription_pool.nopost_function_link('redownload', element) }} ]</strong></li>
+                    {% if element.status == 'unlinked' and element.post_match is not none %}
+                        <li><strong>[ {{ helpers.subscription_pool.nopost_function_link('relink', element) }} ]</strong></li>
+                    {% elif element.post_match is none %}
+                        <li><strong>[ {{ helpers.subscription_pool.nopost_function_link('redownload', element) }} ]</strong></li>
+                    {% endif %}
                 </ul>
                 {{ error_list(element.errors) }}
             </div>

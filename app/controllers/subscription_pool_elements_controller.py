@@ -14,7 +14,7 @@ from ..logical.database.subscription_pool_element_db import get_elements_by_id, 
     batch_update_subscription_pool_element_keep
 from ..logical.database.post_db import get_posts_by_md5s, get_post_by_md5
 from ..logical.database.archive_db import get_archive_posts_by_md5s, get_archive
-from ..logical.records.subscription_rec import redownload_element
+from ..logical.records.subscription_rec import redownload_element, relink_element
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace, get_page,\
     render_template_ws
@@ -184,6 +184,17 @@ def redownload_json(id):
     if element.post is not None:
         return {'error': True, 'message': "Subscription element already has a post."}
     results = redownload_element(element)
+    return _json_preview(results, element)
+
+
+@bp.route('/subscription_pool_elements/<int:id>/relink.json', methods=['POST'])
+def relink_json(id):
+    element = get_or_error(SubscriptionPoolElement, id)
+    if isinstance(element, dict):
+        return element
+    if element.status != 'unlinked':
+        return {'error': True, 'message': "Can only relink unlinked elements."}
+    results = relink_element(element)
     return _json_preview(results, element)
 
 
