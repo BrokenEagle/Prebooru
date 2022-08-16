@@ -1,4 +1,4 @@
-# APP/LOGICAL/RECORDS/ARCHIVE_DATA_REC.PY
+# APP/LOGICAL/RECORDS/POST_REC.PY
 
 # ### PYTHON IMPORTS
 import os
@@ -6,6 +6,7 @@ import os
 # ### PACKAGE IMPORTS
 from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
 from utility.file import create_directory, put_get_raw, copy_file, delete_file, move_file
+from utility.print import print_error, exception_print
 
 # ### LOCAL IMPORTS
 from ... import SESSION
@@ -18,8 +19,8 @@ from ..database.post_db import create_post_from_raw_parameters, delete_post, pos
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.error_db import create_error_from_raw_parameters, create_error
-from ..database.archive_db import get_archive, create_archive, update_archive,\
-    ARCHIVE_DIRECTORY
+from ..database.archive_db import get_archive, create_archive, update_archive, set_archive_temporary,\
+    process_archive_data, ARCHIVE_DIRECTORY
 
 
 # ## GLOBAL VARIABLES
@@ -57,19 +58,12 @@ def move_post_media_to_alternate(post, reverse=False):
 def delete_post_and_media(post):
     """Hard delete. Continue as long as post record gets deleted."""
     retdata = {'error': False, 'is_deleted': False}
-    file_path = post.file_path
-    sample_path = post.sample_path if post.has_sample else None
-    preview_path = post.preview_path if post.has_preview else None
-    is_video = post.is_video
-    video_sample_path = post.video_sample_path
-    video_preview_path = post.video_preview_path
+    temppost = copy_post(post)
     retdata = _delete_post_data(post, retdata)
     if retdata['error']:
         print("delete_post_and_media-error:", retdata)
         return retdata
-    retdata = _delete_media_files(sample_path, preview_path, retdata, file_path=file_path)
-    if is_video:
-        retdata = _delete_video_files(video_sample_path, video_preview_path, retdata)
+    retdata = _delete_media_files(temppost, retdata)
     if not retdata['error']:
         retdata['is_deleted'] = True
     return retdata
@@ -78,53 +72,48 @@ def delete_post_and_media(post):
 def archive_post_for_deletion(post, expires):
     """Soft delete. Preserve data at all costs."""
     retdata = {'error': False, 'is_deleted': False}
-    sample_path = post.sample_path if post.has_sample else None
-    preview_path = post.preview_path if post.has_preview else None
-    is_video = post.is_video
-    video_sample_path = post.video_sample_path
-    video_preview_path = post.video_preview_path
-    retdata = _archive_post_data(post, retdata, expires)
+    temppost = copy_post(post)
+    retdata, archive = _archive_post_data(post, retdata, expires)
     if retdata['error']:
         return retdata
-    retdata = _move_post_file(post, retdata)
+    retdata = _copy_media_files(post, archive, retdata, True, False)
     if retdata['error']:
         return retdata
     retdata['is_deleted'] = True
     retdata = _delete_post_data(post, retdata)
     if retdata['error']:
         return retdata
-    retdata = _delete_media_files(sample_path, preview_path, retdata)
-    if is_video:
-        retdata = _delete_video_files(video_sample_path, video_preview_path, retdata)
-    return retdata
+    return _delete_media_files(temppost, retdata)
 
 
-def reinstantiate_archived_post(data):
+def reinstantiate_archived_post(archive):
     retdata = {'error': False}
-    post = get_post_by_md5(data['body']['md5'])
+    post = get_post_by_md5(archive.data['body']['md5'])
     if post is not None:
         return set_error(retdata, "Post with MD5 %s already exists: post #%d" % (post.md5, post.id))
     try:
-        post = create_post_from_raw_parameters(data['body'])
+        post = create_post_from_raw_parameters(process_archive_data(archive.data['body']))
     except Exception as e:
         return set_error(retdata, "Error creating post: %s" % str(e))
-    retdata = _move_post_file(post, retdata, True)
+    retdata = _copy_media_files(post, archive, retdata, False, True)
     if retdata['error']:
+        delete_post(post)
         return retdata
     retdata['item'] = post.to_json()
     # Once the file move is successful, keep going even if there are errors.
     create_sample_preview_files(post, retdata)
     if post.is_video:
         create_video_sample_preview_files(post, retdata)
-    relink_archived_post(data, post)
-    for notation_data in data['relations']['notations']:
+    relink_archived_post(archive, post)
+    for notation_data in archive.data['relations']['notations']:
         notation = create_notation_from_raw_parameters(notation_data)
         post.notations.append(notation)
         SESSION.commit()
-    for error_data in data['relations']['errors']:
+    for error_data in archive.data['relations']['errors']:
         error = create_error_from_raw_parameters(error_data)
         post.errors.append(error)
         SESSION.commit()
+    set_archive_temporary(archive, 7)
     return retdata
 
 
@@ -164,12 +153,12 @@ def create_video_sample_preview_files(post, retdata=None):
     return retdata
 
 
-def relink_archived_post(data, post=None):
+def relink_archived_post(archive, post=None):
     if post is None:
-        post = get_post_by_md5(data['body']['md5'])
+        post = get_post_by_md5(archive.data['body']['md5'])
         if post is None:
-            return "No post found with MD5 %s" % data['body']['md5']
-    for link_data in data['links']['illusts']:
+            return "No post found with MD5 %s" % archive.data['body']['md5']
+    for link_data in archive.data['links']['illusts']:
         illust_url = get_illust_url_by_url(site_id=link_data['site_id'], partial_url=link_data['url'])
         if illust_url is not None:
             post_append_illust_url(post, illust_url)
@@ -210,23 +199,14 @@ def _archive_post_data(post, retdata, expires):
     archive = get_archive('post', post.md5)
     try:
         if archive is None:
-            create_archive('post', post.md5, data, expires)
+            archive = create_archive('post', post.md5, data, expires)
         else:
             update_archive(archive, data, expires)
     except Exception as e:
-        return set_error(retdata, "Error archiving data: %s" % str(e))
-    return retdata
-
-
-def _move_post_file(post, retdata, reverse=False):
-    archive_path = os.path.join(ARCHIVE_DIRECTORY, post.md5 + '.' + post.file_ext)
-    to_path, from_path = (archive_path, post.file_path) if not reverse else (post.file_path, archive_path)
-    create_directory(archive_path)
-    try:
-        move_file(from_path, to_path)
-    except Exception as e:
-        return set_error(retdata, "Error moving post file: %s" % str(e))
-    return retdata
+        print_error("Error archiving data: %s" % str(e))
+        exception_print(e)
+        return set_error(retdata, "Error archiving data: %s" % repr(e)), None
+    return retdata, archive
 
 
 def _delete_post_data(post, retdata):
@@ -238,12 +218,30 @@ def _delete_post_data(post, retdata):
     return retdata
 
 
-def _delete_media_files(sample_path, preview_path, retdata, file_path=None):
-    print('_delete_media_files', file_path, sample_path, preview_path)
+def _copy_media_files(post, archive, retdata, copy_preview, reverse):
+    from_item, to_item = (post, archive) if not reverse else (archive, post)
+    print(f"Copying file: {from_item.file_path} -> {to_item.file_path}")
+    create_directory(to_item.file_path)
+    try:
+        copy_file(from_item.file_path, to_item.file_path, True)
+    except Exception as e:
+        return set_error(retdata, "Error moving post file: %s" % str(e))
+    if copy_preview and post.has_preview:
+        print(f"Copying preview: {from_item.preview_path} -> {to_item.preview_path}")
+        try:
+            copy_file(from_item.preview_path, to_item.preview_path)
+        except Exception as e:
+            pass
+    return retdata
+
+
+def _delete_media_files(post, retdata):
     media_paths = {
-        'file': file_path,
-        'sample': sample_path,
-        'preview': preview_path,
+        'file': post.file_path,
+        'sample': post.sample_path,
+        'preview': post.preview_path,
+        'video_sample': post.video_sample_path,
+        'video_preview': post.video_preview_path,
     }
     error_messages = []
     for key in media_paths:
@@ -253,25 +251,6 @@ def _delete_media_files(sample_path, preview_path, retdata, file_path=None):
                 delete_file(media_paths[key])
             except Exception as e:
                 error_messages.append(f"Error deleting {key} file: {str(e)}")
-    if len(error_messages) > 0:
-        return set_error(retdata, '\r\n'.join(error_messages))
-    return retdata
-
-
-def _delete_video_files(video_sample_path, video_preview_path, retdata):
-    print('_delete_video_files', video_preview_path, video_sample_path)
-    media_paths = {
-        'sample': video_sample_path,
-        'preview': video_preview_path,
-    }
-    error_messages = []
-    for key in media_paths:
-        if media_paths[key] is not None:
-            print(f"Deleting {key} file: {media_paths[key]}")
-            try:
-                delete_file(media_paths[key])
-            except Exception as e:
-                error_messages.append(f"Error deleting {key} video file: {str(e)}")
     if len(error_messages) > 0:
         return set_error(retdata, '\r\n'.join(error_messages))
     return retdata

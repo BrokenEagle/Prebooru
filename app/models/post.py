@@ -159,19 +159,16 @@ class Post(JsonModel):
     def sample_path(self):
         if self.has_sample:
             return os.path.join(self.subdirectory_path, 'sample', self._partial_file_path + 'jpg')
-        return self.file_path
 
     @property
     def preview_path(self):
         if self.has_preview:
             return os.path.join(self.subdirectory_path, 'preview', self._partial_file_path + 'jpg')
-        return self.file_path
 
     @property
     def video_sample_path(self):
         if self.is_video:
             return os.path.join(self.subdirectory_path, 'video_sample', self._partial_file_path + 'webm')
-        return self.file_path
 
     @property
     def video_preview_path(self):

@@ -77,6 +77,14 @@ def get_archive(type, key):
     return Archive.query.filter_by(type=type, key=key).first()
 
 
+def get_archive_posts_by_md5s(data_keys):
+    archives = []
+    for i in range(0, len(data_keys), 100):
+        sublist = data_keys[i: i + 100]
+        archives += Archive.query.filter(Archive.type == 'post', Archive.key.in_(sublist)).all()
+    return archives
+
+
 def expired_archive_count():
     return Archive.query.filter(Archive.expires < get_current_time()).get_count()
 

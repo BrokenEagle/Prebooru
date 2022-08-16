@@ -24,7 +24,7 @@ def reinstantiate_archive_item(archive):
     retdata = {'error': False}
     data = process_archive_data(archive.data)
     if archive.type == 'post':
-        return reinstantiate_archived_post(data)
+        return reinstantiate_archived_post(archive)
     elif archive.type == 'illust':
         return recreate_archived_illust(data)
     elif archive.type == 'artist':
@@ -39,7 +39,7 @@ def relink_archive_item(archive):
     # Make these switches
     retdata = {'error': False}
     if archive.type == 'post':
-        error = relink_archived_post(archive.data)
+        error = relink_archived_post(archive)
     elif archive.type == 'illust':
         error = relink_archived_illust(archive.data)
     elif archive.type == 'artist':

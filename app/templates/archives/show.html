@@ -5,6 +5,17 @@
 {% block content %}
     <div id="archive-heading" class="heading">{{ archive.header }}</div>
     <div id="archive-content">
+        {% if archive.type == 'post' %}
+            <section id="media-container" onclick="ResizeImage(this)" class="image fullsize">
+                {% if archive.data['body']['file_ext'] in ['jpg', 'png', 'gif'] %}
+                    <picture>
+                        <img src="{{ archive.file_url }}">
+                    </picture>
+                {% elif archive.data['body']['file_ext'] in ['mp4'] %}
+                    <video src="{{ archive.file_url }}"></video>
+                {% endif %}
+            </section>
+        {% endif %}
         <ul>
             <li><strong>Type:</strong> {{ archive.type | title }}</li>
             <li><strong>Key:</strong> {{ archive.data_key }}</li>
@@ -12,4 +23,12 @@
             <li><strong>Data:</strong><br><div class="json-data">{{ archive.data | tojson(indent=4) }}</div></li>
         </ul>
     </div>
+{% endblock %}
+
+{% block pagescript %}
+<script>
+function ResizeImage(obj) {
+    obj.classList.toggle('fullsize');
+}
+</script>
 {% endblock %}

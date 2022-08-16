@@ -7,9 +7,20 @@ div#archive-content {
     font-size: 16px;
     margin-top: 1em;
 }
+section#media-container.fullsize img {
+    max-height: 50vh;
+    width: auto;
+}
 /****INDEX Page****/
 section.a-index div.json-data {
     max-width: 70em;
     max-height: 50em;
     overflow: auto;
+}
+div.id-link {
+    margin-bottom: 1em;
+    text-align: center;
+}
+article.archive-preview {
+    text-align: center;
 }
