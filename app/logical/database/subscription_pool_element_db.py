@@ -136,11 +136,11 @@ def total_missing_downloads():
 
 def _update_subscription_pool_element_keep(subscription_pool_element, value):
     subscription_pool_element.keep = value
-    if value == 'yes':
-        subscription_pool_element.expires = days_from_now(1)  # Posts will be unlinked after this period
+    if value == 'yes' or value == 'archive':
+        subscription_pool_element.expires = days_from_now(1)  # Posts will be unlinked/archived after this period
     elif value == 'no':
         subscription_pool_element.expires = days_from_now(7)  # Posts will be deleted after this period
     elif value == 'maybe':
-        subscription_pool_element.expires = None  # Will force the expires to be refreshed when changed
-    elif subscription_pool_element.expires is None:
-        subscription_pool_element.expires = days_from_now(subscription_pool_element.pool.expiration)
+        subscription_pool_element.expires = None  # Keep the element around until/unless a decision is made on it
+    elif value == None:
+        subscription_pool_element.expires = days_from_now(subscription_pool_element.pool.expiration) # Reset the expiration

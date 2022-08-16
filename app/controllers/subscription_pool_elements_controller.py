@@ -91,7 +91,7 @@ def index_html():
     if request.args.get('search[keep]') is None:
         if element_type != 'all':
             q = q.filter(SubscriptionPoolElement.post_id.__ne__(None))
-        if element_type in ['yes', 'no', 'maybe']:
+        if element_type in ['yes', 'no', 'maybe', 'archive']:
             q = q.filter(SubscriptionPoolElement.keep == element_type)
         elif element_type == 'undecided' or element_type is None:
             q = q.filter(SubscriptionPoolElement.keep.is_(None))
@@ -127,7 +127,7 @@ def index_html():
 def batch_keep_html():
     params = process_request_values(request.values)
     data_params = get_params_value(params, 'subscription_pool_element', True)
-    if 'keep' not in data_params or data_params['keep'] not in ['yes', 'no', 'maybe']:
+    if 'keep' not in data_params or data_params['keep'] not in ['yes', 'no', 'maybe', 'archive']:
         flash("Invalid or missing keep value.", 'error')
         return redirect(request.referrer)
     if 'id' not in data_params or not isinstance(data_params['id'], list):

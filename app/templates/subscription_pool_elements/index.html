@@ -11,11 +11,18 @@
             {{ helpers.subscription_pool.element_type_link('yes') }}
             {{ helpers.subscription_pool.element_type_link('no') }}
             {{ helpers.subscription_pool.element_type_link('maybe') }}
+            {{ helpers.subscription_pool.element_type_link('archive') }}
             {{ helpers.subscription_pool.element_type_link('undecided') }}
         </div>
         <div id="subscription-pool-controls">
             {% call image_select_controls('similar-post-input') %}
                 &emsp;&emsp;&emsp;
+                <strong>
+                    [
+                        <a class="archive-link" href="javascript:SubmitForm('archive')">ARCHIVE</a>
+                    ]
+                </strong>
+                &emsp;
                 <strong>
                     KEEP[
                         <a class="yes-link" href="javascript:SubmitForm('yes')">YES</a>

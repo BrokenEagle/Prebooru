@@ -1,16 +1,22 @@
 /****General****/
-a.yes-link {
+div#subscription-pool-controls a.yes-link,
+div.subscription-element-info a.yes-link {
     color: green;
 }
-a.maybe-link {
+div#subscription-pool-controls a.maybe-link,
+div.subscription-element-info a.maybe-link {
     color: darkorange;
 }
-a.no-link {
+div#subscription-pool-controls a.no-link,
+div.subscription-element-info a.no-link {
     color: red;
+}
+div#subscription-pool-controls a.archive-link {
+    color: #AAA;
 }
 /****INDEX Page****/
 section#content.c-subscription-pool-element.a-index {
-    min-width: 80em;
+    min-width: 95em;
 }
 div#subscription-page-controls {
     position: relative;
@@ -29,7 +35,7 @@ div#subscription-type-selector {
     left: 0;
     margin-top: 1em;
     font-size: 20px;
-    width: 20em;
+    width: 21em;
 }
 a.element-type {
     margin-right: -6px;
@@ -63,20 +69,50 @@ article.subscription-element > a {
 article.subscription-element div.subscription-element-display {
     display: flex;
 }
-article.subscription-element div.subscription-element-display div.input {
-    flex-basis: 50%;
+article.subscription-element.subscription-post div.subscription-element-display > div {
+    flex-basis: 33%;
 }
 div.element-illust-type {
-    margin-left: 1em;
     padding-top: 0.4em;
     font-size: 20px;
     font-weight: bold;
+    text-align: center;
 }
 article.subscription-image div.element-illust-type {
     color: darkblue;
 }
 article.subscription-video div.element-illust-type {
     color: darkgreen;
+}
+article.subscription-image a {
+    color: royalblue;
+}
+article.subscription-video a {
+    color: green;
+}
+div.subscription-element-archive {
+    border: 2px dotted #AAA;
+    background-color: #CCC;
+    border-radius: 10px;
+    margin: 0 0.5em 0.2em;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    vertical-align: center;
+}
+div.subscription-element-archive a {
+    color: white;
+    padding: 5px 20px;
+}
+article.subscription-archive.subscription-image div.subscription-element-archive {
+    border: 2px dotted #CCC;
+    background-color: #EEE;
+}
+article.subscription-archive.subscription-image div.subscription-element-archive a {
+    color: blue;
+}
+article.subscription-archive.subscription-video div.subscription-element-archive a {
+    color: limegreen;
 }
 div.subscription-element-info {
     font-size: 16px;
@@ -95,6 +131,22 @@ div.subscription-element-info.no-info {
 }
 div.subscription-element-info.undecided-info {
     border-color: #DDD;
+}
+div.subscription-element-info.archive-info {
+    border-color: #AAA;
+    border-style: dotted;
+}
+div.subscription-element-info.yes-info a.yes-link {
+    background: limegreen;
+    color: white;
+}
+div.subscription-element-info.maybe-info a.maybe-link {
+    background: darkorange;
+    color: white;
+}
+div.subscription-element-info.no-info a.no-link {
+    background: red;
+    color: white;
 }
 div.subscription-element-info a.keep-link {
     margin-top: 0.25em;
@@ -115,25 +167,31 @@ div.subscription-element-info a.keep-link.maybe-link {
 article.subscription-element ul {
     margin-left: 20px;
 }
-article.subscription-element > div.subscription-no-post {
+article.subscription-element.subscription-no-post {
     padding: 0.5em;
     max-height: 450px;
+    box-shadow: 0 0 0 2px #DDD;
     background: #F0F0F0;
-    border: 2px solid #DDD;
     width: 325px;
     overflow-x: hidden;
 }
-article.subscription-element > div.subscription-no-post > div.preview {
+article.subscription-element.subscription-no-post > div.preview {
     height: 300px;
+    text-align: center;
 }
-article.subscription-element > div.subscription-no-post > div.preview > img {
+article.subscription-element.subscription-no-post > div.preview > img {
     max-height: 300px;
     max-width: 300px;
 }
-article.subscription-element > div.subscription-no-post > ul {
+article.subscription-element.subscription-no-post > div.subscription-element-info {
+    margin-top: 1em;
+    border-color: #DDD;
+    font-size: 14px;
+}
+article.subscription-element.subscription-no-post > div.subscription-element-info > ul {
     margin-left: 0;
 }
-article.subscription-element > div.subscription-no-post > ul > li {
+article.subscription-element.subscription-no-post > div.subscription-element-info > ul > li {
     list-style-position: inside;
     text-overflow: ellipsis;
     overflow-x: hidden;
@@ -165,43 +223,4 @@ form#form article.subscription-image div.checkbox-active label {
 }
 form#form article.subscription-video div.checkbox-active label {
     background: linear-gradient(270deg, forestgreen, transparent);
-}
-/****SHOW Page****/
-div#sidebar-container {
-    display: flex;
-}
-aside#subscription-pool-element-sidebar {
-    width: 25em;
-    border: 2px solid #DDD;
-    background: #F8F8F8;
-    padding: 0.5em;
-    height: fit-content;
-    min-height: 50em;
-}
-aside#subscription-pool-element-sidebar > section {
-    margin-bottom: 1em;
-}
-div#post-content {
-    width: 1300px;
-    margin-left: 1em;
-}
-section#image-container {
-    cursor: pointer;
-    margin-right: 1em;
-    margin-bottom: 1em;
-}
-section#image-container.fullsize img {
-    max-height: 100vh;
-    width: auto;
-}
-div#subscription-pool-element-site-content {
-    border: 1px solid #DEF;
-    background-color: #F8FFFF;
-    padding: 5px;
-    display: flex;
-}
-section#subscription-pool-element-info {
-    padding: 5px;
-    width: 40%;
-    margin-right: 1em;
 }
