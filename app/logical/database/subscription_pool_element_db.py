@@ -73,7 +73,7 @@ def link_subscription_post(element, post):
 
 
 def unlink_subscription_post(element):
-    element.post_id = None
+    element.post = None
     element.expires = None
     element.active = False
     element.status = 'unlinked'
@@ -101,10 +101,10 @@ def archive_subscription_post(element):
 
 
 def duplicate_subscription_post(element, md5):
-    element.status = 'duplicate'
     element.expires = None
     element.active = False
     element.md5 = md5
+    element.status = 'duplicate'
     SESSION.commit()
 
 
@@ -134,13 +134,13 @@ def total_missing_downloads():
 
 # #### Private
 
-def _update_subscription_pool_element_keep(subscription_pool_element, value):
-    subscription_pool_element.keep = value
+def _update_subscription_pool_element_keep(element, value):
+    element.keep = value
     if value == 'yes' or value == 'archive':
-        subscription_pool_element.expires = days_from_now(1)  # Posts will be unlinked/archived after this period
+        element.expires = days_from_now(1)  # Posts will be unlinked/archived after this period
     elif value == 'no':
-        subscription_pool_element.expires = days_from_now(7)  # Posts will be deleted after this period
+        element.expires = days_from_now(7)  # Posts will be deleted after this period
     elif value == 'maybe':
-        subscription_pool_element.expires = None  # Keep the element around until/unless a decision is made on it
-    elif value == None:
-        subscription_pool_element.expires = days_from_now(subscription_pool_element.pool.expiration) # Reset the expiration
+        element.expires = None  # Keep the element around until/unless a decision is made on it
+    elif value is None:
+        element.expires = days_from_now(element.pool.expiration)  # Reset the expiration

@@ -5,7 +5,7 @@ import os
 
 # ### PACKAGE IMPORTS
 from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
-from utility.file import create_directory, put_get_raw, copy_file, delete_file, move_file
+from utility.file import create_directory, put_get_raw, copy_file, delete_file
 from utility.print import print_error, exception_print
 
 # ### LOCAL IMPORTS
@@ -20,7 +20,7 @@ from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.error_db import create_error_from_raw_parameters, create_error
 from ..database.archive_db import get_archive, create_archive, update_archive, set_archive_temporary,\
-    process_archive_data, ARCHIVE_DIRECTORY
+    process_archive_data
 
 
 # ## GLOBAL VARIABLES
@@ -230,7 +230,7 @@ def _copy_media_files(post, archive, retdata, copy_preview, reverse):
         print(f"Copying preview: {from_item.preview_path} -> {to_item.preview_path}")
         try:
             copy_file(from_item.preview_path, to_item.preview_path)
-        except Exception as e:
+        except Exception:
             pass
     return retdata
 

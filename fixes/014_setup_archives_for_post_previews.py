@@ -24,7 +24,8 @@ def main():
     while True:
         print(f"setup_archives_for_post_previews: {page.first} - {page.last} / Total({page.count})")
         for archive in page.items:
-            old_path = os.path.join(MEDIA_DIRECTORY, 'archive', archive.data_key + '.' + archive.data['body']['file_ext'])
+            filename = archive.data_key + '.' + archive.data['body']['file_ext']
+            old_path = os.path.join(MEDIA_DIRECTORY, 'archive', filename)
             if os.path.exists(old_path):
                 print("Moving", archive.shortlink)
                 create_directory(archive.file_path)

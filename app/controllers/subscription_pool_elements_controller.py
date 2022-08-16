@@ -157,7 +157,7 @@ def keep_html(id):
 @bp.route('/subscription_pool_elements/<int:id>/keep.json', methods=['POST'])
 def keep_json(id):
     element = get_or_error(SubscriptionPoolElement, id)
-    if isinstance(element, str):
+    if isinstance(element, dict):
         return element
     messages = []
     value = request.args.get('keep')

@@ -31,7 +31,7 @@ class Archive(JsonModel):
         if self.type != 'post':
             return
         return self.data['body']['width'] > PREVIEW_DIMENSIONS[0] or\
-               self.data['body']['height'] > PREVIEW_DIMENSIONS[1]
+            self.data['body']['height'] > PREVIEW_DIMENSIONS[1]
 
     @property
     def file_url(self):
