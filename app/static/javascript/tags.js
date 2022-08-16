@@ -1,3 +1,7 @@
+// APP/STATIC/JAVASCRIPT/TAGS.JS
+
+/* global Prebooru */
+
 const Tags = {};
 
 Tags.createUserTagFromName = function(obj) {

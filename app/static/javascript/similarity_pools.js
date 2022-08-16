@@ -1,9 +1,13 @@
+// APP/STATIC/JAVASCRIPT/SIMILARITY_POOLS.JS
+
+/* global Prebooru */
+
 const SimilarityPools = {};
 
 SimilarityPools.deleteElement = function(obj) {
     fetch(obj.href, {method: 'DELETE'})
-        .then((resp)=>resp.json())
-        .then((data)=>{
+        .then((resp) => resp.json())
+        .then((data) => {
             if (data.error) {
                 Prebooru.error(data.message);
             } else {
@@ -16,21 +20,21 @@ SimilarityPools.deleteElement = function(obj) {
 };
 
 SimilarityPools.removeArticle = function(obj) {
-    for (var curr = obj; curr.tagName !== 'ARTICLE' && curr.parentElement !== null; curr = curr.parentElement);
-    curr.outerHTML = "";
+    let $article = Prebooru.closest(obj, 'article');
+    $article.outerHTML = "";
 };
 
 SimilarityPools.toggleCheckbox = function(obj) {
-    for (var curr = obj; curr.tagName !== 'DIV' && curr.parentElement !== null; curr = curr.parentElement);
+    let $div = Prebooru.closest(obj, 'div');
     if (obj.checked) {
-        curr.classList.add('checkbox-active');
+        $div.classList.add('checkbox-active');
     } else {
-        curr.classList.remove('checkbox-active');
+        $div.classList.remove('checkbox-active');
     }
 };
 
 SimilarityPools.updateAllInputs = function() {
-    document.querySelectorAll('form#form input[type=checkbox]').forEach(function (input) {
+    document.querySelectorAll('form#form input[type=checkbox]').forEach((input) => {
         SimilarityPools.toggleCheckbox(input);
     });
 };

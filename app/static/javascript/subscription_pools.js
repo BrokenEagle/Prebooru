@@ -1,3 +1,7 @@
+// APP/STATIC/JAVASCRIPT/SUBSCRIPTION_POOLS.JS
+
+/* global Prebooru */
+
 const SubscriptionPools = {};
 
 SubscriptionPools.networkHandler = function(obj) {
@@ -5,8 +9,8 @@ SubscriptionPools.networkHandler = function(obj) {
     let replace_selector = has_preview ? '.subscription-element' : '.subscription-element-info';
     let $element = Prebooru.closest(obj, replace_selector);
     fetch(obj.href, {method: 'POST'})
-        .then((resp)=>resp.json())
-        .then((data)=>{
+        .then((resp) => resp.json())
+        .then((data) => {
             if (data.error) {
                 Prebooru.error(data.message);
             } else {
@@ -28,16 +32,16 @@ SubscriptionPools.networkHandler = function(obj) {
 };
 
 SubscriptionPools.toggleCheckbox = function(obj) {
-    for (var curr = obj; curr.tagName !== 'DIV' && curr.parentElement !== null; curr = curr.parentElement);
+    let $div = Prebooru.closest(obj, 'div');
     if (obj.checked) {
-        curr.classList.add('checkbox-active');
+        $div.classList.add('checkbox-active');
     } else {
-        curr.classList.remove('checkbox-active');
+        $div.classList.remove('checkbox-active');
     }
 };
 
 SubscriptionPools.updateAllInputs = function() {
-    document.querySelectorAll('form#form input[type=checkbox]').forEach(function (input) {
+    document.querySelectorAll('form#form input[type=checkbox]').forEach((input) => {
         SubscriptionPools.toggleCheckbox(input);
     });
 };

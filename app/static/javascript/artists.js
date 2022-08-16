@@ -1,3 +1,7 @@
+// APP/STATIC/JAVASCRIPT/ARTISTS.JS
+
+/* global Prebooru */
+
 const Artists = {};
 
 Artists.createArtistFromUrl = function(obj) {

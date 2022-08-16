@@ -1,3 +1,7 @@
+// APP/STATIC/JAVASCRIPT/POSTS.JS
+
+/* global Prebooru */
+
 const Posts = {};
 
 Posts.createUpload = function(obj) {

@@ -1,3 +1,7 @@
+// APP/STATIC/JAVASCRIPT/ILLUSTS.JS
+
+/* global Prebooru */
+
 const Illusts = {};
 
 Illusts.createFromUrl = function (obj) {

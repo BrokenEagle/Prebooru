@@ -8,8 +8,10 @@ config/local.py
 db/
 temp/
 junk/
+node_modules/
 ffprobe.exe
 sqlite3.exe
+/package-lock.json
 /databasesave.bat
 /datasave.bat
 /datasave.log

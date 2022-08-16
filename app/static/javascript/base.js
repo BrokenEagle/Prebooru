@@ -1,3 +1,5 @@
+// APP/STATIC/JAVASCRIPT/BASE.JS
+
 const Prebooru = {};
 
 Prebooru.updateInputsEvent = new CustomEvent('prebooru:update-inputs');
@@ -79,7 +81,7 @@ Prebooru.addTag = function (obj, type) {
 
 Prebooru.selectAll = function(classname) {
     let counter = 0;
-    [...document.getElementsByClassName(classname)].forEach((input)=>{
+    [...document.getElementsByClassName(classname)].forEach((input) => {
         input.checked = true;
         counter++;
     });
@@ -88,7 +90,7 @@ Prebooru.selectAll = function(classname) {
 };
 
 Prebooru.selectNone = function(classname) {
-    [...document.getElementsByClassName(classname)].forEach((input)=>{
+    [...document.getElementsByClassName(classname)].forEach((input) => {
         input.checked = false;
     });
     document.getElementById('image-select-counter').innerText = 0;
@@ -97,7 +99,7 @@ Prebooru.selectNone = function(classname) {
 
 Prebooru.selectInvert = function(classname) {
     let counter = 0;
-    [...document.getElementsByClassName(classname)].forEach((input)=>{
+    [...document.getElementsByClassName(classname)].forEach((input) => {
         input.checked = !input.checked;
         counter += (input.checked ? 1 : 0);
     });
@@ -117,7 +119,7 @@ Prebooru.copyFileLink = function(obj) {
 
 Prebooru.message = function(msg) {
     this.processNotice('notice-message', msg);
-    this._notice_timeout_id = setTimeout(function () {
+    this._notice_timeout_id = setTimeout(() => {
         Prebooru.closeNotice();
         Prebooru._notice_timeout_id = null;
     }, 6000);
@@ -145,7 +147,7 @@ Prebooru.closeNotice = function() {
 Prebooru.onImageError = function (obj) {
     let retries = Number(obj.dataset.loadRetries) || 0;
     if (retries < 3) {
-        console.log("Set timeout");
+        // eslint-disable-next-line no-self-assign
         setTimeout(() => (obj.src = obj.src), 1000);
     } else {
         obj.src = '/static/image_error.jpg';
@@ -163,18 +165,14 @@ Prebooru.onVideoError = function (obj) {
 };
 
 Prebooru.closest = function(obj, selector) {
-    for (var curr = obj; curr && !curr.matches(selector); curr = curr.parentElement);
+    var curr = null;
+    for (curr = obj; curr && !curr.matches(selector); curr = curr.parentElement);
     return curr;
 };
 
-Prebooru.replaceDiv = function(obj, html) {
-    for (var curr = obj; curr.tagName !== 'DIV' && curr.parentElement !== null; curr = curr.parentElement);
-    curr.outerHTML = html;
-};
-
 Prebooru.initializeLazyLoad = function (container_selector) {
-    let obs = new IntersectionObserver(function (entries, observer) {
-        entries.forEach((entry)=>{
+    let obs = new IntersectionObserver(((entries, observer) => {
+        entries.forEach((entry) => {
             if (entry.isIntersecting) {
                 entry.target.querySelectorAll('img[data-src]').forEach((image) => {
                     image.src = image.dataset.src;
@@ -182,10 +180,10 @@ Prebooru.initializeLazyLoad = function (container_selector) {
                 observer.unobserve(entry.target);
             }
         });
-    }, {
+    }), {
         rootMargin: '150px',
     });
-    document.querySelectorAll(container_selector).forEach((preview)=>{
+    document.querySelectorAll(container_selector).forEach((preview) => {
         if (preview.querySelectorAll('img[data-src]').length > 0) {
             obs.observe(preview);
         }
@@ -203,12 +201,12 @@ Prebooru.initializeVideoPreviews = function (container_selector) {
     function getImageBox(image) {
         return {top: image.offsetTop, bottom: image.offsetTop + image.offsetHeight, left: image.offsetLeft, right: image.offsetLeft + image.offsetWidth};
     }
-    function imageToVideo(image, post_name) {
+    function imageToVideo(image) {
         console.log("Changing from image to video on", image.postName);
         image.oldOnerror = image.onerror;
         image.src = image.dataset.video;
     }
-    function videoToImage(image, post_name) {
+    function videoToImage(image) {
         console.log("Changing from video to image on", image.postName);
         image.onerror = image.oldOnerror;
         image.src = image.dataset.src;
@@ -216,7 +214,7 @@ Prebooru.initializeVideoPreviews = function (container_selector) {
     function onMouseEnter(event) {
         let image = event.target;
         if (image.enteredPopup || Number.isInteger(image.videoPreviewTimeout)) return;
-        image.videoPreviewTimeout = setTimeout(()=>{
+        image.videoPreviewTimeout = setTimeout(() => {
             imageToVideo(image);
             image.videoPreviewTimeout = true;
         }, 500);
@@ -239,7 +237,7 @@ Prebooru.initializeVideoPreviews = function (container_selector) {
             videoToImage(image);
         }
     }
-    document.querySelectorAll(container_selector).forEach((preview)=>{
+    document.querySelectorAll(container_selector).forEach((preview) => {
         let image = preview.querySelector('img');
         image.onmouseenter = onMouseEnter;
         image.onmouseleave = onMouseLeave;
