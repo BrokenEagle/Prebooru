@@ -1,4 +1,4 @@
-# APP/LOGICAL/RECORDS/ARCHIVE_DATA_REC.PY
+# APP/LOGICAL/RECORDS/ARCHIVE_REC.PY
 
 # ## PYTHON IMPORTS
 import os
@@ -10,7 +10,7 @@ from utility.file import delete_file
 
 # ## LOCAL IMPORTS
 from ..utility import set_error
-from ..database.archive_data_db import process_archive_data, ARCHIVE_DATA_DIRECTORY
+from ..database.archive_db import process_archive_data, ARCHIVE_DATA_DIRECTORY
 from .post_rec import reinstantiate_archived_post, relink_archived_post
 from .illust_rec import recreate_archived_illust, relink_archived_illust
 from .artist_rec import recreate_archived_artist, relink_archived_artist

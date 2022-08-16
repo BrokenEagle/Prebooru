@@ -10,7 +10,7 @@ from ..database.artist_db import create_artist_from_parameters, update_artist_fr
     create_artist_from_raw_parameters, artist_append_booru, delete_artist
 from ..database.booru_db import get_booru
 from ..database.notation_db import create_notation_from_raw_parameters
-from ..database.archive_data_db import get_archive_data, create_archive_data, update_archive_data
+from ..database.archive_db import get_archive_data, create_archive_data, update_archive_data
 
 
 # ## FUNCTIONS

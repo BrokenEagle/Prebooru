@@ -12,7 +12,7 @@ from ..database.illust_db import create_illust_from_parameters, update_illust_fr
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.notation_db import create_notation_from_raw_parameters
-from ..database.archive_data_db import get_archive_data, create_archive_data, update_archive_data
+from ..database.archive_db import get_archive_data, create_archive_data, update_archive_data
 from .artist_rec import create_artist_from_source
 
 

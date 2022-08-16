@@ -26,7 +26,7 @@ from ..database.subscription_pool_db import get_available_subscription, update_s
 from ..database.subscription_pool_element_db import total_missing_downloads, total_expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
-from ..database.archive_data_db import expired_archive_data_count, delete_expired_archive_data
+from ..database.archive_db import expired_archive_data_count, delete_expired_archive_data
 from ..database.jobs_db import get_job_enabled_status, update_job_lock_status, get_job_lock_status,\
     get_job_manual_status
 from ..database.server_info_db import update_last_activity, server_is_busy

@@ -1,19 +1,19 @@
-# APP/CONTROLLERS/ARCHIVE_DATA_CONTROLLER.PY
+# APP/CONTROLLERS/ARCHIVES_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, url_for, redirect, flash
 
 # ## LOCAL IMPORTS
 from ..models import ArchiveData
-from ..logical.database.archive_data_db import set_archive_data_permenant, set_archive_data_temporary
-from ..logical.records.archive_data_rec import relink_archive_data_item, reinstantiate_archive_data_item
+from ..logical.database.archive_db import set_archive_data_permenant, set_archive_data_temporary
+from ..logical.records.archive_rec import relink_archive_data_item, reinstantiate_archive_data_item
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort
 
 
 # ## GLOBAL VARIABLES
 
-bp = Blueprint("archive_data", __name__)
+bp = Blueprint("archive", __name__)
 
 
 # ## FUNCTIONS
@@ -41,7 +41,7 @@ def show_json(id):
 @bp.route('/archive_data/<int:id>', methods=['GET'])
 def show_html(id):
     archive_data = get_or_abort(ArchiveData, id)
-    return render_template("archive_data/show.html", archive_datum=archive_data)
+    return render_template("archives/show.html", archive_datum=archive_data)
 
 
 # ###### INDEX
@@ -56,7 +56,7 @@ def index_json():
 def index_html():
     q = index()
     archive_data = paginate(q, request)
-    return render_template("archive_data/index.html", archive_data=archive_data, archive_datum=ArchiveData())
+    return render_template("archives/index.html", archive_data=archive_data, archive_datum=ArchiveData())
 
 
 # ###### MISC

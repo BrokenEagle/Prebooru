@@ -37,7 +37,7 @@ from .similarity_pool_element import SimilarityPoolElement  # noqa: F401
 
 # #### Cache data
 from .api_data import ApiData  # noqa: F401
-from .archive_data import ArchiveData  # noqa: F401
+from .archive import ArchiveData  # noqa: F401
 from .media_file import MediaFile  # noqa: F401
 from .domain import Domain  # noqa: F401
 

@@ -18,7 +18,7 @@ from ..database.post_db import create_post_from_raw_parameters, delete_post, pos
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.error_db import create_error_from_raw_parameters, create_error
-from ..database.archive_data_db import get_archive_data, create_archive_data, update_archive_data,\
+from ..database.archive_db import get_archive_data, create_archive_data, update_archive_data,\
     ARCHIVE_DATA_DIRECTORY
 
 

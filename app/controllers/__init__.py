@@ -28,7 +28,7 @@ from . import errors_controller as error  # noqa: F401
 
 # #### Other DB data
 from . import api_data_controller as api_data  # noqa: F401
-from . import archive_data_controller as archive_data  # noqa: F401
+from . import archives_controller as archive  # noqa: F401
 from . import media_files_controller as media_file  # noqa: F401
 from . import similarity_controller as similarity  # noqa: F401
 from . import similarity_pools_controller as similarity_pool  # noqa: F401

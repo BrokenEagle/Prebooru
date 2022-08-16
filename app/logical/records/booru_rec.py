@@ -11,7 +11,7 @@ from ..sources.danbooru import get_artist_by_id
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
     get_booru, create_booru_from_raw_parameters, delete_booru
-from ..database.archive_data_db import get_archive_data, create_archive_data, update_archive_data
+from ..database.archive_db import get_archive_data, create_archive_data, update_archive_data
 
 
 # ## FUNCTIONS

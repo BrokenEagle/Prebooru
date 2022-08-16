@@ -54,7 +54,7 @@ def initialize_controllers():
     PREBOORU_APP.register_blueprint(controllers.notation.bp)
     PREBOORU_APP.register_blueprint(controllers.error.bp)
     PREBOORU_APP.register_blueprint(controllers.api_data.bp)
-    PREBOORU_APP.register_blueprint(controllers.archive_data.bp)
+    PREBOORU_APP.register_blueprint(controllers.archive.bp)
     PREBOORU_APP.register_blueprint(controllers.media_file.bp)
     PREBOORU_APP.register_blueprint(controllers.proxy.bp)
     PREBOORU_APP.register_blueprint(controllers.static.bp)

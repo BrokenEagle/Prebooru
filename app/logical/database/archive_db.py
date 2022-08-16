@@ -1,4 +1,4 @@
-# APP/LOGICAL/DATABASE/ARCHIVE_DATA_DB.PY
+# APP/LOGICAL/DATABASE/ARCHIVE_DB.PY
 
 # ## PYTHON IMPORTS
 import os
@@ -59,7 +59,7 @@ def set_archive_data_temporary(item, days):
 # ###### DELETE
 
 def delete_expired_archive_data():
-    from ..records.archive_data_rec import remove_archive_media_file
+    from ..records.archive_rec import remove_archive_media_file
     ArchiveData.query.filter(ArchiveData.type != 'post', ArchiveData.expires < get_current_time()).delete()
     SESSION.commit()
     expired_data = ArchiveData.query.filter(ArchiveData.type == 'post', ArchiveData.expires < get_current_time()).all()
