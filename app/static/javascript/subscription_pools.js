@@ -16,9 +16,9 @@ SubscriptionPools.networkHandler = function(obj) {
             }
             if (data.html) {
                 $element.outerHTML = data.html;
-                if (has_preview) {
-                    let $post = $element.querySelector('.post');
-                    if ($post?.classList.contains('video-post')) {
+                let $post = $element.querySelector('.post');
+                if ($post) {
+                    if ($post.classList.contains('video-post')) {
                         Prebooru.initializeVideoPreviews('#' + $post.id);
                     }
                     document.getElementById('image-select-counter').innerText = document.querySelectorAll('.subscription-element .checkbox-active').length;
