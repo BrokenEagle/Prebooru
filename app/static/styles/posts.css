@@ -144,7 +144,30 @@ a.maybe-link {
 a.no-link {
     color: red;
 }
-
+div.subscription-element-archive {
+    border: 2px dotted #AAA;
+    background-color: #CCC;
+    border-radius: 10px;
+    margin: 0 0.5em 0.2em;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+div.subscription-element-archive a {
+    display: block;
+    color: white;
+    padding: 5px 20px;
+}
+article.subscription-archive div.subscription-element-archive {
+    border: 2px dotted #CCC;
+    background-color: #EEE;
+}
+article.subscription-archive.subscription-image div.subscription-element-archive a {
+    color: blue;
+}
+article.subscription-archive.subscription-video div.subscription-element-archive a {
+    color: limegreen;
+}
 div.subscription-element-info {
     font-size: 16px;
     border: 2px solid;
@@ -162,6 +185,10 @@ div.subscription-element-info.no-info {
 }
 div.subscription-element-info.undecided-info {
     border-color: #DDD;
+}
+div.subscription-element-info.archive-info {
+    border-color: #AAA;
+    border-style: dotted;
 }
 div.subscription-element-info a.keep-link {
     margin-top: 0.25em;

@@ -5,9 +5,7 @@
 const SubscriptionPools = {};
 
 SubscriptionPools.networkHandler = function(obj) {
-    let has_preview = JSON.parse(obj.dataset.preview);
-    let replace_selector = has_preview ? '.subscription-element' : '.subscription-element-info';
-    let $element = Prebooru.closest(obj, replace_selector);
+    let $element = Prebooru.closest(obj, '.subscription-element');
     fetch(obj.href, {method: 'POST'})
         .then((resp) => resp.json())
         .then((data) => {

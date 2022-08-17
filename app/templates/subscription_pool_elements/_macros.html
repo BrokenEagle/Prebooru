@@ -5,7 +5,7 @@
     {% if element is not none %}
         <section id="{{ section_id }}">
             <h4>Subscription</h4>
-            {{ subscription_pool_element_info(element, False, False) }}
+            {{ subscription_element_display(element) }}
         </section>
     {% endif %}
 {%- endmacro %}
@@ -14,6 +14,17 @@
     <div id="{{ section_id }}">
         <span class="heading">Elements</span> (&thinsp;{{ element_count }}&thinsp;) {{ helpers.base.general_link('&raquo;', element_search_url) }}
     </div>
+{%- endmacro %}
+
+{% macro subscription_element_display(element) -%}
+    {% set element_post = 'post' if element.post is not none else 'no-post' %}
+    {% set element_keep =  element.keep or 'undecided' %}
+    <article id="subscription-element-{{ element.id }}" class="subscription-element subscription-{{ element.illust_url.type}} subscription-{{ element_post }} subscription-{{ element_keep }}">
+        <div class="subscription-element-archive">
+            {{ helpers.subscription_pool.keep_element_link(element, 'archive', False) }}
+        </div>
+        {{ subscription_pool_element_info(element, False, False) }}
+    </article>
 {%- endmacro %}
 
 {% macro subscription_element_preview(element, lazyload) -%}

@@ -142,6 +142,5 @@ def nopost_function_link(name, element):
     url = url_for(f'subscription_pool_element.{name}_json', id=element.id)
     addons = {
         'onclick': 'return SubscriptionPools.networkHandler(this)',
-        'data-preview': 'true',
     }
     return general_link(name, url, **addons)

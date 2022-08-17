@@ -172,7 +172,7 @@ def keep_json(id):
     if has_preview:
         html = render_template_ws("subscription_pool_elements/_element_preview.html", element=element)
     else:
-        html = render_template_ws("subscription_pool_elements/_element_info.html", element=element)
+        html = render_template_ws("subscription_pool_elements/_element_display.html", element=element)
     return {'error': False, 'item': element.to_json(), 'html': strip_whitespace(html)}
 
 
