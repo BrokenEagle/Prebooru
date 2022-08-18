@@ -20,7 +20,9 @@
                         <div class="id-link">{{ item.show_link }}</div>
                         {% if item.type == 'post' %}
                             <article class="archive-preview">
-                                <img src="{{ item.preview_url }}">
+                                <a href="{{ item.show_url }}">
+                                    <img src="{{ item.preview_url }}">
+                                </a>
                             </article>
                         {% endif %}
                     </td>
