@@ -35,6 +35,9 @@ def initialize_helpers():
     PREBOORU_APP.jinja_env.globals.update(helpers=helpers)
     PREBOORU_APP.jinja_env.add_extension('jinja2.ext.do')
     PREBOORU_APP.jinja_env.add_extension('jinja2.ext.loopcontrols')
+    if DEBUG_MODE:
+        import jinja2
+        PREBOORU_APP.jinja_env.undefined = jinja2.StrictUndefined
 
 
 def initialize_controllers():
