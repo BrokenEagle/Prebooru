@@ -18,7 +18,7 @@
             {% for item in archives.items %}
                 <tr id="archive-{{ item.id }}">
                     <td>
-                        <div id="id-link">{{ item.show_link }}</div>
+                        <div class="id-link">{{ item.show_link }}</div>
                         {% if item.type == 'post' %}
                             <article class="archive-preview">
                                 <img src="{{ item.preview_url }}">
