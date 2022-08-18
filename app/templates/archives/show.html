@@ -18,7 +18,7 @@
         {% endif %}
         <ul>
             <li><strong>Type:</strong> {{ archive.type | title }}</li>
-            <li><strong>Key:</strong> {{ archive.data_key }}</li>
+            <li><strong>Key:</strong> {{ archive.key }}</li>
             <li><strong>Expires:</strong> {{ helpers.base.format_timestamp(archive.expires) }}</li>
             <li><strong>Data:</strong><br><div class="json-data">{{ archive.data | tojson(indent=4) }}</div></li>
         </ul>
