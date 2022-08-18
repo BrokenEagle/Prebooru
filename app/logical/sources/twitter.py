@@ -875,6 +875,13 @@ def get_tweet_commentary(twitter_data):
                           if safe_check(item, str, 'ext_alt_text')]
         if len(alt_text_items):
             text += '\r\n\r\n' + '\r\n'.join(["{IMAGE #%d}\r\n%s" % (i, alt_text) for (i, alt_text) in alt_text_items])
+        media_text_items = set()
+        for item in media:
+            media_tags = safe_get(item, 'features', 'all', 'tags')
+            if media_tags is not None and len(media_tags):
+                media_text_items.update([f"@{tag['screen_name']} (twuser #{tag['user_id']})" for tag in media_tags])
+        if len(media_text_items):
+            text += '\r\n\r\nMentions:\r\n' + '\r\n'.join(media_text_items)
     return text
 
 
