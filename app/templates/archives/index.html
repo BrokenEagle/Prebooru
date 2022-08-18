@@ -9,9 +9,8 @@
             <tr>
                 <th width="10%">ID</th>
                 <th width="20%">Info</th>
-                <th width="60%">Data</th>
-                <th width="15%">Expires</th>
-                <th width="5">Action</th>
+                <th width="65%">Data</th>
+                <th width="10">Action</th>
             </tr>
         </thead>
         <tbody>
@@ -27,11 +26,11 @@
                     </td>
                     <td>
                         <strong>Type:</strong> {{ item.type | title }}<br>
-                        <strong>Data key:</strong> {{ item.data_key}}
+                        <strong>Key:</strong> {{ item.key }}<br>
+                        <strong>Expires:</strong> {{ helpers.base.format_timestamp(item.expires) }}
                     </td>
                     <td><div class="json-data">{{ item.data | tojson(indent=4) }}</div></td>
-                    <td>{{ helpers.base.format_timestamp(item.expires) }}</td>
-                    <td>
+                    <td class="action-column">
                         {{ helpers.archive.reinstantiate_item_link(item) }}
                         {% if helpers.archive.has_relink(item) %}
                             <br>{{ helpers.archive.relink_item_link(item) }}
