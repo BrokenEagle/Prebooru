@@ -22,7 +22,6 @@
         {% if submethod is not none %}
             <input type="hidden" name="_method" value="{{ submethod }}">
         {% endif %}
-        {{ form.csrf_token }}
         {% if not manual %}
             {% for field_name, field_input in helpers.base.form_iterator(form) %}
                 {% if caller is undefined %}
