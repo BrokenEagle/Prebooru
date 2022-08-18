@@ -34,6 +34,10 @@ EXPIRE_PAGE_LIMIT = 10
 SIMILARITY_SEMAPHORE = threading.Semaphore(2)
 VIDEO_SEMAPHORE = threading.Semaphore(1)
 
+WAITING_THREADS = {
+    'similarity': 0,
+    'video': 0,
+    }
 
 # ## FUNCTIONS
 
@@ -178,7 +182,10 @@ def _process_similarity(elements):
     from ..tasks.worker import process_similarity
 
     def _process(post_ids):
+        print("Similarity semaphore waits:", WAITING_THREADS['similarity'])
+        WAITING_THREADS['similarity'] += 1
         SIMILARITY_SEMAPHORE.acquire()
+        WAITING_THREADS['similarity'] -= 1
         try:
             process_similarity(post_ids)
         except Exception as e:
@@ -195,7 +202,10 @@ def _process_videos(elements):
     from ..tasks.worker import process_videos
 
     def _process(post_ids):
+        print("Video semaphore waits:", WAITING_THREADS['video'])
+        WAITING_THREADS['video'] += 1
         VIDEO_SEMAPHORE.acquire()
+        WAITING_THREADS['video'] -= 1
         try:
             process_videos(post_ids)
         except Exception as e:
