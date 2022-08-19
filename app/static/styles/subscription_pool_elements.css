@@ -133,7 +133,7 @@ div.subscription-element-info.undecided-info {
     border-color: #DDD;
 }
 div.subscription-element-info.archive-info {
-    border-color: #AAA;
+    border-color: blue;
     border-style: dotted;
 }
 div.subscription-element-info.yes-info a.yes-link {
