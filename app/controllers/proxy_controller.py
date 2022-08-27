@@ -97,7 +97,7 @@ def danbooru_preprocess_upload():
         return error_resp("Must include post ID.")
     post = Post.find(post_id)
     if post is None:
-        return error_resp("Post #d not found." % post_id)
+        return error_resp("Post #%d not found." % post_id)
     upload_ret = get_uploads_by_md5(post.md5)
     if upload_ret['error']:
         return _cors_json(upload_ret)
