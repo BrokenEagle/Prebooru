@@ -242,6 +242,24 @@ def page_navigation(paginate):
 
 # #### Misc functions
 
+def render_tag(tag_name, inner_html, addons):
+    attrs = [('%s="%s"' % (k, v)) if v is not None else k for (k, v) in addons.items()]
+    attrs_string = ' '.join(attrs)
+    if isinstance(inner_html, str):
+        return Markup(f'<{tag_name} {attrs_string}>{inner_html}</{tag_name}>')
+    elif inner_html is True:
+        return Markup(f'<{tag_name} {attrs_string}></{tag_name}>')
+    return Markup(f'<{tag_name} {attrs_string}>')
+
+
+def get_preview_dimensions(image_width, image_height, base_dimensions):
+    scale = min(base_dimensions[0] / image_width, base_dimensions[1] / image_height)
+    scale = min(1, scale)
+    width = round(image_width * scale)
+    height = round(image_height * scale)
+    return width, height
+
+
 def endpoint_classes(request):
     controller, action = [item.replace('_', '-') for item in request.endpoint.split('.')]
     controller = 'c-' + controller

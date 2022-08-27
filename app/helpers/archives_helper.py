@@ -3,11 +3,49 @@
 # ## EXTERNAL IMPORTS
 from flask import url_for
 
+# ## PACKAGE IMPORTS
+from config import PREVIEW_DIMENSIONS
+
 # ## LOCAL IMPORTS
-from .base_helper import general_link
+from .base_helper import general_link, render_tag, get_preview_dimensions
 
 
 # ## FUNCTIONS
+
+def post_preview_link(archive):
+    post_data = archive.data['body']
+    preview_width, preview_height = get_preview_dimensions(post_data['width'], post_data['height'], PREVIEW_DIMENSIONS)
+    addons = {
+        'width': preview_width,
+        'height': preview_height,
+        'alt': archive.shortlink,
+        'src': archive.preview_url,
+    }
+    return render_tag('img', None, addons)
+
+
+def post_file_link(archive):
+    post_data = archive.data['body']
+    addons = {
+        'width': post_data['width'],
+        'height': post_data['height'],
+        'alt': archive.shortlink,
+        'src': archive.file_url,
+    }
+    return render_tag('img', None, addons)
+
+
+def post_video_link(archive):
+    post_data = archive.data['body']
+    addons = {
+        'width': post_data['width'],
+        'height': post_data['height'],
+        'controls': None,
+        'alt': archive.shortlink,
+        'src': archive.file_url,
+    }
+    return render_tag('video', True, addons)
+
 
 def reinstantiate_item_link(archive):
     addons = {'onclick': "return Prebooru.linkPost(this)"}

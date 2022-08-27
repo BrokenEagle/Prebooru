@@ -14,8 +14,8 @@
                 </label>
             </div>
             <article class="post select-post">
-                {% if url_data['media_url'] is not none %}
-                    <img src="{{ url_data['media_url'] }}" onerror="Prebooru.onImageError(this)">
+                {% if url_data['media_file'] is not none %}
+                    {{ helpers.media_file.file_link(url_data['media_file']) }}
                 {% else %}
                     <div class="missing-image">Missing image.</div>
                     <div class="full-url">{{ url_data['full_url'] }}</div>

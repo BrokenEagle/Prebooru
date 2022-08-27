@@ -8,11 +8,9 @@
         {% if archive.type == 'post' %}
             <section id="media-container" onclick="ResizeImage(this)" class="image fullsize">
                 {% if archive.data['body']['file_ext'] in ['jpg', 'png', 'gif'] %}
-                    <picture>
-                        <img src="{{ archive.file_url }}">
-                    </picture>
+                    {{ helpers.archive.post_file_link(archive) }}
                 {% elif archive.data['body']['file_ext'] in ['mp4'] %}
-                    <video src="{{ archive.file_url }}"></video>
+                    {{ helpers.archive.post_video_link(archive) }}
                 {% endif %}
             </section>
         {% endif %}

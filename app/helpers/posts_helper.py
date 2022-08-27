@@ -7,13 +7,23 @@ import urllib.parse
 from flask import Markup, url_for, request
 
 # ## PACKAGE IMPORTS
-from config import DANBOORU_HOSTNAME
+from config import DANBOORU_HOSTNAME, SAMPLE_DIMENSIONS, PREVIEW_DIMENSIONS
 from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
 from ..logical.sources.base import get_source_by_id
-from .base_helper import general_link, external_link, url_for_with_params
+from .base_helper import general_link, external_link, url_for_with_params, render_tag, get_preview_dimensions
+
+
+# ## GLOBAL VARIABLES
+
+VIDEO_PICTURE = """
+<picture style="position: relative; width: %dpx; height: %dpx;">
+    %s
+    %s
+</picture>
+"""
 
 
 # ## FUNCTIONS
@@ -54,17 +64,53 @@ def similar_search_links(post, format_url, proxy_url=None):
 
 
 def post_preview_link(post, lazyload):
+    preview_width, preview_height = get_preview_dimensions(post.width, post.height, PREVIEW_DIMENSIONS)
     addons = {
-        'data-src': post.preview_url,
-        'onerror': 'Prebooru.onImageError(this)',
+        'width': preview_width,
+        'height': preview_height,
+        'alt': post.shortlink,
         'title': image_title(post),
+        'onerror': 'Prebooru.onImageError(this)',
+        'data-src': post.preview_url,
     }
     if not lazyload:
         addons['src'] = post.preview_url
     if post.is_video:
         addons['data-video'] = post.video_preview_url
-    attrs = ['%s="%s"' % (k, v) for (k, v) in addons.items()]
-    return Markup('<img %s>' % ' '.join(attrs))
+    return render_tag('img', None, addons)
+
+
+def image_sample_link(post, class_=None):
+    sample_width, sample_height = get_preview_dimensions(post.width, post.height, SAMPLE_DIMENSIONS)
+    addons = {
+        'width': sample_width,
+        'height': sample_height,
+        'alt': post.shortlink,
+        'title': image_title(post),
+        'src': post.sample_url,
+        'onerror': 'Prebooru.onImageError(this)',
+    }
+    if class_ is not None:
+        addons['class'] = class_
+    return render_tag('img', None, addons)
+
+
+def video_picture_link(post):
+    sample_link = image_sample_link(post, class_='thumbnail')
+    return Markup(VIDEO_PICTURE % (post.width, post.height, sample_link, _play_icon_link()))
+
+
+def video_sample_link(post):
+    addons = {
+        'controls': None,
+        'autoplay': None,
+        'width': post.width,
+        'height': post.height,
+        'title': image_title(post),
+        'data-src': post.video_sample_url,
+        'data-original': post.file_url,
+    }
+    return render_tag('video', True, addons)
 
 
 def image_title(post):
@@ -152,3 +198,13 @@ def post_type_link(post_type):
     classes = ['post-type'] + [post_type + '-type'] + (['type-active'] if active_type == post_type else [])
     return general_link(post_type.title(), url_for_with_params('post.index_html', type=post_type, page=None),
                         **{'class': ' '.join(classes)})
+
+
+# #### Private functions
+
+def _play_icon_link():
+    addons = {
+        'class': 'play-icon',
+        'src': url_for('static', filename='play.svg'),
+    }
+    return render_tag('img', None, addons)

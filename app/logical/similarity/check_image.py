@@ -31,18 +31,15 @@ def check_all_image_urls_similarity(image_urls, min_score, size, include_posts=F
             post_results.append(result)
     similarity_results = []
     for i in range(len(image_urls)):
-        cache, error, message =\
-            (None, True, media_files[i])\
-            if isinstance(media, str)\
-            else (media_files[i].file_url, False, None)
+        is_error = isinstance(media_files[i], str)
         similarity_result =\
             {
                 'image_url': normalized_urls[i],
                 'download_url': download_urls[i],
                 'post_results': post_results[i],
-                'cache': cache,
-                'error': error,
-                'message': message,
+                'media_file': media_files[i] if not is_error else None,
+                'error': is_error,
+                'message': media_files[i] if is_error else None,
             }
         similarity_results.append(similarity_result)
     return similarity_results

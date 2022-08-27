@@ -192,9 +192,9 @@ def upload_select():
         url_data = illust_data['illust_urls'][i]
         if isinstance(media, str):
             flash(media, 'error')
-            url_data['media_url'] = None
+            url_data['media_file'] = None
         else:
-            url_data['media_url'] = media.file_url
+            url_data['media_file'] = media
     retdata['item'] = illust_data['illust_urls']
     return retdata
 

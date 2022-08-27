@@ -21,7 +21,7 @@
                         {% if item.type == 'post' %}
                             <article class="archive-preview">
                                 <a href="{{ item.show_url }}">
-                                    <img src="{{ item.preview_url }}">
+                                    {{ helpers.archive.post_preview_link(item) }}
                                 </a>
                             </article>
                         {% endif %}

@@ -63,6 +63,14 @@ section#media-container {
     margin-right: 1em;
     margin-bottom: 1em;
 }
+section#media-container img.play-icon {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
 section#media-container.loading video {
     display: none;
 }
