@@ -23,11 +23,11 @@
                         <img class="play-icon" src="{{ url_for('static', filename='play.svg') }}" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto;">
                     </picture>
                     <div class="load-original">
-                        <a href="#" onclick="LoadOriginal(this)">Click to load original</a>
+                        <a href="#" onclick="return LoadOriginal(this)">Click to load original</a>
                     <div>
                 </section>
             {% else %}
-                <section id="media-container" onclick="ResizeImage(this)" class="image fullsize">
+                <section id="media-container" onclick="return ResizeImage(this)" class="image fullsize">
                     <picture>
                         <img src="{{ post.sample_url }}" onerror="Prebooru.onImageError(this)">
                     </picture>
@@ -49,12 +49,14 @@
     {% if not post.is_video %}
 function ResizeImage(obj) {
     obj.classList.toggle('fullsize');
+    return false;
 }
     {% else %}
 function LoadOriginal(obj) {
     let video = document.querySelector('#media-container video');
     video.src = video.dataset.original;
-    obj.style.setProperty('display', 'none')
+    obj.style.setProperty('display', 'none');
+    return false;
 }
 (function InitializePlay() {
     const norm_width = {{ [125, post.width // 4] | min }};
