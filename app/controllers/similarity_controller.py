@@ -75,7 +75,7 @@ def check(include_posts):
     errors = check_param_requirements(dataparams, ['urls'])
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
-    dataparams['url_string'] = '\r\n'.join(dataparams['urls'])
+    dataparams['url_string'] = '\r\n'.join(dataparams['urls'] or [])
     similar_results = check_all_image_urls_similarity(dataparams['urls'], dataparams['score'],
                                                       dataparams['size'], include_posts,
                                                       sim_clause=dataparams['sim_clause'])
@@ -110,7 +110,7 @@ def check_html():
         return render_template("similarity/check.html", similar_results=None, form=get_similarity_form())
     results = check(False)
     formparams = results['data']
-    formparams['urls_string'] = '\r\n'.join(formparams['urls'])
+    formparams['urls_string'] = '\r\n'.join(formparams['urls'] or [])
     form = get_similarity_form(**formparams)
     if results['error']:
         flash(results['message'], 'error')
