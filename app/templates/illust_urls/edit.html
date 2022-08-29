@@ -1,14 +1,12 @@
-{% extends 'illust_urls/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "illust_urls/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}{{ illust_url.header }}{% endblock %}
+{% block title %}
+    {{ illust_url.header }}
+{% endblock title %}
 
 {% block content %}
-    <div id="illust-url-form-heading" class="heading">
-        Edit {{ illust_url.header }}
-    </div>
-    <div id="illust-url-form-info">
-        For {{ illust_url.illust_show_link }}:
-    </div>
+    <div id="illust-url-form-heading" class="heading">Edit {{ illust_url.header }}</div>
+    <div id="illust-url-form-info">For {{ illust_url.illust_show_link }}:</div>
     {{ render_form(form, 'PUT', illust_url.update_url) }}
-{% endblock %}
+{% endblock content %}

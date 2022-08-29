@@ -1,9 +1,11 @@
-{% extends 'subscription_pools/_base.html' %}
-{% from 'subscription_pool_elements/_macros.html' import elements_display %}
-{% from 'illusts/_macros.html' import illusts_display %}
-{% from 'posts/_macros.html' import recent_posts %}
+{% extends "subscription_pools/_base.html" %}
+{% from "subscription_pool_elements/_macros.html" import elements_display %}
+{% from "illusts/_macros.html" import illusts_display %}
+{% from "posts/_macros.html" import recent_posts %}
 
-{% block title %}{{ subscription_pool.header }}{% endblock %}
+{% block title %}
+    {{ subscription_pool.header }}
+{% endblock title %}
 
 {% block content %}
     <div id="subscription-pool-heading" class="heading">{{ subscription_pool.header }}</div>
@@ -13,10 +15,8 @@
     </div>
     {{ elements_display(helpers.subscription_pool.element_search(subscription_pool), subscription_pool.element_count, 'subscription-elements') }}
     {{ illusts_display(helpers.subscription_pool.illust_search(subscription_pool), subscription_pool.illust_count, 'subscription-illusts', False) }}
-    <div id="subscription-pool-posts">
-        {{ recent_posts(subscription_pool.recent_posts, subscription_pool.post_count, helpers.subscription_pool.post_search(subscription_pool)) }}
-    </div>
-{% endblock %}
+    <div id="subscription-pool-posts">{{ recent_posts(subscription_pool.recent_posts, subscription_pool.post_count, helpers.subscription_pool.post_search(subscription_pool)) }}</div>
+{% endblock content %}
 
 {% block pagescript %}
     {% if subscription_pool.status == 'manual' or subscription_pool.status == 'automatic' %}
@@ -53,4 +53,4 @@
             {% endif %}
         </script>
     {% endif %}
-{% endblock %}
+{% endblock pagescript %}

@@ -1,17 +1,13 @@
-{% extends 'illusts/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "illusts/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}New Illust{% endblock %}
+{% block title %}
+    New Illust
+{% endblock title %}
 
 {% block content %}
-    <div id="illust-form-heading" class="heading">
-        New illust
-    </div>
-    {% if artist is not none %}
-        <div id="illust-form-info">
-            For {{ artist.show_link }}:
-        </div>
-    {% endif %}
+    <div id="illust-form-heading" class="heading">New illust</div>
+    {% if artist is not none %}<div id="illust-form-info">For {{ artist.show_link }}:</div>{% endif %}
     {% call(field_name, field_input) render_form(form, 'POST', illust.create_url, class=helpers.illust.form_class(form)) %}
         {% if field_name == 'site_id' and artist is none %}
             {{ field_input(onclick="ChangeSite()") }}
@@ -25,8 +21,8 @@
             {% endif %}
             {{ field_input(classlist=classlist) }}
         {% endif %}
-    {% endcall%}
-{% endblock %}
+    {% endcall %}
+{% endblock content %}
 
 {% block pagescript %}
     <script>
@@ -35,9 +31,10 @@
             "1": 'pixiv-data',
             "3": 'twitter-data',
         };
+        
         function ChangeSite() {
             let site_id = document.getElementById("illust-site-id").value;
             document.getElementById('form').className = SITE_MAP[site_id];
         }
     </script>
-{% endblock %}
+{% endblock pagescript %}

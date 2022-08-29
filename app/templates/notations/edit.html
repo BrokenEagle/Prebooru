@@ -1,20 +1,20 @@
-{% extends 'notations/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "notations/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}Edit - {{ notation.header }}{% endblock %}
+{% block title %}
+    Edit - {{ notation.header }}
+{% endblock title %}
 
 {% block content %}
-    <div id="notation-form-heading" class="heading">
-        Edit {{ notation.header }}
-    </div>
+    <div id="notation-form-heading" class="heading">Edit {{ notation.header }}</div>
     {% if notation.append_item is not none %}
         <div id="notation-form-info">
-            {% if notation.append_type == 'pool_element' %}
+            {% if notation.append_type == "pool_element" %}
                 For {{ notation.append_item.pool.name_link }}:
             {% else %}
                 For {{ notation.append_item.show_link }}:
             {% endif %}
         </div>
     {% endif %}
-    {{ render_form(form, 'PUT', notation.update_url) }}
-{% endblock %}
+    {{ render_form(form, "PUT", notation.update_url) }}
+{% endblock content %}

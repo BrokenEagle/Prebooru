@@ -1,10 +1,10 @@
-{% from 'posts/_macros.html' import post_preview, multi_post_preview %}
-{% from 'notations/_macros.html' import notations_list %}
+{% from "posts/_macros.html" import post_preview, multi_post_preview %}
+{% from "notations/_macros.html" import notations_list %}
 
 {% macro pool_item_list(items, link_key) -%}
     <ul>
         {% set seenlist = [] %}
-        {% for item in items  %}
+        {% for item in items %}
             {% if (item[link_key]) in seenlist %}
                 {% continue %}
             {% endif %}
@@ -18,15 +18,15 @@
 
 {% macro pool_display_block(item) -%}
     <div class="pool-display-block">
-        {% if item.model_name == 'post' %}
+        {% if item.model_name == "post" %}
             {{ post_preview(item, True) }}
-        {% elif item.model_name == 'illust' %}
-            {% if item.type == 'image' %}
-                {{ multi_post_preview(item, 'illust', True) }}
-            {% elif item.type == 'video' %}
+        {% elif item.model_name == "illust" %}
+            {% if item.type == "image" %}
+                {{ multi_post_preview(item, "illust", True) }}
+            {% elif item.type == "video" %}
                 {{ post_preview(item.video_illust_url.post, True) }}
             {% endif %}
-        {% elif item.model_name == 'notation' %}
+        {% elif item.model_name == "notation" %}
             <div class="pool-display-notation">{{ helpers.base.convert_to_html(item.body) }}</div>
         {% endif %}
     </div>
@@ -36,23 +36,25 @@
     <div class="pool-info-block">
         <div class="pool-relation-block">
             <div class="pool-artist-block">
-                <strong>{{ 'Artist' if item.model_name == 'illust' else 'Artists' }}:</strong><br>
-                {% if item.model_name == 'post' %}
-                    {{ pool_item_list(item.illusts, 'artist_show_link') }}
-                {% elif item.model_name == 'illust' %}
-                    {{ pool_item_list([item], 'artist_show_link') }}
+                <strong>{{ "Artist" if item.model_name == "illust" else "Artists" }}:</strong>
+                <br>
+                {% if item.model_name == "post" %}
+                    {{ pool_item_list(item.illusts, "artist_show_link") }}
+                {% elif item.model_name == "illust" %}
+                    {{ pool_item_list([item], "artist_show_link") }}
                 {% endif %}
             </div>
-            {% if item.model_name == 'post' %}
+            {% if item.model_name == "post" %}
                 <div class="pool-illust-block">
                     <strong>Illusts:</strong>
-                    {{ pool_item_list(item.illust_urls, 'illust_show_link') }}
+                    {{ pool_item_list(item.illust_urls, "illust_show_link") }}
                 </div>
             {% endif %}
         </div>
         {% if item.notations | length > 0 %}
             <div class="pool-notation-block">
-                <strong>Notations:</strong><br>
+                <strong>Notations:</strong>
+                <br>
                 {{ notations_list(item.notations) }}
             </div>
         {% endif %}
@@ -72,16 +74,14 @@
                 <h4>{{ "Pool" if singular else "Pools" }}</h4>
                 <ul>
                     {% for pool_element in pool_elements %}
-                        <li class="{{ 'listless-item' if pool_element.pool.series else '' }}">
+                        <li class="{{ "listless-item" if pool_element.pool.series else "" }}">
                             <strong>
                                 {{ helpers.pool.prev_navigation(pool_element) }}
                                 {{ pool_element.pool.name_link }}
                                 {{ helpers.pool.next_navigation(pool_element) }}
                                 [{{ helpers.pool.page_navigation(pool_element) }}]
                             </strong>
-                            <span class="delete-control">
-                                ( {{ helpers.pool.remove_pool_link(pool_element) }} )
-                            </span>
+                            <span class="delete-control">( {{ helpers.pool.remove_pool_link(pool_element) }} )</span>
                         </li>
                     {% endfor %}
                 </ul>

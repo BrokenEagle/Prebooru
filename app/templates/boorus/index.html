@@ -1,7 +1,9 @@
-{% extends 'boorus/_base.html' %}
-{% from 'layouts/_macros.html' import simple_list, page_navigation %}
+{% extends "boorus/_base.html" %}
+{% from "layouts/_macros.html" import simple_list, page_navigation %}
 
-{% block title %}Boorus{% endblock %}
+{% block title %}
+    Boorus
+{% endblock title %}
 
 {% block content %}
     <table id="boorus-table" class="striped" width="70%">
@@ -18,18 +20,22 @@
                 <tr id="booru-{{ booru.id }}">
                     <td class="booru-id">{{ booru.show_link }} {{ helpers.booru.post_search_link(booru) }}</td>
                     <td class="booru-info">
-                        <span><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</span><br>
+                        <span><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</span>
+                        <br>
                         <span><strong>Current name:</strong> {{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span>
                     </td>
                     <td class="booru-names">{{ simple_list(booru._names, 'name') }}</td>
                     <td class="booru-timestamps">
-                        <strong>Created:</strong> {{ helpers.base.format_timestamp(booru.created) }}<br>
+                        <strong>Created:</strong> {{ helpers.base.format_timestamp(booru.created) }}
+                        <br>
                         <strong>Updated:</strong> {{ helpers.base.format_timestamp(booru.updated) }}
                     </td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(boorus) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(boorus) }}
+{% endblock pages %}

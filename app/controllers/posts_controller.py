@@ -2,6 +2,7 @@
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
+from werkzeug.datastructures import ImmutableMultiDict, CombinedMultiDict
 from sqlalchemy import not_, or_
 from sqlalchemy.orm import lazyload, selectinload
 
@@ -120,13 +121,20 @@ def index_json():
     return index_json_response(q, request)
 
 
-@bp.route('/', methods=['GET'])
 @bp.route('/posts', methods=['GET'])
 def index_html():
     q = index(True)
     q = q.options(INDEX_HTML_OPTIONS)
     posts = paginate(q, request, MAX_LIMIT_HTML)
     return render_template("posts/index.html", posts=posts, post=Post())
+
+
+@bp.route('/', methods=['GET'])
+def bare_index_html():
+    # Shave of any input parameters; only the `/posts` endpoint will be allowed to process those.
+    request.args = ImmutableMultiDict([])
+    request.values = CombinedMultiDict([request.args])
+    return index_html()
 
 
 # ###### DELETE

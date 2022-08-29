@@ -1,8 +1,10 @@
-{% extends 'similarity_pools/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
-{% from 'posts/_macros.html' import post_preview %}
+{% extends "similarity_pools/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
+{% from "posts/_macros.html" import post_preview %}
 
-{% block title %}Similarity pools{% endblock %}
+{% block title %}
+    Similarity pools
+{% endblock title %}
 
 {% block content %}
     <table id="similarity-pools-table" class="striped" width="100%">
@@ -19,7 +21,7 @@
                 <tr id="similarity-pool-{{ pool.id }}">
                     <td class="post-column">
                         {{ post_preview(pool.post) }}
-                        <div style="text-align: center; font-weight: bold;">{{ pool.show_link }}</div>
+                        <div class="similarity-pool-show-link">{{ pool.show_link }}</div>
                     </td>
                     <td class="matches-column">
                         {% for element in pool.elements %}
@@ -39,6 +41,8 @@
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(similarity_pools) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(similarity_pools) }}
+{% endblock pages %}

@@ -1,10 +1,14 @@
-{% from 'tasks/_macros.html' import task_row %}
+{% from "tasks/_macros.html" import task_row %}
 
-{% extends 'layouts/base.html' %}
+{% extends "layouts/base.html" %}
 
-{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/tasks.css') }}">{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/tasks.css') }}">
+{% endblock css %}
 
-{% block title %}Tasks{% endblock %}
+{% block title %}
+    Tasks
+{% endblock title %}
 
 {% block content %}
     <div id="tasks-page">
@@ -21,26 +25,54 @@
             </thead>
             <tbody>
                 <tr>
-                    <td colspan="5"><span class="heading">Danbooru Tasks</span></td>
+                    <td colspan="5">
+                        <span class="heading">Danbooru Tasks</span>
+                    </td>
                 </tr>
-                <tr>{{ task_row('check_all_boorus', tasks) }}</tr>
-                <tr>{{ task_row('check_all_artists_for_boorus', tasks) }}</tr>
-                <tr>{{ task_row('check_all_posts_for_danbooru_id', tasks) }}</tr>
                 <tr>
-                    <td colspan="5"><span class="heading">Subscription Tasks</span></td>
+                    {{ task_row('check_all_boorus', tasks) }}
                 </tr>
-                <tr>{{ task_row('check_pending_subscriptions', tasks) }}</tr>
-                <tr>{{ task_row('check_pending_downloads', tasks) }}</tr>
-                <tr>{{ task_row('process_expired_subscription_elements', tasks) }}</tr>
                 <tr>
-                    <td colspan="5"><span class="heading">Maintenance Tasks</span></td>
+                    {{ task_row('check_all_artists_for_boorus', tasks) }}
                 </tr>
-                <tr>{{ task_row('expunge_cache_records', tasks) }}</tr>
-                <tr>{{ task_row('expunge_archive_records', tasks) }}</tr>
-                <tr>{{ task_row('relocate_old_posts', tasks) }}</tr>
-                <tr>{{ task_row('delete_orphan_images', tasks) }}</tr>
-                <tr>{{ task_row('vacuum_analyze_database', tasks) }}</tr>
+                <tr>
+                    {{ task_row('check_all_posts_for_danbooru_id', tasks) }}
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <span class="heading">Subscription Tasks</span>
+                    </td>
+                </tr>
+                <tr>
+                    {{ task_row('check_pending_subscriptions', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('check_pending_downloads', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('process_expired_subscription_elements', tasks) }}
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <span class="heading">Maintenance Tasks</span>
+                    </td>
+                </tr>
+                <tr>
+                    {{ task_row('expunge_cache_records', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('expunge_archive_records', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('relocate_old_posts', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('delete_orphan_images', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('vacuum_analyze_database', tasks) }}
+                </tr>
             </tbody>
         </table>
     </div>
-{% endblock %}
+{% endblock content %}

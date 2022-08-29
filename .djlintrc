@@ -1,0 +1,13 @@
+{
+    "profile": "jinja",
+    "indent": 4,
+    "max_line_length": 240,
+    "max_attribute_length": 120,
+    "format_attribute_template_tags": true,
+    "ignore": "H017",
+    "extend_exclude": "app/templates/layouts/base.html",
+    "blank_line_before_tag": "block,macro",
+    "blank_line_after_tag": "from",
+    "format_js": false,
+    "format_css": false
+}

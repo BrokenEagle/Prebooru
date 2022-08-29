@@ -1,16 +1,12 @@
-{% extends 'notations/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "notations/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}New Notation{% endblock %}
+{% block title %}
+    New Notation
+{% endblock title %}
 
 {% block content %}
-    <div id="notation-form-heading" class="heading">
-        New notation
-    </div>
-    {% if item is not none %}
-        <div id="notation-form-info">
-            For {{ item.show_link }}:
-        </div>
-    {% endif %}
-    {{ render_form(form, 'POST', notation.create_url) }}
-{% endblock %}
+    <div id="notation-form-heading" class="heading">New notation</div>
+    {% if item is not none %}<div id="notation-form-info">For {{ item.show_link }}:</div>{% endif %}
+    {{ render_form(form, "POST", notation.create_url) }}
+{% endblock content %}

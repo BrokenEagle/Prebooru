@@ -1,17 +1,23 @@
-{% extends 'uploads/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "uploads/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}New Upload{% endblock %}
+{% block title %}
+    New Upload
+{% endblock title %}
 
 {% block content %}
     <div id="upload-form-heading" class="form-heading heading">New upload{{ helpers.upload.form_title_apellation(illust_url) }}</div>
     {% if illust_url is not none %}
         <div id="upload-url-info">
             <ul>
-                <li><strong>URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}</li>
-                <li><strong>Dimensions:</strong> ( {{ illust_url.width }} x {{ illust_url.height }} )</li>
+                <li>
+                    <strong>URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}
+                </li>
+                <li>
+                    <strong>Dimensions:</strong> ( {{ illust_url.width }} x {{ illust_url.height }} )
+                </li>
             </ul>
         </div>
     {% endif %}
     {{ render_form(form, 'POST', upload.create_url) }}
-{% endblock %}
+{% endblock content %}

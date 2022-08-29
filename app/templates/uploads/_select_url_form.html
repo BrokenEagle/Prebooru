@@ -1,4 +1,4 @@
-{% from 'layouts/_macros.html' import render_form %}
+{% from "layouts/_macros.html" import render_form %}
 
 {% call render_form(form, 'GET', url_for('upload.upload_select_html'), manual=True) %}
     {{ form.request_url.label }} {{ form.request_url }}

@@ -1,7 +1,9 @@
-{% extends 'uploads/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "uploads/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}Upload All{% endblock %}
+{% block title %}
+    Upload All
+{% endblock title %}
 
 {% block content %}
     <div class="form-heading heading">Upload All</div>
@@ -9,4 +11,4 @@
         {{ form.request_url.label }} {{ form.request_url }}
         <input type="hidden" name="request_url_only" value="true">
     {% endcall %}
-{% endblock %}
+{% endblock content %}

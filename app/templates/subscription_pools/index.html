@@ -1,7 +1,9 @@
-{% extends 'subscription_pools/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
+{% extends "subscription_pools/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
 
-{% block title %}Subscription pools{% endblock %}
+{% block title %}
+    Subscription pools
+{% endblock title %}
 
 {% block content %}
     <table id="subscription-pools-table" class="striped" width="75%">
@@ -22,11 +24,13 @@
                     <td>{{ pool.show_link }}</td>
                     <td>{{ pool.artist_show_link }}</td>
                     <td>
-                        <strong>Status:</strong> {{ pool.status }}<br>
+                        <strong>Status:</strong> {{ pool.status }}
+                        <br>
                         <strong>Checked:</strong> {{ helpers.base.format_time_ago(pool.checked) }}
                     </td>
                     <td>
-                        <strong>Interval:</strong> {{ pool.interval }}<br>
+                        <strong>Interval:</strong> {{ pool.interval }}
+                        <br>
                         <strong>Expiration:</strong> {{ pool.expiration }}
                     </td>
                     <td>{{ pool.active | tojson }}</td>
@@ -36,6 +40,8 @@
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(subscription_pools) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(subscription_pools) }}
+{% endblock pages %}

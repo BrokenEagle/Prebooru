@@ -42,7 +42,7 @@ def element_search(item):
 # ###### Link functions
 
 def element_search_link(subscription_pool):
-    return general_link('&raquo;', element_search(subscription_pool))
+    return general_link('»', element_search(subscription_pool))
 
 
 def process_subscription_link(subscription_pool):

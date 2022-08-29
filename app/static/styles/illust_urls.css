@@ -32,4 +32,6 @@ table#illust-urls-table article.post.no-post {
 table#illust-urls-table article.post img {
     max-height: 200px;
     max-width: 200px;
+    height: auto;
+    width: auto;
 }

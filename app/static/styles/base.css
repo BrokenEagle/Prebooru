@@ -138,6 +138,10 @@ form input[type=submit] {
     width: 60px; 
     margin-top: 20px;
 }
+div.inline-input label,
+div.inline-input input {
+    display: inline-block;
+}
 ul {
     margin-left: 1.25em;
 }
@@ -200,6 +204,9 @@ span.muted-timestamp {
 span.explanation {
     color: grey;
     font-style: italic;
+}
+span.narrow {
+    font-family: 'Arial Narrow', sans-serif;
 }
 span.description {
     font-size: 80%;

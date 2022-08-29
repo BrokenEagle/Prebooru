@@ -1,6 +1,8 @@
-{% extends 'archives/_base.html' %}
+{% extends "archives/_base.html" %}
 
-{% block title %}{{ archive.header }}{% endblock %}
+{% block title %}
+    {{ archive.header }}
+{% endblock title %}
 
 {% block content %}
     <div id="archive-heading" class="heading">{{ archive.header }}</div>
@@ -15,18 +17,28 @@
             </section>
         {% endif %}
         <ul>
-            <li><strong>Type:</strong> {{ archive.type | title }}</li>
-            <li><strong>Key:</strong> {{ archive.key }}</li>
-            <li><strong>Expires:</strong> {{ helpers.base.format_timestamp(archive.expires) }}</li>
-            <li><strong>Data:</strong><br><div class="json-data">{{ archive.data | tojson(indent=4) }}</div></li>
+            <li>
+                <strong>Type:</strong> {{ archive.type | title }}
+            </li>
+            <li>
+                <strong>Key:</strong> {{ archive.key }}
+            </li>
+            <li>
+                <strong>Expires:</strong> {{ helpers.base.format_timestamp(archive.expires) }}
+            </li>
+            <li>
+                <strong>Data:</strong>
+                <br>
+                <div class="json-data">{{ archive.data | tojson(indent=4) }}</div>
+            </li>
         </ul>
     </div>
-{% endblock %}
+{% endblock content %}
 
 {% block pagescript %}
-<script>
-function ResizeImage(obj) {
-    obj.classList.toggle('fullsize');
-}
-</script>
-{% endblock %}
+    <script>
+        function ResizeImage(obj) {
+            obj.classList.toggle('fullsize');
+        }
+    </script>
+{% endblock pagescript %}

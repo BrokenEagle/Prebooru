@@ -1,37 +1,39 @@
-{% extends 'pools/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
-{% from 'pools/_macros.html' import pool_display_block, pool_info_block %}
+{% extends "pools/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
+{% from "pools/_macros.html" import pool_display_block, pool_info_block %}
 
-{% block title %}{{ pool.header }}{% endblock %}
+{% block title %}
+    {{ pool.header }}
+{% endblock title %}
 
 {% block content %}
     <div id="pool-content">
         <div id="pool-heading" class="heading">{{ pool.header }}</div>
-        <div id="pool-name"><strong>Name:</strong> {{ pool.name }}</div>
+        <div id="pool-name">
+            <strong>Name:</strong> {{ pool.name }}
+        </div>
         <div id="pool-items">
             {% for item in elements.items %}
                 <div class="pool-block" id="{{ item.model_name }}-{{ item.id }}">
                     <div class="pool-block-heading heading">
-                        <a href="#{{ item.model_name }}-{{ item.id }}" class="bookmark-target">&loz;</a>
+                        <a href="#{{ item.model_name }}-{{ item.id }}" class="bookmark-target">◊</a>&thinsp;
                         {{ helpers.pool.media_header(item) }}
                         {{ item.show_link }}
                     </div>
                     <div class="pool-block-content">
                         {{ pool_display_block(item) }}
-                        {% if item.model_name == 'post' or item.model_name == 'illust' %}
-                            {{ pool_info_block(item) }}
-                        {% endif %}
+                        {% if item.model_name == "post" or item.model_name == "illust" %}{{ pool_info_block(item) }}{% endif %}
                     </div>
                 </div>
             {% endfor %}
         </div>
     </div>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(elements) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(elements) }}
+{% endblock pages %}
 
 {% block pagescript %}
-<script>
-Prebooru.initializeLazyLoad('.pool-display-block');
-</script>
-{% endblock %}
+    <script>Prebooru.initializeLazyLoad(".pool-display-block");</script>
+{% endblock pagescript %}

@@ -16,12 +16,21 @@
                         {% else %}
                             {% set li_class = 'artist-deleted' %}
                         {% endif %}
-                        <li class="{{ li_class }}"><span class="item-heading">{{ artist.show_link }} {{ helpers.artist.post_search_link(artist) }}</span>
+                        <li class="{{ li_class }}">
+                            <span class="item-heading">{{ artist.show_link }} {{ helpers.artist.post_search_link(artist) }}</span>
                             <ul>
-                                <li><strong>{{ helpers.artist.site_artist_link(artist) }}</strong></li>
-                                <li><strong>Site ID:</strong> {{ artist.site_artist_id }}</li>
-                                <li><strong>Account:</strong> {{ helpers.base.val_or_none(artist.current_site_account) }}</li>
-                                <li><strong>Links:</strong> {{ helpers.artist.artist_links(artist) }}</li>
+                                <li>
+                                    <strong>{{ helpers.artist.site_artist_link(artist) }}</strong>
+                                </li>
+                                <li>
+                                    <strong>Site ID:</strong> {{ artist.site_artist_id }}
+                                </li>
+                                <li>
+                                    <strong>Account:</strong> {{ helpers.base.val_or_none(artist.current_site_account) }}
+                                </li>
+                                <li>
+                                    <strong>Links:</strong> {{ helpers.artist.artist_links(artist) }}
+                                </li>
                             </ul>
                         </li>
                     {% endfor %}
@@ -33,7 +42,7 @@
 
 {% macro artist_webpage(webpage) -%}
     <span class="artist-webpage">
-        [<span class="{{'active' if webpage.active else 'inactive'}}">{{ '&nbsp;Active&nbsp;' | safe if webpage.active else 'Inactive' }}</span>]
+        [<span class="{{ 'active' if webpage.active else 'inactive' }}">{{ '&nbsp;Active&nbsp;' | safe if webpage.active else 'Inactive' }}</span>]
     </span>
     {{ helpers.base.url_link(webpage.url) }}
 {%- endmacro %}

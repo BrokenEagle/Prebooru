@@ -1,8 +1,10 @@
-{% extends 'illust_urls/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
-{% from 'posts/_macros.html'  import post_preview %}
+{% extends "illust_urls/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
+{% from "posts/_macros.html" import post_preview %}
 
-{% block title %}Illust URLs{% endblock %}
+{% block title %}
+    Illust URLs
+{% endblock title %}
 
 {% block content %}
     <table id="illust-urls-table" class="striped" width="80%">
@@ -21,9 +23,14 @@
                 <tr id="illust-url-{{ illust_url.id }}">
                     <td>{{ post_preview(illust_url.post, True) }}</td>
                     <td>
-                        <span><strong>{{ illust_url.show_link}}</strong></span><br>
-                        <span><strong>Domain:</strong> {{ illust_url.site_domain }}</span><br><br>
-                        <span><strong>{{ illust_url.illust_show_link }}</strong></span><br><br>
+                        <span><strong>{{ illust_url.show_link }}</strong></span>
+                        <br>
+                        <span><strong>Domain:</strong> {{ illust_url.site_domain }}</span>
+                        <br>
+                        <br>
+                        <span><strong>{{ illust_url.illust_show_link }}</strong></span>
+                        <br>
+                        <br>
                     </td>
                     <td>{{ helpers.base.url_link(illust_url.full_url) }}</td>
                     <td>({{ illust_url.width }} x {{ illust_url.height }})</td>
@@ -33,12 +40,12 @@
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(illust_urls) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(illust_urls) }}
+{% endblock pages %}
 
 {% block pagescript %}
-<script>
-Prebooru.initializeLazyLoad('.post');
-</script>
-{% endblock %}
+    <script>Prebooru.initializeLazyLoad('.post');</script>
+{% endblock pagescript %}

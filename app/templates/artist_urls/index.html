@@ -1,7 +1,9 @@
-{% extends 'artist_urls/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
+{% extends "artist_urls/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
 
-{% block title %}Artist URLs{% endblock %}
+{% block title %}
+    Artist URLs
+{% endblock title %}
 
 {% block content %}
     <table id="artist-urls-table" class="striped" width="80%">
@@ -24,6 +26,8 @@
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(artist_urls) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(artist_urls) }}
+{% endblock pages %}

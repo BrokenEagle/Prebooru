@@ -1,15 +1,15 @@
-{% extends 'posts/_base.html' %}
-{% from 'posts/_macros.html' import related_posts  %}
-{% from 'similarity_pools/_macros.html' import similar_posts %}
+{% extends "posts/_base.html" %}
+{% from "posts/_macros.html" import related_posts %}
+{% from "similarity_pools/_macros.html" import similar_posts %}
 
 {% block linkscript %}
     {{ super() }}
-    {% if post.subscription_pool_element is not none %}
-        <script src="{{ url_for('static', filename='javascript/subscription_pools.js') }}"></script>
-    {% endif %}
-{% endblock %}
+    {% if post.subscription_pool_element is not none %}<script src="{{ url_for('static', filename='javascript/subscription_pools.js') }}"></script>{% endif %}
+{% endblock linkscript %}
 
-{% block title %}Post # {{ post.id }}{% endblock %}
+{% block title %}
+    Post # {{ post.id }}
+{% endblock title %}
 
 {% block content %}
     <div id="sidebar-container">
@@ -21,7 +21,7 @@
                     {{ helpers.post.video_picture_link(post) }}
                     <div class="load-original">
                         <a href="#" onclick="return LoadOriginal(this)">Click to load original</a>
-                    <div>
+                    </div>
                 </section>
             {% else %}
                 <section id="media-container" onclick="return ResizeImage(this)" class="image fullsize">
@@ -33,16 +33,12 @@
             {% include "posts/_site_content.html" %}
         </div>
     </div>
-    <div id="related-posts">
-        {{ related_posts(post) }}
-    </div>
-    <div id="similar-posts">
-        {{ similar_posts(post) }}
-    </div>
-{% endblock %}
+    <div id="related-posts">{{ related_posts(post) }}</div>
+    <div id="similar-posts">{{ similar_posts(post) }}</div>
+{% endblock content %}
 
 {% block pagescript %}
-<script>
+    <script>
     {% if not post.is_video %}
 function ResizeImage(obj) {
     obj.classList.toggle('fullsize');
@@ -79,5 +75,5 @@ function LoadOriginal(obj) {
     };
 })();
     {% endif %}
-</script>
-{% endblock %}
+    </script>
+{% endblock pagescript %}

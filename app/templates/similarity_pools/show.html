@@ -1,35 +1,37 @@
-{% extends 'similarity_pools/_base.html' %}
-{% from 'layouts/_macros.html' import image_select_controls, page_navigation %}
-{% from 'posts/_macros.html' import post_preview %}
-{% from 'similarity_pools/_macros.html' import similar_pool_post %}
+{% extends "similarity_pools/_base.html" %}
+{% from "layouts/_macros.html" import image_select_controls, page_navigation %}
+{% from "posts/_macros.html" import post_preview %}
+{% from "similarity_pools/_macros.html" import similar_pool_post %}
 
-{% block title %}{{ similarity_pool.header }}{% endblock %}
+{% block title %}
+    {{ similarity_pool.header }}
+{% endblock title %}
 
 {% block content %}
     <div id="similarity-pool-content">
-        <div id="similarity-pool-heading" class="heading">
-            Similarity Pool: {{ similarity_pool.post.show_link }}
-        </div>
+        <div id="similarity-pool-heading" class="heading">Similarity Pool: {{ similarity_pool.post.show_link }}</div>
         <div class="similarity-pool-content">
             {{ post_preview(similarity_pool.post) }}
             {% call image_select_controls('similar-post-input') %}
-                <strong>[ <a class="warning-link" href="javascript:SubmitForm()">DELETE</a> ]</strong>
+                <strong>[ <a class="warning-link" href="#" onclick="return SubmitForm(this)">DELETE</a> ]</strong>
             {% endcall %}
         </div>
-        <form id="form" method="POST" action="{{ url_for('similarity_pool_element.batch_delete_html') }}">
+        <form id="form" method="post" action="{{ url_for('similarity_pool_element.batch_delete_html') }}">
             <div id="similar-posts-container">
-                {% for similarity_element in elements.items %}
-                    {{ similar_pool_post(similarity_element) }}
-                {% endfor %}
+                {% for similarity_element in elements.items %}{{ similar_pool_post(similarity_element) }}{% endfor %}
             </div>
         </form>
     </div>
-{% endblock %}
-{% block pages %}{{ page_navigation(elements) }}{% endblock %}
+{% endblock content %}
+
+{% block pages %}
+    {{ page_navigation(elements) }}
+{% endblock pages %}
 
 {% block pagescript %}
-<script>
-function SubmitForm() {
+    <script>
+function SubmitForm(event) {
+    event.preventDefault();
     if (confirm("Remove posts from similarity pool?")) {
         document.getElementById('form').submit();
     }
@@ -38,5 +40,5 @@ function SubmitForm() {
     document.addEventListener('prebooru:update-inputs', SimilarityPools.updateAllInputs);
 })();
 Prebooru.initializeLazyLoad('.similar-post-block');
-</script>
-{% endblock %}
+    </script>
+{% endblock pagescript %}

@@ -1,7 +1,9 @@
-{% extends 'boorus/_base.html' %}
-{% from 'posts/_macros.html' import recent_posts %}
+{% extends "boorus/_base.html" %}
+{% from "posts/_macros.html" import recent_posts %}
 
-{% block title %}{{ booru.header }}{% endblock %}
+{% block title %}
+    {{ booru.header }}
+{% endblock title %}
 
 {% block content %}
     <div id="booru-heading" class="heading">{{ booru.header }}</div>
@@ -9,7 +11,5 @@
         {% include "boorus/_sidebar.html" %}
         {% include "boorus/_site_content.html" %}
     </div>
-    <div id="booru-posts">
-        {{ recent_posts(booru.recent_posts, booru.post_count, helpers.booru.post_search(booru)) }}
-    </div>
-{% endblock %}
+    <div id="booru-posts">{{ recent_posts(booru.recent_posts, booru.post_count, helpers.booru.post_search(booru)) }}</div>
+{% endblock content %}

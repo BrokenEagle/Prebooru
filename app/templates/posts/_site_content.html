@@ -1,16 +1,27 @@
-{% from 'layouts/_macros.html' import items_list, items_block %}
+{% from "layouts/_macros.html" import items_list, items_block %}
 
 <div id="post-site-content">
     {% set info_class = 'danbooru-uploaded' if post.danbooru_id is not none else "" %}
     <section id="post-info" class="{{ info_class }}">
         <h4>Info</h4>
         <ul>
-            <li><strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(post) }}</li>
-            <li><strong>Created:</strong> {{ helpers.base.format_timestamp(post.created) }}</li>
-            <li><strong>Type/Size:</strong> {{ post.size }} bytes @ {{ post.file_ext.upper() }}</li>
-            <li><strong>Dimensions:</strong> ({{ post.width }} x {{ post.height }})</li>
-            <li><strong>MD5:</strong> {{ post.md5 }}</li>
-            <li><strong>Sources:</strong>
+            <li>
+                <strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(post) }}
+            </li>
+            <li>
+                <strong>Created:</strong> {{ helpers.base.format_timestamp(post.created) }}
+            </li>
+            <li>
+                <strong>Type/Size:</strong> {{ post.size }} bytes @ {{ post.file_ext.upper() }}
+            </li>
+            <li>
+                <strong>Dimensions:</strong> ({{ post.width }} x {{ post.height }})
+            </li>
+            <li>
+                <strong>MD5:</strong> {{ post.md5 }}
+            </li>
+            <li>
+                <strong>Sources:</strong>
                 {% call(illust_url) items_list(post.illust_urls) %}
                     {{ helpers.base.url_link(illust_url.full_url, True) }}
                 {% endcall %}
@@ -18,13 +29,14 @@
         </ul>
     </section>
     <section id="post-commentaries">
-        <h4><u>Commentaries</u></h4>
+        <h4>
+            <u>Commentaries</u>
+        </h4>
         {% for illust in post.illusts %}
-            <div class="post-commentaries-container"><strong>{{ illust.header }}:</strong>
-                {% call(commentary) items_block(illust._commentaries, '_commentaries', '<hr>') %}
-                    <div class="post-commentaries-block">
-                        {{ helpers.base.convert_to_html(commentary.body) }}
-                    </div>
+            <div class="post-commentaries-container">
+                <strong>{{ illust.header }}:</strong>
+                {% call(commentary) items_block(illust._commentaries, '_commentaries', helpers.base.HR) %}
+                    <div class="post-commentaries-block">{{ helpers.base.convert_to_html(commentary.body) }}</div>
                 {% endcall %}
             </div>
         {% endfor %}

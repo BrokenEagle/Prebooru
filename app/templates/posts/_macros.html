@@ -1,11 +1,13 @@
 {% macro post_preview(post, lazyload=False) -%}
-    <article id="post-{{post.id}}" class="post {{ 'no-post' if post is none else ""}} {{ 'video-post' if post.is_video else "" }}">
-        {% if post is not none %}
+    {% if post is not none %}
+        <article id="post-{{ post.id }}" class="post {{ 'video-post' if post.is_video else '' }}">
             <a href="{{ post.show_url }}">{{ helpers.post.post_preview_link(post, lazyload) }}</a>
-        {% else %}
+        </article>
+    {% else %}
+        <article class="post no-post">
             <span class="explanation">No post.</span>
-        {% endif %}
-    </article>
+        </article>
+    {% endif %}
 {%- endmacro %}
 
 {% macro multi_post_preview(item, type, lazyload=False) -%}
@@ -18,9 +20,7 @@
                 {% break %}
             {% endif %}
             <article class="{{ type }}-post multi-post">
-                <a href="{{ post.show_url }}">
-                    {{ helpers.post.post_preview_link(post, lazyload) }}
-                </a>
+                <a href="{{ post.show_url }}">{{ helpers.post.post_preview_link(post, lazyload) }}</a>
             </article>
         {% else %}
             <span class="explanation">There are no posts.</span>
@@ -32,19 +32,13 @@
     <div class="heading">
         <div id="recent-posts-heading">
             <u>Posts</u>
-            {% if post_count is not none %}
-                (&thinsp;{{ post_count }}&thinsp;)
-            {% endif %}
-            {% if post_search is not none %}
-                {{ helpers.base.general_link('&raquo;', post_search) }}
-            {% endif %}
+            {% if post_count is not none %}(&thinsp;{{ post_count }}&thinsp;){% endif %}
+            {% if post_search is not none %}{{ helpers.base.general_link('»', post_search) }}{% endif %}
         </div>
     </div>
     <div id="recent-posts-container">
-         {% for post in posts %}
-            <div class="recent-post-block">
-                {{ post_preview(post) }}
-            </div>
+        {% for post in posts %}
+            <div class="recent-post-block">{{ post_preview(post) }}</div>
         {% else %}
             <span class="explanation">There are no posts.</span>
         {% endfor %}
@@ -55,16 +49,10 @@
     {% if post.related_posts | length > 0 %}
         <div id="related-posts-heading" class="heading">
             Related posts
-            {% if post_search_link is not none %}
-                {{ helpers.base.general_link("&raquo;", helpers.post.related_posts_search(post)) }}
-            {% endif %}
+            {% if post_search_link is not none %}{{ helpers.base.general_link("»", helpers.post.related_posts_search(post)) }}{% endif %}
         </div>
         <div id="related-posts-container">
-             {% for post in post.related_posts %}
-                <div class="related-post-block">
-                    {{ post_preview(post) }}
-                </div>
-            {% endfor %}
+            {% for post in post.related_posts %}<div class="related-post-block">{{ post_preview(post) }}</div>{% endfor %}
         </div>
     {% endif %}
 {%- endmacro %}

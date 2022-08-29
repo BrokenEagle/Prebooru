@@ -1,9 +1,11 @@
-{% extends 'boorus/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "boorus/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}New Booru{% endblock %}
+{% block title %}
+    New Booru
+{% endblock title %}
 
 {% block content %}
     <div class="heading booru-form-heading">New booru</div>
     {{ render_form(form, 'POST', booru.create_url) }}
-{% endblock %}
+{% endblock content %}

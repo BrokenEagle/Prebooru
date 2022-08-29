@@ -1,4 +1,4 @@
-{% from 'layouts/_macros.html' import subnav_link_to %}
+{% from "layouts/_macros.html" import subnav_link_to %}
 
 <menu id="secondary-menu">
     {{ subnav_link_to("Listing", 'tag.index_html') }}
@@ -6,7 +6,5 @@
     {{ subnav_link_to("Posts", 'post.index_html') }}
     |
     {{ subnav_link_to("Create", 'tag.create_html', attrs={'class': 'nav-control', 'onclick': 'return Tags.createUserTagFromName(this)'}) }}
-    {% if tag.id != None %}
-        {{ subnav_link_to("Show", 'tag.show_html', tag.id) }}
-    {% endif %}
+    {% if tag.id != None %}{{ subnav_link_to("Show", 'tag.show_html', tag.id) }}{% endif %}
 </menu>

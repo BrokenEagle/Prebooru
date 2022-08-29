@@ -1,6 +1,8 @@
-{% extends 'uploads/_base.html' %}
+{% extends "uploads/_base.html" %}
 
-{% block title %}Upload Select{% endblock %}
+{% block title %}
+    Upload Select
+{% endblock title %}
 
 {% block content %}
     <div class="form-heading heading">Upload Select</div>
@@ -9,4 +11,4 @@
     {% else %}
         {% include "uploads/_select_url_form.html" %}
     {% endif %}
-{% endblock %}
+{% endblock content %}

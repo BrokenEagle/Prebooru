@@ -15,9 +15,7 @@
         <ul>
             <li>{{ helpers.artist.query_update_link(artist) }}</li>
             <li>{{ helpers.artist.query_booru_link(artist) }}</li>
-            {% if artist.subscription_pool is none %}
-                <li>{{ helpers.artist.add_subscription_pool_link(artist) }}</li>
-            {% endif %}
+            {% if artist.subscription_pool is none %}<li>{{ helpers.artist.add_subscription_pool_link(artist) }}</li>{% endif %}
             <li>{{ helpers.artist.add_illust_link(artist) }}</li>
             <li>{{ helpers.artist.add_notation_link(artist) }}</li>
         </ul>

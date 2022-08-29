@@ -1,16 +1,11 @@
 {% macro nav_link_to(text, endpoint) -%}
     {% with html_text, klass = helpers.base.nav_link_to(text, endpoint) %}
-        <li id="nav-{{ html_text }}" class="{{ klass }}">
-            {{ helpers.base.general_link(text, url_for(endpoint), id=("nav-%s-link" % html_text)) }}
-        </li>
+        <li id="nav-{{ html_text }}" class="{{ klass }}">{{ helpers.base.general_link(text, url_for(endpoint), id=("nav-%s-link" % html_text)) }}</li>
     {% endwith %}
 {%- endmacro %}
-
 {% macro subnav_link_to(text, endpoint, id=None, attrs={}) -%}
     {% with html_text, attrs = helpers.base.subnav_link_to(text, attrs) %}
-        <li id="subnav-{{ html_text }}">
-            {{ helpers.base.general_link(text, url_for(endpoint, id=id, **kwargs), **attrs) }}
-        </li>
+        <li id="subnav-{{ html_text }}">{{ helpers.base.general_link(text, url_for(endpoint, id=id, **kwargs), **attrs) }}</li>
     {% endwith %}
 {%- endmacro %}
 
@@ -19,9 +14,7 @@
     {% set method = method if method.upper() in ['GET', 'POST'] else 'POST' %}
     {% set class_string = 'class="%s"'|format(class) if class is not none else "" %}
     <form id="form" {{ class_string | safe }} method="{{ method }}" action="{{ url }}">
-        {% if submethod is not none %}
-            <input type="hidden" name="_method" value="{{ submethod }}">
-        {% endif %}
+        {% if submethod is not none %}<input type="hidden" name="_method" value="{{ submethod }}">{% endif %}
         {% if not manual %}
             {% for field_name, field_input in helpers.base.form_iterator(form) %}
                 {% if caller is undefined %}
@@ -44,9 +37,7 @@
         {% else %}
             {{ caller(item) }}
         {% endif %}
-        {% if not loop.last %}
-            <br>
-        {% endif %}
+        {% if not loop.last %}<br>{% endif %}
     {% else %}
         <em>none</em>
     {% endfor %}
@@ -61,29 +52,23 @@
         {% endif %}
     {% else %}
         {% for item in items %}
-            {% if loop.first %}
-                <ul>
-            {% endif %}
+            {% if loop.first %}<ul>{% endif %}
             {% if caller is undefined %}
                 <li>{{ item[key] }}</li>
             {% else %}
                 <li>{{ caller(item) }}</li>
             {% endif %}
-            {% if loop.last %}
-                </ul>
-            {% endif %}
+            {% if loop.last %}</ul>{% endif %}
         {% else %}
             <em>none</em>
         {% endfor %}
     {% endif %}
 {%- endmacro %}
 
-{% macro items_block(items, item_plural, separator='<hr>') -%}
+{% macro items_block(items, item_plural, separator=helpers.base.HR) -%}
     {% for item in items %}
         {{ caller(item) }}
-        {% if not loop.last %}
-            {{ separator | safe }}
-        {% endif %}
+        {% if not loop.last %}{{ separator | safe }}{% endif %}
     {% else %}
         <span class="explanation">There are no {{ item_plural }}.</span>
     {% endfor %}
@@ -96,7 +81,9 @@
             {% set all_time_attrs = ['requery', 'created', 'updated'] + other_timestamps %}
             {% for attr in all_time_attrs %}
                 {% if item[attr] is defined %}
-                    <li><strong>{{ attr | title }}:</strong> {{ helpers.base.format_timestamp(item[attr]) }}</li>
+                    <li>
+                        <strong>{{ attr | title }}:</strong> {{ helpers.base.format_timestamp(item[attr]) }}
+                    </li>
                 {% endif %}
             {% endfor %}
         </ul>
@@ -107,13 +94,11 @@
     <div id="image-select-controls">
         <strong>Select[&thinsp;<span id="image-select-counter">0</span>&thinsp;]:</strong>
         (
-        <a href="javascript:Prebooru.selectAll('{{ classname }}')">All</a> |
-        <a href="javascript:Prebooru.selectNone('{{ classname }}')">None</a> | 
-        <a href="javascript:Prebooru.selectInvert('{{ classname }}')">Invert</a>
+        <a href="#" onclick="return Prebooru.selectAll('{{ classname }}')">All</a> |
+        <a href="#" onclick="return Prebooru.selectNone('{{ classname }}')">None</a> |
+        <a href="#" onclick="return Prebooru.selectInvert('{{ classname }}')">Invert</a>
         )
-        {% if caller is defined %}
-            {{ caller() }}
-        {% endif %}
+        {% if caller is defined %}{{ caller() }}{% endif %}
     </div>
 {%- endmacro %}
 
@@ -125,7 +110,6 @@
             {% else %}
                 {{ helpers.base.page_link('&lt;', request.endpoint, previous_page) }}
             {% endif %}
-
             {% for page in pages %}
                 {% if page == "..." %}
                     <span>...</span>
@@ -135,7 +119,6 @@
                     {{ helpers.base.page_link(page | string, request.endpoint, page) }}
                 {% endif %}
             {% endfor %}
-
             {% if next_page is none %}
                 <span>&gt;</span>
             {% else %}
@@ -143,4 +126,8 @@
             {% endif %}
         </div>
     {% endwith %}
+{%- endmacro %}
+
+{% macro render_block(tagname) -%}
+    {{ helpers.base.add_container(tagname, caller(), **kwargs) }}
 {%- endmacro %}

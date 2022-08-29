@@ -3,18 +3,24 @@
         <section id="booru-site-info">
             <h4>Info</h4>
             <ul>
-                <li><span class="heading">{{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span></li>
-                <li><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</li>
-                <li><strong>Banned:</strong> {{ booru.banned | tojson }}</li>
-                <li><strong>Deleted:</strong> {{ booru.deleted | tojson }}</li>
+                <li>
+                    <span class="heading">{{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span>
+                </li>
+                <li>
+                    <strong>Danbooru ID:</strong> {{ booru.danbooru_id }}
+                </li>
+                <li>
+                    <strong>Banned:</strong> {{ booru.banned | tojson }}
+                </li>
+                <li>
+                    <strong>Deleted:</strong> {{ booru.deleted | tojson }}
+                </li>
             </ul>
         </section>
         <section id="booru-names">
             <h4>Names</h4>
             <ul>
-                {% for booru_name in booru.names %}
-                    <li>{{ booru_name }}</li>
-                {% endfor %}
+                {% for booru_name in booru.names %}<li>{{ booru_name }}</li>{% endfor %}
             </ul>
         </section>
     </div>

@@ -1,8 +1,10 @@
-{% extends 'uploads/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
-{% from 'posts/_macros.html' import multi_post_preview %}
+{% extends "uploads/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
+{% from "posts/_macros.html" import multi_post_preview %}
 
-{% block title %}Uploads{% endblock %}
+{% block title %}
+    Uploads
+{% endblock title %}
 
 {% block content %}
     <table id="uploads-table" class="striped" width="100%">
@@ -22,16 +24,21 @@
                 <tr id="upload-{{ upload.id }}">
                     <td>{{ multi_post_preview(upload, 'upload') }}</td>
                     <td>
-                        <span><strong>{{ upload.show_link }} {{ helpers.upload.post_search_link(upload) }}</strong></span><br>
-                        <span><strong>Type:</strong> {{ upload.type }}</span><br>
-                        <span><strong>Successes:</strong> {{ upload.successes }}</span><br>
+                        <span><strong>{{ upload.show_link }} {{ helpers.upload.post_search_link(upload) }}</strong></span>
+                        <br>
+                        <span><strong>Type:</strong> {{ upload.type }}</span>
+                        <br>
+                        <span><strong>Successes:</strong> {{ upload.successes }}</span>
+                        <br>
                         <span><strong>Failures:</strong> {{ upload.failures }}</span>
                     </td>
                     <td>
-                        <span><strong>Request:</strong> {{ helpers.base.url_link(upload.request_url) }}</span><br>
+                        <span><strong>Request:</strong> {{ helpers.base.url_link(upload.request_url) }}</span>
+                        <br>
                         <span><strong>Image urls:</strong></span>
-                        {% for image_url in upload.image_urls%}
-                            <br>&emsp;{{ helpers.base.url_link(image_url.url) }}
+                        {% for image_url in upload.image_urls %}
+                            <br>
+                            &emsp;{{ helpers.base.url_link(image_url.url) }}
                         {% else %}
                             <em>none</em>
                         {% endfor %}
@@ -39,8 +46,10 @@
                     <td>
                         {% for error in upload.errors %}
                             <div>
-                                <strong>{{ error.module }}:</strong><br>
-                                &emsp;{{ error.message }}<br>
+                                <strong>{{ error.module }}:</strong>
+                                <br>
+                                &emsp;{{ error.message }}
+                                <br>
                                 &emsp;@ {{ helpers.base.format_timestamp(error.created) }}
                             </div>
                         {% else %}
@@ -53,6 +62,8 @@
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(uploads) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(uploads) }}
+{% endblock pages %}

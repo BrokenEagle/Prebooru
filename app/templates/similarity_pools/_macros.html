@@ -1,4 +1,4 @@
-{% from 'posts/_macros.html' import post_preview %}
+{% from "posts/_macros.html" import post_preview %}
 
 {% macro similar_posts(post) -%}
     {% if post.similarity_pool is not none %}
@@ -14,18 +14,16 @@
                         &ensp;(&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element, False) }}&thinsp;)
                     </div>
                     <article class="post similar-post">
-                        <a href="{{ similarity_element.post.show_url }}">
-                            {{ helpers.post.post_preview_link(similarity_element.post, True) }}
-                        </a>
+                        <a href="{{ similarity_element.post.show_url }}">{{ helpers.post.post_preview_link(similarity_element.post, False) }}</a>
                     </article>
                     <div>
                         <strong>Score:</strong> {{ similarity_element.score }}
-                        {% if post.pixel_md5 == similarity_element.post.pixel_md5 %}
-                            <span style="font-size: 75%; font-weight: bold;">&lt; <span style="color: green; font-variant: small-caps;">Pixel Match</span> &gt;</span>
-                        {% endif %}
+                        {% if post.pixel_md5 == similarity_element.post.pixel_md5 %}<span class="post-pixel-match">&lt; <span class="post-pixel-match-text">Pixel Match</span> &gt;</span>{% endif %}
                         <br>
-                        <strong>Type/Size:</strong> {{ similarity_element.post.size }} @ {{ similarity_element.post.file_ext.upper() }}<br>
-                        <strong>Dimensions:</strong> (&thinsp;{{ similarity_element.post.width }} x {{ similarity_element.post.height }}&thinsp;)<br>
+                        <strong>Type/Size:</strong> {{ similarity_element.post.size }} @ {{ similarity_element.post.file_ext.upper() }}
+                        <br>
+                        <strong>Dimensions:</strong> (&thinsp;{{ similarity_element.post.width }} x {{ similarity_element.post.height }}&thinsp;)
+                        <br>
                         <strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(similarity_element.post) }}
                     </div>
                 </div>
@@ -40,18 +38,32 @@
     {% with post = similarity_element.post %}
         <article class="similar-post-block">
             <div class="input">
-                <label for="similar-post-{{post.id }}">
-                    <input type="checkbox" class="similar-post-input" id="similar-post-{{ similarity_element.post.id }}" name="similarity_pool_element[id][]" value="{{ similarity_element.id }}" onchange="return SimilarityPools.toggleCheckbox(this)" onclick="return Prebooru.selectClick(this)">
+                <label for="similar-post-{{ post.id }}">
+                    <input type="checkbox"
+                           class="similar-post-input"
+                           id="similar-post-{{ similarity_element.post.id }}"
+                           name="similarity_pool_element[id][]"
+                           value="{{ similarity_element.id }}"
+                           onchange="return SimilarityPools.toggleCheckbox(this)"
+                           onclick="return Prebooru.selectClick(this)">
                 </label>
             </div>
             <div class="similar-post-controls">
-                <div><strong>{{ helpers.similarity_pool.sibling_pool_link(similarity_element) }}</strong></div>
-                <div style="text-align: right;">(&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element, True) }}&thinsp;)</div>
+                <div>
+                    <strong>{{ helpers.similarity_pool.sibling_pool_link(similarity_element) }}</strong>
+                </div>
+                <div class="similar-post-delete-link">(&thinsp;{{ helpers.similarity_pool.delete_element_link(similarity_element, True) }}&thinsp;)</div>
             </div>
             {{ post_preview(post, True) }}
-            <div><strong>Size/Type:</strong> {{ post.size }} @ {{ post.file_ext.upper() }}</div>
-            <div><strong>Dimensions:</strong> ( {{ post.width }} x {{ post.height }} )</div>
-            <div style="font-size: 150%;"><strong>Score:</strong> {{ similarity_element.score }}</div>
+            <div>
+                <strong>Size/Type:</strong> {{ post.size }} @ {{ post.file_ext.upper() }}
+            </div>
+            <div>
+                <strong>Dimensions:</strong> ( {{ post.width }} x {{ post.height }} )
+            </div>
+            <div class="similar-post-score">
+                <strong>Score:</strong> {{ similarity_element.score }}
+            </div>
         </article>
     {% endwith %}
 {%- endmacro %}

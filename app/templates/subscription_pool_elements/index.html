@@ -1,8 +1,10 @@
-{% extends 'subscription_pool_elements/_base.html' %}
-{% from 'layouts/_macros.html' import image_select_controls, page_navigation %}
-{% from 'subscription_pool_elements/_macros.html' import subscription_element_preview %}
+{% extends "subscription_pool_elements/_base.html" %}
+{% from "layouts/_macros.html" import image_select_controls, page_navigation %}
+{% from "subscription_pool_elements/_macros.html" import subscription_element_preview %}
 
-{% block title %}Subscription Pool Elements{% endblock %}
+{% block title %}
+    Subscription Pool Elements
+{% endblock title %}
 
 {% block content %}
     <div id="subscription-page-controls">
@@ -19,36 +21,36 @@
                 &emsp;&emsp;&emsp;
                 <strong>
                     [
-                        <a class="archive-link" href="javascript:SubmitForm('archive')">ARCHIVE</a>
+                    <a class="archive-link" href="#" onclick="return SubmitForm('archive')">ARCHIVE</a>
                     ]
                 </strong>
                 &emsp;
                 <strong>
                     KEEP[
-                        <a class="yes-link" href="javascript:SubmitForm('yes')">YES</a>
-                        |
-                        <a class="maybe-link" href="javascript:SubmitForm('maybe')">MAYBE</a>
-                        |
-                        <a class="no-link" href="javascript:SubmitForm('no')">NO</a>
+                    <a class="yes-link" href="#" onclick="return SubmitForm('yes')">YES</a>
+                    |
+                    <a class="maybe-link" href="#" onclick="return SubmitForm('maybe')">MAYBE</a>
+                    |
+                    <a class="no-link" href="#" onclick="return SubmitForm('no')">NO</a>
                     ]
                 </strong>
             {% endcall %}
         </div>
     </div>
-    <form id="form" method="POST" action="{{ url_for('subscription_pool_element.batch_keep_html') }}">
+    <form id="form" method="post" action="{{ url_for('subscription_pool_element.batch_keep_html') }}">
         <input type="hidden" id="subscription-pool-element-keep" name="subscription_pool_element[keep]" value="">
         <div id="subscription-pool-elements-container">
-            {% for element in subscription_pool_elements.items %}
-                {{ subscription_element_preview(element, True) }}
-            {% endfor %}
+            {% for element in subscription_pool_elements.items %}{{ subscription_element_preview(element, True) }}{% endfor %}
         </div>
     </form>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(subscription_pool_elements) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(subscription_pool_elements) }}
+{% endblock pages %}
 
 {% block pagescript %}
-<script>
+    <script>
 function SubmitForm(value) {
     document.getElementById('subscription-pool-element-keep').value = value;
     document.getElementById('form').submit();
@@ -68,5 +70,5 @@ function SubmitForm(value) {
 })();
 Prebooru.initializeLazyLoad('.subscription-element');
 Prebooru.initializeVideoPreviews('.video-post');
-</script>
-{% endblock %}
+    </script>
+{% endblock pagescript %}

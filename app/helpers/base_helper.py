@@ -11,6 +11,7 @@ from wtforms import Field, BooleanField
 from wtforms.widgets import HiddenInput
 
 # ## PACKAGE IMPORTS
+from config import PREBOORU_PORT  # noqa: F401
 from utility.time import time_ago, time_from_now
 
 # ## LOCAL IMPORTS
@@ -31,13 +32,16 @@ SITE_URL_DICT = {
     'twuser': twitter.ARTIST_HREFURL,
 }
 
+HR = Markup('<hr>')
+BR = Markup('<br>')
+
 
 # ## FUNCTIONS
 
 # #### Format functions
 
 def html_kebab_case(text):
-    return text.lower().replace(" ", "-").replace("&raquo;", "").strip("-")
+    return text.lower().replace(" ", "-").replace("»", "").strip("-")
 
 
 def display_case(text):
@@ -112,9 +116,10 @@ def convert_to_html(text):
 # #### HTML functions
 
 def add_container(tagname, markup_text, classlist=[], **attrs):
-    class_string = ' class="%s"' % ' '.join(classlist) if len(classlist) > 0 else ''
-    attr_string = ' ' + ' '.join(['%s="%s"' % attr for attr in attrs.items()]) if len(attrs) else ''
-    return Markup('<%s%s%s>' % (tagname, class_string, attr_string)) + markup_text + Markup('</%s>' % tagname)
+    attrs['class'] = ' '.join(classlist) if len(classlist) > 0 else None
+    valid_attrs = {key: val for (key, val) in attrs.items() if val is not None}
+    attr_string = ' ' + ' '.join(['%s="%s"' % attr for attr in valid_attrs.items()]) if len(valid_attrs) else ''
+    return Markup('<%s%s>' % (tagname, attr_string)) + markup_text + Markup('</%s>' % tagname)
 
 
 def external_link(text, url, **addons):

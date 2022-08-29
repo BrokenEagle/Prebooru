@@ -10,14 +10,21 @@
                 {% else %}
                     {% set li_class = 'booru-active' %}
                 {% endif %}
-                <li class="{{ li_class }}"><span class="item-heading">{{ booru.show_link }} {{ helpers.booru.post_search_link(booru) }}</span>
+                <li class="{{ li_class }}">
+                    <span class="item-heading">{{ booru.show_link }} {{ helpers.booru.post_search_link(booru) }}</span>
                     <ul>
-                        <li><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</li>
-                        <li><strong>Name: {{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</strong></li>
+                        <li>
+                            <strong>Danbooru ID:</strong> {{ booru.danbooru_id }}
+                        </li>
+                        <li>
+                            <strong>Name: {{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</strong>
+                        </li>
                     </ul>
                 </li>
             {% else %}
-                <li><em>none</em></li>
+                <li>
+                    <em>none</em>
+                </li>
             {% endfor %}
         </ul>
     </section>

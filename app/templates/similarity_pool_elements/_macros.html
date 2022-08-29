@@ -1,10 +1,14 @@
-{% from 'posts/_macros.html' import post_preview %}
+{% from "posts/_macros.html" import post_preview %}
 
 {% macro similarity_pool_element_preview(element) -%}
     <article id="similarity-element-{{ element.id }}" class="similarity-element">
         <div class="input">
             <label for="similar-post-{{ element.post.id }}">
-                <input type="checkbox" class="similar-post-input" id="similar-post-{{ element.post.id }}" name="similarity_pool_element[id][]" value="{{ element.id }}">
+                <input type="checkbox"
+                       class="similar-post-input"
+                       id="similar-post-{{ element.post.id }}"
+                       name="similarity_pool_element[id][]"
+                       value="{{ element.id }}">
             </label>
         </div>
         <div class="similar-post-controls">
@@ -12,36 +16,45 @@
             (&thinsp;{{ helpers.similarity_pool.delete_element_link(element, True) }}&thinsp;)
         </div>
         {{ post_preview(element.post, True) }}
-        <div><strong>Score:</strong> {{ element.score }}</div>
+        <div>
+            <strong>Score:</strong> {{ element.score }}
+        </div>
     </article>
 {%- endmacro %}
-
 
 {% macro similarity_pool_element_previews(element) -%}
     <article class="similarity-element-multi-preview">
         <div class="similarity-element-preview-controls">
             <label for="similarity-element-{{ element.id }}-input">
-                <input type="checkbox" class="similar-element-input" id="similarity-element-{{ element.id }}-input" name="similarity_pool_element[id][]" value="{{ element.id }}" onchange="return SimilarityPools.toggleCheckbox(this)" onclick="return Prebooru.selectClick(this)">
+                <input type="checkbox"
+                       class="similar-element-input"
+                       id="similarity-element-{{ element.id }}-input"
+                       name="similarity_pool_element[id][]"
+                       value="{{ element.id }}"
+                       onchange="return SimilarityPools.toggleCheckbox(this)"
+                       onclick="return Prebooru.selectClick(this)">
             </label>
-            <div class="similarity-element-preview-delete">
-                (&thinsp;{{ helpers.similarity_pool.delete_element_link(element, True) }}&thinsp;)
-            </div>
+            <div class="similarity-element-preview-delete">(&thinsp;{{ helpers.similarity_pool.delete_element_link(element, True) }}&thinsp;)</div>
         </div>
         <div class="similarity-element-preview-display">
-            <div class="similarity-element-post">
-                {{ post_preview(element.pool.post) }}
-            </div>
-            <div class="similarity-element-post">
-                {{ post_preview(element.post) }}
-            </div>
+            <div class="similarity-element-post">{{ post_preview(element.pool.post) }}</div>
+            <div class="similarity-element-post">{{ post_preview(element.post) }}</div>
             <div class="similarity-element-info-block">
-                <strong>(L) {{ helpers.similarity_pool.pool_show_link(element) }}</strong><br>
-                &emsp;<strong>Size:</strong> {{ element.pool.post.size }} @ {{ element.pool.post.file_ext.upper() }}<br>
-                &emsp;<strong>WxH:</strong> ( {{ element.pool.post.width }} x {{ element.pool.post.height }} )<br><br>
-                <strong>(R) {{ helpers.similarity_pool.pool_show_link(element.sibling) }}</strong><br>
-                &emsp;<strong>Size:</strong> {{ element.post.size }} @ {{ element.post.file_ext.upper() }}<br>
-                &emsp;<strong>WxH:</strong> ( {{ element.post.width }} x {{ element.post.height }} )<br><br>
-                <span style="font-size: 150%;"><strong>Score:</strong> {{ element.score }}</span>
+                <strong>(L) {{ helpers.similarity_pool.pool_show_link(element) }}</strong>
+                <br>
+                &emsp;<strong>Size:</strong> {{ element.pool.post.size }} @ {{ element.pool.post.file_ext.upper() }}
+                <br>
+                &emsp;<strong>WxH:</strong> ( {{ element.pool.post.width }} x {{ element.pool.post.height }} )
+                <br>
+                <br>
+                <strong>(R) {{ helpers.similarity_pool.pool_show_link(element.sibling) }}</strong>
+                <br>
+                &emsp;<strong>Size:</strong> {{ element.post.size }} @ {{ element.post.file_ext.upper() }}
+                <br>
+                &emsp;<strong>WxH:</strong> ( {{ element.post.width }} x {{ element.post.height }} )
+                <br>
+                <br>
+                <span class="similarity-element-info-score"><strong>Score:</strong> {{ element.score }}</span>
             </div>
         </div>
     </article>

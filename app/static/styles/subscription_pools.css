@@ -12,6 +12,10 @@ div#subscription-pool-form-info {
 table#subscription-pools-table span.explanation {
     font-size: 80%;
 }
+div.similarity-pool-show-link {
+    text-align: center; 
+    font-weight: bold;
+}
 /****SHOW Page****/
 div#subscription-pool-heading {
     font-size: 32px;

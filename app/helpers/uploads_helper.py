@@ -30,4 +30,4 @@ def resubmit_link(upload):
 
 
 def post_search_link(upload):
-    return general_link('&raquo;', search_url_for('post.index_html', uploads={'id': upload.id}))
+    return general_link('»', search_url_for('post.index_html', uploads={'id': upload.id}))

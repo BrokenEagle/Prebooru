@@ -79,11 +79,11 @@ def danbooru_batch_url(illust):
 # ###### INDEX
 
 def post_search_link(illust):
-    return general_link('&raquo;', search_url_for('post.index_html', illust_urls={'illust_id': illust.id}))
+    return general_link('»', search_url_for('post.index_html', illust_urls={'illust_id': illust.id}))
 
 
 def illust_url_search_link(illust):
-    return general_link("&laquo;search&raquo;", search_url_for('illust_url.index_html', illust_id=illust.id))
+    return general_link("«search»", search_url_for('illust_url.index_html', illust_id=illust.id))
 
 
 # ###### SHOW
@@ -127,4 +127,4 @@ def alt_site_illust_link(illust):
     site_key = get_site_key(illust.site_id)
     source = SOURCEDICT[site_key]
     post_url = source.get_post_url(illust)
-    return external_link('&raquo;', post_url) if post_url != source.get_illust_url(illust.site_illust_id) else ""
+    return external_link('»', post_url) if post_url != source.get_illust_url(illust.site_illust_id) else ""

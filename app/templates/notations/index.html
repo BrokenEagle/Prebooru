@@ -1,7 +1,9 @@
-{% extends 'notations/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
+{% extends "notations/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
 
-{% block title %}Notations{% endblock %}
+{% block title %}
+    Notations
+{% endblock title %}
 
 {% block content %}
     <table id="notations-table" class="striped" width="100%">
@@ -24,6 +26,8 @@
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(notations)}}{% endblock %}
+{% block pages %}
+    {{ page_navigation(notations)}}
+{% endblock pages %}

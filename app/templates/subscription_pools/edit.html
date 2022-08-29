@@ -1,14 +1,12 @@
-{% extends 'subscription_pools/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "subscription_pools/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}Edit {{ subscription_pool.header }}{% endblock %}
+{% block title %}
+    Edit {{ subscription_pool.header }}
+{% endblock title %}
 
 {% block content %}
-    <div id="subscription-pool-form-heading" class="form-heading heading">
-        Edit {{ subscription_pool.header }}
-    </div>
-    <div id="subscription-pool-form-info">
-        For {{ subscription_pool.artist_show_link }}:
-    </div>
+    <div id="subscription-pool-form-heading" class="form-heading heading">Edit {{ subscription_pool.header }}</div>
+    <div id="subscription-pool-form-info">For {{ subscription_pool.artist_show_link }}:</div>
     {{ render_form(form, 'PUT', subscription_pool.update_url) }}
-{% endblock %}
+{% endblock content %}

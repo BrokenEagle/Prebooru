@@ -70,7 +70,7 @@ def delete_profile_link(artist, profile):
 # ###### GENERAL
 
 def post_search_link(artist):
-    return general_link('&raquo;', post_search(artist))
+    return general_link('»', post_search(artist))
 
 
 def site_artist_link(artist):

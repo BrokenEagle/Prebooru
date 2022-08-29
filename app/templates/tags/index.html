@@ -1,7 +1,9 @@
-{% extends 'tags/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
+{% extends "tags/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
 
-{% block title %}Tags{% endblock %}
+{% block title %}
+    Tags
+{% endblock title %}
 
 {% block content %}
     <table id="tags-table" class="striped" width="80%">
@@ -22,6 +24,8 @@
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(tags) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(tags) }}
+{% endblock pages %}

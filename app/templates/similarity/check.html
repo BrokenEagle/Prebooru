@@ -1,19 +1,23 @@
-{% extends 'layouts/base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
-{% from 'posts/_macros.html' import post_preview %}
+{% extends "layouts/base.html" %}
+{% from "layouts/_macros.html" import render_form %}
+{% from "posts/_macros.html" import post_preview %}
 
-{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/similarity.css') }}">{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/similarity.css') }}">
+{% endblock css %}
 
-{% block title %}Similarity results{% endblock %}
+{% block title %}
+    Similarity results
+{% endblock title %}
 
 {% block content %}
     <div id="similarity-content">
         <div id="similarity-heading" class="heading">Similarity results</div>
-        <div id="similarity-form" class="{{ helpers}}">
+        <div id="similarity-form" class="{{ helpers }}">
             {{ render_form(form, 'GET', url_for('similarity.check_html'), class=helpers.similarity.form_class(similar_results)) }}
             {% if similar_results is not none %}
                 <div id="display-form">
-                    <a href="#" onclick="return ShowForm(this)">&laquo;Show form&raquo;</a>
+                    <a href="#" onclick="return ShowForm(this)">«Show form»</a>
                 </div>
             {% endif %}
         </div>
@@ -35,8 +39,10 @@
                                 <div class="similarity-post">
                                     {{ post_preview(post_result.post, True) }}
                                     <div class="similarity-post-info">
-                                        <strong>Score:</strong> {{ post_result.score }}<br>
-                                        <strong>Type/Size:</strong> {{ post_result.post.file_ext.upper() }} @ {{ post_result.post.size }}<br>
+                                        <strong>Score:</strong> {{ post_result.score }}
+                                        <br>
+                                        <strong>Type/Size:</strong> {{ post_result.post.file_ext.upper() }} @ {{ post_result.post.size }}
+                                        <br>
                                         <strong>Dimensions:</strong> ( {{ post_result.post.width }} x {{ post_result.post.height }} )
                                     </div>
                                 </div>
@@ -49,15 +55,15 @@
             </div>
         {% endif %}
     </div>
-{% endblock %}
+{% endblock content %}
 
 {% block pagescript %}
-<script>
+    <script>
 function ShowForm(obj) {
     document.getElementById('form').classList.remove('hidden');
     obj.parentElement.style.display = 'none';
     return false;
 }
 Prebooru.initializeLazyLoad('.similarity-post');
-</script>
-{% endblock %}
+    </script>
+{% endblock pagescript %}

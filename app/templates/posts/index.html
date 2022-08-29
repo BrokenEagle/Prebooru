@@ -1,8 +1,10 @@
-{% extends 'posts/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
-{% from 'posts/_macros.html' import post_preview %}
+{% extends "posts/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
+{% from "posts/_macros.html" import post_preview %}
 
-{% block title %}Posts{% endblock %}
+{% block title %}
+    Posts
+{% endblock title %}
 
 {% block content %}
     <div id="type-selector">
@@ -11,17 +13,17 @@
         {{ helpers.post.post_type_link('subscription') }}
     </div>
     <div id="posts-container">
-        {% for post in posts.items %}
-            {{ post_preview(post, True) }}
-        {% endfor %}
+        {% for post in posts.items %}{{ post_preview(post, True) }}{% endfor %}
     </div>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(posts) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(posts) }}
+{% endblock pages %}
 
 {% block pagescript %}
-<script>
-Prebooru.initializeLazyLoad('.post');
-Prebooru.initializeVideoPreviews('.video-post');
-</script>
-{% endblock %}
+    <script>
+        Prebooru.initializeLazyLoad('.post');
+        Prebooru.initializeVideoPreviews('.video-post');
+    </script>
+{% endblock pagescript %}

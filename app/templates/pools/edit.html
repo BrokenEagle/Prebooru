@@ -1,9 +1,11 @@
-{% extends 'pools/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "pools/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}Edit {{ pool.header }}{% endblock %}
+{% block title %}
+    Edit {{ pool.header }}
+{% endblock title %}
 
 {% block content %}
     <div id="pool-form-heading" class="form-heading heading">Edit {{ pool.header }}</div>
-    {{ render_form(form, 'PUT', pool.update_url) }}
-{% endblock %}
+    {{ render_form(form, "PUT", pool.update_url) }}
+{% endblock content %}

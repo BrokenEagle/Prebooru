@@ -1,7 +1,9 @@
-{% extends 'pools/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
+{% extends "pools/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
 
-{% block title %}Pools{% endblock %}
+{% block title %}
+    Pools
+{% endblock title %}
 
 {% block content %}
     <table id="pools-table" class="striped" width="100%">
@@ -26,6 +28,8 @@
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(pools) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(pools) }}
+{% endblock pages %}

@@ -1,12 +1,12 @@
-{% extends 'artists/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "artists/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}Edit - {{ artist.header }}{% endblock %}
+{% block title %}
+    Edit - {{ artist.header }}
+{% endblock title %}
 
 {% block content %}
-    <div class="form-heading heading">
-        Edit: {{ artist.show_link }}</a>
-    </div>
+    <div class="form-heading heading">Edit: {{ artist.show_link }}</div>
     {% call(field_name, field_input) render_form(form, 'PUT', artist.update_url) %}
         {% if field_name == 'profile' %}
             {{ field_input(description="Text here will be appended to existing artist profiles.") }}
@@ -14,4 +14,4 @@
             {{ field_input() }}
         {% endif %}
     {% endcall %}
-{% endblock %}
+{% endblock content %}

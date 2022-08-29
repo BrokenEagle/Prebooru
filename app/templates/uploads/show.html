@@ -1,7 +1,9 @@
-{% extends 'uploads/_base.html' %}
+{% extends "uploads/_base.html" %}
 {% from "posts/_macros.html" import recent_posts %}
 
-{% block title %}{{ upload.header }}{% endblock %}
+{% block title %}
+    {{ upload.header }}
+{% endblock title %}
 
 {% block content %}
     <div id="upload-heading" class="heading">{{ upload.header }}</div>
@@ -9,10 +11,8 @@
         {% include "uploads/_sidebar.html" %}
         {% include "uploads/_site_content.html" %}
     </div>
-    <div id="upload-posts">
-        {{ recent_posts(upload.posts) }}
-    </div>
-{% endblock %}
+    <div id="upload-posts">{{ recent_posts(upload.posts) }}</div>
+{% endblock content %}
 
 {% block pagescript %}
     {% if upload.status == 'pending' or upload.status == 'processing' %}
@@ -22,4 +22,4 @@
             }, 5000)
         </script>
     {% endif %}
-{% endblock %}
+{% endblock pagescript %}

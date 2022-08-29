@@ -1,7 +1,9 @@
-{% extends 'media_files/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
+{% extends "media_files/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
 
-{% block title %}Media Files{% endblock %}
+{% block title %}
+    Media Files
+{% endblock title %}
 
 {% block content %}
     <table id="media-file-table" class="striped" width="100%">
@@ -18,7 +20,8 @@
                 <tr id="media-file-{{ media_file.id }}">
                     <td>{{ media_file.show_link }}</td>
                     <td>
-                        <strong>MD5:</strong> {{ media_file.md5 }}<br>
+                        <strong>MD5:</strong> {{ media_file.md5 }}
+                        <br>
                         <strong>URL:</strong> {{ helpers.base.url_link(media_file.media_url) }}
                     </td>
                     <td>
@@ -31,6 +34,8 @@
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(media_files) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(media_files) }}
+{% endblock pages %}

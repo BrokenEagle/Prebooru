@@ -87,6 +87,7 @@ Prebooru.selectAll = function(classname) {
     });
     document.getElementById('image-select-counter').innerText = counter;
     document.dispatchEvent(Prebooru.updateInputsEvent);
+    return false;
 };
 
 Prebooru.selectNone = function(classname) {
@@ -95,6 +96,7 @@ Prebooru.selectNone = function(classname) {
     });
     document.getElementById('image-select-counter').innerText = 0;
     document.dispatchEvent(Prebooru.updateInputsEvent);
+    return false;
 };
 
 Prebooru.selectInvert = function(classname) {
@@ -105,6 +107,7 @@ Prebooru.selectInvert = function(classname) {
     });
     document.getElementById('image-select-counter').innerText = counter;
     document.dispatchEvent(Prebooru.updateInputsEvent);
+    return false;
 };
 
 Prebooru.selectClick = function(obj) {

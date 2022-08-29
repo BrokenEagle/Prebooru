@@ -1,7 +1,13 @@
-{% extends 'layouts/base.html' %}
+{% extends "layouts/base.html" %}
 
-{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/subscription_pools.css') }}">{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/subscription_pools.css') }}">
+{% endblock css %}
 
-{% block linkscript %}<script src="{{ url_for('static', filename='javascript/subscription_pools.js') }}"></script>{% endblock %}
+{% block linkscript %}
+    <script src="{{ url_for('static', filename='javascript/subscription_pools.js') }}"></script>
+{% endblock linkscript %}
 
-{% block secondary_links %}{% include "subscription_pools/_secondary_links.html" %}{% endblock %}
+{% block secondary_links %}
+    {% include "subscription_pools/_secondary_links.html" %}
+{% endblock secondary_links %}

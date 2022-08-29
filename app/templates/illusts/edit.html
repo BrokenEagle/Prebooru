@@ -1,15 +1,13 @@
-{% extends 'illusts/_base.html' %}
-{% from 'layouts/_macros.html' import render_form %}
+{% extends "illusts/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
 
-{% block title %}Edit - {{ illust.header }}{% endblock %}
+{% block title %}
+    Edit - {{ illust.header }}
+{% endblock title %}
 
 {% block content %}
-    <div id="illust-form-heading" class="heading">
-        Edit {{ illust.header }}
-    </div>
-    <div id="illust-form-info">
-        For {{ illust.artist_show_link }}:
-    </div>
+    <div id="illust-form-heading" class="heading">Edit {{ illust.header }}</div>
+    <div id="illust-form-info">For {{ illust.artist_show_link }}:</div>
     {% call(field_name, field_input) render_form(form, 'PUT', illust.update_url, class=helpers.illust.form_class(form)) %}
         {% set classlist = [] %}
         {% if field_name in ['retweets', 'replies', 'quotes'] %}
@@ -23,5 +21,5 @@
         {% else %}
             {{ field_input(classlist=classlist) }}
         {% endif %}
-    {% endcall%}
-{% endblock %}
+    {% endcall %}
+{% endblock content %}

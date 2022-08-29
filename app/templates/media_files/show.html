@@ -1,19 +1,29 @@
-{% extends 'media_files/_base.html' %}
+{% extends "media_files/_base.html" %}
 
-{% block title %}{{ media_file.header }}{% endblock %}
+{% block title %}
+    {{ media_file.header }}
+{% endblock title %}
 
 {% block content %}
     <div id="media-file-heading" class="heading">{{ media_file.header }}</div>
     <div id="media-file-content">
         <ul>
-            <li><strong>MD5:</strong> {{ media_file.md5 }}</li>
-            <li><strong>URL:</strong> {{ helpers.base.url_link(media_file.media_url) }}</li>
-            <li><strong>Expires:</strong> {{ helpers.base.format_timestamp(media_file.expires) }}</li>
-            <li><strong>Media:</strong><br>
+            <li>
+                <strong>MD5:</strong> {{ media_file.md5 }}
+            </li>
+            <li>
+                <strong>URL:</strong> {{ helpers.base.url_link(media_file.media_url) }}
+            </li>
+            <li>
+                <strong>Expires:</strong> {{ helpers.base.format_timestamp(media_file.expires) }}
+            </li>
+            <li>
+                <strong>Media:</strong>
+                <br>
                 <article class="media-file">
                     {{ helpers.media_file.file_link(media_file) }}
                 </article>
             </li>
         </ul>
     </div>
-{% endblock %}
+{% endblock content %}

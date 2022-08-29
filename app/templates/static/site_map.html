@@ -1,8 +1,12 @@
-{% extends 'layouts/base.html' %}
+{% extends "layouts/base.html" %}
 
-{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/static.css') }}">{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/static.css') }}">
+{% endblock css %}
 
-{% block title %}Site Map{% endblock %}
+{% block title %}
+    Site Map
+{% endblock title %}
 
 {% block content %}
     <div id="site-map">
@@ -11,42 +15,64 @@
             <section id="static-posts">
                 <h4>Posts</h4>
                 <ul>
-                    <li><a href="{{ url_for('post.index_html') }}">Listing</a></li>
+                    <li>
+                        <a href="{{ url_for('post.index_html') }}">Listing</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-uploads">
                 <h4>Uploads</h4>
                 <ul>
-                    <li><a href="{{ url_for('upload.index_html') }}">Listing</a></li>
-                    <li><a href="{{ url_for('upload.new_html') }}">New</a></li>
+                    <li>
+                        <a href="{{ url_for('upload.index_html') }}">Listing</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('upload.new_html') }}">New</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-notations">
                 <h4>Notations</h4>
                 <ul>
-                    <li><a href="{{ url_for('notation.index_html') }}">Listing</a></li>
-                    <li><a href="{{ url_for('notation.new_html') }}">New</a></li>
+                    <li>
+                        <a href="{{ url_for('notation.index_html') }}">Listing</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('notation.new_html') }}">New</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-tags">
                 <h4>Tags</h4>
                 <ul>
-                    <li><a href="{{ url_for('tag.index_html') }}">Listing</a></li>
+                    <li>
+                        <a href="{{ url_for('tag.index_html') }}">Listing</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-pools">
                 <h4>Pools</h4>
                 <ul>
-                    <li><a href="{{ url_for('pool.index_html') }}">Listing</a></li>
-                    <li><a href="{{ url_for('pool.new_html') }}">New</a></li>
+                    <li>
+                        <a href="{{ url_for('pool.index_html') }}">Listing</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('pool.new_html') }}">New</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-subscriptions">
                 <h4>Subscriptions</h4>
                 <ul>
-                    <li><a href="{{ url_for('subscription_pool.index_html') }}">Listing</a></li>
-                    <li><a href="{{ url_for('subscription_pool.new_html') }}">New</a></li>
-                    <li><a href="{{ url_for('subscription_pool_element.index_html') }}">Elements</a></li>
+                    <li>
+                        <a href="{{ url_for('subscription_pool.index_html') }}">Listing</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('subscription_pool.new_html') }}">New</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('subscription_pool_element.index_html') }}">Elements</a>
+                    </li>
                 </ul>
             </section>
         </div>
@@ -55,64 +81,112 @@
             <section id="static-boorus">
                 <h4>Boorus</h4>
                 <ul>
-                    <li><a href="{{ url_for('booru.index_html') }}">Listing</a></li>
-                    <li><a href="{{ url_for('booru.new_html') }}">New</a></li>
+                    <li>
+                        <a href="{{ url_for('booru.index_html') }}">Listing</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('booru.new_html') }}">New</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-artists">
                 <h4>Artists</h4>
                 <ul>
-                    <li><a href="{{ url_for('artist.index_html') }}">Listing</a></li>
-                    <li><a href="{{ url_for('artist.new_html') }}">New</a></li>
+                    <li>
+                        <a href="{{ url_for('artist.index_html') }}">Listing</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('artist.new_html') }}">New</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-artist-urls">
                 <h4>Artist URLs</h4>
                 <ul>
-                    <li><a href="{{ url_for('artist_url.index_html') }}">Listing</a></li>
+                    <li>
+                        <a href="{{ url_for('artist_url.index_html') }}">Listing</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-illusts">
-                <h4>Illusts</h4>
+                <h4>
+                    Illusts
+                </h4>
                 <ul>
-                    <li><a href="{{ url_for('illust.index_html') }}">Listing</a></li>
-                    <li><a href="{{ url_for('illust.new_html') }}">New</a></li>
+                    <li>
+                        <a href="{{ url_for('illust.index_html') }}">Listing</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('illust.new_html') }}">New</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-illust-urls">
-                <h4>Illust URLs</h4>
+                <h4>
+                    Illust URLs
+                </h4>
                 <ul>
-                    <li><a href="{{ url_for('illust_url.index_html') }}">Listing</a></li>
-                    <li><a href="{{ url_for('illust_url.new_html') }}">New</a></li>
+                    <li>
+                        <a href="{{ url_for('illust_url.index_html') }}">Listing</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('illust_url.new_html') }}">New</a>
+                    </li>
                 </ul>
             </section>
         </div>
         <div id="static-other">
-            <h3>Other</h3>
+            <h3>
+                Other
+            </h3>
             <section id="static-bookmarklets">
-                <h4>Bookmarklet pages</h4>
+                <h4>
+                    Bookmarklet pages
+                </h4>
                 <ul>
-                    <li><a href="{{ url_for('static.bookmarklet_info_html') }}">Info</a></li>
-                    <li><a href="{{ url_for('upload.upload_all_html', show_form='true') }}">Upload All</a></li>
-                    <li><a href="{{ url_for('upload.upload_select_html', show_form='true') }}">Upload Select</a></li>
+                    <li>
+                        <a href="{{ url_for('static.bookmarklet_info_html') }}">Info</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('upload.upload_all_html', show_form='true') }}">Upload All</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('upload.upload_select_html', show_form='true') }}">Upload Select</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-tools">
-                <h4>Tools</h4>
+                <h4>
+                    Tools
+                </h4>
                 <ul>
-                    <li><a href="{{ url_for('similarity.check_html', show_form='true') }}">Check Similarity</a></li>
-                    <li><a href="{{ url_for('task.list_html') }}">Tasks</a></li>
+                    <li>
+                        <a href="{{ url_for('similarity.check_html', show_form='true') }}">Check Similarity</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('task.list_html') }}">Tasks</a>
+                    </li>
                 </ul>
             </section>
             <section id="static-data">
-                <h4>Misc Data</h4>
+                <h4>
+                    Misc Data
+                </h4>
                 <ul>
-                    <li><a href="{{ url_for('error.index_html') }}">Errors</a></li>
-                    <li><a href="{{ url_for('archive.index_html') }}">Archives</a></li>
-                    <li><a href="{{ url_for('api_data.index_html') }}">API Data</a></li>
-                    <li><a href="{{ url_for('media_file.index_html') }}">Media Files</a></li>
+                    <li>
+                        <a href="{{ url_for('error.index_html') }}">Errors</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('archive.index_html') }}">Archives</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('api_data.index_html') }}">API Data</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('media_file.index_html') }}">Media Files</a>
+                    </li>
                 </ul>
             </section>
         </div>
     </div>
-{% endblock %}
+{% endblock content %}

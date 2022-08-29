@@ -30,7 +30,7 @@ def post_search(tag, item_type):
 # #### Link functions
 
 def post_search_link(tag, item_type):
-    return general_link('&raquo;', post_search(tag, item_type))
+    return general_link('»', post_search(tag, item_type))
 
 
 def tag_search_links(tag):

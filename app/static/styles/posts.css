@@ -139,8 +139,20 @@ article.post.similar-post {
     text-align: left;
     margin-top: 0.5em;
 }
-
-
+span.post-pixel-match {
+    font-size: 75%;
+    font-weight: bold;
+}
+span.post-pixel-match-text {
+    color: green;
+    font-variant: small-caps;
+}
+div.similar-post-delete-link {
+    text-align: right;
+}
+div.similar-post-score {
+    font-size: 150%;
+}
 /****TEMP****/
 
 a.yes-link {

@@ -1,7 +1,9 @@
-{% extends 'illusts/_base.html' %}
-{% from 'illust_urls/_macros.html' import image_urls_section, video_urls_section %}
+{% extends "illusts/_base.html" %}
+{% from "illust_urls/_macros.html" import image_urls_section, video_urls_section %}
 
-{% block title %}{{ illust.header }}{% endblock %}
+{% block title %}
+    {{ illust.header }}
+{% endblock title %}
 
 {% block content %}
     <div id="illust-heading" class="heading">{{ illust.header }}</div>
@@ -16,10 +18,8 @@
             {{ video_urls_section(illust.urls[0]) }}
         {% endif %}
     </div>
-{% endblock %}
+{% endblock content %}
 
 {% block pagescript %}
-<script>
-Prebooru.initializeLazyLoad('.image-post-preview');
-</script>
-{% endblock %}
+    <script>Prebooru.initializeLazyLoad('.image-post-preview');</script>
+{% endblock pagescript %}

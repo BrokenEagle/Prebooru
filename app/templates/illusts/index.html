@@ -1,9 +1,11 @@
-{% extends 'illusts/_base.html' %}
-{% from 'layouts/_macros.html' import page_navigation %}
-{% from 'posts/_macros.html' import multi_post_preview, post_preview %}
-{% from 'tags/_macros.html' import simple_tag_list %}
+{% extends "illusts/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
+{% from "posts/_macros.html" import multi_post_preview, post_preview %}
+{% from "tags/_macros.html" import simple_tag_list %}
 
-{% block title %}Illusts{% endblock %}
+{% block title %}
+    Illusts
+{% endblock title %}
 
 {% block content %}
     <table id="illusts-table" class="striped" width="100%">
@@ -28,22 +30,28 @@
                         {% endif %}
                     </td>
                     <td>
-                        <span><strong>{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</strong></span><br>
-                        <span><strong>Domain:</strong> {{ illust.site_domain }}</span><br>
-                        <span><strong>Site ID:</strong> {{ illust.site_illust_id }}</span><br><br>
-                        <span><strong>{{ illust.artist_show_link }}</strong></span><br><br>
+                        <span><strong>{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</strong></span>
+                        <br>
+                        <span><strong>Domain:</strong> {{ illust.site_domain }}</span>
+                        <br>
+                        <span><strong>Site ID:</strong> {{ illust.site_illust_id }}</span>
+                        <br>
+                        <br>
+                        <span><strong>{{ illust.artist_show_link }}</strong></span>
+                        <br>
+                        <br>
                     </td>
                     <td>
-                        <div class="simple-tags-container">
-                            {{ simple_tag_list(illust._tags, 'illust') }}
-                        </div>
+                        <div class="simple-tags-container">{{ simple_tag_list(illust._tags, 'illust') }}</div>
                     </td>
                     <td>
-                         {% for illust_url in illust.urls %}
+                        {% for illust_url in illust.urls %}
                             {% if loop.index is eq 8 %}
-                                ......<br>
+                                ......
+                                <br>
                             {% elif loop.index is lt 8 %}
-                                {{ helpers.base.url_link(illust_url.full_url) }}<br>
+                                {{ helpers.base.url_link(illust_url.full_url) }}
+                                <br>
                             {% endif %}
                             {% if loop.last %}
                                 <br>
@@ -54,20 +62,22 @@
                         {% endfor %}
                     </td>
                     <td>
-                        <strong>Requery:</strong> {{ helpers.base.format_timestamp(illust.requery) }}<br>
-                        <strong>Created:</strong> {{ helpers.base.format_timestamp(illust.created) }}<br>
+                        <strong>Requery:</strong> {{ helpers.base.format_timestamp(illust.requery) }}
+                        <br>
+                        <strong>Created:</strong> {{ helpers.base.format_timestamp(illust.created) }}
+                        <br>
                         <strong>Updated:</strong> {{ helpers.base.format_timestamp(illust.updated) }}
                     </td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(illusts) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(illusts) }}
+{% endblock pages %}
 
 {% block pagescript %}
-<script>
-Prebooru.initializeLazyLoad('.illust-preview, .post');
-</script>
-{% endblock %}
+    <script>Prebooru.initializeLazyLoad('.illust-preview, .post');</script>
+{% endblock pagescript %}

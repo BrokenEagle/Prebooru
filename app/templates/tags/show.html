@@ -1,33 +1,33 @@
-{% extends 'tags/_base.html' %}
+{% extends "tags/_base.html" %}
 {% from "illusts/_macros.html" import illusts_display %}
 {% from "posts/_macros.html" import recent_posts %}
 
 {% block title %}
     {{ tag.header }}
-{% endblock %}
+{% endblock title %}
 
 {% block content %}
-    <div id="tag-heading" class="heading">
-        {{ tag.header }}
-    </div>
+    <div id="tag-heading" class="heading">{{ tag.header }}</div>
     <div id="tag-content">
         <ul>
-            <li><strong>Name:</strong>&emsp;{{ tag.name }}</li>
-            <li><strong>Type:</strong>&emsp;{{ tag.display_type }}</li>
+            <li>
+                <strong>Name:</strong>&emsp;{{ tag.name }}
+            </li>
+            <li>
+                <strong>Type:</strong>&emsp;{{ tag.display_type }}
+            </li>
             {% if tag.type == 'site_tag' %}
-                <li><strong>Links:</strong>&emsp;{{ helpers.tag.tag_search_links(tag) }}</li>
+                <li>
+                    <strong>Links:</strong>&emsp;{{ helpers.tag.tag_search_links(tag) }}
+                </li>
             {% endif %}
         </ul>
     </div>
     {% if tag.type == 'site_tag' %}
         {{ illusts_display(helpers.tag.illust_search(tag, 'illust'), tag.illust_count, 'tag-illusts', False) }}
-        <div id="tag-posts">
-            {{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag, 'illust')) }}
-        </div>
+        <div id="tag-posts">{{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag, 'illust')) }}</div>
     {% elif tag.type == 'user_tag' %}
         {{ illusts_display(helpers.tag.illust_search(tag, 'post'), tag.illust_count, 'tag-illusts', False) }}
-        <div id="tag-posts">
-            {{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag, 'post')) }}
-        </div>
+        <div id="tag-posts">{{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag, 'post')) }}</div>
     {% endif %}
-{% endblock %}
+{% endblock content %}

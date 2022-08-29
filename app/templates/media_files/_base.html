@@ -1,5 +1,9 @@
-{% extends 'layouts/base.html' %}
+{% extends "layouts/base.html" %}
 
-{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/media_file.css') }}">{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/media_file.css') }}">
+{% endblock css %}
 
-{% block secondary_links %}{% include "media_files/_secondary_links.html" %}{% endblock %}
+{% block secondary_links %}
+    {% include "media_files/_secondary_links.html" %}
+{% endblock secondary_links %}

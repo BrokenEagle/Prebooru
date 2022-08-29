@@ -1,31 +1,34 @@
-{% extends 'similarity_pool_elements/_base.html' %}
-{% from 'layouts/_macros.html' import image_select_controls, page_navigation %}
-{% from 'similarity_pool_elements/_macros.html' import similarity_pool_element_previews %}
+{% extends "similarity_pool_elements/_base.html" %}
+{% from "layouts/_macros.html" import image_select_controls, page_navigation %}
+{% from "similarity_pool_elements/_macros.html" import similarity_pool_element_previews %}
 
-{% block title %}Similarity Pool Elements{% endblock %}
+{% block title %}
+    Similarity Pool Elements
+{% endblock title %}
 
 {% block content %}
     <div id="similarity-pool-elements-container">
-        <div id="similarity-page-controls" style="position: relative; width 95%; height: 4em;">
-            <div id="similarity-pool-controls" style="position: absolute; right: 2em; bottom: 1em;">
+        <div id="similarity-page-controls">
+            <div id="similarity-pool-controls">
                 {% call image_select_controls('similar-element-input') %}
-                    <strong>[ <a class="warning-link" href="javascript:SubmitForm()">DELETE</a> ]</strong>
+                    <strong>[ <a class="warning-link" href="#" onclick="return SubmitForm(this)">DELETE</a> ]</strong>
                 {% endcall %}
             </div>
         </div>
-        <form id="form" method="POST" action="/similarity_pool_elements/batch_delete">
-            {% for element in similarity_pool_elements.items %}
-                {{ similarity_pool_element_previews(element) }}
-            {% endfor %}
+        <form id="form" method="post" action="{{ url_for('similarity_pool_element.batch_delete_html') }}">
+            {% for element in similarity_pool_elements.items %}{{ similarity_pool_element_previews(element) }}{% endfor %}
         </form>
     </div>
-{% endblock %}
+{% endblock content %}
 
-{% block pages %}{{ page_navigation(similarity_pool_elements) }}{% endblock %}
+{% block pages %}
+    {{ page_navigation(similarity_pool_elements) }}
+{% endblock pages %}
 
 {% block pagescript %}
-<script>
-function SubmitForm() {
+    <script>
+function SubmitForm(event) {
+    event.preventDefault();
     if (confirm("Remove all selected similarity elements?")) {
         document.getElementById('form').submit();
     }
@@ -34,5 +37,5 @@ function SubmitForm() {
     document.addEventListener('prebooru:update-inputs', SimilarityPools.updateAllInputs);
 })();
 Prebooru.initializeLazyLoad('.similar-post-block');
-</script>
-{% endblock %}
+    </script>
+{% endblock pagescript %}

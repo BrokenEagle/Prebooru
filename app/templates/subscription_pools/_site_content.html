@@ -3,14 +3,27 @@
         <section id="subscription-pool-status">
             <h4>Info</h4>
             <ul>
-                <li><strong>Status:</strong> {{ helpers.subscription_pool.pool_status_link(subscription_pool) }}</li>
-                <li><strong>Last ID:</strong> {{ helpers.base.val_or_none(subscription_pool.last_id) }}</li>
-                <li><strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription_pool.checked) }}</li>
-                <li><strong>Average interval:</strong> {{ helpers.subscription_pool.average_interval(subscription_pool) }}</li>
-                <li><strong>Total storage:</strong> {{ helpers.subscription_pool.storage_bytes(subscription_pool) }}
+                <li>
+                    <strong>Status:</strong> {{ helpers.subscription_pool.pool_status_link(subscription_pool) }}
+                </li>
+                <li>
+                    <strong>Last ID:</strong> {{ helpers.base.val_or_none(subscription_pool.last_id) }}
+                </li>
+                <li>
+                    <strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription_pool.checked) }}
+                </li>
+                <li>
+                    <strong>Average interval:</strong> {{ helpers.subscription_pool.average_interval(subscription_pool) }}
+                </li>
+                <li>
+                    <strong>Total storage:</strong> {{ helpers.subscription_pool.storage_bytes(subscription_pool) }}
                     <ul>
-                        <li><strong>Main:</strong> {{ helpers.subscription_pool.storage_bytes(subscription_pool, 'main') }}</li>
-                        <li><strong>Alternate:</strong> {{ helpers.subscription_pool.storage_bytes(subscription_pool, 'alternate') }}</li>
+                        <li>
+                            <strong>Main:</strong> {{ helpers.subscription_pool.storage_bytes(subscription_pool, 'main') }}
+                        </li>
+                        <li>
+                            <strong>Alternate:</strong> {{ helpers.subscription_pool.storage_bytes(subscription_pool, 'alternate') }}
+                        </li>
                     </ul>
                 </li>
             </ul>
@@ -18,15 +31,20 @@
         <section id="subscription-pool-settings">
             <h4>Settings</h4>
             <ul>
-                <li><strong>Interval:</strong> {{ subscription_pool.interval }} hours</li>
-                <li><strong>Expiration:</strong>
+                <li>
+                    <strong>Interval:</strong> {{ subscription_pool.interval }} hours
+                </li>
+                <li>
+                    <strong>Expiration:</strong>
                     {% if subscription_pool.expiration is not none %}
                         {{ subscription_pool.expiration }} days
                     {% else %}
                         <em>none</em>
                     {% endif %}
                 </li>
-                <li><strong>Active:</strong> {{ subscription_pool.active | tojson }}</li>
+                <li>
+                    <strong>Active:</strong> {{ subscription_pool.active | tojson }}
+                </li>
             </ul>
         </section>
     </div>
@@ -35,14 +53,26 @@
             <section id="subscription-pool-job">
                 <h4>Job Status</h4>
                 <ul>
-                    <li><strong>Stage:</strong> <span id="subscription-pool-job-stage">{{ helpers.base.val_or_none(job_status['stage']) }}</span></li>
-                    <li><strong>Range:</strong> <span id="subscription-pool-job-range">{{ helpers.base.val_or_none(job_status['range']) }}</span></li>
-                    <li><strong>Records:</strong> <span id="subscription-pool-job-records">{{ job_status['records'] }}</span></li>
-                    <li><strong>Illust:</strong> <span id="subscription-pool-job-illusts">{{ job_status['illusts'] }}</span></li>
-                    <li><strong>Elements:</strong> <span id="subscription-pool-job-elements">{{ job_status['elements'] }}</span></li>
-                    <li><strong>Downloads:</strong> <span id="subscription-pool-job-downloads">{{ job_status['downloads'] }}</span></li>
+                    <li>
+                        <strong>Stage:</strong> <span id="subscription-pool-job-stage">{{ helpers.base.val_or_none(job_status['stage']) }}</span>
+                    </li>
+                    <li>
+                        <strong>Range:</strong> <span id="subscription-pool-job-range">{{ helpers.base.val_or_none(job_status['range']) }}</span>
+                    </li>
+                    <li>
+                        <strong>Records:</strong> <span id="subscription-pool-job-records">{{ job_status['records'] }}</span>
+                    </li>
+                    <li>
+                        <strong>Illust:</strong> <span id="subscription-pool-job-illusts">{{ job_status['illusts'] }}</span>
+                    </li>
+                    <li>
+                        <strong>Elements:</strong> <span id="subscription-pool-job-elements">{{ job_status['elements'] }}</span>
+                    </li>
+                    <li>
+                        <strong>Downloads:</strong> <span id="subscription-pool-job-downloads">{{ job_status['downloads'] }}</span>
+                    </li>
                 </ul>
-            </div>
+            </section>
         </div>
     {% endif %}
 </div>

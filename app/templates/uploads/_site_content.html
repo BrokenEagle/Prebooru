@@ -1,10 +1,11 @@
-{% from 'layouts/_macros.html' import items_list %}
+{% from "layouts/_macros.html" import items_list %}
 
 <div id="upload-site-content">
     <section id="upload-info">
         <h4>Info</h4>
         <ul>
-            <li><strong>Status:</strong>
+            <li>
+                <strong>Status:</strong>
                 {% if upload.status == 'pending' %}
                     {{ helpers.upload.check_pending_link(upload) }}
                 {% elif upload.status == 'error' %}
@@ -13,19 +14,35 @@
                     {{ upload.status }}
                 {% endif %}
             </li>
-            <li><strong>Type:</strong> {{ upload.type }}</li>
-            <li><strong>Successes:</strong> {{ upload.successes }}</li>
-            <li><strong>Failures:</strong> {{ upload.failures }}</li>
-            <li><strong>Uploaded:</strong> {{ helpers.base.format_timestamp(upload.created) }}</li>
+            <li>
+                <strong>Type:</strong> {{ upload.type }}
+            </li>
+            <li>
+                <strong>Successes:</strong> {{ upload.successes }}
+            </li>
+            <li>
+                <strong>Failures:</strong> {{ upload.failures }}
+            </li>
+            <li>
+                <strong>Uploaded:</strong> {{ helpers.base.format_timestamp(upload.created) }}
+            </li>
         </ul>
     </section>
     <section id="upload-sources">
         <h4>Sources</h4>
         <ul>
-            <li><strong>Media filepath:</strong> {{ helpers.base.file_link(upload.media_filepath) }}</li>
-            <li><strong>Sample filepath:</strong> {{ helpers.base.file_link(upload.sample_filepath) }}</li>
-            <li><strong>Request url:</strong> {{ helpers.base.url_link(upload.request_url) }}</li>
-            <li><strong>Image urls:</strong> {{ items_list(upload.image_urls, 'url') }}</li>
+            <li>
+                <strong>Media filepath:</strong> {{ helpers.base.file_link(upload.media_filepath) }}
+            </li>
+            <li>
+                <strong>Sample filepath:</strong> {{ helpers.base.file_link(upload.sample_filepath) }}
+            </li>
+            <li>
+                <strong>Request url:</strong> {{ helpers.base.url_link(upload.request_url) }}
+            </li>
+            <li>
+                <strong>Image urls:</strong> {{ items_list(upload.image_urls, 'url') }}
+            </li>
         </ul>
     </section>
 </div>

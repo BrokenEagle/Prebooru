@@ -1,17 +1,19 @@
-{% extends 'artist_urls/_base.html' %}
+{% extends "artist_urls/_base.html" %}
 
 {% block title %}
     Artist URL for artist #{{ artist_url.artist_id }}
- {% endblock %}
+{% endblock title %}
 
 {% block content %}
-    <div id="artist-url-form-heading" class="form-heading heading">
-        Artist URL: {{ artist_url.artist_show_link }}
-    </div>
+    <div id="artist-url-form-heading" class="form-heading heading">Artist URL: {{ artist_url.artist_show_link }}</div>
     <div id="artist-url-content">
         <ul>
-            <li><strong>URL:</strong> {{ helpers.base.url_link(artist_url.url) }}</li>
-            <li><strong>Active:</strong> {{ artist_url.active | tojson }}</li>
+            <li>
+                <strong>URL:</strong> {{ helpers.base.url_link(artist_url.url) }}
+            </li>
+            <li>
+                <strong>Active:</strong> {{ artist_url.active | tojson }}
+            </li>
         </ul>
     </div>
-{% endblock %}
+{% endblock content %}

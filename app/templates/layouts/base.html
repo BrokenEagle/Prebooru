@@ -1,18 +1,18 @@
 <!doctype html>
 <head>
-    <title>{% block title %}{% endblock %} - Prebooru</title>
+    <title>{% block title %}{% endblock title %} - Prebooru</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/base.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    {% block css %}{% endblock %}
+    {% block css %}{% endblock css %}
     <script src="{{ url_for('static', filename='javascript/base.js') }}"></script>
-    {% block linkscript %}{% endblock %}
+    {% block linkscript %}{% endblock linkscript %}
 </head>
 <body>
     <header id="top">
-        <a id="app-name-header" class="heading" href="/">Prebooru</a>
+        <a id="app-name-header" class="heading" href="{{ url_for('post.bare_index_html') }}">Prebooru</a>
         <nav>
             {% include "layouts/_main_links.html" %}
-            {% block secondary_links %}{% endblock %}
+            {% block secondary_links %}{% endblock secondary_links %}
         </nav>
     </header>
     <section id="content" class="{{ helpers.base.endpoint_classes(request) }}">
@@ -36,12 +36,17 @@
                 {% endif %}
             {% endif %}
         {% endwith %}
-        <div id="script-notice"><div id="script-notice-message"></div><a href="#" id="script-close-notice-link" onclick="return Prebooru.closeNotice()">close</a></div>
-        {% block content %}{% endblock %}
-        {% block pages %}{% endblock %}
-        {% block pagescript %}{% endblock %}
+        <div id="script-notice">
+            <div id="script-notice-message"></div>
+            <a href="#" id="script-close-notice-link" onclick="return Prebooru.closeNotice()">close</a>
+        </div>
+        {% block content %}{% endblock content %}
+        {% block pages %}{% endblock pages %}
+        {% block pagescript %}{% endblock pagescript %}
     </section>
     <footer>
-        <div>Prebooru / <a href="https://github.com/BrokenEagle/prebooru">Github</a></div>
+        <div>
+            Prebooru / <a href="https://github.com/BrokenEagle/prebooru">Github</a>
+        </div>
     </footer>
 </body>

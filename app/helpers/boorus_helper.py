@@ -49,7 +49,7 @@ def check_artists_link(booru):
 # ###### GENERAL
 
 def post_search_link(booru):
-    return general_link('&raquo;', post_search(booru))
+    return general_link('»', post_search(booru))
 
 
 def site_booru_link(booru):
@@ -57,4 +57,4 @@ def site_booru_link(booru):
 
 
 def site_search_link(booru):
-    return external_link('&raquo;', danbooru_post_search(booru))
+    return external_link('»', danbooru_post_search(booru))
