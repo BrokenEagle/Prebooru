@@ -10,7 +10,7 @@
     {% if artist is not none %}<div id="illust-form-info">For {{ artist.show_link }}:</div>{% endif %}
     {% call(field_name, field_input) render_form(form, 'POST', illust.create_url, class=helpers.illust.form_class(form)) %}
         {% if field_name == 'site_id' and artist is none %}
-            {{ field_input(onclick="ChangeSite()") }}
+            {{ field_input(onclick="Illusts.changeSite()") }}
         {% else %}
             {% set classlist = [] %}
             {% if field_name in ['retweets', 'replies', 'quotes'] %}
@@ -23,18 +23,3 @@
         {% endif %}
     {% endcall %}
 {% endblock content %}
-
-{% block pagescript %}
-    <script>
-        const SITE_MAP = {
-            "": "",
-            "1": 'pixiv-data',
-            "3": 'twitter-data',
-        };
-        
-        function ChangeSite() {
-            let site_id = document.getElementById("illust-site-id").value;
-            document.getElementById('form').className = SITE_MAP[site_id];
-        }
-    </script>
-{% endblock pagescript %}

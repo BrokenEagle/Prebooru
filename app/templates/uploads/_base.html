@@ -4,6 +4,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/uploads.css') }}">
 {% endblock css %}
 
+{% block linkscript %}
+    <script src="{{ url_for('static', filename='javascript/uploads.js') }}"></script>
+{% endblock linkscript %}
+
 {% block secondary_links %}
     {% include "uploads/_secondary_links.html" %}
 {% endblock secondary_links %}

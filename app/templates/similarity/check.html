@@ -6,6 +6,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/similarity.css') }}">
 {% endblock css %}
 
+{% block linkscript %}
+    <script src="{{ url_for('static', filename='javascript/similarity.js') }}"></script>
+{% endblock linkscript %}
+
 {% block title %}
     Similarity results
 {% endblock title %}
@@ -17,7 +21,7 @@
             {{ render_form(form, 'GET', url_for('similarity.check_html'), class=helpers.similarity.form_class(similar_results)) }}
             {% if similar_results is not none %}
                 <div id="display-form">
-                    <a href="#" onclick="return ShowForm(this)">«Show form»</a>
+                    <a href="#" onclick="return Similarity.showForm(this)">«Show form»</a>
                 </div>
             {% endif %}
         </div>
@@ -58,12 +62,5 @@
 {% endblock content %}
 
 {% block pagescript %}
-    <script>
-function ShowForm(obj) {
-    document.getElementById('form').classList.remove('hidden');
-    obj.parentElement.style.display = 'none';
-    return false;
-}
-Prebooru.initializeLazyLoad('.similarity-post');
-    </script>
+    Prebooru.initializeLazyLoad('.similarity-post');
 {% endblock pagescript %}

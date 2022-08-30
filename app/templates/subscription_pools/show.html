@@ -19,38 +19,11 @@
 {% endblock content %}
 
 {% block pagescript %}
-    {% if subscription_pool.status == 'manual' or subscription_pool.status == 'automatic' %}
-        <script>
-            const page_timer = setInterval(function () {
-                if (document.hidden) return;
-                window.location.reload();
-                clearInterval(page_timer);
-            }, 15000);
-            {% if job_status is not none and job_status['stage'] != 'done' %}
-                const job_interval = setInterval(function () {
-                    if (document.hidden) return;
-                    let url = "{{ url_for('subscription_pool.status_json', id=subscription_pool.id, job=job_id) }}";
-                    fetch(url)
-                        .then((resp)=>resp.json())
-                        .then((data)=>{
-                            console.log("Job interval:", JSON.stringify(data, null, 4));
-                            if (data.error) {
-                                Prebooru.error(data.message);
-                                clearInterval(job_interval);
-                            } else {
-                                document.getElementById('subscription-pool-job-stage').innerHTML = data.item.stage || '<em>none</em>';
-                                document.getElementById('subscription-pool-job-range').innerHTML = data.item.range || '<em>none</em>';
-                                document.getElementById('subscription-pool-job-records').innerText = data.item.records;
-                                document.getElementById('subscription-pool-job-elements').innerText = data.item.elements;
-                                document.getElementById('subscription-pool-job-illusts').innerText = data.item.illusts;
-                                document.getElementById('subscription-pool-job-downloads').innerText = data.item.downloads;
-                                if (data.item.stage === 'done') {
-                                    clearInterval(job_interval);
-                                }
-                            }
-                        });
-                }, 2000);
-            {% endif %}
-        </script>
-    {% endif %}
+    (function () {
+    const pool_status = "{{ subscription_pool.status }}";
+    const job_status = "{{ job_status['stage'] if job_status is not none else 'done' }}";
+    const query_url = "{{ url_for('subscription_pool.status_json', id=subscription_pool.id, job=job_id) }}";
+    SubscriptionPools.initializeReloadInterval(pool_status);
+    SubscriptionPools.initializeJobQueryInterval(job_status, query_url);
+    })();
 {% endblock pagescript %}

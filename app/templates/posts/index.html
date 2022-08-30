@@ -22,8 +22,6 @@
 {% endblock pages %}
 
 {% block pagescript %}
-    <script>
-        Prebooru.initializeLazyLoad('.post');
-        Prebooru.initializeVideoPreviews('.video-post');
-    </script>
+    Prebooru.initializeLazyLoad('.post');
+    Prebooru.initializeVideoPreviews('.video-post');
 {% endblock pagescript %}

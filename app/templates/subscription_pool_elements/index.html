@@ -21,17 +21,17 @@
                 &emsp;&emsp;&emsp;
                 <strong>
                     [
-                    <a class="archive-link" href="#" onclick="return SubmitForm('archive')">ARCHIVE</a>
+                    <a class="archive-link" href="#" onclick="return SubscriptionPools.submitForm('archive')">ARCHIVE</a>
                     ]
                 </strong>
                 &emsp;
                 <strong>
                     KEEP[
-                    <a class="yes-link" href="#" onclick="return SubmitForm('yes')">YES</a>
+                    <a class="yes-link" href="#" onclick="return SubscriptionPools.submitForm('yes')">YES</a>
                     |
-                    <a class="maybe-link" href="#" onclick="return SubmitForm('maybe')">MAYBE</a>
+                    <a class="maybe-link" href="#" onclick="return SubscriptionPools.submitForm('maybe')">MAYBE</a>
                     |
-                    <a class="no-link" href="#" onclick="return SubmitForm('no')">NO</a>
+                    <a class="no-link" href="#" onclick="return SubscriptionPools.submitForm('no')">NO</a>
                     ]
                 </strong>
             {% endcall %}
@@ -50,25 +50,8 @@
 {% endblock pages %}
 
 {% block pagescript %}
-    <script>
-function SubmitForm(value) {
-    document.getElementById('subscription-pool-element-keep').value = value;
-    document.getElementById('form').submit();
-}
-(function(){
-    document.addEventListener('prebooru:update-inputs', SubscriptionPools.updateAllInputs);
-    setTimeout(()=>{
-        document.querySelectorAll('.subscription-element input[type=checkbox]').forEach((input)=>{
-            if (input.checked) {
-                for (var curr = input; curr !== null && (curr.tagName !== 'DIV' || !curr.classList.contains('input')); curr = curr.parentElement);
-                if (curr !== null) {
-                    curr.classList.add('checkbox-active');
-                }
-            }
-        });
-    }, 500);
-})();
-Prebooru.initializeLazyLoad('.subscription-element');
-Prebooru.initializeVideoPreviews('.video-post');
-    </script>
+    SubscriptionPools.initializeEventCallbacks();
+    SubscriptionPools.setAllInputsTimeout();
+    Prebooru.initializeLazyLoad('.subscription-element');
+    Prebooru.initializeVideoPreviews('.video-post');
 {% endblock pagescript %}

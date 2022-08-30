@@ -24,7 +24,7 @@
                     </div>
                 </section>
             {% else %}
-                <section id="media-container" onclick="return ResizeImage(this)" class="image fullsize">
+                <section id="media-container" onclick="return Prebooru.resizeImage(this)" class="image fullsize">
                     <picture>
                         {{ helpers.post.image_sample_link(post) }}
                     </picture>
@@ -38,42 +38,5 @@
 {% endblock content %}
 
 {% block pagescript %}
-    <script>
-    {% if not post.is_video %}
-function ResizeImage(obj) {
-    obj.classList.toggle('fullsize');
-    return false;
-}
-    {% else %}
-function LoadOriginal(obj) {
-    let video = document.querySelector('#media-container video');
-    video.src = video.dataset.original;
-    obj.style.setProperty('display', 'none');
-    return false;
-}
-(function InitializePlay() {
-    const norm_width = {{ [125, post.width // 4] | min }};
-    const norm_height = {{ [125, post.height // 4] | min }};
-    const expand_width = {{ [150, 1.25 * post.width // 4] | min }};
-    const expand_height = {{ [150, 1.25 * post.height // 4] | min }};
-    let container = document.querySelector('#media-container');
-    let icon = container.querySelector('.play-icon');
-    let video = container.querySelector('video');
-    icon.width = norm_width;
-    icon.height = norm_height;
-    icon.onmouseenter = function () {
-        icon.width = expand_width;
-        icon.height = expand_height;
-    };
-    icon.onmouseleave = function () {
-        icon.width = norm_width;
-        icon.height = norm_height;
-    };
-    icon.onclick = function () {
-        container.classList.replace('loading', 'playing');
-        video.src = video.dataset.src;
-    };
-})();
-    {% endif %}
-    </script>
+    Posts.initializePlay();
 {% endblock pagescript %}

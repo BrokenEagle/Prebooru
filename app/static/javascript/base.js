@@ -147,6 +147,11 @@ Prebooru.closeNotice = function() {
     return false;
 };
 
+Prebooru.resizeImage = function (obj) {
+    obj.classList.toggle('fullsize');
+    return false;
+};
+
 Prebooru.onImageError = function (obj) {
     let retries = Number(obj.dataset.loadRetries) || 0;
     if (retries < 3) {

@@ -13,7 +13,7 @@
         <div class="similarity-pool-content">
             {{ post_preview(similarity_pool.post) }}
             {% call image_select_controls('similar-post-input') %}
-                <strong>[ <a class="warning-link" href="#" onclick="return SubmitForm(this)">DELETE</a> ]</strong>
+                <strong>[ <a class="warning-link" href="#" onclick="return SimilarityPools.submitForm(this, 'pool')">DELETE</a> ]</strong>
             {% endcall %}
         </div>
         <form id="form" method="post" action="{{ url_for('similarity_pool_element.batch_delete_html') }}">
@@ -29,16 +29,6 @@
 {% endblock pages %}
 
 {% block pagescript %}
-    <script>
-function SubmitForm(event) {
-    event.preventDefault();
-    if (confirm("Remove posts from similarity pool?")) {
-        document.getElementById('form').submit();
-    }
-}
-(function(){
-    document.addEventListener('prebooru:update-inputs', SimilarityPools.updateAllInputs);
-})();
-Prebooru.initializeLazyLoad('.similar-post-block');
-    </script>
+    Prebooru.initializeLazyLoad('.similar-post-block');
+    SimilarityPools.initializeEventCallbacks();
 {% endblock pagescript %}

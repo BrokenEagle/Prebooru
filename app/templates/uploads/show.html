@@ -15,11 +15,8 @@
 {% endblock content %}
 
 {% block pagescript %}
-    {% if upload.status == 'pending' or upload.status == 'processing' %}
-        <script>
-            setTimeout(function () {
-                window.location.reload();
-            }, 5000)
-        </script>
-    {% endif %}
+    (function () {
+    const upload_status = "{{ upload.status }}";
+    Uploads.initializeReloadInterval(upload_status);
+    })();
 {% endblock pagescript %}

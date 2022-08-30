@@ -39,3 +39,15 @@ SimilarityPools.updateAllInputs = function() {
     });
 };
 
+SimilarityPools.submitForm = function (event, type) {
+    event.preventDefault();
+    let msg = (type === 'pool' ? "Remove posts from similarity pool?" : "Remove all selected similarity elements?");
+    if (confirm(msg)) {
+        document.getElementById('form').submit();
+    }
+    return false;
+};
+
+SimilarityPools.initializeEventCallbacks = function() {
+    document.addEventListener('prebooru:update-inputs', SimilarityPools.updateAllInputs);
+};
