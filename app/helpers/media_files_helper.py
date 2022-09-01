@@ -1,7 +1,7 @@
 # APP/HELPERS/MEDIA_FILES_HELPER.PY
 
 # ## LOCAL IMPORTS
-from .base_helper import general_link, render_tag, get_preview_dimensions
+from .base_helper import render_tag
 
 
 # ## FUNCTIONS

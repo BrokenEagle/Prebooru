@@ -17,15 +17,15 @@ def safe_print(*args, trim=False, **kwargs):
 
 
 def print_info(*args, trim=False, **kwargs):
-    print(colorama.Fore.GREEN + colorama.Style.BRIGHT + _coalesce_arguments(args, trim) + colorama.Style.RESET_ALL, **kwargs)
+    print(_convert(_coalesce_arguments(args, trim), 'GREEN'), **kwargs)
 
 
 def print_warning(*args, trim=False, **kwargs):
-    print(colorama.Fore.YELLOW + colorama.Style.BRIGHT + _coalesce_arguments(args, trim) + colorama.Style.RESET_ALL, **kwargs)
+    print(_convert(_coalesce_arguments(args, trim), 'YELLOW'), **kwargs)
 
 
 def print_error(*args, trim=False, **kwargs):
-    print(colorama.Fore.RED + colorama.Style.BRIGHT + _coalesce_arguments(args, trim) + colorama.Style.RESET_ALL, **kwargs)
+    print(_convert(_coalesce_arguments(args, trim), 'RED'), **kwargs)
 
 
 def buffered_print(name, safe=False, header=True, trim=False, sep=" ", end="\n"):
@@ -66,3 +66,9 @@ def _coalesce_arguments(args, trim):
         else:
             temp += repr(arg) + ' '
     return temp.strip() if trim else temp
+
+
+def _convert(string, color):
+    string = getattr(colorama.Fore, 'GREEN') + colorama.Style.BRIGHT + string
+    string += colorama.Style.RESET_ALL
+    return string

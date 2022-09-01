@@ -37,7 +37,8 @@ VIDEO_SEMAPHORE = threading.Semaphore(1)
 WAITING_THREADS = {
     'similarity': 0,
     'video': 0,
-    }
+}
+
 
 # ## FUNCTIONS
 
