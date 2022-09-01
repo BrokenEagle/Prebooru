@@ -18,7 +18,7 @@ from ..logical.similarity.check_image import check_all_image_urls_similarity
 from ..logical.similarity.generate_data import generate_post_similarity
 from ..logical.similarity.populate_pools import populate_similarity_pools
 from .base_controller import process_request_values, CustomNameForm, parse_type, parse_string_list, nullify_blanks,\
-    set_default, check_param_requirements, eval_bool_string
+    set_default, check_param_requirements, eval_bool_string, jsonify_data
 
 
 # ## GLOBAL VARIABLES
@@ -80,7 +80,7 @@ def check(include_posts):
                                                       dataparams['size'], include_posts,
                                                       sim_clause=dataparams['sim_clause'])
     retdata['similar_results'] = similar_results
-    return retdata
+    return jsonify_data(retdata)
 
 
 def generate_similarity():

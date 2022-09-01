@@ -51,6 +51,23 @@ def index_json_response(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT):
     return jsonify([x.to_json() for x in paginate(query, request, max_limit).items])
 
 
+def jsonify_data(data):
+    def _jsonify_key(value):
+        if isinstance(value, dict):
+            return jsonify_data(value)
+        elif hasattr(value, 'to_json'):
+            return value.to_json()
+        return value
+
+    for key in data:
+        if isinstance(data[key], list):
+            for i in range(len(data[key])):
+                data[key][i] = _jsonify_key(data[key][i])
+        else:
+            data[key] = _jsonify_key(data[key])
+    return data
+
+
 # #### Query helpers
 
 def search_filter(query, search, negative_search=None):
