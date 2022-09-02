@@ -6,6 +6,8 @@ td.post-column article.post {
 td.post-column article.post img {
     max-height: 200px;
     max-width: 200px;
+    height: auto;
+    width: auto;
 }
 td.matches-column article.post {
     width: 154px;
@@ -14,6 +16,8 @@ td.matches-column article.post {
 td.matches-column article.post img {
     max-height: 150px;
     max-width: 150px;
+    height: auto;
+    width: auto;
 }
 article.overflow {
     display: inline-block;

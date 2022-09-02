@@ -128,6 +128,8 @@ div.no-post-preview img {
     padding: 4px;
     max-width: 300px;
     max-height: 300px;
+    width: auto;
+    height: auto;
 }
 /****INDEX Page****/
 div.simple-tags-container {
@@ -140,6 +142,8 @@ td article.post {
 td article.post img {
     max-height: 250px;
     max-width: 250px;
+    height: auto;
+    width: auto;
 }
 td article.post.no-post {
     height: 1em;
@@ -168,4 +172,6 @@ div.illust-preview > span.explanation {
 div.illust-preview img {
     max-width: 150px;
     max-height: 150px;
+    width: auto;
+    height: auto;
 }
