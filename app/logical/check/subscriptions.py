@@ -31,7 +31,7 @@ from ..logger import log_error
 
 ILLUST_PAGE_LIMIT = 10
 POST_PAGE_LIMIT = 5
-EXPIRE_PAGE_LIMIT = 10
+EXPIRE_PAGE_LIMIT = 20
 
 SIMILARITY_SEMAPHORE = threading.Semaphore(2)
 VIDEO_SEMAPHORE = threading.Semaphore(1)
@@ -137,28 +137,28 @@ def expire_subscription_elements(manual):
     user_clause = (Post.type == 'user_post')
     q = SubscriptionPoolElement.query.join(Post, SubscriptionPoolElement.post).filter(or_(expired_clause, user_clause))
     q = q.order_by(SubscriptionPoolElement.id.desc())
-    page = q.limit_paginate(per_page=100)
+    page = q.limit_paginate(per_page=50)
     while True:
         print(f"\nexpire_subscription_elements-unlink: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Unlinking {element.shortlink}")
             unlink_subscription_post(element)
             retdata['unlink'] += 1
-        if not page.has_next or page.page > max_pages:
+        if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
     # Second pass - Hard delete all "no" element posts
     q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
                                              SubscriptionPoolElement.keep == 'no')
     q = q.order_by(SubscriptionPoolElement.id.desc())
-    page = q.limit_paginate(per_page=25)
+    page = q.limit_paginate(per_page=10)
     while True:
         print(f"\nexpire_subscription_elements-delete: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Deleting post of {element.shortlink}")
             delete_subscription_post(element)
             retdata['delete'] += 1
-        if not page.has_next or page.page > max_pages:
+        if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
     # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
@@ -167,16 +167,17 @@ def expire_subscription_elements(manual):
                                              or_(SubscriptionPoolElement.keep == 'archive',
                                                  SubscriptionPoolElement.keep.is_(None)))
     q = q.order_by(SubscriptionPoolElement.id.desc())
-    page = q.limit_paginate(per_page=25)
+    page = q.limit_paginate(per_page=10)
     while True:
         print(f"expire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:
             print(f"Archiving post of {element.shortlink}")
             archive_subscription_post(element)
             retdata['archive'] += 1
-        if not page.has_next or page.page > max_pages:
+        if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
+    return retdata
 
 
 # #### Private
