@@ -22,6 +22,7 @@
             {% for illust in illusts.items %}
                 <tr id="illust-{{ illust.id }}">
                     <td>
+                        <div class="preview-header">{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</div>
                         {% if illust.posts | length > 1 %}
                             {{ multi_post_preview(illust, 'illust', True) }}
                         {% else %}
@@ -30,16 +31,11 @@
                         {% endif %}
                     </td>
                     <td>
-                        <span><strong>{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</strong></span>
+                        <span><strong>{{ illust.artist_show_link }}</strong></span><br>
                         <br>
                         <span><strong>Domain:</strong> {{ illust.site_domain }}</span>
                         <br>
                         <span><strong>Site ID:</strong> {{ illust.site_illust_id }}</span>
-                        <br>
-                        <br>
-                        <span><strong>{{ illust.artist_show_link }}</strong></span>
-                        <br>
-                        <br>
                     </td>
                     <td>
                         <div class="simple-tags-container">{{ simple_tag_list(illust._tags, 'illust') }}</div>

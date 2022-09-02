@@ -172,6 +172,11 @@ div.notice-error {
     background: #fbe3e3;
     border: 1px solid #ffc3c3;
 }
+div.preview-header {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1em;
+}
 div#script-notice {
     display: none;
     position: fixed;
