@@ -14,6 +14,7 @@ from utility.time import get_current_time, hours_from_now
 from ...models import SubscriptionPool, SubscriptionPoolElement, IllustUrl, Post
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
+from ..database.post_db import get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.subscription_pool_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post
@@ -23,6 +24,7 @@ from ..database.error_db import is_error
 from ..database.jobs_db import get_job_status_data, update_job_status
 from ..records.subscription_rec import update_subscription_elements
 from ..downloader.network import convert_network_subscription
+from ..similarity.generate_data import generate_post_similarity
 from ..logger import log_error
 
 # ## GLOBAL VARIABLES
@@ -180,7 +182,6 @@ def expire_subscription_elements(manual):
 # #### Private
 
 def _process_similarity(elements):
-    from ..tasks.worker import process_similarity
 
     def _process(post_ids):
         print("Similarity semaphore waits:", WAITING_THREADS['similarity'])
@@ -188,7 +189,9 @@ def _process_similarity(elements):
         SIMILARITY_SEMAPHORE.acquire()
         WAITING_THREADS['similarity'] -= 1
         try:
-            process_similarity(post_ids)
+            posts = get_posts_by_id(post_ids)
+            for post in posts:
+                generate_post_similarity(post)
         except Exception as e:
             msg = "Error processing similarity on subscription: %s" % str(e)
             log_error('check.subscriptions.process_similarity', msg)
