@@ -72,6 +72,9 @@ article.subscription-element div.subscription-element-display {
 article.subscription-element.subscription-post div.subscription-element-display > div {
     flex-basis: 33%;
 }
+article.subscription-element.subscription-no-post div.subscription-element-display > div {
+    flex-basis: 50%;
+}
 div.element-illust-type {
     padding-top: 0.4em;
     font-size: 20px;
