@@ -137,7 +137,7 @@ div.subscription-element-info.undecided-info {
 }
 div.subscription-element-info.archive-info {
     border-color: blue;
-    border-style: dotted;
+    border-style: dashed;
 }
 div.subscription-element-info.yes-info a.yes-link {
     background: limegreen;
