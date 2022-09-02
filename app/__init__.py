@@ -35,9 +35,9 @@ SCHEDULER_DB_URL = os.environ.get('SCHEDULER_JOBSTORES', r'sqlite:///%s' % JOBS_
 ENGINE_OPTIONS = {
     'connect_args': {
         'check_same_thread': False,
-        'timeout': 15},
+        'timeout': 60},
     'echo_pool': True,
-    'pool_recycle': 12}\
+    'pool_recycle': 15}\
     if 'sqlite' in PREBOORU_DB_URL else {}
 
 NAMING_CONVENTION = {
