@@ -15,7 +15,7 @@
                 <th width="15%">Info</th>
                 <th width="25%">Tags</th>
                 <th width="25%">Illust urls</th>
-                <th width="15%">Timestamps</th>
+                <th width="15%">Created</th>
             </tr>
         </thead>
         <tbody>
@@ -58,11 +58,7 @@
                         {% endfor %}
                     </td>
                     <td>
-                        <strong>Requery:</strong> {{ helpers.base.format_timestamp(illust.requery) }}
-                        <br>
-                        <strong>Created:</strong> {{ helpers.base.format_timestamp(illust.created) }}
-                        <br>
-                        <strong>Updated:</strong> {{ helpers.base.format_timestamp(illust.updated) }}
+                        {{ helpers.base.humanized_timestamp_difference(illust) }}
                     </td>
                 </tr>
             {% endfor %}
