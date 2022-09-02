@@ -11,7 +11,7 @@ from wtforms import Field, BooleanField
 from wtforms.widgets import HiddenInput
 
 # ## PACKAGE IMPORTS
-from config import PREBOORU_PORT  # noqa: F401
+from config import PREBOORU_PORT, VERSION  # noqa: F401
 from utility.time import time_ago, time_from_now
 
 # ## LOCAL IMPORTS
@@ -160,6 +160,10 @@ def file_link(file_path, link_text=None):
     addons = {'onclick': 'return Prebooru.copyFileLink(this)', 'data-file-path': file_path}
     link_text = file_path if link_text is None else link_text
     return general_link(link_text, "javascript:void(0)", **addons)
+
+
+def version_link():
+    return external_link(VERSION, f'https://github.com/BrokenEagle/Prebooru/tree/{VERSION}')
 
 
 # #### Form functions
