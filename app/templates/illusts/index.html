@@ -50,7 +50,7 @@
                                 ......
                                 <br>
                             {% elif loop.index is lt 8 %}
-                                {{ helpers.base.url_link(illust_url.full_url) }}
+                                {{ helpers.base.url_link(illust_url.full_url, max_len=60) }}
                                 <br>
                             {% endif %}
                             {% if loop.last %}

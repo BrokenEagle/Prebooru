@@ -147,8 +147,9 @@ def show_link(model_type, model_id):
     return general_link("%s #%d" % (model_type, model_id), url_for(model_type + '.show_html', id=model_id))
 
 
-def url_link(url, breakslash=False):
-    text = break_forwardslash(url) if breakslash else url
+def url_link(url, max_len=None, breakslash=False):
+    text = url[:max_len] + '...' if max_len is not None and max_len < len(url) else url
+    text = break_forwardslash(text) if breakslash else text
     return external_link(text, url)
 
 
