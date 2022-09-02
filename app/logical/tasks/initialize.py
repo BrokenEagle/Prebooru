@@ -20,7 +20,8 @@ from ..database.server_info_db import get_last_activity
 from ..database.jobs_db import create_job_tables, get_all_job_info, delete_job,\
     create_job_enabled, get_all_job_enabled, get_all_job_manual, create_job_manual,\
     create_job_lock, get_all_job_locks, update_job_lock_status, delete_lock,\
-    create_job_timeval, get_all_job_timevals, update_job_timeval, delete_timeval
+    create_job_timeval, get_all_job_timevals, update_job_timeval, delete_timeval,\
+    update_job_manual_status
 from . import JOB_CONFIG, ALL_JOB_INFO, ALL_JOB_ENABLED, ALL_JOB_LOCKS, ALL_JOB_TIMEVALS,\
     ALL_JOB_MANUAL
 
@@ -46,7 +47,7 @@ def initialize_task_jobs():
     create_job_tables()
     _update_job_info()
     _create_or_update_timevals()
-    _create_missing_booleans()
+    _create_or_update_booleans()
 
 
 def initialize_task_display():
@@ -258,7 +259,7 @@ def _create_or_update_timevals():
             update_job_timeval(key, 0.0)
 
 
-def _create_missing_booleans():
+def _create_or_update_booleans():
     enabled = _get_initial_job_enabled()
     manual = _get_initial_job_manual()
     locks = _get_initial_job_locks()
@@ -268,6 +269,8 @@ def _create_missing_booleans():
     for key in ALL_JOB_MANUAL:
         if key not in manual.keys():
             create_job_manual(key)
+        else:
+            update_job_manual_status(key, False)
     for key in ALL_JOB_LOCKS:
         if key not in locks.keys():
             create_job_lock(key)
