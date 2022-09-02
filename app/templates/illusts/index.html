@@ -31,7 +31,8 @@
                         {% endif %}
                     </td>
                     <td>
-                        <span><strong>{{ illust.artist_show_link }}</strong></span><br>
+                        <span><strong>{{ illust.artist_show_link }}</strong></span>
+                        <br>
                         <br>
                         <span><strong>Domain:</strong> {{ illust.site_domain }}</span>
                         <br>
@@ -57,9 +58,7 @@
                             <em>none</em>
                         {% endfor %}
                     </td>
-                    <td>
-                        {{ helpers.base.humanized_timestamp_difference(illust) }}
-                    </td>
+                    <td>{{ helpers.base.humanized_timestamp_difference(illust) }}</td>
                 </tr>
             {% endfor %}
         </tbody>

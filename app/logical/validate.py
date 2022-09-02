@@ -13,6 +13,7 @@ from alembic.runtime import migration
 # ## PACKAGE IMPORTS
 from utility.print import print_info, print_warning, print_error
 
+
 # ## GLOBAL_VARIABLES
 
 ALEMBIC_SCRIPT_FILE = os.path.join(os.getcwd(), 'migrations', 'alembic.ini')

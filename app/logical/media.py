@@ -1,18 +1,16 @@
 # APP/LOGICAL/MEDIA.PY
 
 # ## PYTHON IMPORTS
-import os
 import cv2
-import uuid
 import numpy
 import ffmpeg
 from PIL import Image
 from io import BytesIO
 
 # ## PACKAGE IMPORTS
-from config import TEMP_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS, MP4_SKIP_FRAMES, MP4_MIN_FRAMES,\
+from config import PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS, MP4_SKIP_FRAMES, MP4_MIN_FRAMES,\
     WEBP_QUALITY, WEBP_LOOPS
-from utility.file import create_directory, delete_directory, delete_file, put_get_raw
+from utility.file import create_directory, put_get_raw
 from utility.data import get_buffer_checksum
 
 
@@ -105,7 +103,6 @@ def convert_mp4_to_webp(file_path, save_path):
     skip_frames = MP4_SKIP_FRAMES if frame_count > MP4_MIN_FRAMES else 1
     duration = int(MILLISECONDS_PER_SECOND / (frame_rate / skip_frames))  # milliseconds
     frame_count = 0
-    files = []
     frames = []
     print("Loading frames")
     while True:

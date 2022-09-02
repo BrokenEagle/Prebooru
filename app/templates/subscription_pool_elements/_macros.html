@@ -51,7 +51,9 @@
             {{ subscription_pool_element_info(element, True, True) }}
         {% else %}
             <div class="subscription-element-display">
-                <div class="heading"><h3>{{ element.status | title }} post</h3></div>
+                <div class="heading">
+                    <h3>{{ element.status | title }} post</h3>
+                </div>
                 <div class="element-illust-type">{{ element.illust_url.type | title }}</div>
             </div>
             <div class="preview">{{ helpers.subscription_pool.element_preview_link(element, lazyload) }}</div>
