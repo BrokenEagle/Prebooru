@@ -1,7 +1,10 @@
 # APP/LOGICAL/DATABASE/SIMILARITY_POOL_DB.PY
 
+import threading
+
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
+from utility.print import print_error
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -16,6 +19,9 @@ COLUMN_ATTRIBUTES = ['post_id', 'element_count']
 
 CREATE_ALLOWED_ATTRIBUTES = ['post_id']
 UPDATE_ALLOWED_ATTRIBUTES = ['element_count']
+
+COUNT_SEMAPHORE = threading.Semaphore(5)
+COUNT_POOL_IDS = set()
 
 
 # ## FUNCTIONS
@@ -47,8 +53,26 @@ def update_similarity_pool_from_parameters(similarity_pool, updateparams):
         SESSION.commit()
 
 
-def update_similarity_pool_element_count(similarity_pool):
-    update_similarity_pool_from_parameters(similarity_pool, {'element_count': similarity_pool._get_element_count()})
+def update_similarity_element_count(similarity_pool):
+    # Executed in a separate thread to keep from delaying the main thread
+    def _update(pool_id):
+        COUNT_SEMAPHORE.acquire()
+        try:
+            similarity_pool = SimilarityPool.find(pool_id)
+            if similarity_pool is None:
+                return
+            similarity_pool.element_count = similarity_pool._get_element_count()
+            SESSION.commit()
+        except Exception as e:
+            print_error("Error updating similarity element count:", repr(e))
+        finally:
+            COUNT_POOL_IDS.discard(pool_id)
+            COUNT_SEMAPHORE.release()
+
+    if similarity_pool.id in COUNT_POOL_IDS:
+        return
+    COUNT_POOL_IDS.add(similarity_pool.id)
+    threading.Thread(target=_update, args=(similarity_pool.id,)).start()
 
 
 # ###### DELETE
@@ -64,7 +88,7 @@ def delete_similarity_pool_by_post_id(post_id):
         batch_delete_similarity_pool_element(similarity_pool.elements + sibling_elements)
         sibling_pools = SimilarityPool.query.filter(SimilarityPool.id.in_(sibling_pool_ids)).all()
         for pool in sibling_pools:
-            pool.element_count = pool._get_element_count()
+            update_similarity_element_count(pool)
     SESSION.delete(similarity_pool)
     SESSION.commit()
 

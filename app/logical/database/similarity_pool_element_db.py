@@ -43,6 +43,7 @@ def set_similarity_element_main(element, val):
 # ###### DELETE
 
 def delete_similarity_pool_element(similarity_pool_element):
+    from .similarity_pool_db import update_similarity_element_count
     sibling_pool_element = similarity_pool_element.sibling
     similarity_pool_element.sibling_id = None
     if sibling_pool_element is not None:
@@ -50,13 +51,11 @@ def delete_similarity_pool_element(similarity_pool_element):
     SESSION.commit()
     main_pool = similarity_pool_element.pool
     SESSION.delete(similarity_pool_element)
-    main_pool.element_count = main_pool._get_element_count()
-    SESSION.commit()
+    update_similarity_element_count(main_pool)
     if sibling_pool_element is not None:
         sibling_pool = sibling_pool_element.pool
         SESSION.delete(sibling_pool_element)
-        sibling_pool.element_count = sibling_pool._get_element_count()
-        SESSION.commit()
+        update_similarity_element_count(sibling_pool)
 
 
 def batch_delete_similarity_pool_element(similarity_pool_elements):

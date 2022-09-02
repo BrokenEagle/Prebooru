@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 # ## LOCAL IMPORTS
 from ...models import SimilarityPool
 from ..database.similarity_data_db import get_similarity_data_by_post_id
-from ..database.similarity_pool_db import update_similarity_pool_element_count, get_or_create_similarity_pool,\
+from ..database.similarity_pool_db import update_similarity_element_count, get_or_create_similarity_pool,\
     get_similarity_pools_by_ids
 from ..database.similarity_pool_element_db import create_similarity_pool_element_from_parameters,\
     update_similarity_pool_element_pairing, set_similarity_element_main, delete_similarity_pool_element
@@ -48,7 +48,7 @@ def create_similarity_pairings(post_id, score_results, main_pool, sibling_pools)
             set_similarity_element_main(spe1, True)
         else:
             spe1 = create_similarity_pool_element_from_parameters({'pool_id': main_pool.id, 'main': True, **result})
-            update_similarity_pool_element_count(main_pool)
+            update_similarity_element_count(main_pool)
         sibling_pool = index_pools[result['post_id']]
         sibling_pool_post_ids = index_post_ids[result['post_id']] if result['post_id'] in index_post_ids else []
         if post_id in sibling_pool_post_ids:
@@ -60,6 +60,6 @@ def create_similarity_pairings(post_id, score_results, main_pool, sibling_pools)
         else:
             params = {'pool_id': sibling_pool.id, 'post_id': post_id, 'score': result['score'], 'main': False}
             spe2 = create_similarity_pool_element_from_parameters(params)
-            update_similarity_pool_element_count(sibling_pool)
+            update_similarity_element_count(sibling_pool)
         print("Sibling pair: %d <-> %d" % (spe1.id, spe2.id))
         update_similarity_pool_element_pairing(spe1, spe2)
