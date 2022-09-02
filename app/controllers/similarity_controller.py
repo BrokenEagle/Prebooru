@@ -80,7 +80,7 @@ def check(include_posts):
                                                       dataparams['size'], include_posts,
                                                       sim_clause=dataparams['sim_clause'])
     retdata['similar_results'] = similar_results
-    return jsonify_data(retdata)
+    return retdata
 
 
 def generate_similarity():
@@ -100,7 +100,7 @@ def generate_similarity():
 
 @bp.route('/similarity/check.json', methods=['GET'])
 def check_json():
-    return check(True)
+    return jsonify_data(check(True))
 
 
 @bp.route('/similarity/check', methods=['GET'])
