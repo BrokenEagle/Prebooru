@@ -4,6 +4,7 @@
 import os
 import cv2
 import uuid
+import numpy
 import ffmpeg
 from PIL import Image
 from io import BytesIO
@@ -97,9 +98,7 @@ def create_video_screenshot(file_path, save_path):
 
 
 def convert_mp4_to_webp(file_path, save_path):
-    capture_directory = os.path.join(TEMP_DIRECTORY, str(uuid.uuid4()))
     print("Opening ->", file_path)
-    create_directory(capture_directory, True)
     video_capture = cv2.VideoCapture(file_path)
     frame_rate = video_capture.get(cv2.CAP_PROP_FPS)
     frame_count = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -107,21 +106,21 @@ def convert_mp4_to_webp(file_path, save_path):
     duration = int(MILLISECONDS_PER_SECOND / (frame_rate / skip_frames))  # milliseconds
     frame_count = 0
     files = []
-    print("Saving frames")
+    frames = []
+    print("Loading frames")
     while True:
         if (frame_count % skip_frames) == 0:
             still_reading, image_array = video_capture.read()
             if still_reading:
-                file = 'cv2tmp-%04d.jpg' % frame_count
-                cv2.imwrite(os.path.join(capture_directory, file), image_array)
-                files.append(file)
+                # Numbers come in as BGR, so flip them around to RGB
+                flip_image_array = numpy.flip(image_array, 2)
+                img = Image.fromarray(flip_image_array)
+                frames.append(img)
         else:
             still_reading = video_capture.grab()
         if not still_reading:
             break
         frame_count += 1
-    print("Opening captured images")
-    frames = [Image.open(os.path.join(capture_directory, file)) for file in files]
     if frames[0].width > PREVIEW_DIMENSIONS[0] or frames[1].height > PREVIEW_DIMENSIONS[1]:
         print("Converting to thumbnails")
         for frame in frames:
@@ -130,10 +129,6 @@ def convert_mp4_to_webp(file_path, save_path):
     create_directory(save_path)
     frames[0].save(save_path, 'webp', append_images=frames[1:], save_all=True, duration=duration, loop=WEBP_LOOPS,
                    minimize_size=True, lossless=False, quality=WEBP_QUALITY)
-    print("Cleaning capture directory")
-    for file in files:
-        delete_file(os.path.join(capture_directory, file))
-    delete_directory(capture_directory)
 
 
 def convert_mp4_to_webm(file_path, save_path, width=None, height=None):
