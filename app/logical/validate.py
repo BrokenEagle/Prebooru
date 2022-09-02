@@ -55,7 +55,7 @@ def validate_integrity():
 
 
 def validate_foreign_keys():
-    from .. import DB
+    from .. import DB, SESSION
     from ..models import TABLES
     table_fkeys = {}
     engine = DB.get_engine(bind=None).engine
@@ -67,6 +67,8 @@ def validate_foreign_keys():
         for (i, error) in enumerate(errors):
             print_warning("%02d. %-40s %-10d %-40s %d" % ((i + 1,) + tuple(error)))
         print('\n')
+        is_dirty = False
+        is_exit = False
         for (i, error) in enumerate(errors):
             print_warning(f"Error record #{i + 1}")
             name, rowid, parent, fkid = error
@@ -79,7 +81,17 @@ def validate_foreign_keys():
                 fkeys = table_fkeys[name] = connection.execute(f"PRAGMA foreign_key_list({name})").fetchall()
             error_fkey = next(fkey for fkey in fkeys if fkey[0] == fkid)
             print("FKEY", error_fkey)
-            print('--------------------------------------------------\n')
-        exit(-1)
+            # Just delete the models of certain model types
+            if record.model_name == 'similarity_pool_element':
+                SESSION.delete(record)
+                is_dirty = True
+                print('--------------------DELETED-----------------------\n')
+            else:
+                is_exit = True
+                print('--------------------INVESTIGATE-------------------\n')
+        if is_dirty:
+            SESSION.commit()
+        if is_exit:
+            exit(-1)
     else:
         print_info("\nForeign Keys: OK\n")
