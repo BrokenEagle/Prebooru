@@ -14,7 +14,7 @@ def initialize():
 
 
 def main():
-    relocate_old_posts_to_alternate()
+    relocate_old_posts_to_alternate(True)
 
 
 # ##EXECUTION START
