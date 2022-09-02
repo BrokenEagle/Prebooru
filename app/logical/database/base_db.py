@@ -73,10 +73,10 @@ def update_column_attributes(item, attrs, dataparams):
             printer("Setting basic attr (%s):" % item.shortlink, attr, getattr(item, attr), dataparams[attr])
             setattr(item, attr, dataparams[attr])
             is_dirty = True
-    printer.print()
     if item.id is None:
         SESSION.add(item)
     if is_dirty:
+        printer.print()
         _safe_db_commit(item, 'update_column_attributes', "Error on record create/update")
     return is_dirty
 
@@ -106,6 +106,7 @@ def update_relationship_collections(item, relationships, updateparams):
             collection.remove(remove_item)
             is_dirty = True
     if is_dirty:
+        printer.print()
         _safe_db_commit(item, 'update_relationship_collections', "Error on adding/removing collection values")
     return is_dirty
 
@@ -129,6 +130,7 @@ def append_relationship_collections(item, relationships, updateparams):
             collection.append(add_item)
             is_dirty = True
     if is_dirty:
+        printer.print()
         _safe_db_commit(item, 'append_relationship_collections', "Error on adding collection value")
     return is_dirty
 
