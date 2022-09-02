@@ -68,7 +68,7 @@ JOB_CONFIG = {
     'process_expired_subscription_elements': {
         'config': {
             'id': 'process_expired_subscription_elements',
-            'hours': 4,
+            'hours': 2,
             'jitter': 1200,
         },
         'leeway': 600,
