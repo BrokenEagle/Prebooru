@@ -203,6 +203,10 @@ Prebooru.coordinateInBox = function(coord, box) {
 };
 
 Prebooru.initializeVideoPreviews = function (container_selector) {
+    function setCoordinate(event) {
+        document.body.mousePageX = event.pageX;
+        document.body.mousePageY = event.pageY;
+    }
     function getWindowBox() {
         return {top: window.pageYOffset, bottom: window.pageYOffset + window.innerHeight, left: window.pageXOffset, right: window.pageXOffset + window.innerWidth};
     }
@@ -213,11 +217,24 @@ Prebooru.initializeVideoPreviews = function (container_selector) {
         console.log("Changing from image to video on", image.postName);
         image.oldOnerror = image.onerror;
         image.src = image.dataset.video;
+        document.body.addEventListener('mousemove', setCoordinate, false);
+        image.videoCheckInterval = setTimeout(() => {
+            let coord = {x: document.body.mousePageX, y: document.body.mousePageY};
+            let box = getImageBox(image);
+            if (!Prebooru.coordinateInBox(coord, box)) {
+                videoToImage(image);
+            }
+        }, 500);
     }
     function videoToImage(image) {
         console.log("Changing from video to image on", image.postName);
         image.onerror = image.oldOnerror;
         image.src = image.dataset.src;
+        document.body.removeEventListener('mousemove', setCoordinate, false);
+        if (image.videoCheckInterval !== null) {
+            clearInterval(image.videoCheckInterval);
+            image.videoCheckInterval = null;
+        }
     }
     function onMouseEnter(event) {
         let image = event.target;
@@ -225,6 +242,7 @@ Prebooru.initializeVideoPreviews = function (container_selector) {
         image.videoPreviewTimeout = setTimeout(() => {
             imageToVideo(image);
             image.videoPreviewTimeout = true;
+            setCoordinate(event);
         }, 500);
     }
     function onMouseLeave(event) {
