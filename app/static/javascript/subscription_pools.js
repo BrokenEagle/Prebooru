@@ -91,6 +91,7 @@ SubscriptionPools.initializeJobQueryInterval = function (job_status, query_url) 
 SubscriptionPools.submitForm = function (value) {
     document.getElementById('subscription-pool-element-keep').value = value;
     document.getElementById('form').submit();
+    return false;
 };
 
 SubscriptionPools.initializeEventCallbacks = function () {
