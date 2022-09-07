@@ -175,3 +175,30 @@ div.illust-preview img {
     width: auto;
     height: auto;
 }
+div.illust-preview-container {
+    border: 1px solid #D8D8D8;
+    padding: 5px;
+    margin: 5px;
+    background-color: #E8E8E8;
+    text-align: center;
+}
+div.illust-no-posts {
+    display: flex;
+    flex-wrap: wrap;
+}
+div.illust-preview-url {
+    padding: 2px;
+}
+div.illust-no-posts img {
+    text-indent: 5px;
+    width: auto;
+    height: auto;
+}
+div.illust-single-url img {
+    max-width: 300px;
+    max-height: 300px;
+}
+div.illust-multi-urls img {
+    max-width: 150px;
+    max-height: 150px;
+}

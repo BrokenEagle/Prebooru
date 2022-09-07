@@ -25,9 +25,25 @@
                         <div class="preview-header">{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</div>
                         {% if illust.posts | length > 1 %}
                             {{ multi_post_preview(illust, 'illust', True) }}
+                        {% elif illust.posts | length == 1 %}
+                            {{ post_preview(illust.posts[0], True) }}
                         {% else %}
-                            {% set post = illust.posts[0] if illust.posts | length == 1 else None %}
-                            {{ post_preview(post, True) }}
+                            <div class="illust-preview-container">
+                                {% if illust.urls | length > 0 %}
+                                    <span class="explanation">No posts.</span>
+                                    <br>
+                                    <br>
+                                    <div class="illust-no-posts {{ 'illust-multi-urls' if illust.urls | length > 1 else 'illust-single-url' }}">
+                                        {% for illust_url in illust.urls %}
+                                            <div class="illust-preview-url">
+                                                {{ helpers.illust_url.preview_link(illust_url, True) }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span class="explanation">No URLs.</span>
+                                {% endif %}
+                            </div>
                         {% endif %}
                     </td>
                     <td>
@@ -70,5 +86,5 @@
 {% endblock pages %}
 
 {% block pagescript %}
-    Prebooru.initializeLazyLoad('.illust-preview, .post');
+    Prebooru.initializeLazyLoad('.illust-preview, .post, .illust-preview-url');
 {% endblock pagescript %}

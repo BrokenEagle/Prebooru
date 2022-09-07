@@ -24,12 +24,14 @@ def redownload_post_link(text, illust_url):
     return general_link(text, url_for('illust_url.redownload_html', id=illust_url.id), method='POST')
 
 
-def preview_link(illust_url):
+def preview_link(illust_url, lazyload=False):
     preview_width, preview_height = get_preview_dimensions(illust_url.width, illust_url.height, PREVIEW_DIMENSIONS)
     addons = {
         'width': preview_width,
         'height': preview_height,
         'alt': illust_url.shortlink,
-        'src': illust_url.preview_url,
+        'data-src': illust_url.preview_url,
     }
+    if not lazyload:
+        addons['src'] = illust_url.preview_url
     return render_tag('img', None, addons)
