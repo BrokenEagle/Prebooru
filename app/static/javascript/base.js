@@ -208,10 +208,20 @@ Prebooru.initializeVideoPreviews = function (container_selector) {
         document.body.mousePageY = event.pageY;
     }
     function getWindowBox() {
-        return {top: window.pageYOffset, bottom: window.pageYOffset + window.innerHeight, left: window.pageXOffset, right: window.pageXOffset + window.innerWidth};
+        return {
+            top: window.pageYOffset,
+            bottom: window.pageYOffset + window.innerHeight,
+            left: window.pageXOffset,
+            right: window.pageXOffset + window.innerWidth
+        };
     }
     function getImageBox(image) {
-        return {top: image.offsetTop, bottom: image.offsetTop + image.offsetHeight, left: image.offsetLeft, right: image.offsetLeft + image.offsetWidth};
+        return {
+            top: image.offsetTop + image.container.offsetTop,
+            bottom: image.offsetTop + image.offsetHeight + image.container.offsetTop,
+            left: image.offsetLeft + image.container.offsetLeft,
+            right: image.offsetLeft + image.offsetWidth + image.container.offsetLeft,
+        };
     }
     function imageToVideo(image) {
         console.log("Changing from image to video on", image.postName);
@@ -222,6 +232,7 @@ Prebooru.initializeVideoPreviews = function (container_selector) {
             let coord = {x: document.body.mousePageX, y: document.body.mousePageY};
             let box = getImageBox(image);
             if (!Prebooru.coordinateInBox(coord, box)) {
+                console.log("Mouse outside", image.postName);
                 videoToImage(image);
             }
         }, 500);
@@ -260,15 +271,17 @@ Prebooru.initializeVideoPreviews = function (container_selector) {
             clearTimeout(image.videoPreviewTimeout);
             image.videoPreviewTimeout = null;
         } else if (image.videoPreviewTimeout === true) {
+            console.log("Mouse leave", image.postName);
             videoToImage(image);
         }
     }
     document.querySelectorAll(container_selector).forEach((preview) => {
-        let image = preview.querySelector('img');
+        let image = preview.querySelector('img.preview');
         image.onmouseenter = onMouseEnter;
         image.onmouseleave = onMouseLeave;
         image.postName = preview.id;
         image.imageToVideo = imageToVideo;
         image.videoToImage = videoToImage;
+        image.container = preview;
     });
 };

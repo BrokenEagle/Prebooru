@@ -14,9 +14,9 @@ from .similarity_pool_db import delete_similarity_pool_by_post_id
 # ## GLOBAL VARIABLES
 
 COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type', 'alternate',
-                     'pixel_md5']
-CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type', 'pixel_md5']
-UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id']
+                     'pixel_md5', 'duration', 'audio']
+CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type', 'pixel_md5', 'duration', 'audio']
+UPDATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'duration', 'audio', 'danbooru_id']
 
 
 # ## FUNCTIONS
@@ -72,7 +72,7 @@ def delete_post(post):
 
 # #### Misc functions
 
-def create_post(width, height, file_ext, md5, size, post_type, pixel_md5):
+def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, duration, has_audio):
     params = {
         'width': width,
         'height': height,
@@ -81,6 +81,8 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5):
         'size': size,
         'type': post_type,
         'pixel_md5': pixel_md5,
+        'duration': duration,
+        'audio': has_audio,
     }
     return create_post_from_parameters(params)
 
@@ -90,8 +92,9 @@ def post_append_illust_url(post, illust_url):
     SESSION.commit()
 
 
-def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size, post_type, pixel_md5):
-    post = create_post(width, height, file_ext, md5, size, post_type, pixel_md5)
+def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size, post_type, pixel_md5, duration,
+                                   has_audio):
+    post = create_post(width, height, file_ext, md5, size, post_type, pixel_md5, duration, has_audio)
     post_append_illust_url(post, illust_url)
     return post
 

@@ -4,10 +4,10 @@
 from ..network import get_http_data
 from ..media import get_pixel_hash
 from ...models import Post
-from ..database.post_db import create_post_and_add_illust_url
+from ..database.post_db import create_post_and_add_illust_url, update_post_from_parameters
 from ..database.error_db import create_error, create_and_append_error, append_error, extend_errors, is_error
 from .base import convert_image_upload, convert_video_upload, load_post_image, check_existing, check_filetype,\
-    check_image_dimensions, check_video_dimensions, save_image, save_video, save_thumb
+    check_image_dimensions, check_video_info, save_image, save_video, save_thumb
 
 
 # ## FUNCTIONS
@@ -101,7 +101,7 @@ def create_image_post(illust_url, record, source, post_type):
         return post_errors
     pixel_md5 = get_pixel_hash(image)
     post = create_post_and_add_illust_url(illust_url, image_width, image_height, image_file_ext, md5, len(buffer),
-                                          post_type, pixel_md5)
+                                          post_type, pixel_md5, None, None)
     if len(post_errors):
         extend_errors(post, post_errors)
     return post
@@ -123,13 +123,13 @@ def create_video_post(illust_url, record, source, post_type):
     error = save_video(buffer, temppost)
     if error is not None:
         return post_errors + [error]
-    video_width, video_height = check_video_dimensions(temppost, illust_url, post_errors)
+    vinfo = check_video_info(temppost, illust_url, post_errors)
     thumb_binary = download_media(illust_url, source, record, True)
     if isinstance(thumb_binary, list):
         return post_errors + thumb_binary
     save_thumb(thumb_binary, temppost, post_errors)
-    post = create_post_and_add_illust_url(illust_url, video_width, video_height, video_file_ext, md5, len(buffer),
-                                          post_type, None)
+    post = create_post_and_add_illust_url(illust_url, vinfo['width'], vinfo['height'], video_file_ext, md5, len(buffer),
+                                          post_type, None, vinfo['duration'], vinfo['audio'])
     if len(post_errors):
         extend_errors(post, post_errors)
     return post
@@ -169,7 +169,8 @@ def update_video_post(illust_url, post, source, *args):
     error = save_video(buffer, post)
     if error is not None:
         return post_errors + [error]
-    video_width, video_height = check_video_dimensions(post, illust_url, post_errors)
+    vinfo = check_video_info(post, illust_url, post_errors)
+    update_post_from_parameters(post, vinfo)
     thumb_binary = download_media(illust_url, source, post, True)
     if isinstance(thumb_binary, list):
         return post_errors + thumb_binary

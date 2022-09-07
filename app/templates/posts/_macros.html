@@ -1,7 +1,12 @@
 {% macro post_preview(post, lazyload=False) -%}
     {% if post is not none %}
-        <article id="post-{{ post.id }}" class="post {{ 'video-post' if post.is_video else '' }}">
-            <a href="{{ post.show_url }}">{{ helpers.post.post_preview_link(post, lazyload) }}</a>
+        <article id="post-{{ post.id }}" class="post {{ 'video-post' if post.is_video else '' }}" style="position: relative;">
+            <a href="{{ post.show_url }}">
+                {% if post.is_video %}
+                    {{ helpers.post.video_icons(post) }}
+                {% endif %}
+                {{ helpers.post.post_preview_link(post, lazyload) }}
+            </a>
         </article>
     {% else %}
         <article class="post no-post">

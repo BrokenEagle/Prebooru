@@ -8,7 +8,7 @@ import filetype
 from utility.data import get_buffer_checksum
 
 # ## LOCAL IMPORTS
-from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image
+from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
 from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
 from ..database.subscription_pool_element_db import link_subscription_post, update_subscription_pool_element_active,\
     check_deleted_subscription_post, update_subscription_pool_element_status, duplicate_subscription_post
@@ -118,28 +118,17 @@ def check_image_dimensions(image, illust_url, post_errors):
     return image.width, image.height
 
 
-def check_video_dimensions(post, illust_url, post_errors):
-    try:
-        probe = ffmpeg.probe(post.file_path)
-    except FileNotFoundError:
-        msg = "Must install ffprobe.exe. See Github page for details."
-        create_post_error('check_video_dimensions', msg, post_errors)
+def check_video_info(post, illust_url, post_errors):
+    info = get_video_info(post.file_path)
+    if isinstance(info, str):
+        create_post_error('check_video_info', info, post_errors)
         return illust_url.width, illust_url.height
-    except Exception as e:
-        msg = "Error reading video metadata: %s" % repr(e)
-        create_post_error('check_video_dimensions', msg, post_errors)
-        return illust_url.width, illust_url.height
-    video_stream = next(filter(lambda x: x['codec_type'] == 'video', probe['streams']), None)
-    if video_stream is None:
-        msg = "No video streams found: %e" % illust_url.url
-        create_post_error('check_video_dimensions', msg, post_errors)
-        return illust_url.width, illust_url.height
-    if (illust_url.width and video_stream['width'] != illust_url.width) or\
-       (illust_url.height and video_stream['height'] != illust_url.height):
+    if (illust_url.width and info['width'] != illust_url.width) or\
+       (illust_url.height and info['height'] != illust_url.height):
         msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
-              (illust_url.width, illust_url.height, video_stream['width'], video_stream['height'])
-        create_post_error('check_video_dimensions', msg, post_errors)
-    return video_stream['width'], video_stream['height']
+              (illust_url.width, illust_url.height, info['width'], info['height'])
+        create_post_error('check_video_info', msg, post_errors)
+    return info
 
 
 # #### Create media functions

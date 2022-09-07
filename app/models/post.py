@@ -73,6 +73,8 @@ class Post(JsonModel):
     type = DB.Column(DB.String(50), nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
     pixel_md5 = DB.Column(DB.String(255), nullable=True)
+    duration = DB.Column(DB.Float, nullable=True)
+    audio = DB.Column(DB.Boolean, nullable=True)
 
     # #### Relationships
     illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True,

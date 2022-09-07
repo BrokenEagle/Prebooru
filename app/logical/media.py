@@ -45,6 +45,26 @@ def get_pixel_hash(image):
     return get_buffer_checksum(data)
 
 
+def get_video_info(file_path):
+    try:
+        probe = ffmpeg.probe(file_path)
+    except FileNotFoundError:
+        return "Must install ffprobe.exe. See Github page for details."
+    except Exception as e:
+        return "Error reading video metadata: %s" % repr(e)
+    video_stream = next(filter(lambda x: x['codec_type'] == 'video', probe['streams']), None)
+    if video_stream is None:
+        return "No video streams found: %s" % illust_url.url
+    duration = probe['format']['duration']
+    audio = any(True for stream in probe['streams'] if stream['codec_type'] == 'audio')
+    return {
+        'width': video_stream['width'],
+        'height': video_stream['height'],
+        'duration': duration,
+        'audio': audio,
+    }
+
+
 def load_image(buffer):
     try:
         file_imgdata = BytesIO(buffer)

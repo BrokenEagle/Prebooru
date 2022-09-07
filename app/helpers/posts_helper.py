@@ -1,6 +1,7 @@
 # APP/HELPERS/POSTS_HELPER.PY
 
 # ## PYTHON IMPORTS
+import math
 import urllib.parse
 
 # ## EXTERNAL IMPORTS
@@ -66,6 +67,7 @@ def similar_search_links(post, format_url, proxy_url=None):
 def post_preview_link(post, lazyload):
     preview_width, preview_height = get_preview_dimensions(post.width, post.height, PREVIEW_DIMENSIONS)
     addons = {
+        'class': 'preview',
         'width': preview_width,
         'height': preview_height,
         'alt': post.shortlink,
@@ -106,6 +108,7 @@ def video_sample_link(post):
         'autoplay': None,
         'width': post.width,
         'height': post.height,
+        'duration': post.duration,
         'title': image_title(post),
         'data-src': post.video_sample_url,
         'data-original': post.file_url,
@@ -114,7 +117,10 @@ def video_sample_link(post):
 
 
 def image_title(post):
-    return f"( {post.width} x {post.height} ) : {post.file_ext.upper()} @ {readable_bytes(post.size)}"
+    title = f"( {post.width} x {post.height} )"
+    if post.duration is not None:
+        title += f" [ {round(post.duration, 1)} sec ]"
+    return title + f" : {post.file_ext.upper()} @ {readable_bytes(post.size)}"
 
 
 # ###### SHOW
@@ -200,6 +206,19 @@ def post_type_link(post_type):
                         **{'class': ' '.join(classes)})
 
 
+# #### Other functions
+
+def video_icons(post):
+    duration = math.ceil(post.duration)
+    minutes = duration // 60
+    seconds = duration % 60
+    duration_string = "%d:%02d" % (minutes, seconds)
+    inner_html = render_tag('span', duration_string, {'class': 'duration'})
+    if post.audio:
+        inner_html += _sound_icon_link()
+    return render_tag('div', inner_html, {'class': 'video-info'})
+
+
 # #### Private functions
 
 def _play_icon_link():
@@ -208,3 +227,13 @@ def _play_icon_link():
         'src': url_for('static', filename='play.svg'),
     }
     return render_tag('img', None, addons)
+
+
+def _sound_icon_link():
+    if not hasattr(_sound_icon_link, 'outer_html'):
+        addons = {
+            'class': 'sound-icon',
+            'src': url_for('static', filename='sound.svg'),
+        }
+        setattr(_sound_icon_link, 'outer_html', render_tag('img', None, addons))
+    return _sound_icon_link.outer_html
