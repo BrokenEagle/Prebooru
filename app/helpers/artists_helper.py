@@ -50,8 +50,8 @@ def add_illust_link(artist):
     return general_link("Add illust", url_for('illust.new_html', artist_id=artist.id))
 
 
-def add_subscription_pool_link(artist):
-    return general_link("Add subscription", url_for('subscription_pool.new_html', artist_id=artist.id))
+def add_subscription_link(artist):
+    return general_link("Add subscription", url_for('subscription.new_html', artist_id=artist.id))
 
 
 def add_notation_link(artist):

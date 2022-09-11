@@ -6,7 +6,7 @@ from sqlalchemy.util import memoized_property
 # ## LOCAL IMPORTS
 from .. import DB
 from ..logical.sites import get_site_domain, get_site_key
-from .subscription_pool_element import SubscriptionPoolElement
+from .subscription_element import SubscriptionElement
 from .base import JsonModel, classproperty
 
 
@@ -28,7 +28,7 @@ class IllustUrl(JsonModel):
     active = DB.Column(DB.Boolean, nullable=False)
 
     # ## Relationships
-    subscription_pool_element = DB.relationship(SubscriptionPoolElement, lazy=True, uselist=False,
+    subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False,
                                                 backref=DB.backref('illust_url', lazy=True, uselist=False),
                                                 cascade="all, delete")
 

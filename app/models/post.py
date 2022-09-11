@@ -17,7 +17,7 @@ from .. import DB
 from ..logical.utility import unique_objects
 from .error import Error
 from .illust_url import IllustUrl
-from .subscription_pool_element import SubscriptionPoolElement
+from .subscription_element import SubscriptionElement
 from .notation import Notation
 from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
@@ -81,8 +81,8 @@ class Post(JsonModel):
                                   backref=DB.backref('post', uselist=False, lazy=True))
     errors = DB.relationship(Error, secondary=PostErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('post', uselist=False, lazy=True))
-    subscription_pool_element = DB.relationship(SubscriptionPoolElement, lazy=True, uselist=False,
-                                                backref=DB.backref('post', lazy=True, uselist=False))
+    subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False,
+                                           backref=DB.backref('post', lazy=True, uselist=False))
     notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, cascade='all,delete',
                                 backref=DB.backref('post', uselist=False, lazy=True))
     _tags = DB.relationship(UserTag, secondary=PostTags, lazy=True, backref=DB.backref('posts', lazy=True))

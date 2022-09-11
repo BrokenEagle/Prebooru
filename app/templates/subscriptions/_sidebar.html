@@ -3,17 +3,17 @@
 {% from "errors/_macros.html" import errors_section %}
 {% from "layouts/_macros.html" import timestamps_section %}
 
-<div id="subscription-pool-sidebar">
-    {{ boorus_section(subscription_pool.artist.boorus, 'subscription-pool-boorus') }}
-    {{ artists_section(subscription_pool.artist, 'subscription-pool-artist') }}
-    {{ errors_section(subscription_pool.errors, 'subscription-pool-errors') }}
-    {{ timestamps_section(subscription_pool, 'subscription-pool-timestamps') }}
-    <section id="subscription-pool-options">
+<div id="subscription-sidebar">
+    {{ boorus_section(subscription.artist.boorus, 'subscription-boorus') }}
+    {{ artists_section(subscription.artist, 'subscription-artist') }}
+    {{ errors_section(subscription.errors, 'subscription-errors') }}
+    {{ timestamps_section(subscription, 'subscription-timestamps') }}
+    <section id="subscription-options">
         <h4>Options</h4>
         <ul>
-            <li>{{ helpers.subscription_pool.process_subscription_link(subscription_pool) }}</li>
-            <li>{{ helpers.subscription_pool.delay_subscription_link(subscription_pool) }}</li>
-            <li>{{ helpers.subscription_pool.get_last_job_status_link(subscription_pool) }}</li>
+            <li>{{ helpers.subscription.process_subscription_link(subscription) }}</li>
+            <li>{{ helpers.subscription.delay_subscription_link(subscription) }}</li>
+            <li>{{ helpers.subscription.get_last_job_status_link(subscription) }}</li>
         </ul>
     </section>
 </div>

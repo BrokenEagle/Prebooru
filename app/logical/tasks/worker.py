@@ -12,7 +12,7 @@ from utility.print import buffered_print
 from ..utility import unique_objects
 from ..similarity.generate_data import generate_post_similarity
 from ..similarity.populate_pools import populate_similarity_pools
-from ...models import Upload, Illust, SubscriptionPool
+from ...models import Upload, Illust, Subscription
 from ..check.posts import check_posts_for_danbooru_id
 from ..check.booru_artists import check_artists_for_boorus
 from ..check.subscriptions import download_subscription_illusts, download_subscription_elements
@@ -21,7 +21,7 @@ from ..records.illust_rec import create_illust_from_source, update_illust_from_s
 from ..database.base_db import safe_db_execute
 from ..database.post_db import get_posts_by_id
 from ..database.upload_db import set_upload_status, has_duplicate_posts
-from ..database.subscription_pool_db import update_subscription_pool_status, update_subscription_pool_active,\
+from ..database.subscription_db import update_subscription_status, update_subscription_active,\
     check_processing_subscriptions
 from ..database.error_db import create_and_append_error, append_error
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_lock_status
@@ -93,7 +93,7 @@ def process_subscription(subscription_id, job_id):
 
     def try_func(scope_vars):
         nonlocal subscription, start_illusts, start_posts, start_elements, starting_post_ids
-        subscription = SubscriptionPool.find(subscription_id)
+        subscription = Subscription.find(subscription_id)
         start_illusts = subscription.artist.illust_count
         start_posts = subscription.artist.post_count
         start_elements = subscription.element_count
@@ -111,15 +111,15 @@ def process_subscription(subscription_id, job_id):
 
     def error_func(scope_vars, e):
         nonlocal subscription
-        subscription = subscription or SubscriptionPool.find(subscription_id)
-        update_subscription_pool_status(subscription, 'error')
-        update_subscription_pool_active(subscription, False)
+        subscription = subscription or Subscription.find(subscription_id)
+        update_subscription_status(subscription, 'error')
+        update_subscription_active(subscription, False)
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
-        subscription = subscription or SubscriptionPool.find(subscription_id)
+        subscription = subscription or Subscription.find(subscription_id)
         if error is None and subscription.status != 'error':
-            update_subscription_pool_status(subscription, 'idle')
+            update_subscription_status(subscription, 'idle')
         new_post_ids = [post.id for post in subscription.posts if post.id not in starting_post_ids]
         if len(new_post_ids):
             printer("Starting secondary threads.")

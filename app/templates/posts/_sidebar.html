@@ -2,7 +2,7 @@
 {% from "artists/_macros.html" import artists_section %}
 {% from "illusts/_macros.html" import illusts_section %}
 {% from "pools/_macros.html" import pools_section %}
-{% from "subscription_pool_elements/_macros.html" import subscription_element_section %}
+{% from "subscription_elements/_macros.html" import subscription_element_section %}
 {% from "tags/_macros.html" import tags_section %}
 {% from "notations/_macros.html" import notations_section %}
 {% from "errors/_macros.html" import errors_section %}
@@ -12,7 +12,7 @@
     {{ artists_section(post.artists, 'artist-info') }}
     {{ illusts_section(post.illusts, 'illust-info') }}
     {{ pools_section(post._pools, 'pool-list') }}
-    {{ subscription_element_section(post.subscription_pool_element, 'subscription-info') }}
+    {{ subscription_element_section(post.subscription_element, 'subscription-info') }}
     {{ tags_section(post._tags, 'tag-list', 'post', post.id) }}
     {{ notations_section(post.notations, 'notation-list') }}
     {{ errors_section(post.errors, 'error-list') }}

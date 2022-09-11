@@ -10,8 +10,8 @@ from utility.data import get_buffer_checksum
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
 from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
-from ..database.subscription_pool_element_db import link_subscription_post, update_subscription_pool_element_active,\
-    check_deleted_subscription_post, update_subscription_pool_element_status, duplicate_subscription_post
+from ..database.subscription_element_db import link_subscription_post, update_subscription_element_active,\
+    check_deleted_subscription_post, update_subscription_element_status, duplicate_subscription_post
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.error_db import create_error, create_and_append_error, extend_errors, is_error
 
@@ -49,14 +49,14 @@ def record_outcome(post, record):
         extend_errors(record, valid_errors)
         if record.model_name == 'upload':
             add_upload_failure(record)
-        elif record.model_name == 'subscription_pool_element' and record.status == 'active':
-            update_subscription_pool_element_active(record, False)
-            update_subscription_pool_element_status(record, 'error')
+        elif record.model_name == 'subscription_element' and record.status == 'active':
+            update_subscription_element_active(record, False)
+            update_subscription_element_status(record, 'error')
         return False
     if record.model_name == 'upload':
         upload_append_post(record, post)
         add_upload_success(record)
-    elif record.model_name == 'subscription_pool_element':
+    elif record.model_name == 'subscription_element':
         link_subscription_post(record, post)
     return True
 
@@ -86,10 +86,10 @@ def check_existing(buffer, illust_url, record):
     post = get_post_by_md5(md5)
     if post is not None:
         post_append_illust_url(post, illust_url)
-        if record.model_name == 'subscription_pool_element':
+        if record.model_name == 'subscription_element':
             duplicate_subscription_post(record, post.md5)
         return create_error('downloader.base.check_existing', "Media already uploaded on post #%d" % post.id)
-    if record.model_name == 'subscription_pool_element' and check_deleted_subscription_post(md5):
+    if record.model_name == 'subscription_element' and check_deleted_subscription_post(md5):
         duplicate_subscription_post(record, md5)
         return create_error('downloader.base.check_existing', "Media already marked as deleted: %s" % md5)
     return md5

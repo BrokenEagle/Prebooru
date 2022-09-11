@@ -1,12 +1,12 @@
-{% extends "subscription_pools/_base.html" %}
+{% extends "subscriptions/_base.html" %}
 {% from "layouts/_macros.html" import page_navigation %}
 
 {% block title %}
-    Subscription pools
+    Subscriptions
 {% endblock title %}
 
 {% block content %}
-    <table id="subscription-pools-table" class="striped" width="75%">
+    <table id="subscriptions-table" class="striped" width="75%">
         <thead>
             <tr>
                 <th width="15%">ID</th>
@@ -19,23 +19,23 @@
             </tr>
         </thead>
         <tbody>
-            {% for pool in subscription_pools.items %}
-                <tr id="pool-{{ pool.id }}">
-                    <td>{{ pool.show_link }}</td>
-                    <td>{{ pool.artist_show_link }}</td>
+            {% for subscription in subscriptions.items %}
+                <tr id="subscription-{{ subscription.id }}">
+                    <td>{{ subscription.show_link }}</td>
+                    <td>{{ subscription.artist_show_link }}</td>
                     <td>
-                        <strong>Status:</strong> {{ pool.status }}
+                        <strong>Status:</strong> {{ subscription.status }}
                         <br>
-                        <strong>Checked:</strong> {{ helpers.base.format_time_ago(pool.checked) }}
+                        <strong>Checked:</strong> {{ helpers.base.format_time_ago(subscription.checked) }}
                     </td>
                     <td>
-                        <strong>Interval:</strong> {{ pool.interval }}
+                        <strong>Interval:</strong> {{ subscription.interval }}
                         <br>
-                        <strong>Expiration:</strong> {{ pool.expiration }}
+                        <strong>Expiration:</strong> {{ subscription.expiration }}
                     </td>
-                    <td>{{ pool.active | tojson }}</td>
-                    <td>{{ helpers.base.format_expires(pool.requery) }}</td>
-                    <td>{{ helpers.base.humanized_timestamp_difference(pool) }}</td>
+                    <td>{{ subscription.active | tojson }}</td>
+                    <td>{{ helpers.base.format_expires(subscription.requery) }}</td>
+                    <td>{{ helpers.base.humanized_timestamp_difference(subscription) }}</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -43,5 +43,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(subscription_pools) }}
+    {{ page_navigation(subscriptions) }}
 {% endblock pages %}

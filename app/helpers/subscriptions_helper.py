@@ -1,4 +1,4 @@
-# APP/HELPERS/ILLUSTS_HELPERS.PY
+# APP/HELPERS/SUBSCRIPTIONS_HELPERS.PY
 
 # ## EXTERNAL IMPORTS
 from flask import url_for, request, Markup
@@ -16,74 +16,74 @@ from .base_helper import general_link, url_for_with_params, val_or_none
 
 # ## FUNCTIONS
 
-# #### Pools
+# #### Subscriptions
 
 # ###### URL functions
 
-def post_search(subscription_pool):
+def post_search(subscription):
     return search_url_for('post.index_html', type='subscription_post',
-                          illust_urls={'illust': {'artist': {'subscription_pool': {'id': subscription_pool.id}}}})
+                          illust_urls={'illust': {'artist': {'subscription': {'id': subscription.id}}}})
 
 
-def illust_search(subscription_pool):
-    return search_url_for('illust.index_html', urls={'subscription_pool_element': {'pool_id': subscription_pool.id}})
+def illust_search(subscription):
+    return search_url_for('illust.index_html', urls={'subscription_element': {'subscription_id': subscription.id}})
 
 
 def element_search(item):
-    if item.model_name == 'subscription_pool':
-        pool_id = item.id
-    elif item.model_name == 'subscription_pool_element':
-        pool_id = item.pool_id
+    if item.model_name == 'subscription':
+        subscription_id = item.id
+    elif item.model_name == 'subscription_element':
+        subscription_id = item.subscription_id
     else:
         raise Exception("Invalid item for element search.")
-    return search_url_for('subscription_pool_element.index_html', pool_id=pool_id)
+    return search_url_for('subscription_element.index_html', subscription_id=subscription_id)
 
 
 # ###### Link functions
 
-def element_search_link(subscription_pool):
-    return general_link('»', element_search(subscription_pool))
+def element_search_link(subscription):
+    return general_link('»', element_search(subscription))
 
 
-def process_subscription_link(subscription_pool):
-    url = url_for('subscription_pool.process_html', id=subscription_pool.id)
+def process_subscription_link(subscription):
+    url = url_for('subscription.process_html', id=subscription.id)
     return general_link("Process subscription", url, method="POST")
 
 
-def delay_subscription_link(subscription_pool):
-    url = url_for('subscription_pool.delay_html', id=subscription_pool.id)
-    addons = {'onclick': 'return SubscriptionPools.delaySubscriptionElements(this)'}
+def delay_subscription_link(subscription):
+    url = url_for('subscription.delay_html', id=subscription.id)
+    addons = {'onclick': 'return Subscriptions.delaySubscriptionElements(this)'}
     return general_link("Delay expiration", url, **addons)
 
 
-def get_last_job_status_link(subscription_pool):
-    job_id = "process_subscription-%d" % subscription_pool.id
-    url = url_for('subscription_pool.show_html', id=subscription_pool.id, job=job_id)
+def get_last_job_status_link(subscription):
+    job_id = "process_subscription-%d" % subscription.id
+    url = url_for('subscription.show_html', id=subscription.id, job=job_id)
     return general_link("Get last job status", url)
 
 
-def pool_status_link(subscription_pool):
-    if subscription_pool.status == 'idle':
+def status_link(subscription):
+    if subscription.status == 'idle':
         return 'idle'
-    url = url_for('subscription_pool.reset_html', id=subscription_pool.id)
-    return general_link(subscription_pool.status, url, method='PUT')
+    url = url_for('subscription.reset_html', id=subscription.id)
+    return general_link(subscription.status, url, method='PUT')
 
 
 # ###### Other functions
 
-def average_interval(subscription_pool):
-    if subscription_pool.element_count == 0:
+def average_interval(subscription):
+    if subscription.element_count == 0:
         return Markup('<em>N/A</em>')
-    return val_or_none(subscription_pool.average_keep_interval)
+    return val_or_none(subscription.average_keep_interval)
 
 
-def storage_bytes(subscription_pool, type=None):
+def storage_bytes(subscription, type=None):
     switcher = {
         None: 'total_bytes',
         'main': 'main_bytes',
         'alternate': 'alternate_bytes',
     }
-    size = getattr(subscription_pool, switcher[type])
+    size = getattr(subscription, switcher[type])
     return readable_bytes(size) if size > 0 else Markup('<em>N/A</em>')
 
 
@@ -121,11 +121,11 @@ def element_preview_link(element, lazyload):
 
 def keep_element_link(subscription_element, value, has_preview):
     preview = 'yes' if has_preview else 'no'
-    url = url_for('subscription_pool_element.keep_json', id=subscription_element.id, keep=value, preview=preview)
+    url = url_for('subscription_element.keep_json', id=subscription_element.id, keep=value, preview=preview)
     addons = {
         'class': value + '-link keep-link',
-        'onclick': 'return SubscriptionPools.networkHandler(this)',
-        'ondragstart': 'return SubscriptionPools.dragKeepClick(this)',
+        'onclick': 'return Subscriptions.networkHandler(this)',
+        'ondragstart': 'return Subscriptions.dragKeepClick(this)',
         'data-preview': str(has_preview).lower(),
     }
     return general_link(value, url, **addons)
@@ -134,13 +134,13 @@ def keep_element_link(subscription_element, value, has_preview):
 def element_type_link(element_type):
     active_type = request.args.get('type') or 'undecided'
     classes = ['element-type'] + [element_type + '-type'] + (['type-active'] if active_type == element_type else [])
-    url = url_for_with_params('subscription_pool_element.index_html', type=element_type, page=None)
+    url = url_for_with_params('subscription_element.index_html', type=element_type, page=None)
     return general_link(element_type.title(), url, **{'class': ' '.join(classes)})
 
 
 def nopost_function_link(name, element):
-    url = url_for(f'subscription_pool_element.{name}_json', id=element.id)
+    url = url_for(f'subscription_element.{name}_json', id=element.id)
     addons = {
-        'onclick': 'return SubscriptionPools.networkHandler(this)',
+        'onclick': 'return Subscriptions.networkHandler(this)',
     }
     return general_link(name, url, **addons)

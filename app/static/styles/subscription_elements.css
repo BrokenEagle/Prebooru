@@ -1,21 +1,21 @@
 /****General****/
-div#subscription-pool-controls a.yes-link,
+div#subscription-controls a.yes-link,
 div.subscription-element-info a.yes-link {
     color: green;
 }
-div#subscription-pool-controls a.maybe-link,
+div#subscription-controls a.maybe-link,
 div.subscription-element-info a.maybe-link {
     color: darkorange;
 }
-div#subscription-pool-controls a.no-link,
+div#subscription-controls a.no-link,
 div.subscription-element-info a.no-link {
     color: red;
 }
-div#subscription-pool-controls a.archive-link {
+div#subscription-controls a.archive-link {
     color: #AAA;
 }
 /****INDEX Page****/
-section#content.c-subscription-pool-element.a-index {
+section#content.c-subscription-element.a-index {
     min-width: 95em;
 }
 div#subscription-page-controls {
@@ -27,7 +27,7 @@ div#subscription-page-controls {
 div#subscription-page-controls > div {
     position: absolute;
 }
-div#subscription-pool-controls {
+div#subscription-controls {
     right: 0;
     bottom: 0;
 }
@@ -50,7 +50,7 @@ a.element-type.type-active {
     color: white;
     background: blue;
 }
-div#subscription-pool-elements-container {
+div#subscription-elements-container {
     display: flex;
     flex-wrap: wrap;
     margin-bottom: 2em;

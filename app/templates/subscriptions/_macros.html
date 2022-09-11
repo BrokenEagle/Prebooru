@@ -1,22 +1,22 @@
-{% macro subscription_section(subscription_pool, section_id) -%}
-    {% if subscription_pool is not none %}
+{% macro subscription_section(subscription, section_id) -%}
+    {% if subscription is not none %}
         <section id="{{ section_id }}">
-            <h4>Subscription Pool</h4>
+            <h4>Subscription</h4>
             <ul>
                 <li>
-                    <strong>{{ subscription_pool.show_link }} {{ helpers.subscription_pool.element_search_link(subscription_pool) }}</strong>
+                    <strong>{{ subscription.show_link }} {{ helpers.subscription.element_search_link(subscription) }}</strong>
                 </li>
                 <li>
-                    <strong>Status:</strong> {{ subscription_pool.status }}
+                    <strong>Status:</strong> {{ subscription.status }}
                 </li>
                 <li>
-                    <strong>Elements:</strong> {{ subscription_pool.element_count }}
+                    <strong>Elements:</strong> {{ subscription.element_count }}
                 </li>
                 <li>
-                    <strong>Posts:</strong> {{ subscription_pool.post_count }}
+                    <strong>Posts:</strong> {{ subscription.post_count }}
                 </li>
                 <li>
-                    <strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription_pool.checked) }}
+                    <strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription.checked) }}
                 </li>
             </ul>
         </section>

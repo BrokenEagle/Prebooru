@@ -27,8 +27,8 @@ from .upload import Upload, UploadUrls, UploadErrors, UploadPosts  # noqa: F401
 from .notation import Notation  # noqa: F401
 from .pool import Pool  # noqa: F401
 from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation  # noqa: F401
-from .subscription_pool import SubscriptionPool, SubscriptionPoolErrors  # noqa: F401
-from .subscription_pool_element import SubscriptionPoolElement, SubscriptionPoolElementErrors  # noqa: F401
+from .subscription import Subscription, SubscriptionErrors  # noqa: F401
+from .subscription_element import SubscriptionElement, SubscriptionElementErrors  # noqa: F401
 
 # #### Similarity data
 from .similarity_data import SimilarityData  # noqa: F401
@@ -65,8 +65,8 @@ def initialize():
             IllustCommentaries, IllustNotations, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
             ArtistNotations, Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations,
             PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, UploadPosts, Notation, Pool, PoolElement, PoolPost,
-            PoolIllust, PoolNotation, SubscriptionPool, SubscriptionPoolErrors, SubscriptionPoolElement,
-            SubscriptionPoolElementErrors, SimilarityData, SimilarityPool, SimilarityPoolElement, ApiData, Archive,
+            PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,
+            SubscriptionElementErrors, SimilarityData, SimilarityPool, SimilarityPoolElement, ApiData, Archive,
             MediaFile, Domain,
         ]
     for model in models:

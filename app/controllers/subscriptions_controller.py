@@ -1,4 +1,4 @@
-# APP/CONTROLLERS/SUBSCRIPTION_POOLS_CONTROLLER.PY
+# APP/CONTROLLERS/SUBSCRIPTIONS_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, abort, url_for, flash, redirect
@@ -8,12 +8,12 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from .. import SCHEDULER
-from ..models import SubscriptionPool, Artist
+from ..models import Subscription, Artist
 from ..logical.utility import set_error
 from ..logical.tasks.worker import process_subscription
-from ..logical.database.subscription_pool_db import create_subscription_pool_from_parameters,\
-    update_subscription_pool_from_parameters, update_subscription_pool_status, delay_subscription_pool_elements,\
-    delete_subscription_pool
+from ..logical.database.subscription_db import create_subscription_from_parameters,\
+    update_subscription_from_parameters, update_subscription_status, delay_subscription_elements,\
+    delete_subscription
 from ..logical.database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status,\
     update_job_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -23,11 +23,11 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 # ## GLOBAL VARIABLES
 
-bp = Blueprint("subscription_pool", __name__)
+bp = Blueprint("subscription", __name__)
 
 CREATE_REQUIRED_PARAMS = ['artist_id']
 VALUES_MAP = {
-    **{k: k for k in SubscriptionPool.__table__.columns.keys()},
+    **{k: k for k in Subscription.__table__.columns.keys()},
 }
 
 
@@ -67,8 +67,8 @@ FORM_CONFIG = {
 
 # #### Helper functions
 
-def get_subscription_pool_form(**kwargs):
-    return get_form('subscription_pool', FORM_CONFIG, **kwargs)
+def get_subscription_form(**kwargs):
+    return get_form('subscription', FORM_CONFIG, **kwargs)
 
 
 def parameter_validation(dataparams, is_update):
@@ -82,13 +82,13 @@ def parameter_validation(dataparams, is_update):
     artist = Artist.find(dataparams['artist_id'])
     if artist is None:
         errors.append(f"Artist #{dataparams['artist_id']} does not exist.")
-    elif artist.subscription_pool is not None:
-        errors.append(f"{artist.subscription_pool.shortlink} already exists for {artist.shortlink}.")
+    elif artist.subscription is not None:
+        errors.append(f"{artist.subscription.shortlink} already exists for {artist.shortlink}.")
     return errors
 
 
 def convert_data_params(dataparams):
-    params = get_subscription_pool_form(**dataparams).data
+    params = get_subscription_form(**dataparams).data
     params['interval'] = parse_type(params, 'interval', float)
     params['expiration'] = parse_type(params, 'expiration', float)
     params['active'] = parse_bool_parameter(dataparams, 'active')
@@ -115,14 +115,14 @@ def convert_update_params(dataparams):
 def index():
     params = process_request_values(request.values)
     search = get_params_value(params, 'search', True)
-    q = SubscriptionPool.query
+    q = Subscription.query
     q = search_filter(q, search)
     q = default_order(q, search)
     return q
 
 
 def create():
-    dataparams = get_data_params(request, 'subscription_pool')
+    dataparams = get_data_params(request, 'subscription')
     createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
     errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
@@ -131,20 +131,20 @@ def create():
     errors = parameter_validation(createparams, False)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
-    subscription_pool = create_subscription_pool_from_parameters(createparams)
-    retdata['item'] = subscription_pool.to_json()
+    subscription = create_subscription_from_parameters(createparams)
+    retdata['item'] = subscription.to_json()
     return retdata
 
 
-def update(subscription_pool):
-    dataparams = get_data_params(request, 'subscription_pool')
+def update(subscription):
+    dataparams = get_data_params(request, 'subscription')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
     errors = parameter_validation(updateparams, True)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
-    update_subscription_pool_from_parameters(subscription_pool, updateparams)
-    retdata['item'] = subscription_pool.to_json()
+    update_subscription_from_parameters(subscription, updateparams)
+    retdata['item'] = subscription.to_json()
     return retdata
 
 
@@ -152,42 +152,42 @@ def update(subscription_pool):
 
 # ###### SHOW
 
-@bp.route('/subscription_pools/<int:id>.json', methods=['GET'])
+@bp.route('/subscriptions/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json_response(SubscriptionPool, id)
+    return show_json_response(Subscription, id)
 
 
-@bp.route('/subscription_pools/<int:id>', methods=['GET'])
+@bp.route('/subscriptions/<int:id>', methods=['GET'])
 def show_html(id):
-    subscription_pool = get_or_abort(SubscriptionPool, id)
+    subscription = get_or_abort(Subscription, id)
     job_id = request.args.get('job')
     job_status = get_job_status_data(job_id) if job_id else None
-    return render_template("subscription_pools/show.html", subscription_pool=subscription_pool, job_status=job_status,
+    return render_template("subscriptions/show.html", subscription=subscription, job_status=job_status,
                            job_id=job_id)
 
 
 # ###### INDEX
 
-@bp.route('/subscription_pools.json', methods=['GET'])
+@bp.route('/subscriptions.json', methods=['GET'])
 def index_json():
     q = index()
     return index_json_response(q, request)
 
 
-@bp.route('/subscription_pools', methods=['GET'])
+@bp.route('/subscriptions', methods=['GET'])
 def index_html():
     q = index()
-    subscription_pools = paginate(q, request)
-    return render_template("subscription_pools/index.html", subscription_pools=subscription_pools,
-                           subscription_pool=SubscriptionPool())
+    subscriptions = paginate(q, request)
+    return render_template("subscriptions/index.html", subscriptions=subscriptions,
+                           subscription=Subscription())
 
 
 # ###### CREATE
 
-@bp.route('/subscription_pools/new', methods=['GET'])
+@bp.route('/subscriptions/new', methods=['GET'])
 def new_html():
     """HTML access point to create function."""
-    form = get_subscription_pool_form(**request.args)
+    form = get_subscription_form(**request.args)
     artist = None
     if form.artist_id.data is not None:
         artist = Artist.find(form.artist_id.data)
@@ -196,76 +196,76 @@ def new_html():
             form.artist_id.data = None
         else:
             hide_input(form, 'artist_id', artist.id)
-    return render_template("subscription_pools/new.html", form=form, subscription_pool=SubscriptionPool(),
+    return render_template("subscriptions/new.html", form=form, subscription=Subscription(),
                            artist=artist)
 
 
-@bp.route('/subscription_pools', methods=['POST'])
+@bp.route('/subscriptions', methods=['POST'])
 def create_html():
     results = create()
     if results['error']:
         flash(results['message'], 'error')
-        return redirect(url_for('subscription_pool.new_html', **results['data']))
-    return redirect(url_for('subscription_pool.show_html', id=results['item']['id']))
+        return redirect(url_for('subscription.new_html', **results['data']))
+    return redirect(url_for('subscription.show_html', id=results['item']['id']))
 
 
-@bp.route('/subscription_pools.json', methods=['POST'])
+@bp.route('/subscriptions.json', methods=['POST'])
 def create_json():
     return create()
 
 
 # ###### UPDATE
 
-@bp.route('/subscription_pools/<int:id>/edit', methods=['GET'])
+@bp.route('/subscriptions/<int:id>/edit', methods=['GET'])
 def edit_html(id):
-    subscription_pool = SubscriptionPool.find(id)
-    if subscription_pool is None:
+    subscription = Subscription.find(id)
+    if subscription is None:
         abort(404)
-    editparams = subscription_pool.to_json()
-    form = get_subscription_pool_form(**editparams)
-    hide_input(form, 'artist_id', subscription_pool.artist_id)
-    return render_template("subscription_pools/edit.html", form=form, subscription_pool=subscription_pool)
+    editparams = subscription.to_json()
+    form = get_subscription_form(**editparams)
+    hide_input(form, 'artist_id', subscription.artist_id)
+    return render_template("subscriptions/edit.html", form=form, subscription=subscription)
 
 
-@bp.route('/subscription_pools/<int:id>', methods=['PUT'])
+@bp.route('/subscriptions/<int:id>', methods=['PUT'])
 def update_html(id):
-    subscription_pool = get_or_abort(SubscriptionPool, id)
-    results = update(subscription_pool)
+    subscription = get_or_abort(Subscription, id)
+    results = update(subscription)
     if results['error']:
         flash(results['message'], 'error')
-        return redirect(url_for('subscription_pool.edit_html', id=id))
-    return redirect(url_for('subscription_pool.show_html', id=subscription_pool.id))
+        return redirect(url_for('subscription.edit_html', id=id))
+    return redirect(url_for('subscription.show_html', id=subscription.id))
 
 
-@bp.route('/subscription_pools/<int:id>', methods=['PUT'])
+@bp.route('/subscriptions/<int:id>', methods=['PUT'])
 def update_json(id):
-    subscription_pool = get_or_error(SubscriptionPool, id)
-    if type(subscription_pool) is dict:
-        return subscription_pool
-    return update(subscription_pool)
+    subscription = get_or_error(Subscription, id)
+    if type(subscription) is dict:
+        return subscription
+    return update(subscription)
 
 
 # ###### DELETE
 
-@bp.route('/subscription_pools/<int:id>', methods=['DELETE'])
+@bp.route('/subscriptions/<int:id>', methods=['DELETE'])
 def delete_html(id):
-    subscription_pool = get_or_abort(SubscriptionPool, id)
-    artist = subscription_pool.artist
-    delete_subscription_pool(subscription_pool)
-    flash("Subscription pool deleted.")
+    subscription = get_or_abort(Subscription, id)
+    artist = subscription.artist
+    delete_subscription(subscription)
+    flash("Subscription deleted.")
     return redirect(artist.show_url)
 
 
 # ###### Misc
 
-@bp.route('/subscription_pools/<int:id>/process', methods=['POST'])
+@bp.route('/subscriptions/<int:id>/process', methods=['POST'])
 def process_html(id):
-    subscription_pool = get_or_abort(SubscriptionPool, id)
-    if subscription_pool.status != 'idle':
+    subscription = get_or_abort(Subscription, id)
+    if subscription.status != 'idle':
         flash("Subscription currently processing.", 'error')
         return redirect(request.referrer)
-    update_subscription_pool_status(subscription_pool, 'manual')
-    job_id = "process_subscription-%d" % subscription_pool.id
+    update_subscription_status(subscription, 'manual')
+    job_id = "process_subscription-%d" % subscription.id
     job_status = {
         'stage': None,
         'range': None,
@@ -278,23 +278,23 @@ def process_html(id):
         update_job_status(job_id, job_status)
     else:
         create_job_status(job_id, job_status)
-    SCHEDULER.add_job(job_id, process_subscription, args=(subscription_pool.id, job_id))
+    SCHEDULER.add_job(job_id, process_subscription, args=(subscription.id, job_id))
     flash("Subscription started.")
-    return redirect(url_for('subscription_pool.show_html', id=subscription_pool.id, job=job_id))
+    return redirect(url_for('subscription.show_html', id=subscription.id, job=job_id))
 
 
-@bp.route('/subscription_pools/<int:id>/reset', methods=['PUT'])
+@bp.route('/subscriptions/<int:id>/reset', methods=['PUT'])
 def reset_html(id):
-    subscription_pool = get_or_abort(SubscriptionPool, id)
-    update_subscription_pool_status(subscription_pool, 'idle')
+    subscription = get_or_abort(Subscription, id)
+    update_subscription_status(subscription, 'idle')
     return redirect(request.referrer)
 
 
-@bp.route('/subscription_pools/<int:id>/status.json', methods=['GET'])
+@bp.route('/subscriptions/<int:id>/status.json', methods=['GET'])
 def status_json(id):
-    subscription_pool = get_or_error(SubscriptionPool, id)
-    if type(subscription_pool) is dict:
-        return subscription_pool
+    subscription = get_or_error(Subscription, id)
+    if type(subscription) is dict:
+        return subscription
     job_id = request.args.get('job')
     if job_id is None:
         return {'error': True, 'message': "No Job ID parameter found."}
@@ -304,13 +304,13 @@ def status_json(id):
     return {'error': False, 'item': job_status}
 
 
-@bp.route('/subscription_pools/<int:id>/delay', methods=['POST'])
+@bp.route('/subscriptions/<int:id>/delay', methods=['POST'])
 def delay_html(id):
-    subscription_pool = get_or_abort(SubscriptionPool, id)
+    subscription = get_or_abort(Subscription, id)
     delay_days = request.values.get('days', type=float)
     if delay_days is None:
         flash("No days parameter present.", 'error')
     else:
-        delay_subscription_pool_elements(subscription_pool, delay_days)
+        delay_subscription_elements(subscription, delay_days)
         flash("Updated elements.")
     return redirect(request.referrer)

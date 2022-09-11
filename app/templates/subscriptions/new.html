@@ -1,12 +1,12 @@
-{% extends "subscription_pools/_base.html" %}
+{% extends "subscriptions/_base.html" %}
 {% from "layouts/_macros.html" import render_form %}
 
 {% block title %}
-    New Subscription Pool
+    New Subscription
 {% endblock title %}
 
 {% block content %}
-    <div id="subscription-pool-form-heading" class="heading">New Subscription Pool</div>
-    {% if artist is not none %}<div id="subscription-pool-form-info">For {{ artist.show_link }}:</div>{% endif %}
-    {{ render_form(form, 'POST', subscription_pool.create_url) }}
+    <div id="subscription-form-heading" class="heading">New Subscription</div>
+    {% if artist is not none %}<div id="subscription-form-info">For {{ artist.show_link }}:</div>{% endif %}
+    {{ render_form(form, 'POST', subscription.create_url) }}
 {% endblock content %}

@@ -21,9 +21,9 @@ from ..check.subscriptions import download_subscription_illusts, download_missin
 from ..records.post_rec import relocate_old_posts_to_alternate
 from ..records.media_file_rec import batch_delete_media
 from ..database.base_db import safe_db_execute
-from ..database.subscription_pool_db import get_available_subscription, update_subscription_pool_status,\
-    update_subscription_pool_active
-from ..database.subscription_pool_element_db import total_missing_downloads, total_expired_subscription_elements
+from ..database.subscription_db import get_available_subscription, update_subscription_status,\
+    update_subscription_active
+from ..database.subscription_element_db import total_missing_downloads, total_expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_db import expired_archive_count, delete_expired_archive
@@ -290,15 +290,15 @@ def _process_pending_subscription(subscription, printer):
 
     def error_func(scope_vars, error):
         nonlocal subscription
-        update_subscription_pool_status(subscription, 'error')
-        update_subscription_pool_active(subscription, False)
+        update_subscription_status(subscription, 'error')
+        update_subscription_active(subscription, False)
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
         if error is None and subscription.status != 'error':
-            update_subscription_pool_status(subscription, 'idle')
+            update_subscription_status(subscription, 'idle')
 
-    update_subscription_pool_status(subscription, 'automatic')
+    update_subscription_status(subscription, 'automatic')
     safe_db_execute('check_pending_subscriptions', 'tasks.schedule', scope_vars={'subscription': subscription},
                     try_func=try_func, msg_func=msg_func, error_func=error_func, finally_func=finally_func,
                     printer=printer)

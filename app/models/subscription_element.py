@@ -1,4 +1,4 @@
-# APP/MODELS/SUBSCRIPTION_POOL_ELEMENT.PY
+# APP/MODELS/SUBSCRIPTION_ELEMENT.PY
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -10,9 +10,9 @@ from .base import JsonModel, secondarytable
 
 # Many-to-many tables
 
-SubscriptionPoolElementErrors = secondarytable(
-    'subscription_pool_element_errors',
-    DB.Column('subscription_pool_element_id', DB.Integer, DB.ForeignKey('subscription_pool_element.id'),
+SubscriptionElementErrors = secondarytable(
+    'subscription_element_errors',
+    DB.Column('subscription_element_id', DB.Integer, DB.ForeignKey('subscription_element.id'),
               primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
 )
@@ -20,12 +20,12 @@ SubscriptionPoolElementErrors = secondarytable(
 
 # ## CLASSES
 
-class SubscriptionPoolElement(JsonModel):
+class SubscriptionElement(JsonModel):
     # ## Declarations
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    pool_id = DB.Column(DB.Integer, DB.ForeignKey('subscription_pool.id'), nullable=False)
+    subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=False)
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(DB.String(32), nullable=True)
@@ -36,15 +36,15 @@ class SubscriptionPoolElement(JsonModel):
     active = DB.Column(DB.Boolean, nullable=False)
 
     # #### Relationships
-    # pool <- SusbscriptionPool (MtO)
-    errors = DB.relationship(Error, secondary=SubscriptionPoolElementErrors, lazy=True, cascade='all,delete',
-                             backref=DB.backref('subscription_pool_element', uselist=False, lazy=True))
+    # subscription <- Susbscription (MtO)
+    errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, cascade='all,delete',
+                             backref=DB.backref('subscription_element', uselist=False, lazy=True))
 
 
 # ## INITIALIZATION
 
 def initialize():
-    from .subscription_pool import SubscriptionPool
+    from .subscription import Subscription
     # Access the opposite side of the relationship to force the back reference to be generated
-    SubscriptionPool.elements.property._configure_started
-    SubscriptionPoolElement.set_relation_properties()
+    Subscription.elements.property._configure_started
+    SubscriptionElement.set_relation_properties()

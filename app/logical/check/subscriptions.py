@@ -11,15 +11,15 @@ from sqlalchemy.orm import selectinload
 from utility.time import get_current_time, hours_from_now
 
 # ## LOCAL IMPORTS
-from ...models import SubscriptionPool, SubscriptionPoolElement, IllustUrl, Post
+from ...models import Subscription, SubscriptionElement, IllustUrl, Post
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
 from ..database.post_db import get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
-from ..database.subscription_pool_element_db import unlink_subscription_post, delete_subscription_post,\
+from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post
-from ..database.subscription_pool_db import update_subscription_pool_requery, update_subscription_pool_last_info,\
-    add_subscription_pool_error
+from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
+    add_subscription_error
 from ..database.error_db import is_error
 from ..database.jobs_db import get_job_status_data, update_job_status
 from ..records.subscription_rec import update_subscription_elements
@@ -44,20 +44,20 @@ WAITING_THREADS = {
 
 # ## FUNCTIONS
 
-def download_subscription_illusts(subscription_pool, job_id=None):
-    update_subscription_pool_requery(subscription_pool, hours_from_now(4))
-    artist = subscription_pool.artist
+def download_subscription_illusts(subscription, job_id=None):
+    update_subscription_requery(subscription, hours_from_now(4))
+    artist = subscription.artist
     site_key = get_site_key(artist.site_id)
     source = SOURCEDICT[site_key]
-    site_illust_ids = source.populate_all_artist_illusts(artist, subscription_pool.last_id, job_id)
+    site_illust_ids = source.populate_all_artist_illusts(artist, subscription.last_id, job_id)
     if is_error(site_illust_ids):
-        add_subscription_pool_error(subscription_pool, site_illust_ids)
+        add_subscription_error(subscription, site_illust_ids)
         return
     site_illust_ids = sorted(x for x in set(site_illust_ids))
     job_status = get_job_status_data(job_id) or {'illusts': 0}
     job_status['stage'] = 'illusts'
     job_status['records'] = len(site_illust_ids)
-    print(f"download_subscription_illusts [{subscription_pool.id}]: Total({len(site_illust_ids)})")
+    print(f"download_subscription_illusts [{subscription.id}]: Total({len(site_illust_ids)})")
     for (i, item_id) in enumerate(site_illust_ids):
         if (i % ILLUST_PAGE_LIMIT) == 0:
             total = len(site_illust_ids)
@@ -75,19 +75,19 @@ def download_subscription_illusts(subscription_pool, job_id=None):
         job_status['illusts'] += 1
     update_job_status(job_id, job_status)
     if len(site_illust_ids):
-        update_subscription_pool_last_info(subscription_pool, max(site_illust_ids))
-    update_subscription_pool_requery(subscription_pool, hours_from_now(subscription_pool.interval))
-    update_subscription_elements(subscription_pool, job_id)
+        update_subscription_last_info(subscription, max(site_illust_ids))
+    update_subscription_requery(subscription, hours_from_now(subscription.interval))
+    update_subscription_elements(subscription, job_id)
 
 
-def download_subscription_elements(subscription_pool, job_id=None):
+def download_subscription_elements(subscription, job_id=None):
     job_status = get_job_status_data(job_id) or {'downloads': 0}
     job_status['stage'] = 'downloads'
-    site_key = get_site_key(subscription_pool.artist.site_id)
+    site_key = get_site_key(subscription.artist.site_id)
     source = SOURCEDICT[site_key]
-    q = SubscriptionPoolElement.query.filter_by(pool_id=subscription_pool.id, post_id=None, active=True)
-    q = q.options(selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
-    q = q.order_by(SubscriptionPoolElement.id.asc())
+    q = SubscriptionElement.query.filter_by(subscription_id=subscription.id, post_id=None, active=True)
+    q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
+    q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
     while True:
         print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
@@ -105,13 +105,13 @@ def download_subscription_elements(subscription_pool, job_id=None):
 
 
 def download_missing_elements(manual=False):
-    q = SubscriptionPoolElement.query.join(SubscriptionPool)\
-                               .filter(SubscriptionPoolElement.post_id.is_(None),
-                                       SubscriptionPoolElement.active.is_(True),
-                                       SubscriptionPoolElement.deleted.is_(False),
-                                       SubscriptionPool.status == 'idle')
-    q = q.options(selectinload(SubscriptionPoolElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
-    q = q.order_by(SubscriptionPoolElement.id.asc())
+    q = SubscriptionElement.query.join(Subscription)\
+                               .filter(SubscriptionElement.post_id.is_(None),
+                                       SubscriptionElement.active.is_(True),
+                                       SubscriptionElement.deleted.is_(False),
+                                       Subscription.status == 'idle')
+    q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
+    q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
     while True:
         print(f"download_missing_elements: {page.first} - {page.last} / Total({page.count})")
@@ -133,10 +133,10 @@ def expire_subscription_elements(manual):
     retdata = {'unlink': 0, 'delete': 0, 'archive': 0}
     max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
     # First pass - Unlink all "yes" elements or those that were manually downloaded by the user
-    expired_clause = and_(SubscriptionPoolElement.expires < get_current_time(), SubscriptionPoolElement.keep == 'yes')
+    expired_clause = and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.keep == 'yes')
     user_clause = (Post.type == 'user_post')
-    q = SubscriptionPoolElement.query.join(Post, SubscriptionPoolElement.post).filter(or_(expired_clause, user_clause))
-    q = q.order_by(SubscriptionPoolElement.id.desc())
+    q = SubscriptionElement.query.join(Post, SubscriptionElement.post).filter(or_(expired_clause, user_clause))
+    q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=50)
     while True:
         print(f"\nexpire_subscription_elements-unlink: {page.first} - {page.last} / Total({page.count})\n")
@@ -148,9 +148,9 @@ def expire_subscription_elements(manual):
             break
         page = page.next()
     # Second pass - Hard delete all "no" element posts
-    q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
-                                             SubscriptionPoolElement.keep == 'no')
-    q = q.order_by(SubscriptionPoolElement.id.desc())
+    q = SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
+                                             SubscriptionElement.keep == 'no')
+    q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=10)
     while True:
         print(f"\nexpire_subscription_elements-delete: {page.first} - {page.last} / Total({page.count})\n")
@@ -162,11 +162,11 @@ def expire_subscription_elements(manual):
             break
         page = page.next()
     # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
-    q = SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
-                                             SubscriptionPoolElement.status == 'active',
-                                             or_(SubscriptionPoolElement.keep == 'archive',
-                                                 SubscriptionPoolElement.keep.is_(None)))
-    q = q.order_by(SubscriptionPoolElement.id.desc())
+    q = SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
+                                             SubscriptionElement.status == 'active',
+                                             or_(SubscriptionElement.keep == 'archive',
+                                                 SubscriptionElement.keep.is_(None)))
+    q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=10)
     while True:
         print(f"expire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})")

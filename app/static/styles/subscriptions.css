@@ -1,60 +1,60 @@
 /****NEW/EDIT Page****/
-div#subscription-pool-form-heading {
+div#subscription-form-heading {
     font-size: 28px;
     margin-top: 1em;
 }
-div#subscription-pool-form-info {
+div#subscription-form-info {
     font-size: 20px;
     font-weight: bold;
     margin-top: 1em;
 }
 /****INDEX Page****/
-table#subscription-pools-table span.explanation {
+table#subscriptions-table span.explanation {
     font-size: 80%;
 }
-div.similarity-pool-show-link {
+div.subscription-show-link {
     text-align: center; 
     font-weight: bold;
 }
 /****SHOW Page****/
-div#subscription-pool-heading {
+div#subscription-heading {
     font-size: 32px;
 }
-div#subscription-pool-content {
+div#subscription-content {
     margin-top: 2em;
     display: flex;
 }
-div#subscription-pool-sidebar {
+div#subscription-sidebar {
     width: 25em;
     border: 2px solid #DDD;
     background: #F8F8F8;
     padding: 0.5em;
 }
-div#subscription-pool-sidebar > section {
+div#subscription-sidebar > section {
     margin-bottom: 1em;
 }
-div#subscription-pool-site-content {
+div#subscription-site-content {
     width: 70%;
 }
-div#subscription-pool-site-content h4 {
+div#subscription-site-content h4 {
     text-decoration: underline;
 }
-div#subscription-pool-site-content-1 {
+div#subscription-site-content-1 {
     display: flex;
 }
-div#subscription-pool-site-content-1 > section {
+div#subscription-site-content-1 > section {
     margin-left: 1em;
 }
-div#subscription-pool-site-content-1 span.heading {
+div#subscription-site-content-1 span.heading {
     font-size: 1.33em;
 }
-section#subscription-pool-settings {
+section#subscription-settings {
     width: 25%;
 }
-section#subscription-pool-status {
+section#subscription-status {
     width: 25%;
 }
-div#subscription-pool-site-content-2 {
+div#subscription-site-content-2 {
     margin-top: 2em;
     margin-left: 0.8em;
     border: 1px solid #DDD;
@@ -67,6 +67,6 @@ div#subscription-illusts {
     font-size: 24px;
     font-weight: bold;
 }
-div#subscription-pool-posts {
+div#subscription-posts {
     margin-top: 2em;
 }

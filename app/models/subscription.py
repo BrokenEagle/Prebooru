@@ -1,4 +1,4 @@
-# APP/MODELS/SUBSCRIPTION_POOL.PY
+# APP/MODELS/SUBSCRIPTION.PY
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
@@ -12,7 +12,7 @@ from .illust import Illust
 from .illust import IllustUrl
 from .post import Post
 from .error import Error
-from .subscription_pool_element import SubscriptionPoolElement
+from .subscription_element import SubscriptionElement
 from .base import JsonModel, secondarytable
 
 
@@ -20,16 +20,16 @@ from .base import JsonModel, secondarytable
 
 # Many-to-many tables
 
-SubscriptionPoolErrors = secondarytable(
-    'subscription_pool_errors',
-    DB.Column('subscription_pool_id', DB.Integer, DB.ForeignKey('subscription_pool.id'), primary_key=True),
+SubscriptionErrors = secondarytable(
+    'subscription_errors',
+    DB.Column('subscription_id', DB.Integer, DB.ForeignKey('subscription.id'), primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
 )
 
 
 # ## CLASSES
 
-class SubscriptionPool(JsonModel):
+class Subscription(JsonModel):
     # ## Declarations
 
     # #### Columns
@@ -46,10 +46,10 @@ class SubscriptionPool(JsonModel):
     active = DB.Column(DB.Boolean, nullable=False)
 
     # #### Relationships
-    elements = DB.relationship(SubscriptionPoolElement, lazy=True, cascade="all, delete",
-                               backref=DB.backref('pool', lazy=True, uselist=False))
-    errors = DB.relationship(Error, secondary=SubscriptionPoolErrors, lazy=True, cascade='all,delete',
-                             backref=DB.backref('subscription_pool', uselist=False, lazy=True))
+    elements = DB.relationship(SubscriptionElement, lazy=True, cascade="all, delete",
+                               backref=DB.backref('subscription', lazy=True, uselist=False))
+    errors = DB.relationship(Error, secondary=SubscriptionErrors, lazy=True, cascade='all,delete',
+                             backref=DB.backref('subscription', uselist=False, lazy=True))
 
     # ## Property methods
 
@@ -69,12 +69,12 @@ class SubscriptionPool(JsonModel):
 
     @memoized_property
     def active_elements(self):
-        return self._element_query.filter(SubscriptionPoolElement.active.is_(True)).all()
+        return self._element_query.filter(SubscriptionElement.active.is_(True)).all()
 
     @memoized_property
     def average_keep_interval(self):
         datetimes = self._illust_query.filter(Illust.site_created > days_ago(365),
-                                              SubscriptionPoolElement.keep == 'yes')\
+                                              SubscriptionElement.keep == 'yes')\
                                       .order_by(Illust.site_illust_id.desc())\
                                       .with_entities(Illust.site_created)\
                                       .all()
@@ -115,19 +115,19 @@ class SubscriptionPool(JsonModel):
 
     @property
     def _element_query(self):
-        return SubscriptionPoolElement.query.filter_by(pool_id=self.id)
+        return SubscriptionElement.query.filter_by(subscription_id=self.id)
 
     @property
     def _illust_query(self):
-        return Illust.query.join(IllustUrl).join(SubscriptionPoolElement)\
-                     .filter(SubscriptionPoolElement.pool_id == self.id)
+        return Illust.query.join(IllustUrl).join(SubscriptionElement)\
+                     .filter(SubscriptionElement.subscription_id == self.id)
 
     @property
     def _post_query(self):
         from .artist import Artist
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust)\
-                   .join(Artist, Illust.artist).join(SubscriptionPool, Artist.subscription_pool)\
-                   .filter(SubscriptionPool.id == self.id, Post.type == 'subscription_post')
+                   .join(Artist, Illust.artist).join(Subscription, Artist.subscription)\
+                   .filter(Subscription.id == self.id, Post.type == 'subscription_post')
 
     def _populate_storage_sizes(self):
         if hasattr(self, '_total_bytes'):
@@ -146,5 +146,5 @@ class SubscriptionPool(JsonModel):
 def initialize():
     from .artist import Artist
     # Access the opposite side of the relationship to force the back reference to be generated
-    Artist.subscription_pool.property._configure_started
-    SubscriptionPool.set_relation_properties()
+    Artist.subscription.property._configure_started
+    Subscription.set_relation_properties()

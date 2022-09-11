@@ -17,7 +17,7 @@ from ..downloader.network import redownload_post
 def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
     query = Post.query.filter(Post.danbooru_id.is_(None))
-    query = search_attributes(query, Post, {'subscription_pool_element_exists': 'false'})
+    query = search_attributes(query, Post, {'subscription_element_exists': 'false'})
     max_id = 0
     page = 1
     page_count = (query.get_count() // 100) + 1

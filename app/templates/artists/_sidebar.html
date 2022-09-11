@@ -1,13 +1,13 @@
 {% from "boorus/_macros.html" import boorus_section %}
 {% from "illusts/_macros.html" import illusts_display %}
-{% from "subscription_pools/_macros.html" import subscription_section %}
+{% from "subscriptions/_macros.html" import subscription_section %}
 {% from "layouts/_macros.html" import timestamps_section %}
 {% from "notations/_macros.html" import notations_section %}
 
 <div id="artist-sidebar">
     {{ boorus_section(artist.boorus, 'artist-boorus') }}
     {{ illusts_display(helpers.artist.illust_search(artist), artist.illust_count, 'artist-illusts') }}
-    {{ subscription_section(artist.subscription_pool, 'artist-subscription') }}
+    {{ subscription_section(artist.subscription, 'artist-subscription') }}
     {{ timestamps_section(artist, 'artist-timestamps') }}
     {{ notations_section(artist.notations, 'artist-notations') }}
     <section id="artist-options">
@@ -15,7 +15,7 @@
         <ul>
             <li>{{ helpers.artist.query_update_link(artist) }}</li>
             <li>{{ helpers.artist.query_booru_link(artist) }}</li>
-            {% if artist.subscription_pool is none %}<li>{{ helpers.artist.add_subscription_pool_link(artist) }}</li>{% endif %}
+            {% if artist.subscription is none %}<li>{{ helpers.artist.add_subscription_link(artist) }}</li>{% endif %}
             <li>{{ helpers.artist.add_illust_link(artist) }}</li>
             <li>{{ helpers.artist.add_notation_link(artist) }}</li>
         </ul>

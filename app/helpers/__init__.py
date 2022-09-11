@@ -13,7 +13,7 @@ from . import illust_urls_helper as illust_url  # noqa: F401
 from . import tags_helper as tag  # noqa: F401
 from . import notations_helper as notation  # noqa: F401
 from . import pools_helper as pool  # noqa: F401
-from . import subscription_pools_helper as subscription_pool  # noqa: F401
+from . import subscriptions_helper as subscription  # noqa: F401
 from . import api_data_helper as api_data  # noqa: F401
 from . import archives_helper as archive  # noqa: F401
 from . import media_files_helper as media_file  # noqa: F401

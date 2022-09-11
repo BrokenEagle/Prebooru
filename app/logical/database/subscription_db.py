@@ -1,11 +1,11 @@
-# APP/LOGICAL/DATABASE/SUBSCRIPTION_POOL_DB.PY
+# APP/LOGICAL/DATABASE/SUBSCRIPTION_DB.PY
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time, hours_from_now, add_days
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import SubscriptionPool
+from ...models import Subscription
 from .base_db import update_column_attributes
 
 
@@ -25,56 +25,56 @@ MAXIMUM_PROCESS_SUBSCRIPTIONS = 10
 
 # ###### Create
 
-def create_subscription_pool_from_parameters(createparams):
+def create_subscription_from_parameters(createparams):
     current_time = get_current_time()
-    pool = SubscriptionPool(status='idle', created=current_time, updated=current_time)
+    subscription = Subscription(status='idle', created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(pool, update_columns, createparams)
-    print("[%s]: created" % pool.shortlink)
-    return pool
+    update_column_attributes(subscription, update_columns, createparams)
+    print("[%s]: created" % subscription.shortlink)
+    return subscription
 
 
 # ###### Update
 
-def update_subscription_pool_from_parameters(pool, updateparams):
+def update_subscription_from_parameters(subscription, updateparams):
     update_results = []
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(pool, update_columns, updateparams))
-    if pool.requery is not None and pool.requery > hours_from_now(pool.interval):
-        update_subscription_pool_requery(pool, hours_from_now(pool.interval))
+    update_results.append(update_column_attributes(subscription, update_columns, updateparams))
+    if subscription.requery is not None and subscription.requery > hours_from_now(subscription.interval):
+        update_subscription_requery(subscription, hours_from_now(subscription.interval))
     if any(update_results):
-        print("[%s]: updated" % pool.shortlink)
-        pool.updated = get_current_time()
+        print("[%s]: updated" % subscription.shortlink)
+        subscription.updated = get_current_time()
         SESSION.commit()
 
 
-def update_subscription_pool_status(pool, status):
-    pool.status = status
+def update_subscription_status(subscription, status):
+    subscription.status = status
     SESSION.commit()
 
 
-def update_subscription_pool_active(pool, active):
-    pool.active = active
+def update_subscription_active(subscription, active):
+    subscription.active = active
     SESSION.commit()
 
 
-def update_subscription_pool_requery(pool, timeval):
-    pool.requery = timeval
+def update_subscription_requery(subscription, timeval):
+    subscription.requery = timeval
     SESSION.commit()
 
 
-def update_subscription_pool_last_info(pool, last_id):
-    pool.last_id = last_id
-    pool.checked = get_current_time()
+def update_subscription_last_info(subscription, last_id):
+    subscription.last_id = last_id
+    subscription.checked = get_current_time()
     SESSION.commit()
 
 
 # ###### Delete
 
-def delete_subscription_pool(pool):
-    SESSION.delete(pool)
+def delete_subscription(subscription):
+    SESSION.delete(subscription)
     SESSION.commit()
 
 
@@ -82,32 +82,32 @@ def delete_subscription_pool(pool):
 
 def get_available_subscription(unlimited):
     # Return only subscriptions which have already been processed manually (requery is not None)
-    query = SubscriptionPool.query.filter(SubscriptionPool.requery < get_current_time(),
-                                          SubscriptionPool.active.is_(True),
-                                          SubscriptionPool.status.not_in(['manual', 'automatic']))
+    query = Subscription.query.filter(Subscription.requery < get_current_time(),
+                                          Subscription.active.is_(True),
+                                          Subscription.status.not_in(['manual', 'automatic']))
     if not unlimited:
         query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
     return query.all()
 
 
 def check_processing_subscriptions():
-    return SubscriptionPool.query.filter_by(status='manual').get_count() > 0
+    return Subscription.query.filter_by(status='manual').get_count() > 0
 
 
 # #### Misc
 
-def add_subscription_pool_error(pool, error):
-    pool.errors.append(error)
-    pool.status = 'error'
-    pool.checked = get_current_time()
-    pool.requery = None
-    pool.active = False
+def add_subscription_error(subscription, error):
+    subscription.errors.append(error)
+    subscription.status = 'error'
+    subscription.checked = get_current_time()
+    subscription.requery = None
+    subscription.active = False
     SESSION.commit()
 
 
-def delay_subscription_pool_elements(subscription_pool, delay_days):
+def delay_subscription_elements(subscription, delay_days):
     current_time = get_current_time()
-    for element in subscription_pool.active_elements:
+    for element in subscription.active_elements:
         if element.keep == 'maybe':
             continue
         if delay_days == 0:

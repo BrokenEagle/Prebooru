@@ -21,8 +21,8 @@
     {% set element_keep = element.keep or 'undecided' %}
     <article id="subscription-element-{{ element.id }}"
              class="subscription-element subscription-{{ element.illust_url.type }} subscription-{{ element_post }} subscription-{{ element_keep }}">
-        <div class="subscription-element-archive">{{ helpers.subscription_pool.keep_element_link(element, 'archive', False) }}</div>
-        {{ subscription_pool_element_info(element, False, False) }}
+        <div class="subscription-element-archive">{{ helpers.subscription.keep_element_link(element, 'archive', False) }}</div>
+        {{ subscription_element_info(element, False, False) }}
     </article>
 {%- endmacro %}
 
@@ -38,17 +38,17 @@
                         <input type="checkbox"
                                class="similar-post-input"
                                id="subscription-element-{{ element.id }}-checkbox"
-                               name="subscription_pool_element[id][]"
+                               name="subscription_element[id][]"
                                value="{{ element.id }}"
-                               onchange="return SubscriptionPools.toggleCheckbox(this)"
+                               onchange="return Subscriptions.toggleCheckbox(this)"
                                onclick="return Prebooru.selectClick(this)">
                     </label>
                 </div>
-                <div class="subscription-element-archive">{{ helpers.subscription_pool.keep_element_link(element, 'archive', True) }}</div>
+                <div class="subscription-element-archive">{{ helpers.subscription.keep_element_link(element, 'archive', True) }}</div>
                 <div class="element-illust-type">{{ element.illust_url.type | title }}</div>
             </div>
             {{ post_preview(element.post, lazyload) }}
-            {{ subscription_pool_element_info(element, True, True) }}
+            {{ subscription_element_info(element, True, True) }}
         {% else %}
             <div class="subscription-element-display">
                 <div class="heading">
@@ -56,11 +56,11 @@
                 </div>
                 <div class="element-illust-type">{{ element.illust_url.type | title }}</div>
             </div>
-            <div class="preview">{{ helpers.subscription_pool.element_preview_link(element, lazyload) }}</div>
+            <div class="preview">{{ helpers.subscription.element_preview_link(element, lazyload) }}</div>
             <div class="subscription-element-info">
                 <ul>
                     <li>
-                        <strong>{{ element.pool_show_link }} {{ helpers.subscription_pool.element_search_link(element) }}</strong>
+                        <strong>{{ element.subscription_show_link }} {{ helpers.subscription.element_search_link(element) }}</strong>
                     </li>
                     <li>
                         <strong>{{ element.illust_url.illust_show_link }}</strong>
@@ -73,15 +73,15 @@
                     </li>
                     {% if element.archive_match is not none %}
                         <li>
-                            <strong>[ {{ helpers.subscription_pool.nopost_function_link('reinstantiate', element) }} ]</strong>
+                            <strong>[ {{ helpers.subscription.nopost_function_link('reinstantiate', element) }} ]</strong>
                         </li>
                     {% elif element.status == 'unlinked' and element.post_match is not none %}
                         <li>
-                            <strong>[ {{ helpers.subscription_pool.nopost_function_link('relink', element) }} ]</strong>
+                            <strong>[ {{ helpers.subscription.nopost_function_link('relink', element) }} ]</strong>
                         </li>
                     {% elif element.post_match is none %}
                         <li>
-                            <strong>[ {{ helpers.subscription_pool.nopost_function_link('redownload', element) }} ]</strong>
+                            <strong>[ {{ helpers.subscription.nopost_function_link('redownload', element) }} ]</strong>
                         </li>
                     {% endif %}
                 </ul>
@@ -91,12 +91,12 @@
     </article>
 {%- endmacro %}
 
-{% macro subscription_pool_element_info(element, show_illust, has_preview) -%}
+{% macro subscription_element_info(element, show_illust, has_preview) -%}
     {% set info_class = element.keep + '-info' if element.keep is not none else 'undecided-info' %}
     <div class="subscription-element-info {{ info_class }}">
         <ul>
             <li>
-                <strong>{{ element.pool_show_link }}&ensp;{{ helpers.subscription_pool.element_search_link(element) }}</strong>
+                <strong>{{ element.subscription_show_link }}&ensp;{{ helpers.subscription.element_search_link(element) }}</strong>
             </li>
             {% if show_illust %}
                 <li>
@@ -111,9 +111,9 @@
                 <strong>
                     Keep:
                     <!-- djlint:off T001 -->
-                    {{ helpers.subscription_pool.keep_element_link(element, 'yes', has_preview) -}} |
-                    {{- helpers.subscription_pool.keep_element_link(element, 'maybe', has_preview) -}} |
-                    {{- helpers.subscription_pool.keep_element_link(element, 'no', has_preview) }}
+                    {{ helpers.subscription.keep_element_link(element, 'yes', has_preview) -}} |
+                    {{- helpers.subscription.keep_element_link(element, 'maybe', has_preview) -}} |
+                    {{- helpers.subscription.keep_element_link(element, 'no', has_preview) }}
                     <!-- djlint:on -->
                 </strong>
             </li>

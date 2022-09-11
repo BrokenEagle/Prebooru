@@ -1,20 +1,20 @@
-# APP/LOGICAL/DATABASE/SUBSCRIPTION_POOL_ELEMENT_DB.PY
+# APP/LOGICAL/DATABASE/SUBSCRIPTION_ELEMENT_DB.PY
 
 # ## PACKAGE IMPORTS
 from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import SubscriptionPool, SubscriptionPoolElement
+from ...models import Subscription, SubscriptionElement
 from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
 from .base_db import update_column_attributes
 
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['pool_id', 'illust_url_id', 'post_id', 'expires']
+COLUMN_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'expires']
 
-CREATE_ALLOWED_ATTRIBUTES = ['pool_id', 'illust_url_id', 'post_id', 'expires']
+CREATE_ALLOWED_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'expires']
 
 
 # ## FUNCTIONS
@@ -23,40 +23,40 @@ CREATE_ALLOWED_ATTRIBUTES = ['pool_id', 'illust_url_id', 'post_id', 'expires']
 
 # ###### CREATE
 
-def create_subscription_pool_element_from_parameters(createparams):
-    subscription_pool_element = SubscriptionPoolElement(active=True, deleted=False, status='active')
+def create_subscription_element_from_parameters(createparams):
+    subscription_element = SubscriptionElement(active=True, deleted=False, status='active')
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(subscription_pool_element, update_columns, createparams)
-    print("[%s]: created" % subscription_pool_element.shortlink)
-    return subscription_pool_element
+    update_column_attributes(subscription_element, update_columns, createparams)
+    print("[%s]: created" % subscription_element.shortlink)
+    return subscription_element
 
 
 # ###### UPDATE
 
-def update_subscription_pool_element_active(subscription_pool_element, active):
-    subscription_pool_element.active = active
+def update_subscription_element_active(subscription_element, active):
+    subscription_element.active = active
     SESSION.commit()
 
 
-def update_subscription_pool_element_deleted(subscription_pool_element, deleted):
-    subscription_pool_element.deleted = deleted
+def update_subscription_element_deleted(subscription_element, deleted):
+    subscription_element.deleted = deleted
     SESSION.commit()
 
 
-def batch_update_subscription_pool_element_keep(subscription_pool_elements, value):
-    for subscription_pool_element in subscription_pool_elements:
-        _update_subscription_pool_element_keep(subscription_pool_element, value)
+def batch_update_subscription_element_keep(subscription_elements, value):
+    for subscription_element in subscription_elements:
+        _update_subscription_element_keep(subscription_element, value)
     SESSION.commit()
 
 
-def update_subscription_pool_element_keep(subscription_pool_element, value):
-    _update_subscription_pool_element_keep(subscription_pool_element, value)
+def update_subscription_element_keep(subscription_element, value):
+    _update_subscription_element_keep(subscription_element, value)
     SESSION.commit()
 
 
-def update_subscription_pool_element_status(subscription_pool_element, value):
-    subscription_pool_element.status = value
+def update_subscription_element_status(subscription_element, value):
+    subscription_element.status = value
     SESSION.commit()
 
 
@@ -68,7 +68,7 @@ def link_subscription_post(element, post):
     element.md5 = post.md5
     element.status = 'active'
     element.expires = None
-    _update_subscription_pool_element_keep(element, None)
+    _update_subscription_element_keep(element, None)
     SESSION.commit()
 
 
@@ -111,30 +111,30 @@ def duplicate_subscription_post(element, md5):
 # #### Query
 
 def get_elements_by_id(id_list):
-    return SubscriptionPoolElement.query.filter(SubscriptionPoolElement.id.in_(id_list)).all()
+    return SubscriptionElement.query.filter(SubscriptionElement.id.in_(id_list)).all()
 
 
 def check_deleted_subscription_post(md5):
-    return SESSION.query(SubscriptionPoolElement.id).filter_by(md5=md5, deleted=True).first() is not None
+    return SESSION.query(SubscriptionElement.id).filter_by(md5=md5, deleted=True).first() is not None
 
 
 def total_expired_subscription_elements():
-    return SubscriptionPoolElement.query.filter(SubscriptionPoolElement.expires < get_current_time(),
-                                                SubscriptionPoolElement.post_id.is_not(None)).get_count()
+    return SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
+                                                SubscriptionElement.post_id.is_not(None)).get_count()
 
 
 def total_missing_downloads():
-    return SubscriptionPoolElement.query.join(SubscriptionPool)\
-                                        .filter(SubscriptionPoolElement.post_id.is_(None),
-                                                SubscriptionPoolElement.active.is_(True),
-                                                SubscriptionPoolElement.deleted.is_(False),
-                                                SubscriptionPool.status == 'idle')\
+    return SubscriptionElement.query.join(Subscription)\
+                                        .filter(SubscriptionElement.post_id.is_(None),
+                                                SubscriptionElement.active.is_(True),
+                                                SubscriptionElement.deleted.is_(False),
+                                                Subscription.status == 'idle')\
                                         .get_count()
 
 
 # #### Private
 
-def _update_subscription_pool_element_keep(element, value):
+def _update_subscription_element_keep(element, value):
     element.keep = value
     if value == 'yes' or value == 'archive':
         element.expires = days_from_now(1)  # Posts will be unlinked/archived after this period
@@ -143,4 +143,4 @@ def _update_subscription_pool_element_keep(element, value):
     elif value == 'maybe':
         element.expires = None  # Keep the element around until/unless a decision is made on it
     elif value is None:
-        element.expires = days_from_now(element.pool.expiration)  # Reset the expiration
+        element.expires = days_from_now(element.subscription.expiration)  # Reset the expiration
