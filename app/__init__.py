@@ -75,7 +75,7 @@ def _before_request():
     msg = f"\nBefore request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
     logger.info(msg)
     SERVER_INFO.active_requests += 1
-    if request.endpoint != 'shutdown' and not request.endpoint.startswith('scheduler.'):
+    if request.endpoint != 'shutdown' and request.endpoint is not None and not request.endpoint.startswith('scheduler.'):
         try:
             update_last_activity('user')
         except Exception as e:
