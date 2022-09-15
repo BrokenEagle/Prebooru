@@ -112,11 +112,13 @@ def column_type(model, columnname):
         sqltypes.Unicode: 'STRING',
         sqltypes.UnicodeText: 'TEXT',
     }
-    column_type = type(getattr(model.__table__.c, columnname).type)
-    try:
+    model_class = type(getattr(model.__table__.c, columnname).type)
+    super_classes = model_class.__mro__
+    column_type = next((c for c in super_classes if c in switcher.keys()), None)
+    if column_type is not None:
         return switcher[column_type]
-    except Exception:
-        raise Exception("%s - column of unexpected type: %s" % (columnname, str(column_type)))
+    else:
+        raise Exception("%s - column of unexpected type: %s" % (columnname, str(model_class)))
 
 
 # #### Main execution functions
