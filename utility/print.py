@@ -69,6 +69,6 @@ def _coalesce_arguments(args, trim):
 
 
 def _convert(string, color):
-    string = getattr(colorama.Fore, 'GREEN') + colorama.Style.BRIGHT + string
+    string = getattr(colorama.Fore, color) + colorama.Style.BRIGHT + string
     string += colorama.Style.RESET_ALL
     return string
