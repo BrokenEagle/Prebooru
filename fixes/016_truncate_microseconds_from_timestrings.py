@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 # ## GLOBAL VARIABLES
 
 TIME_OFFSET = relativedelta(years=1000)
-
+COMPARE_DATE = datetime.datetime(2000, 1, 1)
 
 # ## FUNCTIONS
 
@@ -39,47 +39,35 @@ def datetime_model_iterator():
         yield model
 
 
-def second_pass():
+def nth_pass(comparator, offset):
     for model in datetime_model_iterator():
-        for item in model.query.all():
-            updated_attributes = []
-            for attribute in item.basic_attributes:
-                value = getattr(item, attribute)
-                if not isinstance(value, datetime.datetime):
-                    continue
-                if value > datetime.datetime(2000, 1, 1):
-                    continue
-                updated_value = value + TIME_OFFSET
-                setattr(item, attribute, updated_value)
-                updated_attributes.append(attribute)
-            if len(updated_attributes):
-                print("\tUpdated", item.shortlink, '->', updated_attributes)
-        SESSION.commit()
-
-
-def first_pass():
-    for model in datetime_model_iterator():
-        for item in model.query.all():
-            updated_attributes = []
-            for attribute in item.basic_attributes:
-                value = getattr(item, attribute)
-                if not isinstance(value, datetime.datetime):
-                    continue
-                if value < datetime.datetime(2000, 1, 1):
-                    continue
-                updated_value = value - TIME_OFFSET
-                setattr(item, attribute, updated_value)
-                updated_attributes.append(attribute)
-            if len(updated_attributes):
-                print("\tUpdated", item.shortlink, '->', updated_attributes)
-        SESSION.commit()
+        page = model.query.count_paginate(per_page=1000)
+        while True:
+            for item in page.items:
+                updated_attributes = []
+                for attribute in item.basic_attributes:
+                    value = getattr(item, attribute)
+                    if not isinstance(value, datetime.datetime):
+                        continue
+                    if comparator(value, COMPARE_DATE):
+                        continue
+                    updated_value = value + offset
+                    setattr(item, attribute, updated_value)
+                    updated_attributes.append(attribute)
+                if len(updated_attributes):
+                    print("\tUpdated", item.shortlink, '->', updated_attributes)
+            SESSION.commit()
+            if not page.has_next:
+                break
+            page = page.next()
 
 
 def main(args):
     if args.type in ['both', 'first']:
-        first_pass()
+        nth_pass(lambda a, b: a < b, -TIME_OFFSET)
     if args.type in ['both', 'second']:
-        second_pass()
+        nth_pass(lambda a, b: a > b, TIME_OFFSET)
+
 
 # ##EXECUTION START
 
