@@ -28,8 +28,8 @@ bp = Blueprint("subscription_element", __name__)
 
 INDEX_HTML_OPTIONS = (
     selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust)
-                                                    .selectinload(Illust.urls)
-                                                    .lazyload('*'),
+                                                .selectinload(Illust.urls)
+                                                .lazyload('*'),
     selectinload(SubscriptionElement.post).lazyload('*'),
     selectinload(SubscriptionElement.errors),
 )

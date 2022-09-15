@@ -29,8 +29,8 @@ class IllustUrl(JsonModel):
 
     # ## Relationships
     subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False,
-                                                backref=DB.backref('illust_url', lazy=True, uselist=False),
-                                                cascade="all, delete")
+                                           backref=DB.backref('illust_url', lazy=True, uselist=False),
+                                           cascade="all, delete")
 
     # ## Property methods
 

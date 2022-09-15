@@ -106,10 +106,10 @@ def download_subscription_elements(subscription, job_id=None):
 
 def download_missing_elements(manual=False):
     q = SubscriptionElement.query.join(Subscription)\
-                               .filter(SubscriptionElement.post_id.is_(None),
-                                       SubscriptionElement.active.is_(True),
-                                       SubscriptionElement.deleted.is_(False),
-                                       Subscription.status == 'idle')
+                                 .filter(SubscriptionElement.post_id.is_(None),
+                                         SubscriptionElement.active.is_(True),
+                                         SubscriptionElement.deleted.is_(False),
+                                         Subscription.status == 'idle')
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
@@ -149,7 +149,7 @@ def expire_subscription_elements(manual):
         page = page.next()
     # Second pass - Hard delete all "no" element posts
     q = SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
-                                             SubscriptionElement.keep == 'no')
+                                         SubscriptionElement.keep == 'no')
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=10)
     while True:
@@ -163,9 +163,9 @@ def expire_subscription_elements(manual):
         page = page.next()
     # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
     q = SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
-                                             SubscriptionElement.status == 'active',
-                                             or_(SubscriptionElement.keep == 'archive',
-                                                 SubscriptionElement.keep.is_(None)))
+                                         SubscriptionElement.status == 'active',
+                                         or_(SubscriptionElement.keep == 'archive',
+                                             SubscriptionElement.keep.is_(None)))
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=10)
     while True:

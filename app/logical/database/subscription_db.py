@@ -83,8 +83,8 @@ def delete_subscription(subscription):
 def get_available_subscription(unlimited):
     # Return only subscriptions which have already been processed manually (requery is not None)
     query = Subscription.query.filter(Subscription.requery < get_current_time(),
-                                          Subscription.active.is_(True),
-                                          Subscription.status.not_in(['manual', 'automatic']))
+                                      Subscription.active.is_(True),
+                                      Subscription.status.not_in(['manual', 'automatic']))
     if not unlimited:
         query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
     return query.all()

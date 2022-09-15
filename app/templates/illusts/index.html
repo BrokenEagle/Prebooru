@@ -34,11 +34,7 @@
                                     <br>
                                     <br>
                                     <div class="illust-no-posts {{ 'illust-multi-urls' if illust.urls | length > 1 else 'illust-single-url' }}">
-                                        {% for illust_url in illust.urls %}
-                                            <div class="illust-preview-url">
-                                                {{ helpers.illust_url.preview_link(illust_url, True) }}
-                                            </div>
-                                        {% endfor %}
+                                        {% for illust_url in illust.urls %}<div class="illust-preview-url">{{ helpers.illust_url.preview_link(illust_url, True) }}</div>{% endfor %}
                                     </div>
                                 {% else %}
                                     <span class="explanation">No URLs.</span>

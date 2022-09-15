@@ -54,7 +54,7 @@ def get_video_info(file_path):
         return "Error reading video metadata: %s" % repr(e)
     video_stream = next(filter(lambda x: x['codec_type'] == 'video', probe['streams']), None)
     if video_stream is None:
-        return "No video streams found: %s" % illust_url.url
+        return "No video streams found: %s" % file_path
     duration = probe['format']['duration']
     audio = any(True for stream in probe['streams'] if stream['codec_type'] == 'audio')
     return {

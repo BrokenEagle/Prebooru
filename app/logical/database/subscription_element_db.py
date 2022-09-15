@@ -120,16 +120,16 @@ def check_deleted_subscription_post(md5):
 
 def total_expired_subscription_elements():
     return SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
-                                                SubscriptionElement.post_id.is_not(None)).get_count()
+                                            SubscriptionElement.post_id.is_not(None)).get_count()
 
 
 def total_missing_downloads():
     return SubscriptionElement.query.join(Subscription)\
-                                        .filter(SubscriptionElement.post_id.is_(None),
-                                                SubscriptionElement.active.is_(True),
-                                                SubscriptionElement.deleted.is_(False),
-                                                Subscription.status == 'idle')\
-                                        .get_count()
+                                    .filter(SubscriptionElement.post_id.is_(None),
+                                            SubscriptionElement.active.is_(True),
+                                            SubscriptionElement.deleted.is_(False),
+                                            Subscription.status == 'idle')\
+                                    .get_count()
 
 
 # #### Private

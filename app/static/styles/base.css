@@ -226,6 +226,7 @@ a.warning-link {
 }
 article.post {
     display: inline-block;
+    position: relative;
     width: 304px;
     height: 304px;
     margin: 0 10px 10px 0;

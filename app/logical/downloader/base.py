@@ -1,7 +1,6 @@
 # APP/LOGICAL/DOWNLOADER/BASE.PY
 
 # ## PYTHON IMPORTS
-import ffmpeg
 import filetype
 
 # ## PACKAGE IMPORTS
