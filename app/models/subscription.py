@@ -13,7 +13,7 @@ from .illust import IllustUrl
 from .post import Post
 from .error import Error
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, secondarytable
+from .base import JsonModel, NormalizedDatetime, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -39,10 +39,10 @@ class Subscription(JsonModel):
     expiration = DB.Column(DB.Float, nullable=True)
     status = DB.Column(DB.String(31), nullable=False)
     last_id = DB.Column(DB.Integer, nullable=True)
-    requery = DB.Column(DB.DateTime(timezone=False), nullable=True)
-    checked = DB.Column(DB.DateTime(timezone=False), nullable=True)
-    created = DB.Column(DB.DateTime(timezone=False), nullable=False)
-    updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
+    requery = DB.Column(NormalizedDatetime(), nullable=True)
+    checked = DB.Column(NormalizedDatetime(), nullable=True)
+    created = DB.Column(NormalizedDatetime(), nullable=False)
+    updated = DB.Column(NormalizedDatetime(), nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)
 
     # #### Relationships

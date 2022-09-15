@@ -3,7 +3,7 @@
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
-from .base import JsonModel, secondarytable
+from .base import JsonModel, NormalizedDatetime, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -30,7 +30,7 @@ class SubscriptionElement(JsonModel):
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(DB.String(32), nullable=True)
     keep = DB.Column(DB.String(16), nullable=True)
-    expires = DB.Column(DB.DateTime(timezone=False), nullable=True)
+    expires = DB.Column(NormalizedDatetime(), nullable=True)
     status = DB.Column(DB.String(16), nullable=True)
     deleted = DB.Column(DB.Boolean, nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)

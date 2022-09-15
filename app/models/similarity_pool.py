@@ -9,7 +9,7 @@ from config import DEFAULT_PAGINATE_LIMIT, MAXIMUM_PAGINATE_LIMIT
 # ## LOCAL IMPORTS
 from .. import DB
 from .similarity_pool_element import SimilarityPoolElement
-from .base import JsonModel
+from .base import JsonModel, NormalizedDatetime
 
 
 # ## GLOBAL VARIABLES
@@ -26,8 +26,8 @@ class SimilarityPool(JsonModel):
     id = DB.Column(DB.Integer, primary_key=True)
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False)
     element_count = DB.Column(DB.Integer, nullable=False)
-    created = DB.Column(DB.DateTime(timezone=False), nullable=False)
-    updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
+    created = DB.Column(NormalizedDatetime(), nullable=False)
+    updated = DB.Column(NormalizedDatetime(), nullable=False)
 
     # #### Relationships
     elements = DB.relationship(SimilarityPoolElement, lazy=True, cascade="all, delete",

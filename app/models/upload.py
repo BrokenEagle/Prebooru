@@ -10,7 +10,7 @@ from ..logical.utility import unique_objects
 from .upload_url import UploadUrl
 from .post import Post
 from .error import Error
-from .base import JsonModel, secondarytable, classproperty
+from .base import JsonModel, NormalizedDatetime, secondarytable, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -49,7 +49,7 @@ class Upload(JsonModel):
     media_filepath = DB.Column(DB.String(255), nullable=True)
     sample_filepath = DB.Column(DB.String(255), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=True)
-    created = DB.Column(DB.DateTime(timezone=False), nullable=False)
+    created = DB.Column(NormalizedDatetime(), nullable=False)
 
     # #### Relationships
     image_urls = DB.relationship(UploadUrl, secondary=UploadUrls, lazy=True, uselist=True, cascade='all,delete',

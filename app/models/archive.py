@@ -11,7 +11,7 @@ from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, image_server_url, classproperty
+from .base import JsonModel, NormalizedDatetime, image_server_url, classproperty
 
 
 # ## CLASSES
@@ -24,7 +24,7 @@ class Archive(JsonModel):
     type = DB.Column(DB.String(255), nullable=False)
     key = DB.Column(DB.String(255), nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
-    expires = DB.Column(DB.DateTime(timezone=False), nullable=True)
+    expires = DB.Column(NormalizedDatetime(), nullable=True)
 
     @property
     def has_preview(self):

@@ -13,7 +13,7 @@ from .site_data import SiteData
 from .description import Description
 from .notation import Notation
 from .pool_element import PoolIllust
-from .base import JsonModel, secondarytable, polymorphic_accessor_factory, classproperty
+from .base import JsonModel, NormalizedDatetime, secondarytable, polymorphic_accessor_factory, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -48,14 +48,14 @@ class Illust(JsonModel):
     id = DB.Column(DB.Integer, primary_key=True)
     site_id = DB.Column(DB.Integer, nullable=False)
     site_illust_id = DB.Column(DB.Integer, nullable=False)
-    site_created = DB.Column(DB.DateTime(timezone=False), nullable=True)
+    site_created = DB.Column(NormalizedDatetime(), nullable=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False)
     pages = DB.Column(DB.Integer, nullable=True)
     score = DB.Column(DB.Integer, nullable=True)
     active = DB.Column(DB.Boolean, nullable=True)
-    requery = DB.Column(DB.DateTime(timezone=False), nullable=True)
-    created = DB.Column(DB.DateTime(timezone=False), nullable=False)
-    updated = DB.Column(DB.DateTime(timezone=False), nullable=False)
+    requery = DB.Column(NormalizedDatetime(), nullable=True)
+    created = DB.Column(NormalizedDatetime(), nullable=False)
+    updated = DB.Column(NormalizedDatetime(), nullable=False)
 
     # #### Relationships
     _commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True,

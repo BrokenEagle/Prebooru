@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, classproperty
+from .base import JsonModel, NormalizedDatetime, classproperty
 
 
 # ## CLASSES
@@ -16,7 +16,7 @@ class ApiData(JsonModel):
     site_id = DB.Column(DB.Integer, nullable=False)
     data_id = DB.Column(DB.Integer, nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
-    expires = DB.Column(DB.DateTime(timezone=False), nullable=False)
+    expires = DB.Column(NormalizedDatetime(), nullable=False)
 
     # ## Class properties
 

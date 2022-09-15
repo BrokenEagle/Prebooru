@@ -24,7 +24,7 @@ from .pool_element import PoolPost, pool_element_delete
 from .similarity_data import SimilarityData
 from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
-from .base import JsonModel, secondarytable, image_server_url, classproperty
+from .base import JsonModel, NormalizedDatetime, secondarytable, image_server_url, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -69,7 +69,7 @@ class Post(JsonModel):
     md5 = DB.Column(DB.String(255), index=True, unique=True, nullable=False)
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
-    created = DB.Column(DB.DateTime(timezone=False), nullable=False)
+    created = DB.Column(NormalizedDatetime(), nullable=False)
     type = DB.Column(DB.String(50), nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
     pixel_md5 = DB.Column(DB.String(255), nullable=True)

@@ -8,7 +8,7 @@ from config import MEDIA_DIRECTORY
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, image_server_url, classproperty
+from .base import JsonModel, NormalizedDatetime, image_server_url, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -26,7 +26,7 @@ class MediaFile(JsonModel):
     md5 = DB.Column(DB.String(255), nullable=False)
     file_ext = DB.Column(DB.String(255), nullable=False)
     media_url = DB.Column(DB.String(255), nullable=False)
-    expires = DB.Column(DB.DateTime(timezone=False), nullable=False)
+    expires = DB.Column(NormalizedDatetime(), nullable=False)
 
     # ## Property methods
 

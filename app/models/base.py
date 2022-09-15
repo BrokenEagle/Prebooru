@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
 from flask import url_for, Markup
+from sqlalchemy.dialects.sqlite import DATETIME
 from sqlalchemy.orm import RelationshipProperty
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.ext.associationproxy import _AssociationList
@@ -129,6 +130,15 @@ class StaticProperty:
 
     def __delete__(self, instance):
         return self.fdel()
+
+
+class NormalizedDatetime(DATETIME):
+    def __init__(self, *args, **kwargs):
+        kwargs['truncate_microseconds'] = True
+        kwargs['timezone'] = False
+        kwargs.pop('storage_format', None)
+        kwargs.pop('regexp', None)
+        super().__init__(*args, **kwargs)
 
 
 class JsonModel(DB.Model):
