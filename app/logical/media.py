@@ -122,26 +122,27 @@ def convert_mp4_to_webp(file_path, save_path):
     frame_count = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
     skip_frames = MP4_SKIP_FRAMES if frame_count > MP4_MIN_FRAMES else 1
     duration = int(MILLISECONDS_PER_SECOND / (frame_rate / skip_frames))  # milliseconds
-    frame_count = 0
+    frame_num = 0
     frames = []
     print("Loading frames")
     while True:
-        if (frame_count % skip_frames) == 0:
+        if frame_num % 100 == 0:
+            print("Processing frames: %d - %d / %d" % (frame_num + 1, min(frame_num + 100, frame_count), frame_count))
+        if (frame_num % skip_frames) == 0:
             still_reading, image_array = video_capture.read()
             if still_reading:
                 # Numbers come in as BGR, so flip them around to RGB
                 flip_image_array = numpy.flip(image_array, 2)
                 img = Image.fromarray(flip_image_array)
+                if img.width > PREVIEW_DIMENSIONS[0] or img.height > PREVIEW_DIMENSIONS[1]:
+                    img.thumbnail(PREVIEW_DIMENSIONS)
                 frames.append(img)
         else:
             still_reading = video_capture.grab()
         if not still_reading:
+            video_capture.release()
             break
-        frame_count += 1
-    if frames[0].width > PREVIEW_DIMENSIONS[0] or frames[1].height > PREVIEW_DIMENSIONS[1]:
-        print("Converting to thumbnails")
-        for frame in frames:
-            frame.thumbnail(PREVIEW_DIMENSIONS)
+        frame_num += 1
     print("Saving to WEBP ->", save_path)
     create_directory(save_path)
     frames[0].save(save_path, 'webp', append_images=frames[1:], save_all=True, duration=duration, loop=WEBP_LOOPS,
