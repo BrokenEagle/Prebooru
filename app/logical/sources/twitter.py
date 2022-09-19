@@ -867,7 +867,7 @@ def get_twitter_artist(artist_id):
 def get_tweet_commentary(twitter_data):
     text = convert_entity_text(twitter_data, 'full_text', 'urls')
     text = fixup_crlf(SHORT_URL_REPLACE_RG.sub('', text).strip())
-    if twitter_data['is_quote_status']:
+    if safe_get(twitter_data, 'is_quote_status'):
         quote_tweet = twitter_data['quoted_status_permalink']['expanded']
         if not text.endswith(quote_tweet):
             text += ' ' + quote_tweet
