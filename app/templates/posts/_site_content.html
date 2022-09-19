@@ -2,7 +2,8 @@
 
 <div id="post-site-content">
     {% set info_class = 'danbooru-uploaded' if post.danbooru_id is not none else "" %}
-    <section id="post-info" class="{{ info_class }}">
+    {% set type_class = post.type.name + '-post' %}
+    <section id="post-info" class="{{ info_class }} {{ type_class }}">
         <h4>Info</h4>
         <ul>
             <li>
@@ -23,7 +24,7 @@
             <li>
                 <strong>Sources:</strong>
                 {% call(illust_url) items_list(post.illust_urls) %}
-                    {{ helpers.base.url_link(illust_url.full_url, True) }}
+                    {{ helpers.base.url_link(illust_url.full_url, breakslash=True) }}
                 {% endcall %}
             </li>
         </ul>

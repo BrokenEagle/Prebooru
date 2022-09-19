@@ -47,6 +47,12 @@ section#post-info {
 section#post-info.danbooru-uploaded {
     border: 2px solid green;
 }
+section#post-info.user-post {
+    background: #CCFFFF;
+}
+section#post-info.subscription-post {
+    background: #FFDDDD;
+}
 section#post-commentaries {
     width: 50%;
     max-height: 400px;
