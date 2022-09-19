@@ -680,13 +680,12 @@ def check_request_wait(wait):
     if not wait:
         return
     next_wait = get_next_wait('twitter')
+    if next_wait is not None:
+        sleep_time = next_wait - get_current_time().timestamp()
+        if sleep_time > 0.0:
+            print("Twitter request: sleeping -", sleep_time)
+            time.sleep(sleep_time)
     update_next_wait('twitter', MINIMUM_QUERY_INTERVAL)
-    if next_wait is None:
-        return
-    sleep_time = next_wait - get_current_time().timestamp()
-    if sleep_time > 0.0:
-        print("Twitter request: sleeping -", sleep_time)
-        time.sleep(sleep_time)
 
 
 @check_guest_auth
