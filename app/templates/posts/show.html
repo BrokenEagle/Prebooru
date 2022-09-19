@@ -19,9 +19,11 @@
                 <section id="media-container" class="video loading">
                     {{ helpers.post.video_sample_link(post) }}
                     {{ helpers.post.video_picture_link(post) }}
-                    <div class="load-original">
-                        <a href="#" onclick="return Posts.loadOriginal(this)">Click to load original</a>
-                    </div>
+                    {% if post.video_sample_exists %}
+                        <div class="load-original">
+                            <a href="#" onclick="return Posts.loadOriginal(this)">Click to load original</a>
+                        </div>
+                    {% endif %}
                 </section>
             {% else %}
                 <section id="media-container" onclick="return Prebooru.resizeImage(this)" class="image fullsize">

@@ -14,6 +14,7 @@ from utility.time import get_current_time, hours_from_now
 from ...models import Subscription, SubscriptionElement, IllustUrl, Post
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
+from ..media import convert_mp4_to_webp
 from ..database.post_db import get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
@@ -204,15 +205,15 @@ def _process_similarity(elements):
 
 
 def _process_videos(elements):
-    from ..tasks.worker import process_videos
-
-    def _process(post_ids):
+    def _process():
         print("Video semaphore waits:", WAITING_THREADS['video'])
         WAITING_THREADS['video'] += 1
         VIDEO_SEMAPHORE.acquire()
         WAITING_THREADS['video'] -= 1
         try:
-            process_videos(post_ids)
+            for post in video_posts:
+                if post.file_ext == 'mp4':
+                    convert_mp4_to_webp(post.file_path, post.video_preview_path)
         except Exception as e:
             msg = "Error processing videos on subscription: %s" % str(e)
             log_error('check.subscriptions.process_videos', msg)
@@ -220,6 +221,7 @@ def _process_videos(elements):
             VIDEO_SEMAPHORE.release()
 
     posts = [element.post for element in elements if element.post is not None]
-    video_post_ids = [post.id for post in posts if post.is_video]
-    if len(video_post_ids):
-        threading.Thread(target=_process, args=(video_post_ids,)).start()
+    video_posts = [post for post in posts if post.is_video]
+    if len(video_posts):
+        thread = threading.Thread(target=_process)
+        thread.start()

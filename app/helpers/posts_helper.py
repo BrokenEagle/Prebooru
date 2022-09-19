@@ -103,6 +103,8 @@ def video_picture_link(post):
 
 
 def video_sample_link(post):
+    video_url = post.video_sample_url if post.video_sample_exists else post.file_url
+    original_url = post.file_url if post.video_sample_exists else None
     addons = {
         'controls': None,
         'autoplay': None,
@@ -110,8 +112,8 @@ def video_sample_link(post):
         'height': post.height,
         'duration': post.duration,
         'title': image_title(post),
-        'data-src': post.video_sample_url,
-        'data-original': post.file_url,
+        'data-src': video_url,
+        'data-original': original_url,
     }
     return render_tag('video', True, addons)
 

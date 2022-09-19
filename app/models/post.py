@@ -129,6 +129,10 @@ class Post(JsonModel):
     def has_preview(self):
         return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1] or self.is_video
 
+    @memoized_property
+    def video_sample_exists(self):
+        return os.path.exists(self.video_sample_path)
+
     @property
     def is_alternate(self):
         return self.alternate and ALTERNATE_MEDIA_DIRECTORY is not None
