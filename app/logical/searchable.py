@@ -263,7 +263,7 @@ def text_filters(model, columnname, params):
     cmp_types = [match.group(1) for match in cmp_matches if match is not None]
     for cmp_type in cmp_types:
         param_key = columnname + '_' + cmp_type
-        filters += (text_comparion_matching(model, columnname, params[param_key], cmp_type),)
+        filters += (text_comparison_matching(model, columnname, params[param_key], cmp_type),)
     if (columnname + '_exists') in params:
         filters += (existence_matching(model, columnname, params[columnname + '_exists']),)
     array_regex = re.compile(TEXT_ARRAY_RE % columnname)
@@ -384,13 +384,13 @@ def numeric_matching(model, columnname, value):
     if re.search(r'[ ,]', value):
         return getattr(model, columnname).in_(map(parser, re.split(r'[ ,]', value)))
     if value == 'any':
-        return getattr(model, columnname).__ne__(None)
+        return getattr(model, columnname).is_(None)
     if value == 'none':
-        return getattr(model, columnname).__eq__(None)
+        return getattr(model, columnname).is_not(None)
     return getattr(model, columnname) == parser(value)
 
 
-def text_comparion_matching(model, columnname, value, cmp_type):
+def text_comparison_matching(model, columnname, value, cmp_type):
     if cmp_type == 'eq':
         return getattr(model, columnname) == value
     if cmp_type == 'ne':
@@ -411,9 +411,9 @@ def text_comparion_matching(model, columnname, value, cmp_type):
 
 def existence_matching(model, columnname, value):
     if is_truthy(value):
-        return getattr(model, columnname).__ne__(None)
+        return getattr(model, columnname).is_(None)
     elif is_falsey(value):
-        return getattr(model, columnname).__eq__(None)
+        return getattr(model, columnname).is_not(None)
     else:
         raise Exception("%s - value must be truthy or falsey" % (columnname + '_exists'))
 
@@ -439,7 +439,7 @@ def text_array_matching(model, columnname, value, array_type):
 
 def boolean_matching(model, columnname, value):
     if is_truthy(value):
-        return (getattr(model, columnname).__eq__(True),)
+        return (getattr(model, columnname).is_(True),)
     if is_falsey(value):
-        return (getattr(model, columnname).__eq__(False),)
+        return (getattr(model, columnname).is_(False),)
     raise Exception("%s - value must be truthy or falsey" % columnname)
