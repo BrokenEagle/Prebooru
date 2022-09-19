@@ -56,7 +56,7 @@ class PoolElement(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    pool_id = DB.Column(DB.Integer, DB.ForeignKey('pool.id'), nullable=False)
+    pool_id = DB.Column(DB.Integer, DB.ForeignKey('pool.id'), nullable=False, index=True)
     position = DB.Column(DB.Integer, nullable=False)
     type = DB.Column(DB.String(50))
 
@@ -91,7 +91,7 @@ class PoolPost(PoolElement):
     polymorphic_base = False
 
     # #### Columns
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
+    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True, index=True)
 
     # ## Relationships
     # item <- Post (MtO)
@@ -111,7 +111,7 @@ class PoolIllust(PoolElement):
     polymorphic_base = False
 
     # #### Columns
-    illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
+    illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True, index=True)
 
     # ## Relationships
     # item <- Illust (MtO)
@@ -131,7 +131,7 @@ class PoolNotation(PoolElement):
     polymorphic_base = False
 
     # #### Columns
-    notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
+    notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True, index=True)
 
     # ## Relationships
     # item <- Notation (OtO)

@@ -25,7 +25,7 @@ class SubscriptionElement(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=False)
+    subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=False, index=True)
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(DB.String(32), nullable=True)

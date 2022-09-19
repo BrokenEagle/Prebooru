@@ -24,7 +24,7 @@ class IllustUrl(JsonModel):
     width = DB.Column(DB.Integer, nullable=True)
     height = DB.Column(DB.Integer, nullable=True)
     order = DB.Column(DB.Integer, nullable=False)
-    illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False)
+    illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False, index=True)
     active = DB.Column(DB.Boolean, nullable=False)
 
     # ## Relationships
