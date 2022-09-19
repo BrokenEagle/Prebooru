@@ -9,6 +9,7 @@ import time
 from config import ALTERNATE_MEDIA_DIRECTORY
 from utility.print import buffered_print
 from utility.file import get_directory_listing, delete_file
+from utility.time import seconds_from_now_local
 
 # ## LOCAL IMPORTS
 from ... import DB, SCHEDULER
@@ -22,7 +23,7 @@ from ..records.post_rec import relocate_old_posts_to_alternate
 from ..records.media_file_rec import batch_delete_media
 from ..database.base_db import safe_db_execute
 from ..database.subscription_db import get_available_subscription, update_subscription_status,\
-    update_subscription_active
+    update_subscription_active, get_busy_subscriptions
 from ..database.subscription_element_db import total_missing_downloads, total_expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
@@ -30,11 +31,13 @@ from ..database.archive_db import expired_archive_count, delete_expired_archive
 from ..database.jobs_db import get_job_enabled_status, update_job_lock_status, get_job_lock_status,\
     get_job_manual_status
 from ..database.server_info_db import update_last_activity, server_is_busy
-from .initialize import reschedule_from_child
+from .initialize import reschedule_from_child, schedule_from_child
 from . import JOB_CONFIG
 
 
 # ## FUNCTIONS
+
+# #### Interval tasks
 
 @SCHEDULER.task("interval", **JOB_CONFIG['expunge_cache_records']['config'])
 def expunge_cache_records_task():
@@ -134,6 +137,8 @@ def check_pending_subscriptions():
     printer("PID:", os.getpid())
     subscriptions = get_available_subscription(manual)
     if len(subscriptions) > 0:
+        schedule_from_child('subscriptions-callback', 'app.logical.tasks.schedule:_pending_subscription_callback',
+                            [subscription.id for subscription in subscriptions], seconds_from_now_local(900))
         for subscription in subscriptions:
             printer("Processing subscription:", subscription.id)
             _process_pending_subscription(subscription, printer)
@@ -302,3 +307,11 @@ def _process_pending_subscription(subscription, printer):
     safe_db_execute('check_pending_subscriptions', 'tasks.schedule', scope_vars={'subscription': subscription},
                     try_func=try_func, msg_func=msg_func, error_func=error_func, finally_func=finally_func,
                     printer=printer)
+
+
+def _pending_subscription_callback(subscription_ids):
+    print_info('pending_subscription_callback', subscription_ids)
+    subscriptions = get_subscription_by_ids(subscription_ids)
+    for subscription in subscriptions:
+        if subscription.status == 'automatic':
+            update_subscription_status(subscription, 'idle')

@@ -90,6 +90,10 @@ def get_available_subscription(unlimited):
     return query.all()
 
 
+def get_busy_subscriptions():
+    return Subscription.query.filter(Subscription.status.in_(['manual', 'automatic'])).all()
+
+
 def check_processing_subscriptions():
     return Subscription.query.filter_by(status='manual').get_count() > 0
 
