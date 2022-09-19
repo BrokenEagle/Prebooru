@@ -98,6 +98,10 @@ def check_processing_subscriptions():
     return Subscription.query.filter_by(status='manual').get_count() > 0
 
 
+def get_subscription_by_ids(subscription_ids):
+    return Subscription.query.filter(Subscription.id.in_(subscription_ids)).all()
+
+
 # #### Misc
 
 def add_subscription_error(subscription, error):

@@ -7,7 +7,7 @@ import time
 
 # ## PACKAGE IMPORTS
 from config import ALTERNATE_MEDIA_DIRECTORY
-from utility.print import buffered_print
+from utility.print import buffered_print, print_info
 from utility.file import get_directory_listing, delete_file
 from utility.time import seconds_from_now_local
 
@@ -23,7 +23,7 @@ from ..records.post_rec import relocate_old_posts_to_alternate
 from ..records.media_file_rec import batch_delete_media
 from ..database.base_db import safe_db_execute
 from ..database.subscription_db import get_available_subscription, update_subscription_status,\
-    update_subscription_active, get_busy_subscriptions
+    update_subscription_active, get_busy_subscriptions, get_subscription_by_ids
 from ..database.subscription_element_db import total_missing_downloads, total_expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
@@ -265,6 +265,19 @@ def vacuum_analyze_database_task():
     printer("Execution time:", time.time() - start_time)
     printer.print()
     _free_db_semaphore('vacuum_analyze_database')
+
+
+# #### Startup tasks
+
+@SCHEDULER.task('date', id="reset_subscription_status", next_run_time=seconds_from_now_local(60))
+def reset_subscription_status_task():
+    printer = buffered_print("Reset Subscription Status")
+    printer("PID:", os.getpid())
+    subscriptions = get_busy_subscriptions()
+    for subscription in subscriptions:
+        update_subscription_status(subscription, 'idle')
+    printer("Subscriptions reset:", len(subscriptions))
+    printer.print()
 
 
 # #### Private
