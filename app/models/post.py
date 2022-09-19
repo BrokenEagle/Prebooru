@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import os
+import enum
 import itertools
 
 # ## EXTERNAL IMPORTS
@@ -24,7 +25,7 @@ from .pool_element import PoolPost, pool_element_delete
 from .similarity_data import SimilarityData
 from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
-from .base import JsonModel, NormalizedDatetime, secondarytable, image_server_url, classproperty
+from .base import JsonModel, NormalizedDatetime, IntEnum, secondarytable, image_server_url, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -58,6 +59,19 @@ PostTags = secondarytable(
 
 # ## CLASSES
 
+class PostType(enum.Enum):
+    user = enum.auto()
+    subscription = enum.auto()
+
+    @classproperty(cached=False)
+    def names(cls):
+        return [e.name for e in cls]
+
+    @classproperty(cached=False)
+    def values(cls):
+        return [e.value for e in cls]
+
+
 class Post(JsonModel):
     # ## Declarations
 
@@ -70,7 +84,7 @@ class Post(JsonModel):
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(NormalizedDatetime(), nullable=False)
-    type = DB.Column(DB.String(50), nullable=False)
+    type = DB.Column(IntEnum(PostType), nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
     pixel_md5 = DB.Column(DB.String(255), nullable=True)
     duration = DB.Column(DB.Float, nullable=True)
@@ -248,6 +262,8 @@ class Post(JsonModel):
             DB.session.commit()
 
     # ## Class properties
+
+    type_enum = PostType
 
     @classproperty(cached=True)
     def json_attributes(cls):

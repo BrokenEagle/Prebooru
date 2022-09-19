@@ -86,8 +86,8 @@ def index(is_html):
         post_type = request.args.get('type')
         if post_type == 'all':
             search.pop('type', None)
-        elif post_type in ['user', 'subscription']:
-            search['type'] = post_type + '_post'
+        elif post_type in Post.type_enum.names:
+            search['type'] = post_type
     negative_search = get_params_value(params, 'not', True)
     q = Post.query
     q = search_filter(q, search, negative_search)

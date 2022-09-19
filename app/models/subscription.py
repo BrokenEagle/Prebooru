@@ -127,7 +127,7 @@ class Subscription(JsonModel):
         from .artist import Artist
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust)\
                    .join(Artist, Illust.artist).join(Subscription, Artist.subscription)\
-                   .filter(Subscription.id == self.id, Post.type == 'subscription_post')
+                   .filter(Subscription.id == self.id, Post.type == Post.type_enum.subscription)
 
     def _populate_storage_sizes(self):
         if hasattr(self, '_total_bytes'):

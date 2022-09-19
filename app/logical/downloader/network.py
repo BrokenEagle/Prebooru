@@ -16,12 +16,12 @@ from .base import convert_image_upload, convert_video_upload, load_post_image, c
 
 def convert_network_upload(illust, upload, source):
     if source.illust_has_videos(illust):
-        return convert_video_upload(illust.urls[0], upload, source, create_video_post, 'user_post')
+        return convert_video_upload(illust.urls[0], upload, source, create_video_post, 'user')
     elif source.illust_has_images(illust):
         all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
         image_illust_urls = [illust_url for illust_url in source.image_illust_download_urls(illust)
                              if (len(all_upload_urls) == 0) or (illust_url.url in all_upload_urls)]
-        return convert_image_upload(image_illust_urls, upload, source, create_image_post, 'user_post')
+        return convert_image_upload(image_illust_urls, upload, source, create_image_post, 'user')
     create_and_append_error('downloader.file.convert_network_upload', "No valid illust URLs.", upload)
     return False
 
@@ -29,10 +29,9 @@ def convert_network_upload(illust, upload, source):
 def convert_network_subscription(subscription, source):
     illust = subscription.illust_url.illust
     if source.illust_has_videos(illust):
-        return convert_video_upload(illust.urls[0], subscription, source, create_video_post, 'subscription_post')
+        return convert_video_upload(illust.urls[0], subscription, source, create_video_post, 'subscription')
     elif source.illust_has_images(illust):
-        return convert_image_upload([subscription.illust_url], subscription, source, create_image_post,
-                                    'subscription_post')
+        return convert_image_upload([subscription.illust_url], subscription, source, create_image_post, 'subscription')
     create_and_append_error('downloader.file.convert_network_subscription', "No valid illust URLs.", subscription)
     return False
 

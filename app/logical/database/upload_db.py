@@ -8,7 +8,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Upload, UploadUrl
+from ...models import Upload, UploadUrl, Post
 from .base_db import update_column_attributes, update_relationship_collections
 
 
@@ -66,7 +66,7 @@ def add_upload_failure(upload):
 
 
 def upload_append_post(upload, post):
-    if post.type != 'user_post':
-        post.type = 'user_post'
+    if post.type != Post.type_enum.user:
+        post.type = Post.type_enum.user
     upload.posts.append(post)
     SESSION.commit()

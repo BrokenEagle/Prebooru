@@ -79,7 +79,7 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, durati
         'file_ext': file_ext,
         'md5': md5,
         'size': size,
-        'type': post_type,
+        'type': Post.type_enum[post_type],
         'pixel_md5': pixel_md5,
         'duration': duration,
         'audio': has_audio,

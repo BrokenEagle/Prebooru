@@ -21,7 +21,7 @@ from .base_helper import general_link, url_for_with_params, val_or_none
 # ###### URL functions
 
 def post_search(subscription):
-    return search_url_for('post.index_html', type='subscription_post',
+    return search_url_for('post.index_html', type='subscription',
                           illust_urls={'illust': {'artist': {'subscription': {'id': subscription.id}}}})
 
 

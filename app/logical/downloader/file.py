@@ -22,9 +22,9 @@ def convert_file_upload(upload, source):
             msg = "Must include sample filepath on video uploads (illust #%d)." % illust.id
             create_and_append_error('logical.downloader.file.convert_file_upload', msg, upload)
         else:
-            return convert_video_upload(illust, upload, source, create_video_post, 'user_post')
+            return convert_video_upload(illust, upload, source, create_video_post, 'user')
     elif source.illust_has_images(illust):
-        return convert_image_upload([illust_url], upload, source, create_image_post, 'user_post')
+        return convert_image_upload([illust_url], upload, source, create_image_post, 'user')
     create_and_append_error('logical.downloader.file.convert_file_upload', "No valid illust URLs.", upload)
     return False
 

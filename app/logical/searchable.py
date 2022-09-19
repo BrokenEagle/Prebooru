@@ -15,6 +15,7 @@ from utility.time import process_utc_timestring
 
 # ## LOCAL IMPORTS
 from .. import SESSION
+from ..models import base
 
 # ## GLOBAL VARIABLES
 
@@ -103,6 +104,7 @@ def parse_cast(value, type):
 
 def column_type(model, columnname):
     switcher = {
+        base.IntEnum: 'ENUM',
         sqltypes.Integer: 'INTEGER',
         sqltypes.Float: 'FLOAT',
         sqltypes.DateTime: 'DATETIME',
@@ -149,6 +151,7 @@ def basic_attribute_filters(model, columnname, params):
         'INTEGER': numeric_filters,
         'DATETIME': numeric_filters,
         'FLOAT': numeric_filters,
+        'ENUM': enum_filters,
         'BOOLEAN': boolean_filters,
         'STRING': text_filters,
         'TEXT': text_filters,
@@ -220,6 +223,33 @@ def numeric_filters(model, columnname, params):
     if (columnname + '_le') in params:
         filters += (getattr(model, columnname) <= parse_cast(params[columnname + '_le'], type),)
     if (columnname + '_exists') in params:
+        filters += (existence_matching(model, columnname, params[columnname + '_exists']),)
+    return filters
+
+
+def enum_filters(model, columnname, params):
+    filters = ()
+    enum = getattr(model, columnname + '_enum')
+
+    def _normalize_parameter(value):
+        subvalues = value.split(',')
+        retvalues = []
+        for v in subvalues:
+            if v.isdigit() and int(v) in enum.values:
+                retvalues.append(int(v))
+            elif v in enum.names:
+                retvalues.append(enum[v].value)
+            else:
+                raise Exception("%s - value is not a valid enum: %s" % (columnname, v))
+        return retvalues
+
+    if columnname in params:
+        values = _normalize_parameter(params[columnname])
+        filters += (getattr(model, columnname).in_(values),) if len(values) else ()
+    if columnname + '_not' in params:
+        values = _normalize_parameter(params[columnname + '_not'])
+        filters += (not_(getattr(model, columnname).in_(values)),) if len(values) else ()
+    if columnname + '_exists' in params:
         filters += (existence_matching(model, columnname, params[columnname + '_exists']),)
     return filters
 

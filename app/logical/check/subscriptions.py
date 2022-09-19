@@ -134,7 +134,7 @@ def expire_subscription_elements(manual):
     max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
     # First pass - Unlink all "yes" elements or those that were manually downloaded by the user
     expired_clause = and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.keep == 'yes')
-    user_clause = (Post.type == 'user_post')
+    user_clause = (Post.type.name == 'user')
     q = SubscriptionElement.query.join(Post, SubscriptionElement.post).filter(or_(expired_clause, user_clause))
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=50)
