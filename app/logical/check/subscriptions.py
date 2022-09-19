@@ -9,6 +9,7 @@ from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time, hours_from_now
+from utility.print import buffered_print, print_info
 
 # ## LOCAL IMPORTS
 from ...models import Subscription, SubscriptionElement, IllustUrl, Post
@@ -206,19 +207,25 @@ def _process_similarity(elements):
 
 def _process_videos(elements):
     def _process():
-        print("Video semaphore waits:", WAITING_THREADS['video'])
+        printer = buffered_print(f"Process Videos [{thread.ident}]")
+        print_info("Video semaphore wait:", WAITING_THREADS['video'])
         WAITING_THREADS['video'] += 1
         VIDEO_SEMAPHORE.acquire()
         WAITING_THREADS['video'] -= 1
+        print_info("Video semaphore acquire:", WAITING_THREADS['video'])
+        mp4_count = 0
         try:
             for post in video_posts:
                 if post.file_ext == 'mp4':
                     convert_mp4_to_webp(post.file_path, post.video_preview_path)
+                    mp4_count += 1
         except Exception as e:
             msg = "Error processing videos on subscription: %s" % str(e)
             log_error('check.subscriptions.process_videos', msg)
         finally:
             VIDEO_SEMAPHORE.release()
+            print_info("Video semaphore release:", WAITING_THREADS['video'])
+        printer("Videos processed:", {'mp4': mp4_count})
 
     posts = [element.post for element in elements if element.post is not None]
     video_posts = [post for post in posts if post.is_video]

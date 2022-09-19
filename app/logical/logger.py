@@ -9,6 +9,7 @@ import traceback
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY
 from utility.file import load_default, put_get_json
+from utility.print import print_error
 
 
 # ## GLOBAL VARIABLES
@@ -30,6 +31,7 @@ def log_error(module, message):
         'time': time.ctime(),
     })
     put_get_json(ERROR_LOG_FILE, 'w', all_errors)
+    print_error('\n', module, '\n', message, '\n', '\n'.join(error), '\n')
 
 
 def log_network_error(module, response):
