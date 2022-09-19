@@ -356,7 +356,9 @@ if __name__ == '__main__':
 elif __name__ == '__mp_main__':
     spawn_pid = os.getpid()
     print(f'[PID {spawn_pid}] Initializing spawned process')
+    import colorama
     import app.logical.database.server_info_db as server_info_db
     server_info_db.INITIALIZED = True
+    colorama.init(autoreset=True)
 else:
     check_other_execs()
