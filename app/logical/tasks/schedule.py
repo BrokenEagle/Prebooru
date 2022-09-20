@@ -30,7 +30,8 @@ from ..database.media_file_db import get_expired_media_files, get_all_media_file
 from ..database.archive_db import expired_archive_count, delete_expired_archive
 from ..database.jobs_db import get_job_enabled_status, update_job_lock_status, get_job_lock_status,\
     get_job_manual_status
-from ..database.server_info_db import update_last_activity, server_is_busy
+from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready,\
+    update_subscriptions_ready
 from .initialize import reschedule_from_child, schedule_from_child
 from . import JOB_CONFIG
 
@@ -126,6 +127,9 @@ def check_all_posts_for_danbooru_id_task():
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_subscriptions']['config'])
 def check_pending_subscriptions():
+    if not get_subscriptions_ready():
+        print("Task scheduler - Subscription reset not yet initiated.")
+        return
     if not get_job_enabled_status('check_pending_subscriptions'):
         print("Task scheduler - Check Pending Subscriptions: disabled")
         return
@@ -150,6 +154,9 @@ def check_pending_subscriptions():
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_downloads']['config'])
 def check_pending_downloads():
+    if not get_subscriptions_ready():
+        print("Task scheduler - Subscription reset not yet initiated.")
+        return
     if not get_job_enabled_status('check_pending_downloads'):
         print("Task scheduler - Check Pending Downloads: disabled")
         return
@@ -278,6 +285,7 @@ def reset_subscription_status_task():
         update_subscription_status(subscription, 'idle')
     printer("Subscriptions reset:", len(subscriptions))
     printer.print()
+    update_subscriptions_ready(True)
 
 
 # #### Private

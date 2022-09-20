@@ -8,6 +8,7 @@ from sqlalchemy import select, Table, Column, MetaData, Unicode
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time, process_utc_timestring, minutes_ago
+from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
 from ... import DB
@@ -25,13 +26,14 @@ T_SERVER_INFO = Table(
     Column('info', Unicode(255), nullable=False),
 )
 
-INFO_FIELDS = ['server_last_activity', 'user_last_activity', 'twitter_next_wait', 'pixiv_next_wait']
+INFO_FIELDS = ['server_last_activity', 'user_last_activity', 'twitter_next_wait', 'pixiv_next_wait', 'subscriptions_ready']
 
 FIELD_UPDATERS = {
     'server_last_activity': lambda *args: datetime.datetime.isoformat(get_current_time()),
     'user_last_activity': lambda *args: datetime.datetime.isoformat(get_current_time()),
     'twitter_next_wait': lambda *args: str(get_current_time().timestamp() + (args[0] if len(args) else 0)),
     'pixiv_next_wait': lambda *args: str(get_current_time().timestamp() + (args[0] if len(args) else 0)),
+    'subscriptions_ready': lambda *args: str(args[0] if len(args) else False),
 }
 
 
@@ -124,6 +126,20 @@ def update_next_wait(kind, duration):
     update_field(field, value)
 
 
+def get_subscriptions_ready():
+    if not INITIALIZED:
+        return None
+    ready = query_field('subscriptions_ready')
+    return eval_bool_string(ready) if ready is not None else None
+
+
+def update_subscriptions_ready(ready):
+    if not INITIALIZED:
+        return None
+    value = FIELD_UPDATERS['subscriptions_ready'](ready)
+    update_field('subscriptions_ready', value)
+
+
 # #### Private
 
 def initialize_server_fields():
@@ -139,4 +155,6 @@ def initialize_server_fields():
         value = FIELD_UPDATERS[field]()
         if field not in current_fields:
             create_field(field, value)
+        else:
+            update_field(field, value)
     INITIALIZED = True

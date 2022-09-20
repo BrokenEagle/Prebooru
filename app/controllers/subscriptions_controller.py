@@ -16,6 +16,7 @@ from ..logical.database.subscription_db import create_subscription_from_paramete
     delete_subscription
 from ..logical.database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status,\
     update_job_status
+from ..logical.database.server_info_db import get_subscriptions_ready
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
     check_param_requirements, nullify_blanks, parse_bool_parameter, set_default, hide_input, parse_type
@@ -260,6 +261,9 @@ def delete_html(id):
 
 @bp.route('/subscriptions/<int:id>/process', methods=['POST'])
 def process_html(id):
+    if not get_subscriptions_ready():
+        flash("Subscriptions not yet initialized.", 'error')
+        return redirect(request.referrer)
     subscription = get_or_abort(Subscription, id)
     if subscription.status != 'idle':
         flash("Subscription currently processing.", 'error')
