@@ -91,7 +91,7 @@
 {%- endmacro %}
 
 {% macro image_select_controls(classname) -%}
-    <div id="image-select-controls">
+    <div id="image-select-controls" class="large-1">
         <strong>Select[&thinsp;<span id="image-select-counter">0</span>&thinsp;]:</strong>
         (
         <a href="#" onclick="return Prebooru.selectAll('{{ classname }}')">All</a> |
@@ -104,7 +104,7 @@
 
 {% macro page_navigation(pagination) -%}
     {% with previous_page, current_page, next_page, pages = helpers.base.page_navigation(pagination) %}
-        <div class="paginator numbered-paginator">
+        <div class="paginator numbered-paginator large-1">
             {% if previous_page is none %}
                 <span>&lt;</span>
             {% else %}

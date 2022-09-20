@@ -11,6 +11,7 @@ junk/
 node_modules/
 ffprobe.exe
 sqlite3.exe
+/package.json
 /package-lock.json
 /databasesave.bat
 /datasave.bat

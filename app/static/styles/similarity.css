@@ -1,68 +1,85 @@
-/****CHECK Page****/
+/** APP/STATIC/STYLES/SIMILARITY.CSS **/
+
+/**** CHECK Page ****/
 div#similarity-heading {
     font-size: 32px;
 }
+
 form#form.hidden {
     display: none;
 }
+
 textarea#similarity-urls {
-    width: 50em;
     height: 4em;
+    width: 50em;
 }
+
 input#similarity-score {
     width: 5em;
 }
+
 div#display-form {
-    padding: 1em 0 0 1em;
     font-size: 20px;
     font-weight: bold;
+    padding: 1em 0 0 1em;
 }
+
 div#similarity-results-content {
-    margin-top: 1em;
     margin-left: 1em;
+    margin-top: 1em;
 }
+
 div.similarity-result-container {
     margin-top: 1em;
 }
+
 div.similarity-result-heading {
     font-size: 28px;
 }
+
 div.similarity-proxy-block {
-    margin-top: 1em;
     margin-left: 1em;
+    margin-top: 1em;
 }
+
 article.proxy-post {
-    max-width: 304px;
     border: 1px solid lightgrey;
+    max-width: 304px;
     padding: 5px;
 }
+
 article.proxy-post > img {
-    max-width: 300px;
     max-height: 300px;
-    width: auto;
+    max-width: 300px;
     height: auto;
+    width: auto;
 }
+
 div.proxy-image-details {
     font-size: 20px;
     margin-top: 1em;
 }
+
 div.similarity-result-block {
-    margin-top: 1em;
-    border: 2px solid #ddd;
     background-color: #eee;
-    width: 95%;
-    padding: 1em;
-}
-div.similarity-post {
-    display: inline-block;
-    border: 1px solid grey;
-    padding: 5px;
-    margin: 5px;
-}
-div.similarity-post-info {
+    border: 2px solid #ddd;
     margin-top: 1em;
-    font-size: 18px;
+    padding: 1em;
+    width: 95%;
 }
+
+div.similarity-post {
+    border: 1px solid grey;
+    display: inline-block;
+    margin: 5px;
+    padding: 5px;
+}
+
+div.similarity-post-info {
+    font-size: 18px;
+    margin-top: 1em;
+}
+
 div.no-results {
     font-size: 20px;
     font-weight: bold;

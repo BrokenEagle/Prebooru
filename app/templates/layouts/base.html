@@ -2,6 +2,7 @@
 <head>
     <title>{% block title %}{% endblock title %} - Prebooru</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/constants.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     {% block css %}{% endblock css %}
     <script src="{{ url_for('static', filename='javascript/base.js') }}"></script>
@@ -44,7 +45,7 @@
         {% block pages %}{% endblock pages %}
         <script>{% block pagescript %}{% endblock pagescript %}</script>
     </section>
-    <footer>
+    <footer class="medium-2">
         <div>
             Prebooru / <a href="https://github.com/BrokenEagle/prebooru">Github</a> / Version {{ helpers.base.version_link() }}
         </div>

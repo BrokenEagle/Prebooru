@@ -1,29 +1,37 @@
-/****SHOW Page****/
+/** APP/STATIC/STYLES/ARCHIVES.CSS **/
+
+/**** SHOW Page ****/
 div#archive-heading {
     font-size: 28px;
     margin-top: 1em;
 }
+
 div#archive-content {
     font-size: 16px;
     margin-top: 1em;
 }
+
 section#media-container.fullsize img {
     max-height: 50vh;
     width: auto;
 }
-/****INDEX Page****/
+
+/**** INDEX Page ****/
 section.a-index div.json-data {
-    max-width: 70em;
     max-height: 50em;
+    max-width: 70em;
     overflow: auto;
 }
+
 div.id-link {
     margin-bottom: 1em;
     text-align: center;
 }
+
 article.archive-preview {
     text-align: center;
 }
+
 td.action-column {
     min-width: 6em;
 }

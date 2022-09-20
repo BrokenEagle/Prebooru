@@ -196,7 +196,7 @@ def form_iterator(form):
             description = kwargs['description'] if 'description' in kwargs else field.description
             if description:
                 # Add description if set in class definition or on template form
-                built_markup += add_container('span', description, classlist=['description'])
+                built_markup += add_container('span', description, classlist=['description small-2'])
             # Allow classes to be set individually for any input
             classlist = ['input'] + (kwargs['classlist'] if 'classlist' in kwargs else [])
             return add_container('div', built_markup, classlist=classlist)

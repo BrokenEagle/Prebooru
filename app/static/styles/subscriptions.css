@@ -1,72 +1,91 @@
-/****NEW/EDIT Page****/
+/** APP/STATIC/STYLES/SUBSCRIPTIONS.CSS **/
+
+/**** NEW/EDIT Page ****/
 div#subscription-form-heading {
     font-size: 28px;
     margin-top: 1em;
 }
+
 div#subscription-form-info {
     font-size: 20px;
     font-weight: bold;
     margin-top: 1em;
 }
-/****INDEX Page****/
+
+/**** INDEX Page ****/
 table#subscriptions-table span.explanation {
     font-size: 80%;
 }
+
 div.subscription-show-link {
-    text-align: center; 
     font-weight: bold;
+    text-align: center;
 }
-/****SHOW Page****/
+
+/**** SHOW Page ****/
 div#subscription-heading {
     font-size: 32px;
 }
+
 div#subscription-content {
-    margin-top: 2em;
     display: flex;
+    margin-top: 2em;
 }
+
 div#subscription-sidebar {
-    width: 25em;
-    border: 2px solid #DDD;
-    background: #F8F8F8;
+    background: #f8f8f8;
+    border: 2px solid #ddd;
     padding: 0.5em;
+    width: 25em;
 }
+
 div#subscription-sidebar > section {
     margin-bottom: 1em;
 }
+
 div#subscription-site-content {
     width: 70%;
 }
+
 div#subscription-site-content h4 {
     text-decoration: underline;
 }
+
 div#subscription-site-content-1 {
     display: flex;
 }
+
 div#subscription-site-content-1 > section {
     margin-left: 1em;
 }
+
 div#subscription-site-content-1 span.heading {
     font-size: 1.33em;
 }
+
 section#subscription-settings {
     width: 25%;
 }
+
 section#subscription-status {
     width: 25%;
 }
+
 div#subscription-site-content-2 {
+    border: 1px solid #ddd;
     margin-top: 2em;
     margin-left: 0.8em;
-    border: 1px solid #DDD;
     padding: 5px;
     width: 40%;
 }
+
 div#subscription-elements,
 div#subscription-illusts {
-    margin-top: 1em;
     font-size: 24px;
     font-weight: bold;
+    margin-top: 1em;
 }
+
 div#subscription-posts {
     margin-top: 2em;
 }

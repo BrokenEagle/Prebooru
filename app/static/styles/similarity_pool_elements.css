@@ -1,60 +1,73 @@
-/****INDEX page****/
+/** APP/STATIC/STYLES/SIMILARITY_POOL_ELEMENT.CSS **/
+
+/**** INDEX page ****/
 div#similarity-page-controls {
+    height: 4em;
     position: relative;
     width: 95%;
-    height: 4em;
 }
+
 div#similarity-pool-controls {
+    bottom: 1em;
     position: absolute;
     right: 2em;
-    bottom: 1em;
 }
+
 form#form label {
+    background: #e0f0f0;
+    border: 1px solid #8dd;
+    border-radius: 25px;
     margin-top: 0;
     margin-bottom: 5px;
-    border: 1px solid #8DD;
-    border-radius: 25px;
-    background: #E0F0F0;
     padding: 0.5em;
     width: 72%;
 }
+
 form#form div.checkbox-active label {
     background: linear-gradient(270deg, dodgerblue, transparent);
 }
+
 article.similarity-element-multi-preview {
-    display: inline-block;
-    border: 1px solid #CCC;
-    width: 900px;
+    border: 1px solid #ccc;
     border-radius: 50px;
+    display: inline-block;
     margin: 0 1em 1em 0;
+    width: 900px;
 }
+
 div.similarity-element-preview-controls {
     display: flex;
     margin: 1em;
 }
+
 div.similarity-element-preview-delete {
-    width: 28%;
     font-size: 24px;
-    text-align: right;
     padding-right: 1em;
+    text-align: right;
+    width: 28%;
 }
+
 div.similarity-element-preview-display {
-    border-top: 1px solid #AAA;
+    border-top: 1px solid #aaa;
 }
+
 div.similarity-element-post {
     display: inline-block;
-    vertical-align: top;
     padding: 5px;
+    vertical-align: top;
 }
+
 div.similarity-element-post:first-of-type {
-    border-right: 1px solid #AAA;
+    border-right: 1px solid #aaa;
 }
+
 div.similarity-element-info-block {
     display: inline-block;
     font-size: 20px;
-    vertical-align: top;
     padding-top: 1em;
+    vertical-align: top;
 }
+
 span.similarity-element-info-score {
     font-size: 150%;
 }

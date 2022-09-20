@@ -33,7 +33,7 @@
 
 {% macro recent_posts(posts, post_count=None, post_search=None) -%}
     <div class="heading">
-        <div id="recent-posts-heading">
+        <div id="recent-posts-heading" class="large-2">
             <u>Posts</u>
             {% if post_count is not none %}(&thinsp;{{ post_count }}&thinsp;){% endif %}
             {% if post_search is not none %}{{ helpers.base.general_link('»', post_search) }}{% endif %}

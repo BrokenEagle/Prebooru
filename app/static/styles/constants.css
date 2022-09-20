@@ -1,0 +1,41 @@
+/** APP/STATIC/STYLES/CONSTANTS.CSS **/
+
+.xsmall-1 {
+    font-size: 0.5rem;
+}
+
+.small-1 {
+    font-size: 0.625rem;
+}
+
+.small-2 {
+    font-size: 0.75rem;
+}
+
+.medium-1 {
+    font-size: 1rem;
+}
+
+.medium-2 {
+    font-size: 1.25rem;
+}
+
+.large-1 {
+    font-size: 1.5rem;
+}
+
+.large-2 {
+    font-size: 1.75rem;
+}
+
+.xlarge-1 {
+    font-size: 2rem;
+}
+
+.xlarge-2 {
+    font-size: 2.25rem;
+}
+
+.xxlarge-1 {
+    font-size: 2.5rem;
+}

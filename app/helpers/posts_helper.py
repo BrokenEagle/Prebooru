@@ -215,7 +215,7 @@ def video_icons(post):
     minutes = duration // 60
     seconds = duration % 60
     duration_string = "%d:%02d" % (minutes, seconds)
-    inner_html = render_tag('span', duration_string, {'class': 'duration'})
+    inner_html = render_tag('span', duration_string, {'class': 'duration small-2'})
     if post.audio:
         inner_html += _sound_icon_link()
     return render_tag('div', inner_html, {'class': 'video-info'})

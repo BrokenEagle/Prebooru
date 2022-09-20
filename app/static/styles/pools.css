@@ -1,94 +1,107 @@
-/****NEW/EDIT Page****/
-/****SHOW Page****/
+/** APP/STATIC/STYLES/POOLS.CSS **/
+
+/**** SHOW Page ****/
 div#pool-heading {
     font-size: 32px;
 }
+
 div#pool-name {
     font-size: 28px;
 }
+
 div.pool-block {
+    border: 1px solid #eee;
     display: inline-block;
     height: 485px;
-    vertical-align: top;
     margin: 0.25em;
-    padding: 0.5em;
-    border: 1px solid #EEE;
     min-width: 300px;
+    padding: 0.5em;
+    vertical-align: top;
 }
+
 div.pool-block-heading {
     font-size: 24px;
 }
+
 div.pool-display-block {
     display: block;
     height: 320px;
     margin-left: 1em;
 }
-div.pool-display-block {
-    display: block;
-    height: 320px;
-    margin-left: 1em;
-}
+
 div.pool-display-notation {
-    word-break: break-word;
-    width: 315px;
     max-height: 425px;
     overflow-y: auto;
+    width: 315px;
+    word-break: break-word;
 }
+
 div.pool-info-block {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
     display: flex;
-    vertical-align: top;
+    font-size: 14px;
     max-height: 125px;
     overflow-y: auto;
-    background-color: #F8F8F8;
-    border: 1px solid #DDD;
     padding: 5px;
+    vertical-align: top;
     width: 310px;
-    font-size: 14px;
 }
+
 div.pool-info-block > div {
-    min-height: 120px;
     display: inline-block;
+    min-height: 120px;
     vertical-align: top;
 }
+
 div.pool-relation-block {
     width: 120px;
 }
+
 div.pool-relation-block > div {
     margin-bottom: 0.5em;
 }
+
 div.pool-notation-block {
-    width: 180px;
-    border-left: 1px solid #EEE;
+    border-left: 1px solid #eee;
     padding-left: 5px;
+    width: 180px;
 }
+
 span.thin-list {
-    position: relative;
     left: -8px;
+    position: relative;
 }
+
 div.illust-preview {
     display: grid;
     grid-template-columns: repeat(2, 0fr);
 }
+
 div.illust-preview > article {
-    width: 150px;
     height: 150px;
     padding: 2px;
+    width: 150px;
 }
-div.illust-preview > article.overflow { 
+
+div.illust-preview > article.overflow {
     background-color: grey;
     padding: 5px;
 }
+
 div.illust-preview > article.overflow > span {
+    color: white;
     font-size: 20px;
     font-weight: bold;
-    color: white;
 }
+
 div.illust-preview > span.explanation {
     width: 150px;
 }
+
 div.illust-preview img {
-    max-width: 150px;
-    max-height: 150px;
-    width: auto;
     height: auto;
+    max-height: 150px;
+    max-width: 150px;
+    width: auto;
 }

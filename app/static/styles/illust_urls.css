@@ -1,37 +1,46 @@
-/****NEW/EDIT Page****/
+/** APP/STATIC/STYLES/ILLUST_URLS.CSS **/
+
+/**** NEW/EDIT Page ****/
 div#illust-url-form-heading {
     font-size: 28px;
     margin-top: 1em;
 }
+
 div#illust-url-form-info {
     font-size: 20px;
     font-weight: bold;
     margin-top: 1em;
 }
+
 input#illust-url-url {
     width: 50em;
 }
-/****SHOW Page****/
+
+/**** SHOW Page ****/
 div#illust-url-heading {
     font-size: 28px;
     margin-top: 1em;
 }
+
 div#illust-url-content {
     display: flex;
     font-size: 16px;
     margin-top: 1em;
 }
-/****INDEX Page****/
+
+/**** INDEX Page ****/
 table#illust-urls-table article.post {
-    width: 204px;
     height: 204px;
+    width: 204px;
 }
+
 table#illust-urls-table article.post.no-post {
     height: 75px;
 }
+
 table#illust-urls-table article.post img {
+    height: auto;
     max-height: 200px;
     max-width: 200px;
-    height: auto;
     width: auto;
 }

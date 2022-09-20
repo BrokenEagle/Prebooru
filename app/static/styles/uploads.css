@@ -1,106 +1,132 @@
-/****NEW/EDIT Page****/
+/** APP/STATIC/STYLES/UPLOADS.CSS **/
+
+/**** NEW/EDIT Page ****/
 div#upload-url-info {
     margin: 1em;
 }
+
 input#upload-media-filepath,
 input#upload-sample-filepath {
     width: 100em;
 }
+
 input#upload-request-url {
     width: 50em;
 }
+
 textarea#upload-image-url-string {
     width: 50em;
     height: 10em;
 }
-/****SHOW Page****/
+
+/**** SHOW Page ****/
 div#upload-content {
     margin-top: 2em;
     display: flex;
 }
+
 aside#upload-sidebar {
     width: 25em;
-    border: 2px solid #DDD;
-    background: #F8F8F8;
+    border: 2px solid #ddd;
+    background: #f8f8f8;
     padding: 0.5em;
 }
+
 aside#upload-sidebar > section {
     margin-bottom: 1em;
 }
+
 div#upload-heading {
     font-size: 32px;
 }
+
 div#upload-site-content {
     width: 80%;
     display: flex;
 }
+
 div#upload-site-content h4 {
     text-decoration: underline;
 }
+
 div#upload-site-content > section {
     margin-left: 2em;
 }
+
 section#upload-info {
     width: 25%;
 }
+
 section#upload-sources {
     width: 75%;
 }
+
 div#upload-posts {
     margin-top: 2em;
 }
-/****INDEX****/
+
+/**** INDEX ****/
 div.upload-preview {
     display: grid;
     grid-template-columns: repeat(2, 0fr);
 }
+
 div.upload-preview > article.upload-post {
-    width: 150px;
     height: 150px;
     padding: 2px;
+    width: 150px;
 }
-div.upload-preview > article.overflow { 
+
+div.upload-preview > article.overflow {
     background-color: grey;
     padding: 5px;
 }
+
 div.upload-preview > article.overflow > span {
+    color: white;
     font-size: 20px;
     font-weight: bold;
-    color: white;
 }
+
 div.upload-preview > span.explanation {
     width: 150px;
 }
+
 div.upload-preview img {
+    height: auto;
     max-width: 150px;
     max-height: 150px;
     width: auto;
-    height: auto;
 }
-/****SELECT****/
+
+/**** SELECT ****/
 div#force-input {
     margin: 0.5em;
 }
+
 div.select-image-block {
-    border: 1px solid #EEE;
-    padding: 5px;
+    border: 1px solid #eee;
     display: inline-block;
     margin: 5px;
-}
-div.select-image-block div.input label {
-    margin-top: 0;
-    margin-bottom: 5px;
-    border: 1px solid #8DD;
-    border-radius: 25px;
-    background: #E0F0F0;
     padding: 5px;
 }
+
+div.select-image-block div.input label {
+    background: #e0f0f0;
+    border: 1px solid #8dd;
+    border-radius: 25px;
+    margin-bottom: 5px;
+    margin-top: 0;
+    padding: 5px;
+}
+
 div.select-image-block div.missing-image {
+    color: grey;
     font-size: 150%;
     font-style: italic;
-    color: grey;
     margin-bottom: 1em;
 }
+
 div.select-image-block div.full-url {
     font-size: 125%;
     text-align: left;

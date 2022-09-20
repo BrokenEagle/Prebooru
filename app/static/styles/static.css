@@ -1,22 +1,29 @@
-/****SITE MAP Page****/
+/** APP/STATIC/STYLES/STATIC.CSS **/
+
+/**** SITE MAP Page ****/
 div#site-map {
     display: flex;
     font-size: 16px;
 }
+
 div#site-map > div {
     margin: 1em 6em;
 }
+
 div#site-map > div > h3 {
-    text-decoration: underline;
     margin-bottom: 1em;
+    text-decoration: underline;
 }
+
 div#site-map > div > section {
     margin-bottom: 2em;
 }
-/****BOOKMARKLET INFO PAGE****/
+
+/**** BOOKMARKLET INFO page ****/
 div#bookmarklet-info > h4 {
     margin-top: 1em;
 }
+
 div#bookmarklet-info p {
     margin-bottom: 1em;
 }

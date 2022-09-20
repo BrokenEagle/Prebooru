@@ -1,231 +1,286 @@
-/****General****/
+/** APP/STATIC/STYLES/SUBSCRIPTION_ELEMENTS.CSS **/
+
+/**** General ****/
 div#subscription-controls a.yes-link,
 div.subscription-element-info a.yes-link {
     color: green;
 }
+
 div#subscription-controls a.maybe-link,
 div.subscription-element-info a.maybe-link {
     color: darkorange;
 }
+
 div#subscription-controls a.no-link,
 div.subscription-element-info a.no-link {
     color: red;
 }
+
 div#subscription-controls a.archive-link {
-    color: #AAA;
+    color: #aaa;
 }
-/****INDEX Page****/
+
+/**** INDEX Page ****/
 section#content.c-subscription-element.a-index {
     min-width: 95em;
 }
+
 div#subscription-page-controls {
+    border-bottom: 2px solid #eee;
+    height: 4em;
     position: relative;
     width: 95%;
-    height: 4em;
-    border-bottom: 2px solid #EEE;
 }
+
 div#subscription-page-controls > div {
     position: absolute;
 }
+
 div#subscription-controls {
-    right: 0;
     bottom: 0;
+    right: 0;
 }
+
 div#subscription-type-selector {
+    font-size: 20px;
     left: 0;
     margin-top: 1em;
-    font-size: 20px;
     width: 21em;
 }
+
 a.element-type {
-    margin-right: -6px;
-    display: inline-block;
-    background: #F0F0F0;
-    border: 1px solid #DDD;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
     border-radius: 15px 15px 0 0;
+    display: inline-block;
+    margin-right: -6px;
     padding: 5px 10px;
 }
+
 a.element-type.type-active {
-    font-weight: bold;
-    color: white;
     background: blue;
+    color: white;
+    font-weight: bold;
 }
+
 div#subscription-elements-container {
     display: flex;
     flex-wrap: wrap;
     margin-bottom: 2em;
 }
+
 article.subscription-element {
-    width: 340px;
     height: 450px;
     margin: 2em 1em 4em;
+    width: 340px;
 }
+
 article.subscription-element > * {
     display: block;
 }
+
 article.subscription-element > a {
     height: 300px;
 }
+
 article.subscription-element div.subscription-element-display {
     display: flex;
 }
+
 article.subscription-element.subscription-post div.subscription-element-display > div {
     flex-basis: 33%;
 }
+
 article.subscription-element.subscription-no-post div.subscription-element-display > div {
     flex-basis: 50%;
 }
+
 div.element-illust-type {
-    padding-top: 0.4em;
     font-size: 20px;
     font-weight: bold;
+    padding-top: 0.4em;
     text-align: center;
 }
+
 article.subscription-image div.element-illust-type {
     color: darkblue;
 }
+
 article.subscription-video div.element-illust-type {
     color: darkgreen;
 }
+
 article.subscription-image a {
     color: royalblue;
 }
+
 article.subscription-video a {
     color: green;
 }
+
 div.subscription-element-archive {
-    border: 2px dotted #AAA;
-    background-color: #CCC;
+    background-color: #ccc;
+    border: 2px dotted #aaa;
     border-radius: 10px;
-    margin: 0 0.5em 0.2em;
-    text-align: center;
     font-size: 20px;
     font-weight: bold;
+    margin: 0 0.5em 0.2em;
+    text-align: center;
     vertical-align: center;
 }
+
 div.subscription-element-archive a {
     color: white;
     padding: 5px 20px;
 }
+
 article.subscription-archive div.subscription-element-archive {
-    border: 2px dotted #CCC;
-    background-color: #EEE;
+    background-color: #eee;
+    border: 2px dotted #ccc;
 }
+
 article.subscription-archive.subscription-image div.subscription-element-archive a {
     color: blue;
 }
+
 article.subscription-archive.subscription-video div.subscription-element-archive a {
     color: limegreen;
 }
+
 div.subscription-element-info {
-    font-size: 16px;
     border: 2px solid;
+    font-size: 16px;
     margin-top: 5px;
     padding: 5px;
 }
+
 div.subscription-element-info.yes-info {
     border-color: limegreen;
 }
+
 div.subscription-element-info.maybe-info {
     border-color: darkorange;
 }
+
 div.subscription-element-info.no-info {
     border-color: red;
 }
+
 div.subscription-element-info.undecided-info {
-    border-color: #DDD;
+    border-color: #ddd;
 }
+
 div.subscription-element-info.archive-info {
     border-color: blue;
     border-style: dashed;
 }
+
 div.subscription-element-info.yes-info a.yes-link {
     background: limegreen;
     color: white;
 }
+
 div.subscription-element-info.maybe-info a.maybe-link {
     background: darkorange;
     color: white;
 }
+
 div.subscription-element-info.no-info a.no-link {
     background: red;
     color: white;
 }
+
 div.subscription-element-info a.keep-link {
-    margin-top: 0.25em;
-    display: inline-block;
     border: 1px solid;
+    display: inline-block;
+    margin-top: 0.25em;
 }
+
 div.subscription-element-info a.keep-link.yes-link {
     border-radius: 25px 0 0 25px;
     padding: 5px 20px;
 }
+
 div.subscription-element-info a.keep-link.no-link {
     border-radius: 0 25px 25px 0;
     padding: 5px 20px;
 }
+
 div.subscription-element-info a.keep-link.maybe-link {
     padding: 5px 10px;
 }
+
 article.subscription-element ul {
     margin-left: 20px;
 }
+
 article.subscription-element.subscription-no-post {
-    padding: 0.5em;
+    background: #f0f0f0;
+    box-shadow: 0 0 0 2px #ddd;
     max-height: 450px;
-    box-shadow: 0 0 0 2px #DDD;
-    background: #F0F0F0;
-    width: 325px;
     overflow-x: hidden;
+    padding: 0.5em;
+    width: 325px;
 }
+
 article.subscription-element.subscription-no-post > div.preview {
     height: 300px;
     text-align: center;
 }
+
 article.subscription-element.subscription-no-post > div.preview > img {
+    height: auto;
     max-height: 300px;
     max-width: 300px;
-    height: auto;
     width: auto;
 }
+
 article.subscription-element.subscription-no-post > div.subscription-element-info {
-    margin-top: 1em;
-    border-color: #DDD;
+    border-color: #ddd;
     font-size: 14px;
+    margin-top: 1em;
 }
+
 article.subscription-element.subscription-no-post > div.subscription-element-info > ul {
     margin-left: 0;
 }
+
 article.subscription-element.subscription-no-post > div.subscription-element-info > ul > li {
     list-style-position: inside;
-    text-overflow: ellipsis;
     overflow-x: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
+
 article.subscription-element div.errors-list {
-    border: 1px solid #DDD;
-    padding: 5px;
-    overflow-x: hidden;
+    border: 1px solid #ddd;
     margin-top: 0.5em;
+    overflow-x: hidden;
+    padding: 5px;
 }
+
 form#form label {
-    margin-top: 0;
-    margin-bottom: 5px;
     border: 1px solid;
     border-radius: 25px;
+    margin-bottom: 5px;
+    margin-top: 0;
     padding: 5px;
 }
+
 form#form article.subscription-image label {
-    background: #E0F0F0;
-    border-color: #8DD;
+    background: #e0f0f0;
+    border-color: #8dd;
 }
+
 form#form article.subscription-video label {
-    background: #F0F0E0;
-    border-color: #DD8;
+    background: #f0f0e0;
+    border-color: #dd8;
 }
+
 form#form article.subscription-image div.checkbox-active label {
     background: linear-gradient(270deg, dodgerblue, transparent);
 }
+
 form#form article.subscription-video div.checkbox-active label {
     background: linear-gradient(270deg, forestgreen, transparent);
 }

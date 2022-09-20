@@ -1,237 +1,294 @@
-/****INDEX Page****/
+/** APP/STATIC/STYLES/POSTS.CSS **/
+
+/**** INDEX Page ****/
 div#posts-container {
     margin-top: 2em;
 }
+
 div#type-selector {
     font-size: 1.2em;
     margin-top: 1em;
     width: 14em;
-    border-bottom: 1px solid #CCC;
+    border-bottom: 1px solid #ccc;
 }
+
 a.post-type {
     display: inline-block;
     margin: 0 0.5em;
 }
+
 a.post-type.type-active {
     font-weight: bold;
 }
-/****SHOW Page****/
+
+/**** SHOW Page ****/
 div#sidebar-container {
     display: flex;
 }
+
 aside#post-sidebar {
-    width: 25em;
-    border: 2px solid #DDD;
-    background: #F8F8F8;
-    padding: 0.5em;
+    border: 2px solid #ddd;
+    background: #f8f8f8;
     height: fit-content;
+    padding: 0.5em;
+    width: 25em;
 }
+
 aside#post-sidebar > section {
     margin-bottom: 1em;
 }
+
 div#post-content {
-    width: 1300px;
     margin-left: 1em;
+    width: 1300px;
 }
+
 div#post-site-content {
-    border: 1px solid #DEF;
-    background-color: #F8FFFF;
-    padding: 5px;
+    background-color: #f8ffff;
+    border: 1px solid #def;
     display: flex;
+    padding: 5px;
 }
+
 section#post-info {
+    margin-right: 1em;
     padding: 5px;
     width: 40%;
-    margin-right: 1em;
 }
+
 section#post-info.danbooru-uploaded {
     border: 2px solid green;
 }
+
 section#post-info.user-post {
-    background: #CCFFFF;
+    background: #ccffff;
 }
+
 section#post-info.subscription-post {
-    background: #FFDDDD;
+    background: #ffdddd;
 }
+
 section#post-commentaries {
-    width: 50%;
     max-height: 400px;
     overflow-y: auto;
+    width: 50%;
 }
+
 div.post-commentaries-container {
-    border: 1px dotted #BBB;
+    border: 1px dotted #bbb;
     padding: 0.25em;
 }
+
 div.post-commentaries-block {
     margin: 0.25em;
 }
+
 section#media-container {
-    margin-right: 1em;
     margin-bottom: 1em;
+    margin-right: 1em;
 }
+
 section#media-container img.play-icon {
-    position: absolute;
-    top: 0;
+    cursor: pointer;
     bottom: 0;
     left: 0;
-    right: 0;
     margin: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
 }
+
 section#media-container.loading video {
     display: none;
 }
+
 section#media-container.playing video {
     display: block;
 }
+
 section#media-container.loading picture {
     display: block;
 }
+
 section#media-container.playing picture {
     display: none;
 }
+
 section#media-container div.load-original {
-    padding-top: 5px;
     height: 1.25em;
+    padding-top: 5px;
 }
+
 section#media-container.loading div.load-original a {
     display: none;
 }
+
 section#media-container img.thumbnail {
     height: 100%;
     width: auto;
 }
-section#media-container img.play-icon {
-    cursor: pointer;
-}
+
 section#media-container.image {
     cursor: pointer;
 }
+
 section#media-container.fullsize img {
     max-height: 100vh;
     width: auto;
 }
+
 div#related-posts,
 div#similar-posts {
     margin-top: 2em;
 }
+
 div#related-posts-heading,
 div#similar-posts-heading {
     font-size: 28px;
 }
+
 div#related-posts-container {
     display: flex;
     flex-wrap: wrap;
     margin-top: 1em;
 }
+
 div.related-post-block {
     width: 340px;
 }
+
 div#similar-posts-container {
     display: flex;
     flex-wrap: wrap;
-    margin-top: 1em;
     font-size: 20px;
+    margin-top: 1em;
 }
+
 div.similar-heading {
     line-height: 1.5em;
 }
+
 div.similar-post-block {
-    width: 320px;
+    border: 1px solid #eee;
     margin: 0.5em;
     padding: 5px;
-    border: 1px solid #EEE;
+    width: 320px;
 }
+
 article.post.similar-post {
-    text-align: left;
     margin-top: 0.5em;
+    text-align: left;
 }
+
 span.post-pixel-match {
     font-size: 75%;
     font-weight: bold;
 }
+
 span.post-pixel-match-text {
     color: green;
     font-variant: small-caps;
 }
+
 div.similar-post-delete-link {
     text-align: right;
 }
+
 div.similar-post-score {
     font-size: 150%;
 }
-/****TEMP****/
+
+/**** TEMP ****/
 
 a.yes-link {
     color: green;
 }
+
 a.maybe-link {
     color: darkorange;
 }
+
 a.no-link {
     color: red;
 }
+
 div.subscription-element-archive {
-    border: 2px dotted #AAA;
-    background-color: #CCC;
+    background-color: #ccc;
+    border: 2px dotted #aaa;
     border-radius: 10px;
-    margin: 0 0.5em 0.2em;
-    text-align: center;
     font-size: 20px;
     font-weight: bold;
+    margin: 0 0.5em 0.2em;
+    text-align: center;
 }
+
 div.subscription-element-archive a {
-    display: block;
     color: white;
+    display: block;
     padding: 5px 20px;
 }
+
 article.subscription-archive div.subscription-element-archive {
-    border: 2px dotted #CCC;
-    background-color: #EEE;
+    background-color: #eee;
+    border: 2px dotted #ccc;
 }
+
 article.subscription-archive.subscription-image div.subscription-element-archive a {
     color: blue;
 }
+
 article.subscription-archive.subscription-video div.subscription-element-archive a {
     color: limegreen;
 }
+
 div.subscription-element-info {
-    font-size: 16px;
     border: 2px solid;
+    font-size: 16px;
     margin-top: 5px;
     padding: 5px;
 }
+
 div.subscription-element-info.yes-info {
     border-color: limegreen;
 }
+
 div.subscription-element-info.maybe-info {
     border-color: darkorange;
 }
+
 div.subscription-element-info.no-info {
     border-color: red;
 }
+
 div.subscription-element-info.undecided-info {
-    border-color: #DDD;
+    border-color: #ddd;
 }
+
 div.subscription-element-info.archive-info {
-    border-color: #AAA;
+    border-color: #aaa;
     border-style: dotted;
 }
+
 div.subscription-element-info a.keep-link {
-    margin-top: 0.25em;
-    display: inline-block;
     border: 1px solid;
+    display: inline-block;
+    margin-top: 0.25em;
 }
+
 div.subscription-element-info a.keep-link.yes-link {
     border-radius: 25px 0 0 25px;
     padding: 5px 20px;
 }
+
 div.subscription-element-info a.keep-link.no-link {
     border-radius: 0 25px 25px 0;
     padding: 5px 20px;
 }
+
 div.subscription-element-info a.keep-link.maybe-link {
     padding: 5px 10px;
 }
+
 article.subscription-element ul {
     margin-left: 25px;
 }

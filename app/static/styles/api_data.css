@@ -1,15 +1,19 @@
-/****SHOW Page****/
+/** APP/STATIC/STYLES/API_DATA.CSS **/
+
+/**** SHOW Page ****/
 div#api-data-heading {
     font-size: 28px;
     margin-top: 1em;
 }
+
 div#api-data-content {
     font-size: 16px;
     margin-top: 1em;
 }
-/****INDEX Page****/
+
+/**** INDEX Page ****/
 section.a-index div.json-data {
-    max-width: 85em;
     max-height: 50em;
+    max-width: 85em;
     overflow: auto;
 }
