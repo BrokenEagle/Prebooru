@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 TIME_OFFSET = relativedelta(years=1000)
 COMPARE_DATE = datetime.datetime(2000, 1, 1)
 
+
 # ## FUNCTIONS
 
 def initialize():
