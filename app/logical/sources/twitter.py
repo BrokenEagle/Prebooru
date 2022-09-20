@@ -868,8 +868,9 @@ def get_tweet_commentary(twitter_data):
     text = convert_entity_text(twitter_data, 'full_text', 'urls')
     text = fixup_crlf(SHORT_URL_REPLACE_RG.sub('', text).strip())
     if safe_get(twitter_data, 'is_quote_status'):
-        quote_tweet = twitter_data['quoted_status_permalink']['expanded']
-        if not text.endswith(quote_tweet):
+        # If the quoted tweet is no longer available, then it will still register as a quote tweet.
+        quote_tweet = safe_get(twitter_data, 'quoted_status_permalink', 'expanded')
+        if quote_tweet and not text.endswith(quote_tweet):
             text += ' ' + quote_tweet
     media = safe_get(twitter_data, 'extended_entities', 'media')
     if media is not None and len(media):
