@@ -169,9 +169,9 @@ def start_server(args):
     if not args.logging:
         logging.getLogger().handlers = []
     if args.public:
-        PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT, host="0.0.0.0")
+        PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT, host="0.0.0.0", reloader_interval=60)
     else:
-        PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT)
+        PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT, reloader_interval=60)
 
 
 def init_db(args):
