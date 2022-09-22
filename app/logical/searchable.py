@@ -115,7 +115,7 @@ def column_type(model, columnname):
         sqltypes.UnicodeText: 'TEXT',
     }
     model_class = type(getattr(model.__table__.c, columnname).type)
-    super_classes = model_class.__mro__
+    super_classes = model_class.mro()
     column_type = next((c for c in super_classes if c in switcher.keys()), None)
     if column_type is not None:
         return switcher[column_type]
