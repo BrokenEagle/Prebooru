@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 import os
 import re
+import sys
 import time
 import json
 import urllib
@@ -25,12 +26,15 @@ from ..database.artist_db import inactivate_artist
 from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
+from ..records.artist_rec import update_artist_from_source
 from ..sites import Site, get_site_domain, get_site_id
 
 
 # ## GLOBAL VARIABLES
 
 # #### Module variables
+
+SELF = sys.modules[__name__]
 
 NAME = 'twitter'
 
@@ -1088,6 +1092,8 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
     if len(tweet_ids) == 0 or last_id is not None:
         # No tweet IDs means that no new results were found, but the timeline was not empty
         return tweet_ids
+    # Update the artist current user account in case it has changed since creating the artist
+    update_artist_from_source(artist, SELF)
     lowest_tweet_id = min(tweet_ids)
     timestamp = snowflake_to_epoch(lowest_tweet_id)
     timeval = datetime_from_epoch(timestamp)
