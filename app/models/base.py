@@ -149,17 +149,31 @@ class IntEnum(DB.TypeDecorator):
     impl = DB.Integer
     cache_ok = True
 
-    def __init__(self, enumtype, *args, **kwargs):
-        super(IntEnum, self).__init__(*args, **kwargs)
+    def __init__(self, enumtype, nullable=False):
+        super(IntEnum, self).__init__()
         self._enumtype = enumtype
+        self._enumname = enumtype.__name__
+        self._names = [e.name for e in self._enumtype]
+        self._values = [e.value for e in self._enumtype]
+        self._nullable = nullable
 
     def process_bind_param(self, value, dialect):
-        if isinstance(value, int):
+        if value in self._values:
             return value
-        return value.value
+        if value in self._names:
+            return self._enumtype[value].value
+        if isinstance(value, self._enumtype):
+            return value.value
+        if value is None and self._nullable:
+            return None
+        raise ValueError(f"Illegal value to bind for enum {self._enumname}.")
 
     def process_result_value(self, value, dialect):
-        return self._enumtype(value) if value is not None else None
+        if value in self._values:
+            return self._enumtype(value)
+        if value is None and self._nullable:
+            return None
+        raise ValueError(f"Illegal value in DB found for enum {self._enumname}.")
 
 
 class JsonModel(DB.Model):
