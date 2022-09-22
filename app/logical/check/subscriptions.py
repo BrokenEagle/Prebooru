@@ -175,7 +175,7 @@ def expire_subscription_elements(manual):
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=10)
     while True:
-        print(f"expire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})")
+        print(f"\nexpire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Archiving post of {element.shortlink}")
             archive_subscription_post(element)
