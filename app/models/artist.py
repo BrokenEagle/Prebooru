@@ -57,7 +57,6 @@ class Artist(JsonModel):
     current_site_account = DB.Column(DB.String(255), nullable=True)
     site_created = DB.Column(NormalizedDatetime(), nullable=True)
     active = DB.Column(DB.Boolean, nullable=True)
-    requery = DB.Column(NormalizedDatetime(), nullable=True)
     created = DB.Column(NormalizedDatetime(), nullable=False)
     updated = DB.Column(NormalizedDatetime(), nullable=False)
 

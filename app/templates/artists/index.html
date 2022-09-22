@@ -15,7 +15,7 @@
                 <th>Names</th>
                 <th>Accounts</th>
                 <th>Webpages</th>
-                <th>Timestamps</th>
+                <th>Created</th>
             </tr>
         </thead>
         <tbody>
@@ -34,13 +34,7 @@
                             {{ artist_webpage(webpage) }}
                         {% endcall %}
                     </td>
-                    <td>
-                        <strong>Requery:</strong> {{ helpers.base.format_timestamp(artist.requery) }}
-                        <br>
-                        <strong>Created:</strong> {{ helpers.base.format_timestamp(artist.created) }}
-                        <br>
-                        <strong>Updated:</strong> {{ helpers.base.format_timestamp(artist.updated) }}
-                    </td>
+                    <td>{{ helpers.base.humanized_timestamp_difference(artist) }}</td>
                 </tr>
             {% endfor %}
         </tbody>

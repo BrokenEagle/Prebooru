@@ -7,7 +7,7 @@
     {{ boorus_section(subscription.artist.boorus, 'subscription-boorus') }}
     {{ artists_section(subscription.artist, 'subscription-artist') }}
     {{ errors_section(subscription.errors, 'subscription-errors') }}
-    {{ timestamps_section(subscription, 'subscription-timestamps') }}
+    {{ timestamps_section(subscription, 'subscription-timestamps', other_timestamps=['requery']) }}
     <section id="subscription-options">
         <h4>Options</h4>
         <ul>

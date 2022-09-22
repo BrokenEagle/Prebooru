@@ -1,8 +1,5 @@
 # APP/LOGICAL/DATABASE/ARTIST_DB.PY
 
-# ## PYTHON IMPORTS
-import datetime
-
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 
@@ -49,7 +46,7 @@ def create_artist_from_parameters(createparams):
     set_timesvalue(createparams, 'site_created')
     set_all_site_accounts(createparams, None)
     set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
-    artist = Artist(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
+    artist = Artist(created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(artist, update_columns, createparams)
@@ -98,14 +95,10 @@ def update_artist_from_parameters(artist, updateparams):
         print("[%s]: updated" % artist.shortlink)
         artist.updated = get_current_time()
         SESSION.commit()
-    if 'requery' in updateparams:
-        artist.requery = updateparams['requery']
-        SESSION.commit()
 
 
 def inactivate_artist(artist):
     artist.active = False
-    artist.requery = None
     SESSION.commit()
 
 

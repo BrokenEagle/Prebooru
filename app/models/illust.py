@@ -53,7 +53,6 @@ class Illust(JsonModel):
     pages = DB.Column(DB.Integer, nullable=True)
     score = DB.Column(DB.Integer, nullable=True)
     active = DB.Column(DB.Boolean, nullable=True)
-    requery = DB.Column(NormalizedDatetime(), nullable=True)
     created = DB.Column(NormalizedDatetime(), nullable=False)
     updated = DB.Column(NormalizedDatetime(), nullable=False)
 

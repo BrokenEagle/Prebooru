@@ -1,8 +1,5 @@
 # APP/LOGICAL/DATABASE/ILLUST_DB.PY
 
-# ## PYTHON IMPORTS
-import datetime
-
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 
@@ -73,7 +70,7 @@ def create_illust_from_parameters(createparams):
     current_time = get_current_time()
     set_timesvalues(createparams)
     set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
-    illust = Illust(created=current_time, updated=current_time, requery=(current_time + datetime.timedelta(days=1)))
+    illust = Illust(created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(illust, update_columns, createparams)
@@ -122,9 +119,6 @@ def update_illust_from_parameters(illust, updateparams):
     if any(update_results):
         print("[%s]: updated" % illust.shortlink)
         illust.updated = get_current_time()
-        SESSION.commit()
-    if 'requery' in updateparams:
-        illust.requery = updateparams['requery']
         SESSION.commit()
 
 

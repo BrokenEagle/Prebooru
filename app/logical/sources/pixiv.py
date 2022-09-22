@@ -4,7 +4,6 @@
 import re
 import time
 import urllib
-import datetime
 
 # ## EXTERNAL IMPORTS
 import requests
@@ -419,7 +418,6 @@ def get_illust_parameters_from_artwork(artwork, page_data):
         'bookmarks': artwork['bookmarkCount'],
         'replies': artwork['responseCount'],
         'views': artwork['viewCount'],
-        'requery': get_current_time() + datetime.timedelta(days=1),
         'tags': get_illust_tags(artwork),
         'commentaries': safe_get(artwork, 'extraData', 'meta', 'twitter', 'description') or None,
         'illust_urls': illust_urls,
@@ -445,7 +443,6 @@ def get_artist_parameters_from_pxuser(pxuser, artwork):
         'site_artist_id': int(pxuser['userId']),
         'site_created': None,
         'current_site_account': artwork['userAccount'] if artwork is not None else None,
-        'requery': get_current_time() + datetime.timedelta(days=1),
         'active': True,
         'names': [pxuser['name']],
         'site_accounts': [artwork['userAccount']] if artwork is not None else [],
@@ -494,7 +491,7 @@ def get_artist_api_data(site_artist_id):
 def get_artist_data(site_artist_id):
     pxuser = get_artist_api_data(site_artist_id)
     if pxuser is None:
-        return {'active': False, 'requery': None}
+        return {'active': False}
     profile_data = get_profile_data(site_artist_id)
     artwork = None
     if not is_error(profile_data):
@@ -522,7 +519,7 @@ def get_illust_api_data(site_illust_id):
 def get_illust_data(site_illust_id):
     artwork = get_illust_api_data(site_illust_id)
     if artwork is None:
-        return {'active': False, 'requery': None}
+        return {'active': False}
     page_data = get_page_data(site_illust_id) if artwork['pageCount'] > 1 else None
     page_data = page_data if not is_error(page_data) else None
     return get_illust_parameters_from_artwork(artwork, page_data)

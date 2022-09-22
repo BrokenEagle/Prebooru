@@ -5,7 +5,7 @@ import itertools
 import threading
 
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time, minutes_ago
+from utility.time import minutes_ago, days_ago
 from utility.print import buffered_print
 
 # ## LOCAL IMPORTS
@@ -32,12 +32,6 @@ from ..downloader.file import convert_file_upload
 
 
 # ## FUNCTIONS
-
-# #### Helper functions
-
-def check_requery(instance):
-    return instance.requery is None or instance.requery < get_current_time()
-
 
 # #### Primary task functions
 
@@ -188,6 +182,7 @@ def process_network_upload(upload):
     error = source.source_prework(site_illust_id)
     if error is not None:
         append_error(upload, error)
+    requery_time = days_ago(1)
     illust = Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).first()
     if illust is None:
         illust = create_illust_from_source(site_illust_id, source)
@@ -196,10 +191,10 @@ def process_network_upload(upload):
             msg = "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id)
             create_and_append_error('logical.worker_tasks.process_network_upload', msg, upload)
             return
-    elif check_requery(illust):
+    elif illust.updated < requery_time:
         update_illust_from_source(illust, source)
     # The artist will have already been created in the create illust step if it didn't exist
-    if check_requery(illust.artist):
+    if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist, source)
     if convert_network_upload(illust, upload, source):
         set_upload_status(upload, 'complete')
@@ -212,9 +207,10 @@ def process_network_upload(upload):
 def process_file_upload(upload):
     illust = upload.illust_url.illust
     source = get_source_by_id(illust.site_id)
-    if check_requery(illust):
+    requery_time = days_ago(1)
+    if illust.updated < requery_time:
         update_illust_from_source(illust, source)
-    if check_requery(illust.artist):
+    if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist, source)
     if convert_file_upload(upload, source):
         set_upload_status(upload, 'complete')

@@ -1038,7 +1038,6 @@ def get_illust_parameters_from_tweet(tweet):
         'retweets': tweet['retweet_count'],
         'replies': tweet['reply_count'] if 'reply_count' in tweet else None,
         'quotes': tweet['quote_count'] if 'quote_count' in tweet else None,
-        'requery': get_current_time() + datetime.timedelta(days=1),
         'tags': get_illust_tags(tweet),
         'commentaries': get_tweet_commentary(tweet) or None,
         'illust_urls': get_tweet_illust_urls(tweet),
@@ -1076,7 +1075,6 @@ def get_artist_parameters_from_twuser(twuser):
         'site_artist_id': int(twuser['id_str']),
         'site_created': process_twitter_timestring(twuser['created_at']),
         'current_site_account': twuser['screen_name'],
-        'requery': get_current_time() + datetime.timedelta(days=1),
         'active': True,
         'names': [twuser['name']],
         'site_accounts': [twuser['screen_name']],
@@ -1100,7 +1098,7 @@ def get_artist_api_data(site_artist_id, reterror=False):
 def get_artist_data(site_artist_id):
     twuser = get_artist_api_data(site_artist_id)
     if twuser is None:
-        return {'active': False, 'requery': None}
+        return {'active': False}
     return get_artist_parameters_from_twuser(twuser)
 
 
@@ -1117,7 +1115,7 @@ def get_illust_api_data(site_illust_id):
 def get_illust_data(site_illust_id):
     tweet = get_illust_api_data(site_illust_id)
     if tweet is None:
-        return {'active': False, 'requery': None}
+        return {'active': False}
     return get_illust_parameters_from_tweet(tweet)
 
 

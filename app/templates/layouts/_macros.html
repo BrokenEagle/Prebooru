@@ -78,7 +78,7 @@
     <section id="{{ section_id }}">
         <h4>Timestamps</h4>
         <ul>
-            {% set all_time_attrs = ['requery', 'created', 'updated'] + other_timestamps %}
+            {% set all_time_attrs = ['created', 'updated'] + other_timestamps %}
             {% for attr in all_time_attrs %}
                 {% if item[attr] is defined %}
                     <li>
