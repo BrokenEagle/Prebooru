@@ -1,6 +1,7 @@
 # APP/MODELS/BASE.PY
 
 # ## PYTHON IMPORTS
+import enum
 import datetime
 from types import SimpleNamespace
 
@@ -24,6 +25,14 @@ from .. import DB, SESSION, SERVER_INFO
 
 def date_time_or_null(value):
     return value if value is None else datetime.datetime.isoformat(value)
+
+
+def get_column_for_serialize(obj, column):
+    value = getattr(obj, column)
+    if isinstance(value, enum.Enum):
+        return value.value
+    else:
+        return value
 
 
 # #### Network functions
@@ -224,10 +233,10 @@ class JsonModel(DB.Model):
         return url_for(self.model_name + ".delete_html", id=self.id)
 
     def column_dict(self):
-        return {k: getattr(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
+        return {k: get_column_for_serialize(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
 
     def archive_dict(self):
-        return {k: getattr(self, k) for k in self.archive_columns if hasattr(self, k)}
+        return {k: get_column_for_serialize(self, k) for k in self.archive_columns if hasattr(self, k)}
 
     def to_json(self):
         data = {}
@@ -235,6 +244,8 @@ class JsonModel(DB.Model):
             value = getattr(self, attr)
             if type(value) is datetime.datetime:
                 data[attr] = date_time_or_null(value)
+            elif isinstance(value, enum.Enum):
+                data[attr] = value.value
             elif type(value) is _AssociationList:
                 data[attr] = list(value)
             elif type(value) is InstrumentedList:
