@@ -24,7 +24,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'exp
 # ###### CREATE
 
 def create_subscription_element_from_parameters(createparams):
-    subscription_element = SubscriptionElement(active=True, deleted=False, status='active')
+    subscription_element = SubscriptionElement(active=True, deleted=False, status=SubscriptionElement.status_enum.active)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(subscription_element, update_columns, createparams)

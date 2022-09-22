@@ -48,9 +48,9 @@ def record_outcome(post, record):
         extend_errors(record, valid_errors)
         if record.model_name == 'upload':
             add_upload_failure(record)
-        elif record.model_name == 'subscription_element' and record.status == 'active':
+        elif record.model_name == 'subscription_element' and record.status.name == 'active':
             update_subscription_element_active(record, False)
-            update_subscription_element_status(record, 'error')
+            update_subscription_element_status(record, 'active')
         return False
     if record.model_name == 'upload':
         upload_append_post(record, post)

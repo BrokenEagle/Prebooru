@@ -1,9 +1,12 @@
 # APP/MODELS/SUBSCRIPTION_ELEMENT.PY
 
+# ## PYTHON IMPORTS
+import enum
+
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
-from .base import JsonModel, NormalizedDatetime, secondarytable
+from .base import JsonModel, IntEnum, NormalizedDatetime, secondarytable, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -20,6 +23,23 @@ SubscriptionElementErrors = secondarytable(
 
 # ## CLASSES
 
+class SubscriptionElementStatus(enum.Enum):
+    active = enum.auto()
+    unlinked = enum.auto()
+    deleted = enum.auto()
+    archived = enum.auto()
+    error = enum.auto()
+    duplicate = enum.auto()
+
+    @classproperty(cached=False)
+    def names(cls):
+        return [e.name for e in cls]
+
+    @classproperty(cached=False)
+    def values(cls):
+        return [e.value for e in cls]
+
+
 class SubscriptionElement(JsonModel):
     # ## Declarations
 
@@ -31,7 +51,7 @@ class SubscriptionElement(JsonModel):
     md5 = DB.Column(DB.String(32), nullable=True)
     keep = DB.Column(DB.String(16), nullable=True)
     expires = DB.Column(NormalizedDatetime(), nullable=True)
-    status = DB.Column(DB.String(16), nullable=True)
+    status = DB.Column(IntEnum(SubscriptionElementStatus), nullable=False)
     deleted = DB.Column(DB.Boolean, nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)
 
@@ -39,6 +59,9 @@ class SubscriptionElement(JsonModel):
     # subscription <- Susbscription (MtO)
     errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('subscription_element', uselist=False, lazy=True))
+    # ## Class properties
+
+    status_enum = SubscriptionElementStatus
 
 
 # ## INITIALIZATION
