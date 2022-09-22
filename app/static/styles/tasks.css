@@ -9,3 +9,7 @@ div#tasks-page {
 table tr span.heading {
     font-size: 1.2em;
 }
+
+table tr {
+    height: 2em;
+}
