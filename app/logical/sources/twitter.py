@@ -188,13 +188,6 @@ TWITTER_USER_HEADERS = {
 HAS_USER_AUTH = TWITTER_USER_TOKEN is not None and TWITTER_CSRF_TOKEN is not None
 TWITTER_HEADERS = TWITTER_USER_HEADERS if HAS_USER_AUTH else None
 
-TWITTER_SEARCH_PARAMS = {
-    "tweet_search_mode": "live",
-    "query_source": "typed_query",
-    "pc": "1",
-    "spelling_corrections": "1",
-}
-
 TWITTER_ILLUST_TIMELINE_GRAPHQL = {
     "includePromotedContent": True,
     "withHighlightedLabel": True,
