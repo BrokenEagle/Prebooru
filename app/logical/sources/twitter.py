@@ -210,6 +210,35 @@ TWITTER_ILLUST_TIMELINE_GRAPHQL = {
     "withVoice": True
 }
 
+TWITTER_MEDIA_TIMELINE_GRAPHQL = {
+    "count": 100,
+    "includePromotedContent": False,
+    "withSuperFollowsUserFields": True,
+    "withDownvotePerspective": False,
+    "withReactionsMetadata": False,
+    "withReactionsPerspective": False,
+    "withSuperFollowsTweetFields": True,
+    "withClientEventToken": False,
+    "withBirdwatchNotes": False,
+    "withVoice": True,
+    "withV2Timeline": True,
+}
+
+TWITTER_MEDIA_TIMELINE_FEATURES = {
+    "responsive_web_graphql_timeline_navigation_enabled": False,
+    "unified_cards_ad_metadata_container_dynamic_card_content_query_enabled": False,
+    "dont_mention_me_view_api_enabled": True,
+    "responsive_web_uc_gql_enabled": True,
+    "vibe_api_enabled": True,
+    "responsive_web_edit_tweet_api_enabled": True,
+    "graphql_is_translatable_rweb_tweet_is_translatable_enabled": False,
+    "standardized_nudges_misinfo": True,
+    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": False,
+    "interactive_text_enabled": True,
+    "responsive_web_text_conversations_enabled": False,
+    "responsive_web_enhance_cards_enabled": True,
+}
+
 TWITTER_BASE_PARAMS = {
     "include_profile_interstitial_type": "1",
     "include_blocking": "1",
@@ -590,23 +619,32 @@ def get_twitter_scroll_bottom_cursor(data):
                 return cursor
 
 
-def timeline_iterator(data, cursor, tweet_ids, last_id=None, **kwargs):
-    tweets = get_global_objects(data['body'], 'tweets')
-    if len(tweets) == 0:
+def timeline_iterator(data, cursor, tweet_ids, user_id=None, last_id=None, v2=False, **kwargs):
+    if v2:
+        results = get_graphql_timeline_entries_v2(data['body'])
+    else:
+        results = {
+            'tweets': {tweet['id_str']: tweet for tweet in get_global_objects(data['body'], 'tweets')},
+            'users': {user['id_str']: user for user in get_global_objects(data['body'], 'users')},
+            }
+    tweets = [tweet for tweet in results['tweets'].values()]
+    if len(results['tweets']) == 0:
         # Only check on the first iteration
-        if cursor[0] is None and len(get_global_objects(data['body'], 'users')) == 0:
+        if cursor[0] is None and len(results['users']) == 0:
             return
         print("Reached end of timeline!")
         return True
-    tweets = [tweet for tweet in tweets if safe_get(tweet, 'entities', 'media')]
-    tweet_ids.extend([int(tweet['id_str']) for tweet in tweets])
-    save_api_data(tweets, 'id_str', SITE_ID, 'illust')
+    media_tweets = [tweet for tweet in tweets if safe_get(tweet, 'entities', 'media')]
+    save_api_data(media_tweets, 'id_str', SITE_ID, 'illust')
+    user_tweets = [tweet for tweet in media_tweets if user_id is None or tweet['user_id_str'] == str(user_id)]
+    new_ids = [int(tweet['id_str']) for tweet in user_tweets]
+    tweet_ids.extend(new_ids)
     if last_id is not None and any(x for x in tweet_ids if x <= last_id):
         valid_ids = [x for x in tweet_ids if x > last_id]
         tweet_ids.clear()
         tweet_ids.extend(valid_ids)
         return True
-    found_cursor = get_twitter_scroll_bottom_cursor(data['body'])
+    found_cursor = results['cursors']['bottom'] if v2 else get_twitter_scroll_bottom_cursor(data['body'])
     if found_cursor is None:
         print("Reached end of timeline!")
         return True
@@ -737,6 +775,32 @@ def get_graphql_timeline_entries(data, found_tweets):
     return found_tweets
 
 
+def get_graphql_timeline_entries_v2(data, retdata=None):
+    retdata = retdata or {'tweets': {}, 'retweets': {}, 'users': {}, 'cursors': {}}
+    for key in data:
+        if key == '__typename':
+            if data[key] == 'Tweet' and 'legacy' in data:
+                key = 'tweets' if 'retweeted_status_result' not in data['legacy'] else 'retweets'
+            elif data[key] == 'User' and 'legacy' in data:
+                key = 'users'
+            elif data[key] == "TimelineTimelineCursor":
+                cursor_key = data['cursorType'].lower()
+                retdata['cursors'][cursor_key] = data['value']
+                continue
+            else:
+                continue
+            item = data['legacy']
+            id_str = item['id_str'] = data['rest_id']
+            retdata[key][id_str] = data['legacy']
+        elif type(data[key]) is list:
+            for i in range(len(data[key])):
+                if type(data[key][i]) is dict:
+                    retdata = get_graphql_timeline_entries_v2(data[key][i], retdata)
+        elif type(data[key]) is dict:
+            retdata = get_graphql_timeline_entries_v2(data[key], retdata)
+    return retdata
+
+
 def get_twitter_illust_timeline(illust_id):
     print("Getting twitter #%d" % illust_id)
     illust_id_str = str(illust_id)
@@ -765,7 +829,7 @@ def get_twitter_illust_timeline(illust_id):
     return found_tweets
 
 
-def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}):
+def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
     print("Populating from media page: %d" % (user_id))
 
     def page_func(cursor, **kwargs):
@@ -773,19 +837,21 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
         job_status['range'] = 'media:' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        params = TWITTER_BASE_PARAMS.copy()
+        variables = TWITTER_MEDIA_TIMELINE_GRAPHQL.copy()
+        features = TWITTER_MEDIA_TIMELINE_FEATURES.copy()
+        variables['userId'] = str(user_id)
         if cursor is not None:
-            params['cursor'] = cursor
-        url_params = urllib.parse.urlencode(params)
-        return twitter_request(("https://api.twitter.com/2/timeline/media/%d.json?" % user_id) + url_params)
+            variables['cursor'] = cursor
+        url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features)})
+        return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params)
 
     page = 1
-    tweet_ids = get_timeline(page_func, last_id=last_id)
+    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, v2=True)
     return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
 
-def populate_twitter_search_timeline(account, since_date, until_date, job_id=None, job_status={}):
+def populate_twitter_search_timeline(account, since_date, until_date, job_id=None, job_status={}, **kwargs):
     query = f"from:{account} since:{since_date} until:{until_date}"
     print("Populating from search page: %s" % query)
 
@@ -803,7 +869,7 @@ def populate_twitter_search_timeline(account, since_date, until_date, job_id=Non
         return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params)
 
     page = 1
-    tweet_ids = get_timeline(page_func)
+    tweet_ids = get_timeline(page_func, **kwargs)
     return create_error('sources.twitter.populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
@@ -1104,7 +1170,9 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
         since_date = get_date(next_timeval)
         job_status['records'] = len(tweet_ids)
         update_job_status(job_id, job_status)
-        temp_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date,
+        temp_ids = populate_twitter_search_timeline(artist.current_site_account,
+                                                    since_date, until_date,
+                                                    user_id=artist.site_artist_id,
                                                     job_id=job_id, job_status=job_status)
         if is_error(temp_ids):
             return temp_ids
