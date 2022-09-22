@@ -34,8 +34,8 @@ def check_all_posts_for_danbooru_id():
 
 def check_posts_for_danbooru_id(posts):
     post_md5s = [post.md5 for post in posts]
-    for i in range(0, len(post_md5s), 200):
-        md5_sublist = post_md5s[i: i + 200]
+    for i in range(0, len(post_md5s), 1000):
+        md5_sublist = post_md5s[i: i + 1000]
         results = get_posts_by_md5s(md5_sublist)
         if results['error']:
             print(results['message'])
