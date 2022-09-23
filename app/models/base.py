@@ -2,6 +2,8 @@
 
 # ## PYTHON IMPORTS
 import enum
+import json
+import zlib
 import datetime
 from types import SimpleNamespace
 
@@ -183,6 +185,25 @@ class IntEnum(DB.TypeDecorator):
         if value is None and self._nullable:
             return None
         raise ValueError(f"Illegal value in DB found for enum {self._enumname}.")
+
+
+class CompressedJSON(DB.TypeDecorator):
+    """
+    Stores JSON data as a compressed BLOB instead of a string representation.
+    :NOTE: This will make the individual data values non-queryable by SqlAlchemy.
+    """
+    impl = DB.BLOB
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        string_value = json.dumps(value, ensure_ascii=False, separators=(',', ':'))
+        encoded_value = string_value.encode('UTF')
+        return zlib.compress(encoded_vaue)
+
+    def process_result_value(self, value, dialect):
+        decompressed_value = zlib.decompress(value)
+        decoded_value = decompressed_value.decode('UTF')
+        return json.loads(decoded_value)
 
 
 class JsonModel(DB.Model):
