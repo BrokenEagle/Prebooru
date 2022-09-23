@@ -8,6 +8,7 @@ from sqlalchemy import and_, or_
 from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
+from config import EXPIRED_SUBSCRIPTION
 from utility.time import get_current_time, hours_from_now
 from utility.print import buffered_print, print_info
 
@@ -42,6 +43,15 @@ WAITING_THREADS = {
     'similarity': 0,
     'video': 0,
 }
+
+if EXPIRED_SUBSCRIPTION is True:
+    EXPIRED_SUBSCRIPTION_ACTION = 'archive'
+elif EXPIRED_SUBSCRIPTION in ['unlink', 'delete', 'archive']:
+    EXPIRED_SUBSCRIPTION_ACTION = EXPIRED_SUBSCRIPTION
+elif EXPIRED_SUBSCRIPTION is False:
+    EXPIRED_SUBSCRIPTION_ACTION = None
+else:
+    raise ValueError("Bad value set in config for EXPIRED_SUBSCRIPTION.")
 
 
 # ## FUNCTIONS
@@ -134,9 +144,8 @@ def expire_subscription_elements(manual):
     retdata = {'unlink': 0, 'delete': 0, 'archive': 0}
     max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
     # First pass - Unlink all "yes" elements or those that were manually downloaded by the user
-    expired_clause = and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.keep == 'yes')
-    user_clause = (Post.type.name == 'user')
-    q = SubscriptionElement.query.join(Post, SubscriptionElement.post).filter(or_(expired_clause, user_clause))
+    q = SubscriptionElement.query.join(Post, SubscriptionElement.post)\
+                                 .filter(or_(_expired_clause('yes', 'unlink'), (Post.type == 'user')))
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=50)
     while True:
@@ -149,8 +158,7 @@ def expire_subscription_elements(manual):
             break
         page = page.next()
     # Second pass - Hard delete all "no" element posts
-    q = SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
-                                         SubscriptionElement.keep == 'no')
+    q = SubscriptionElement.query.filter(_expired_clause('no', 'delete'))
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=10)
     while True:
@@ -163,10 +171,7 @@ def expire_subscription_elements(manual):
             break
         page = page.next()
     # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
-    q = SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
-                                         SubscriptionElement.status == 'active',
-                                         or_(SubscriptionElement.keep == 'archive',
-                                             SubscriptionElement.keep.is_(None)))
+    q = SubscriptionElement.query.filter(_expired_clause('archive', 'archive'))
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=10)
     while True:
@@ -231,3 +236,12 @@ def _process_videos(elements):
     if len(video_posts):
         thread = threading.Thread(target=_process)
         thread.start()
+
+
+def _expired_clause(keep, action):
+    main_clause = (SubscriptionElement.keep == keep)
+    if (action == EXPIRED_SUBSCRIPTION_ACTION):
+        keep_clause = or_(main_clause, SubscriptionElement.keep.is_(None)) 
+    else:
+        keep_clause = main_clause
+    return and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.status == 'active', keep_clause)
