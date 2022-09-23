@@ -34,7 +34,7 @@
                         <strong>Expires:</strong> {{ helpers.base.format_timestamp(item.expires) }}
                     </td>
                     <td>
-                        <div class="json-data">{{ item.data | tojson(indent=4) }}</div>
+                        <div class="json-data">{{ helpers.base.format_json(item.data) }}</div>
                     </td>
                     <td class="action-column">
                         {{ helpers.archive.reinstantiate_item_link(item) }}

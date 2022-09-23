@@ -27,7 +27,7 @@
                         <strong>Data ID:</strong> {{ api_datum.data_id }}
                     </td>
                     <td>
-                        <div class="json-data">{{ api_datum.data | tojson(indent=4) }}</div>
+                        <div class="json-data">{{ helpers.base.format_json(api_datum.data) }}</div>
                     </td>
                     <td>{{ helpers.base.format_timestamp(api_datum.expires) }}</td>
                 </tr>

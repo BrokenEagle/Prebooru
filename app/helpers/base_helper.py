@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 import re
 import html
+import json
 import datetime
 
 # ## EXTERNAL IMPORTS
@@ -50,6 +51,10 @@ def display_case(text):
 
 def val_or_none(val):
     return Markup('<em>none</em>') if val is None else val
+
+
+def format_json(data):
+    return Markup(json.dumps(data, indent=4, ensure_ascii=False))
 
 
 def format_timestamp(timeval):
