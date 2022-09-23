@@ -101,6 +101,8 @@ class Artist(JsonModel):
 
     @property
     def site_domain(self):
+        if self.site_id == 0:
+            return
         return get_site_domain(self.site_id)
 
     @property

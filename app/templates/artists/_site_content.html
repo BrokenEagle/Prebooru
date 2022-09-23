@@ -10,7 +10,7 @@
                     <strong>{{ helpers.artist.site_id_link(artist) }}</strong>
                 </li>
                 <li>
-                    <strong>Domain:</strong> {{ artist.site_domain }}
+                    <strong>Domain:</strong> {{ helpers.base.val_or_none(artist.site_domain) }}
                 </li>
                 <li>
                     <strong>Site ID:</strong> {{ artist.site_artist_id }}

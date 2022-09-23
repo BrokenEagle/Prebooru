@@ -149,6 +149,19 @@ def delete_artist(artist):
 
 # ###### Misc
 
+def get_blank_artist():
+    artist = Artist.query.filter(site_id=0, site_artist_id=1).first()
+    if not artist:
+        createparams = {
+            'site_id': 0,
+            'site_artist_id': 1,
+            'current_site_account': 'Prebooru',
+            'active': True,
+        }
+        artist = create_artist_from_parameters(createparams)
+    return artist
+
+
 def artist_append_booru(artist, booru):
     artist.boorus.append(booru)
     artist.updated = get_current_time()

@@ -59,6 +59,8 @@ def add_notation_link(artist):
 
 
 def site_id_link(artist):
+    if artist.site_id == 0:
+        return Markup('Custom Site')
     return general_link(site_short_link(artist), href_url(artist))
 
 
@@ -74,10 +76,14 @@ def post_search_link(artist):
 
 
 def site_artist_link(artist):
+    if artist.site_id == 0:
+        return Markup('N/A')
     return external_link(site_short_link(artist), href_url(artist))
 
 
 def artist_links(artist):
+    if artist.site_id == 0:
+        return Markup('N/A')
     site_key = get_site_key(artist.site_id)
     source = SOURCEDICT[site_key]
     if not source.has_artist_urls(artist):
