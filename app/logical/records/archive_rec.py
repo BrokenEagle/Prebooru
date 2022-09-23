@@ -24,7 +24,7 @@ def reinstantiate_archive_item(archive):
     retdata = {'error': False}
     data = process_archive_data(archive.data)
     if archive.type == 'post':
-        return reinstantiate_archived_post(archive)
+        return reinstantiate_archived_post(archive, True)
     elif archive.type == 'illust':
         return recreate_archived_illust(data)
     elif archive.type == 'artist':

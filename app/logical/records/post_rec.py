@@ -2,6 +2,7 @@
 
 # ### PYTHON IMPORTS
 import os
+import threading
 
 # ### PACKAGE IMPORTS
 from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
@@ -86,7 +87,7 @@ def archive_post_for_deletion(post, expires):
     return _delete_media_files(temppost, retdata)
 
 
-def reinstantiate_archived_post(archive):
+def reinstantiate_archived_post(archive, create_sample):
     retdata = {'error': False}
     post = get_post_by_md5(archive.data['body']['md5'])
     if post is not None:
@@ -103,7 +104,7 @@ def reinstantiate_archived_post(archive):
     # Once the file move is successful, keep going even if there are errors.
     create_sample_preview_files(post, retdata)
     if post.is_video:
-        create_video_sample_preview_files(post, retdata)
+        threading.Thread(target=create_video_sample_preview_files, args=(post, create_sample)).start()
     relink_archived_post(archive, post)
     for notation_data in archive.data['relations']['notations']:
         notation = create_notation_from_raw_parameters(notation_data)
@@ -147,10 +148,10 @@ def create_sample_preview_files(post, retdata=None):
     return retdata
 
 
-def create_video_sample_preview_files(post, retdata=None):
+def create_video_sample_preview_files(post, create_sample):
     convert_mp4_to_webp(post.file_path, post.video_preview_path)
-    convert_mp4_to_webm(post.file_path, post.video_sample_path)
-    return retdata
+    if create_sample:
+        convert_mp4_to_webm(post.file_path, post.video_sample_path)
 
 
 def relink_archived_post(archive, post=None):
