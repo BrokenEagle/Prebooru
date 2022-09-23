@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 import os
 import sys
+import json
 import logging
 import traceback
 from io import BytesIO
@@ -33,6 +34,7 @@ PREBOORU_DB_URL = os.environ.get('PREBOORU_DB', 'sqlite:///%s' % DB_PATH)
 SCHEDULER_DB_URL = os.environ.get('SCHEDULER_JOBSTORES', r'sqlite:///%s' % JOBS_PATH)
 
 ENGINE_OPTIONS = {
+    'json_serializer': lambda obj: json.dumps(obj, ensure_ascii=False, separators=(',', ':')),
     'connect_args': {
         'check_same_thread': False,
         'timeout': 60},
