@@ -69,7 +69,7 @@ class Subscription(JsonModel):
 
     @memoized_property
     def active_elements(self):
-        return self._element_query.filter(SubscriptionElement.active.is_(True)).all()
+        return self._element_query.filter_by(status='active').all()
 
     @memoized_property
     def average_keep_interval(self):

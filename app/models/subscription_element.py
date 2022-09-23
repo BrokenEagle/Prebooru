@@ -52,8 +52,6 @@ class SubscriptionElement(JsonModel):
     keep = DB.Column(DB.String(16), nullable=True)
     expires = DB.Column(NormalizedDatetime(), nullable=True)
     status = DB.Column(IntEnum(SubscriptionElementStatus), nullable=False)
-    deleted = DB.Column(DB.Boolean, nullable=False)
-    active = DB.Column(DB.Boolean, nullable=False)
 
     # #### Relationships
     # subscription <- Susbscription (MtO)

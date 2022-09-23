@@ -11,7 +11,7 @@ from ..sources import SOURCEDICT
 from ..downloader.network import convert_network_subscription
 from ..records.post_rec import reinstantiate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
-    update_subscription_element_deleted, update_subscription_element_status, link_subscription_post
+    update_subscription_element_status, link_subscription_post
 from ..database.post_db import get_post_by_md5
 from ..database.archive_db import get_archive
 from ..database.jobs_db import get_job_status_data, update_job_status
@@ -60,7 +60,6 @@ def redownload_element(element):
 
     def try_func(scope_vars):
         nonlocal element, source
-        update_subscription_element_deleted(element, False)
         initial_errors = [error.id for error in element.errors]
         if convert_network_subscription(element, source):
             update_subscription_element_status(element, 'active')
@@ -74,11 +73,8 @@ def redownload_element(element):
     def msg_func(scope_vars, error):
         return f"Unhandled exception occurred on subscripton #{element.subscription_id}: {repr(error)}"
 
-    def error_func(scope_vars, error):
-        update_subscription_element_deleted(element, True)
-
     results = safe_db_execute('redownload_element', 'records.subscription_rec', try_func=try_func, msg_func=msg_func,
-                              error_func=error_func, printer=print)
+                              printer=print)
     return results
 
 
@@ -87,7 +83,6 @@ def reinstantiate_element(element):
     if archive is None:
         if get_post_by_md5(element.md5) is not None:
             update_subscription_element_status(element, 'unlinked')
-            update_subscription_element_deleted(element, False)
         else:
             update_subscription_element_status(element, 'deleted')
         return {'error': True, 'message': f'Post archive with MD5 {element.md5} does not exist.'}
@@ -100,7 +95,6 @@ def reinstantiate_element(element):
 def relink_element(element):
     post = get_post_by_md5(element.md5)
     if post is None:
-        update_subscription_element_deleted(element, True)
         if get_archive('post', element.md5) is not None:
             update_subscription_element_status(element, 'archived')
         else:

@@ -24,7 +24,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'exp
 # ###### CREATE
 
 def create_subscription_element_from_parameters(createparams):
-    subscription_element = SubscriptionElement(active=True, deleted=False, status=SubscriptionElement.status_enum.active)
+    subscription_element = SubscriptionElement(status='active')
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(subscription_element, update_columns, createparams)
@@ -33,16 +33,6 @@ def create_subscription_element_from_parameters(createparams):
 
 
 # ###### UPDATE
-
-def update_subscription_element_active(subscription_element, active):
-    subscription_element.active = active
-    SESSION.commit()
-
-
-def update_subscription_element_deleted(subscription_element, deleted):
-    subscription_element.deleted = deleted
-    SESSION.commit()
-
 
 def batch_update_subscription_element_keep(subscription_elements, value):
     for subscription_element in subscription_elements:
@@ -64,7 +54,6 @@ def update_subscription_element_status(subscription_element, value):
 
 def link_subscription_post(element, post):
     element.post = post
-    element.active = True
     element.md5 = post.md5
     element.status = 'active'
     element.expires = None
@@ -75,7 +64,6 @@ def link_subscription_post(element, post):
 def unlink_subscription_post(element):
     element.post = None
     element.expires = None
-    element.active = False
     element.status = 'unlinked'
     SESSION.commit()
 
@@ -84,8 +72,6 @@ def delete_subscription_post(element):
     if element.post is not None:
         delete_post_and_media(element.post)
     element.expires = None
-    element.active = False
-    element.deleted = True
     element.status = 'deleted'
     SESSION.commit()
 
@@ -94,15 +80,12 @@ def archive_subscription_post(element):
     if element.post is not None:
         archive_post_for_deletion(element.post, None)
     element.expires = None
-    element.active = False
-    element.deleted = True
     element.status = 'archived'
     SESSION.commit()
 
 
 def duplicate_subscription_post(element, md5):
     element.expires = None
-    element.active = False
     element.md5 = md5
     element.status = 'duplicate'
     SESSION.commit()
@@ -115,7 +98,10 @@ def get_elements_by_id(id_list):
 
 
 def check_deleted_subscription_post(md5):
-    return SESSION.query(SubscriptionElement.id).filter_by(md5=md5, deleted=True).first() is not None
+    return SESSION.query(SubscriptionElement.id)\
+                  .filter(SubscriptionElement.md5 == md5,
+                          SubscriptionElement.status.in_(['deleted', 'archived'])
+                          ).first() is not None
 
 
 def total_expired_subscription_elements():
@@ -126,8 +112,7 @@ def total_expired_subscription_elements():
 def total_missing_downloads():
     return SubscriptionElement.query.join(Subscription)\
                                     .filter(SubscriptionElement.post_id.is_(None),
-                                            SubscriptionElement.active.is_(True),
-                                            SubscriptionElement.deleted.is_(False),
+                                            SubscriptionElement.status == 'active',
                                             Subscription.status == 'idle')\
                                     .get_count()
 

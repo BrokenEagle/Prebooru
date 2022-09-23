@@ -9,7 +9,7 @@ from utility.data import get_buffer_checksum
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
 from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
-from ..database.subscription_element_db import link_subscription_post, update_subscription_element_active,\
+from ..database.subscription_element_db import link_subscription_post, \
     check_deleted_subscription_post, update_subscription_element_status, duplicate_subscription_post
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.error_db import create_error, create_and_append_error, extend_errors, is_error
@@ -49,8 +49,7 @@ def record_outcome(post, record):
         if record.model_name == 'upload':
             add_upload_failure(record)
         elif record.model_name == 'subscription_element' and record.status.name == 'active':
-            update_subscription_element_active(record, False)
-            update_subscription_element_status(record, 'active')
+            update_subscription_element_status(record, 'error')
         return False
     if record.model_name == 'upload':
         upload_append_post(record, post)

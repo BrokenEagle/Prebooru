@@ -87,7 +87,7 @@ def download_subscription_elements(subscription, job_id=None):
     job_status['stage'] = 'downloads'
     site_key = get_site_key(subscription.artist.site_id)
     source = SOURCEDICT[site_key]
-    q = SubscriptionElement.query.filter_by(subscription_id=subscription.id, post_id=None, active=True)
+    q = SubscriptionElement.query.filter_by(subscription_id=subscription.id, post_id=None, status='active')
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
@@ -109,8 +109,7 @@ def download_subscription_elements(subscription, job_id=None):
 def download_missing_elements(manual=False):
     q = SubscriptionElement.query.join(Subscription)\
                                  .filter(SubscriptionElement.post_id.is_(None),
-                                         SubscriptionElement.active.is_(True),
-                                         SubscriptionElement.deleted.is_(False),
+                                         SubscriptionElement.status == 'active',
                                          Subscription.status == 'idle')
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
