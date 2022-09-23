@@ -411,9 +411,9 @@ def text_comparison_matching(model, columnname, value, cmp_type):
 
 def existence_matching(model, columnname, value):
     if is_truthy(value):
-        return getattr(model, columnname).is_(None)
-    elif is_falsey(value):
         return getattr(model, columnname).is_not(None)
+    elif is_falsey(value):
+        return getattr(model, columnname).is_(None)
     else:
         raise Exception("%s - value must be truthy or falsey" % (columnname + '_exists'))
 
