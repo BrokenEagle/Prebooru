@@ -2,18 +2,19 @@
 
 # ## PACKAGE IMPORTS
 from utility.data import merge_dicts
+from utility.print import print_warning
 
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
-from ..database.artist_db import get_site_artist
+from ..database.artist_db import get_site_artist, get_blank_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust,\
     get_site_illust, create_illust_from_raw_parameters
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.archive_db import get_archive, create_archive, update_archive
-from .artist_rec import create_artist_from_source
+from .artist_rec import create_artist_from_source, get_or_create_artist_from_source
 
 
 # ## FUNCTIONS
@@ -22,11 +23,9 @@ def create_illust_from_source(site_illust_id, source):
     createparams = source.get_illust_data(site_illust_id)
     if not createparams['active']:
         return
-    artist = get_site_artist(createparams['site_artist_id'], source.SITE_ID)
+    artist = get_or_create_artist_from_source(user_id, source)
     if artist is None:
-        artist = create_artist_from_source(createparams['site_artist_id'], source)
-        if artist is None:
-            return
+        return
     createparams['artist_id'] = artist.id
     return create_illust_from_parameters(createparams)
 
@@ -37,6 +36,13 @@ def update_illust_from_source(illust, source):
         # These are only removable through the HTML/JSON UPDATE routes
         updateparams['tags'] += [tag for tag in illust.tags if tag not in updateparams['tags']]
     update_illust_from_parameters(illust, updateparams)
+    if illust.artist.site_artist_id != updateparams['site_artist_id']:
+        artist = get_or_create_artist_from_source(updateparams['site_artist_id'], source)
+        if artist is None:
+            artist = get_blank_artist()
+        print_warning(f"[{illust.shortlink}] Switching artist from {illust.artist.shortlink} to {artist.shortlink}")
+        illust.artist = artist
+        SESSION.commit()
 
 
 def archive_illust_for_deletion(illust):

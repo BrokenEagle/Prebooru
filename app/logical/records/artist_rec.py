@@ -15,6 +15,13 @@ from ..database.archive_db import get_archive, create_archive, update_archive
 
 # ## FUNCTIONS
 
+def get_or_create_artist_from_source(site_artist_id, source):
+    artist = get_site_artist(site_artist_id, source.SITE_ID)
+    if artist is None:
+        artist = create_artist_from_source(site_artist_id, source)
+    return artist
+
+
 def create_artist_from_source(site_artist_id, source):
     params = source.get_artist_data(site_artist_id)
     if not params['active']:
