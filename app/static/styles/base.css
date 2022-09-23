@@ -102,6 +102,10 @@ table.striped tbody tr:hover {
     background: #e1e8ff;
 }
 
+table.striped td {
+    padding: 0.5rem 0;
+}
+
 code {
     background-color: lightgrey;
     font-family: monospace;
@@ -365,6 +369,7 @@ header#top menu {
 
 header#top menu.main {
     background: none;
+    margin-bottom: 0;
 }
 
 header#top menu li a {
