@@ -615,9 +615,10 @@ def timeline_iterator(data, cursor, tweet_ids, user_id=None, last_id=None, v2=Fa
     if v2:
         results = get_graphql_timeline_entries_v2(data['body'])
     else:
-        results = {
-            'tweets': {tweet['id_str']: tweet for tweet in get_global_objects(data['body'], 'tweets')},
-            'users': {user['id_str']: user for user in get_global_objects(data['body'], 'users')},
+        results =\
+            {
+                'tweets': {tweet['id_str']: tweet for tweet in get_global_objects(data['body'], 'tweets')},
+                'users': {user['id_str']: user for user in get_global_objects(data['body'], 'users')},
             }
     tweets = [tweet for tweet in results['tweets'].values()]
     if len(results['tweets']) == 0:

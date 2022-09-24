@@ -61,11 +61,11 @@ section#post-info.danbooru-uploaded {
 }
 
 section#post-info.user-post {
-    background: #ccffff;
+    background: #cff;
 }
 
 section#post-info.subscription-post {
-    background: #ffdddd;
+    background: #fdd;
 }
 
 section#post-commentaries {

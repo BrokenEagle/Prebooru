@@ -14,7 +14,7 @@ from ..database.illust_url_db import get_illust_url_by_url
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.archive_db import get_archive, create_archive, update_archive
-from .artist_rec import create_artist_from_source, get_or_create_artist_from_source
+from .artist_rec import get_or_create_artist_from_source
 
 
 # ## FUNCTIONS
@@ -23,7 +23,7 @@ def create_illust_from_source(site_illust_id, source):
     createparams = source.get_illust_data(site_illust_id)
     if not createparams['active']:
         return
-    artist = get_or_create_artist_from_source(user_id, source)
+    artist = get_or_create_artist_from_source(createparams['site_artist_id'], source)
     if artist is None:
         return
     createparams['artist_id'] = artist.id

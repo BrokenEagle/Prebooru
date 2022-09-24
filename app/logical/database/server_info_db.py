@@ -26,7 +26,8 @@ T_SERVER_INFO = Table(
     Column('info', Unicode(255), nullable=False),
 )
 
-INFO_FIELDS = ['server_last_activity', 'user_last_activity', 'twitter_next_wait', 'pixiv_next_wait', 'subscriptions_ready']
+INFO_FIELDS = ['server_last_activity', 'user_last_activity', 'twitter_next_wait', 'pixiv_next_wait',
+               'subscriptions_ready']
 
 FIELD_UPDATERS = {
     'server_last_activity': lambda *args: datetime.datetime.isoformat(get_current_time()),

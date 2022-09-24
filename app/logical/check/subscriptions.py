@@ -243,7 +243,7 @@ def _process_videos(elements):
 def _expired_clause(keep, action):
     main_clause = (SubscriptionElement.keep == keep)
     if (action == EXPIRED_SUBSCRIPTION_ACTION):
-        keep_clause = or_(main_clause, SubscriptionElement.keep.is_(None)) 
+        keep_clause = or_(main_clause, SubscriptionElement.keep.is_(None))
     else:
         keep_clause = main_clause
     return and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.status == 'active', keep_clause)
