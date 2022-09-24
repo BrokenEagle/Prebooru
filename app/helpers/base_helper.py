@@ -54,7 +54,7 @@ def val_or_none(val):
 
 
 def format_json(data):
-    return Markup(json.dumps(data, indent=4, ensure_ascii=False))
+    return json.dumps(data, indent=4, ensure_ascii=False)
 
 
 def format_timestamp(timeval):
