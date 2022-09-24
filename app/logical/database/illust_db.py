@@ -122,6 +122,11 @@ def update_illust_from_parameters(illust, updateparams):
         SESSION.commit()
 
 
+def set_illust_artist(illust, artist):
+    illust.artist = artist
+    SESSION.commit()
+
+
 # ###### Delete
 
 def delete_illust(illust):

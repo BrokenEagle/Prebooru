@@ -112,6 +112,12 @@ def add_pool_link(illust):
     return general_link("Add to pool", url, **addons)
 
 
+def update_artist_link(illust):
+    url = url_for('illust.update_artist_html', id=illust.id)
+    addons = {'onclick': "return Illusts.updateArtist(this)"}
+    return general_link("Update artist", url, **addons)
+
+
 def delete_commentary_link(illust, commentary):
     url = url_for('illust.delete_commentary_html', id=illust.id, description_id=commentary.id)
     return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})

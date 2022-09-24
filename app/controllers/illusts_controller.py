@@ -16,7 +16,7 @@ from ..logical.utility import set_error
 from ..logical.sources.base import get_source_by_id, get_illust_required_params
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
-    illust_delete_commentary
+    illust_delete_commentary, set_illust_artist
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
     hide_input, int_or_blank, nullify_blanks, set_default, check_param_requirements, parse_array_parameter,\
@@ -297,6 +297,18 @@ def query_create():
     return retdata
 
 
+def update_artist(illust):
+    params = dict(artist_id=request.values.get('artist_id', type=int))
+    retdata = {'error': False, 'params': params}
+    if not isinstance(params['artist_id'], int):
+        return set_error(retdata, "No artist ID included: %d" % str(params['artist_id']))
+    artist = Artist.find(params['artist_id'])
+    if artist is None:
+        return set_error(retdata, "Artist ID is not valid: %d" % params['artist_id'])
+    set_illust_artist(illust, artist)
+    return retdata
+
+
 def delete_commentary(illust):
     description_id = request.values.get('description_id', type=int)
     retdata = {'error': False, 'params': {'description_id': description_id}}
@@ -435,6 +447,17 @@ def query_update_html(id):
     source = get_source_by_id(illust.site_id)
     update_illust_from_source(illust, source)
     flash("Illust updated.")
+    return redirect(url_for('illust.show_html', id=id))
+
+
+@bp.route('/illusts/<int:id>/update_artist', methods=['POST'])
+def update_artist_html(id):
+    illust = get_or_abort(Illust, id)
+    results = update_artist(illust)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash("Illust updated.")
     return redirect(url_for('illust.show_html', id=id))
 
 

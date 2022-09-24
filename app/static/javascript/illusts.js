@@ -17,5 +17,9 @@ const Illusts = {};
         let site_id = document.getElementById("illust-site-id").value;
         document.getElementById('form').className = SITE_MAP[site_id];
     };
+    Illusts.updateArtist = function(obj) {
+        return Prebooru.promptArgPost(obj, "Enter the artist ID:", 'artist_id');
+    };
+
 })();
 
