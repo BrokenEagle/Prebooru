@@ -20,7 +20,7 @@ class SiteData(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False)
-    type = DB.Column(DB.String(50))
+    type = DB.Column(DB.String(50), nullable=False)
 
     # ## Private
 

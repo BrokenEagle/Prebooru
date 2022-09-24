@@ -50,9 +50,9 @@ class Illust(JsonModel):
     site_illust_id = DB.Column(DB.Integer, nullable=False)
     site_created = DB.Column(NormalizedDatetime(), nullable=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
-    pages = DB.Column(DB.Integer, nullable=True)
-    score = DB.Column(DB.Integer, nullable=True)
-    active = DB.Column(DB.Boolean, nullable=True)
+    pages = DB.Column(DB.Integer, nullable=False)
+    score = DB.Column(DB.Integer, nullable=False)
+    active = DB.Column(DB.Boolean, nullable=False)
     created = DB.Column(NormalizedDatetime(), nullable=False)
     updated = DB.Column(NormalizedDatetime(), nullable=False)
 

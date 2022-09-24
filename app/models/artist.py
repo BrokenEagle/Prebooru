@@ -53,10 +53,10 @@ class Artist(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     site_id = DB.Column(DB.Integer, nullable=False)
-    site_artist_id = DB.Column(DB.Integer, nullable=True)
-    current_site_account = DB.Column(DB.String(255), nullable=True)
+    site_artist_id = DB.Column(DB.Integer, nullable=False)
+    current_site_account = DB.Column(DB.String(255), nullable=False)
     site_created = DB.Column(NormalizedDatetime(), nullable=True)
-    active = DB.Column(DB.Boolean, nullable=True)
+    active = DB.Column(DB.Boolean, nullable=False)
     created = DB.Column(NormalizedDatetime(), nullable=False)
     updated = DB.Column(NormalizedDatetime(), nullable=False)
 

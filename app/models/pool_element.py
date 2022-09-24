@@ -48,17 +48,11 @@ class PoolElement(JsonModel):
 
     polymorphic_base = True
 
-    # #### JSON format
-    id: int
-    pool_id: int
-    position: int
-    type: str
-
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     pool_id = DB.Column(DB.Integer, DB.ForeignKey('pool.id'), nullable=False, index=True)
     position = DB.Column(DB.Integer, nullable=False)
-    type = DB.Column(DB.String(50))
+    type = DB.Column(DB.String(50), nullable=False)
 
     # ## Relationships
     # pool <- Pool (MtO)

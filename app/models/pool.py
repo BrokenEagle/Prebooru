@@ -35,8 +35,8 @@ class Pool(JsonModel):
     name = DB.Column(DB.String(255), nullable=False)
     element_count = DB.Column(DB.Integer, nullable=False)
     series = DB.Column(DB.Boolean, nullable=False)
-    created = DB.Column(NormalizedDatetime(), nullable=True)
-    updated = DB.Column(NormalizedDatetime(), nullable=True)
+    created = DB.Column(NormalizedDatetime(), nullable=False)
+    updated = DB.Column(NormalizedDatetime(), nullable=False)
 
     # #### Relationships
     _elements = DB.relationship(PoolElement, backref='pool', order_by=PoolElement.position, lazy=True,

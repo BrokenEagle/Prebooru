@@ -21,7 +21,7 @@ class Tag(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
-    type = DB.Column(DB.String(50))
+    type = DB.Column(DB.String(50), nullable=False)
 
     # ## Property methods
 

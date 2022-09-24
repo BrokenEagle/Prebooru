@@ -47,7 +47,7 @@ class SimilarityData(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False)
-    ratio = DB.Column(DB.Float, nullable=True)
+    ratio = DB.Column(DB.Float, nullable=False)
 
     # ## Property methods
 
