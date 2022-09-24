@@ -20,7 +20,7 @@ from werkzeug.formparser import parse_form_data
 from werkzeug.exceptions import HTTPException
 
 # ## PACKAGE IMPORTS
-from config import DB_PATH, JOBS_PATH, DEBUG_MODE
+from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION
 
 # ## LOCAL IMPORTS
 from .logical import query_extensions
@@ -41,14 +41,6 @@ ENGINE_OPTIONS = {
     'echo_pool': True,
     'pool_recycle': 15}\
     if 'sqlite' in PREBOORU_DB_URL else {}
-
-NAMING_CONVENTION = {
-    "ix": 'ix_%(column_0_N_label)s',
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
-    "ck": "ck_%(table_name)s_%(constraint_name)s",
-    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s"
-}
 
 SERVER_INFO = SimpleNamespace(addr="127.0.0.1", allow_requests=True, active_requests=0, unique_id=None)
 
