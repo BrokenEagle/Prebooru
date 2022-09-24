@@ -210,13 +210,14 @@ def _process_similarity(elements):
 
 
 def _process_videos(elements):
-    def _process():
+    def _process(post_ids):
         printer = buffered_print(f"Process Videos [{thread.ident}]")
         print_info("Video semaphore wait:", WAITING_THREADS['video'])
         WAITING_THREADS['video'] += 1
         VIDEO_SEMAPHORE.acquire()
         WAITING_THREADS['video'] -= 1
         print_info("Video semaphore acquire:", WAITING_THREADS['video'])
+        video_posts = get_posts_by_id(post_ids)
         mp4_count = 0
         try:
             for post in video_posts:
@@ -234,7 +235,8 @@ def _process_videos(elements):
     posts = [element.post for element in elements if element.post is not None]
     video_posts = [post for post in posts if post.is_video]
     if len(video_posts):
-        thread = threading.Thread(target=_process)
+        post_ids = [post.id for post in video_posts]
+        thread = threading.Thread(target=_process, args=(post_ids,))
         thread.start()
 
 
