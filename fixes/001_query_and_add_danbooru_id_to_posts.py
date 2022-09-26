@@ -10,7 +10,7 @@ import sys
 def initialize():
     global check_all_posts_for_danbooru_id
     sys.path.append(os.path.abspath('.'))
-    from app.logical.check.posts import check_all_posts_for_danbooru_id
+    from app.logical.records.post_rec import check_all_posts_for_danbooru_id
 
 
 def main():

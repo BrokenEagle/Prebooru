@@ -13,10 +13,10 @@ from ..utility import unique_objects
 from ..similarity.generate_data import generate_post_similarity
 from ..similarity.populate_pools import populate_similarity_pools
 from ...models import Upload, Illust, Subscription
-from ..check.posts import check_posts_for_danbooru_id
 from ..check.subscriptions import download_subscription_illusts, download_subscription_elements
 from ..records.artist_rec import update_artist_from_source, check_artists_for_boorus
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
+from ..records.post_rec import check_posts_for_danbooru_id
 from ..database.base_db import safe_db_execute
 from ..database.post_db import get_posts_by_id
 from ..database.upload_db import set_upload_status, has_duplicate_posts

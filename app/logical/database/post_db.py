@@ -5,7 +5,7 @@ from utility.time import get_current_time, days_ago
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Post
+from ...models import Post, SubscriptionElement
 from .base_db import update_column_attributes
 from .pool_element_db import delete_pool_element
 from .similarity_pool_db import delete_similarity_pool_by_post_id
@@ -17,6 +17,10 @@ COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id'
                      'pixel_md5', 'duration', 'audio']
 CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type', 'pixel_md5', 'duration', 'audio']
 UPDATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'duration', 'audio', 'danbooru_id']
+
+SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
+                                                .with_entities(SubscriptionElement.post_id)
+NO_SUBELEMENT_CLAUSE = Post.id.not_in(SUBELEMENT_SUBCLAUSE)
 
 
 # ## FUNCTIONS
@@ -128,3 +132,12 @@ def get_post_by_md5(md5):
 
 def alternate_posts_query(days):
     return Post.query.filter(Post.created < days_ago(days), Post.alternate.is_(False))
+
+
+def get_all_posts_page(limit):
+    return Post.query.count_paginate(per_page=limit)
+
+
+def get_posts_to_query_danbooru_id_page(limit):
+    query = Post.query.filter(Post.danbooru_id.is_(None), NO_SUBELEMENT_CLAUSE)
+    return query.limit_paginate(per_page=limit)

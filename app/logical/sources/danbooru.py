@@ -100,7 +100,7 @@ def get_artists_by_multiple_urls(url_list):
     return {'error': False, 'data': retdata}
 
 
-def get_posts_by_md5s(md5_list):
+def get_danbooru_posts_by_md5s(md5_list):
     request_url = '/posts.json'
     params = {
         'tags': 'md5:' + ','.join(md5_list),

@@ -15,10 +15,9 @@ from utility.time import seconds_from_now_local
 from ... import DB, SCHEDULER
 from ...models.media_file import CACHE_DATA_DIRECTORY
 from ..check.boorus import check_all_boorus
-from ..check.posts import check_all_posts_for_danbooru_id
 from ..check.subscriptions import download_subscription_illusts, download_missing_elements,\
     expire_subscription_elements
-from ..records.post_rec import relocate_old_posts_to_alternate
+from ..records.post_rec import relocate_old_posts_to_alternate, check_all_posts_for_danbooru_id
 from ..records.artist_rec import check_all_artists_for_boorus
 from ..records.media_file_rec import batch_delete_media
 from ..database.base_db import safe_db_execute

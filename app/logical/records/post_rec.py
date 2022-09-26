@@ -6,6 +6,7 @@ import threading
 
 # ### PACKAGE IMPORTS
 from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
+from utility.data import get_buffer_checksum
 from utility.file import create_directory, put_get_raw, copy_file, delete_file
 from utility.print import print_error, exception_print
 
@@ -16,7 +17,8 @@ from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm
 from ..database.post_db import create_post_from_raw_parameters, delete_post, post_append_illust_url, get_post_by_md5,\
-    set_post_alternate, alternate_posts_query, copy_post
+    get_posts_to_query_danbooru_id_page, update_post_from_parameters, set_post_alternate, alternate_posts_query,\
+    copy_post, get_all_posts_page
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.error_db import create_error_from_raw_parameters, create_error
@@ -30,6 +32,57 @@ RELOCATE_PAGE_LIMIT = 10
 
 
 # ## FUNCTIONS
+
+def check_all_posts_for_danbooru_id():
+    print("Checking all posts for Danbooru ID.")
+    page = get_posts_to_query_danbooru_id_page(5000)
+    while True:
+        print(f"check_all_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})")
+        if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items):
+            return
+        if not page.has_next:
+            return
+        page = page.next()
+
+
+def check_posts_for_danbooru_id(posts):
+    from ..sources.danbooru import get_danbooru_posts_by_md5s
+    post_md5s = [post.md5 for post in posts]
+    for i in range(0, len(post_md5s), 1000):
+        md5_sublist = post_md5s[i: i + 1000]
+        results = get_danbooru_posts_by_md5s(md5_sublist)
+        if results['error']:
+            print(results['message'])
+            return False
+        if len(results['posts']) > 0:
+            for post in posts:
+                danbooru_post = next(filter(lambda x: x['md5'] == post.md5, results['posts']), None)
+                if danbooru_post is None:
+                    continue
+                update_post_from_parameters(post, {'danbooru_id': danbooru_post['id']})
+    return True
+
+
+def check_posts_for_valid_md5():
+    from ..downloader.network import redownload_post
+    page = get_all_posts_page(100)
+    while True:
+        print(f"check_posts_for_valid_md5: {page.first} - {page.last} / Total({page.count})")
+        for post in page.items:
+            buffer = put_get_raw(post.file_path, 'rb')
+            checksum = get_buffer_checksum(buffer)
+            if post.md5 != checksum:
+                print("\nMISMATCHING CHECKSUM: post #", post.id)
+                for illust_url in post.illust_urls:
+                    if redownload_post(post, illust_url, illust_url._source):
+                        break
+                else:
+                    print("Unable to download!", 'post #', post.id)
+            print(".", end="", flush=True)
+        if not page.has_next:
+            break
+        page = page.next()
+
 
 def move_post_media_to_alternate(post, reverse=False):
     temppost = copy_post(post)
