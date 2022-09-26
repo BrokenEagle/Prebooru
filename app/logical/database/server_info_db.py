@@ -7,6 +7,7 @@ import datetime
 from sqlalchemy import select, Table, Column, MetaData, Unicode
 
 # ## PACKAGE IMPORTS
+from config import NAMING_CONVENTION
 from utility.time import get_current_time, process_utc_timestring, minutes_ago
 from utility.data import eval_bool_string
 
@@ -21,7 +22,7 @@ INITIALIZED = False
 
 T_SERVER_INFO = Table(
     'server_info',
-    MetaData(),
+    MetaData(naming_convention=NAMING_CONVENTION),
     Column('field', Unicode(255), primary_key=True),
     Column('info', Unicode(255), nullable=False),
 )
