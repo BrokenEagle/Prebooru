@@ -10,7 +10,7 @@ import sys
 def initialize():
     global check_all_artists_for_boorus
     sys.path.append(os.path.abspath('.'))
-    from app.logical.check.booru_artists import check_all_artists_for_boorus
+    from app.logical.records.artist_rec import check_all_artists_for_boorus
 
 
 def main():

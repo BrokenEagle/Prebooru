@@ -1,5 +1,8 @@
 # APP/LOGICAL/DATABASE/ARTIST_DB.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy import not_
+
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 
@@ -24,6 +27,12 @@ CREATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account'
                              '_site_accounts', '_names', '_profiles']
 UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active',
                              '_site_accounts', '_names', '_profiles']
+
+BOORU_PRIMARYJOIN = Artist.boorus.property.primaryjoin
+BOORU_SUBQUERY = Artist.query\
+    .join(BOORU_PRIMARYJOIN.right.table, BOORU_PRIMARYJOIN.left == BOORU_PRIMARYJOIN.right)\
+    .filter(BOORU_PRIMARYJOIN.left == BOORU_PRIMARYJOIN.right).with_entities(Artist.id)
+BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 
 
 # ## FUNCTIONS
@@ -184,3 +193,7 @@ def artist_delete_profile(artist, description_id):
 
 def get_site_artist(site_artist_id, site_id):
     return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).first()
+
+
+def get_artists_without_boorus_page(limit):
+    return Artist.query.filter(not_(BOORU_SUBCLAUSE)).limit_paginate(per_page=limit)
