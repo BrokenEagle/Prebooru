@@ -102,7 +102,7 @@ Subscriptions.setAllInputsTimeout = function () {
     setTimeout(() => {
         document.querySelectorAll('.subscription-element input[type=checkbox]').forEach((input) => {
             if (!input.checked) return;
-            let curr = Prebooru.closest('div.input');
+            let curr = Prebooru.closest(input, 'div.input');
             if (curr !== null) {
                 curr.classList.add('checkbox-active');
             }
