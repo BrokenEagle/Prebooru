@@ -7,14 +7,39 @@ from utility.print import exception_print
 from ... import SESSION
 from ..utility import set_error
 from ..sources.base import get_artist_id_source
-from ..sources.danbooru import get_artist_by_id
+from ..sources.danbooru import get_artist_by_id, get_artists_by_ids
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
-    get_booru, create_booru_from_raw_parameters, delete_booru
+    get_booru, create_booru_from_raw_parameters, delete_booru, get_all_boorus_page
 from ..database.archive_db import get_archive, create_archive, update_archive
 
 
 # ## FUNCTIONS
+
+def check_all_boorus():
+    print("Checking all boorus for updated data.")
+    page = get_all_boorus_page(100)
+    if len(page.items) == 0:
+        return
+    while True:
+        print(f"check_all_boorus: {page.first} - {page.last} / Total({page.count})")
+        if not check_boorus(page.items) or not page.has_next:
+            return
+        page = page.next()
+
+
+def check_boorus(boorus):
+    danbooru_ids = [booru.danbooru_id for booru in boorus]
+    results = get_artists_by_ids(danbooru_ids)
+    if results['error']:
+        print(results['message'])
+        return False
+    for data in results['artists']:
+        booru = next(filter(lambda x: x.danbooru_id == data['id'], boorus))
+        updates = {'current_name': data['name'], 'deleted': data['is_deleted'], 'banned': data['is_banned']}
+        update_booru_from_parameters(booru, updates)
+    return True
+
 
 def create_booru_from_source(danbooru_id):
     data = get_artist_by_id(danbooru_id)

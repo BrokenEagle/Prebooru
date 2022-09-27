@@ -104,3 +104,7 @@ def get_booru(danbooru_id):
 
 def get_boorus(danbooru_ids):
     return Booru.query.filter(Booru.danbooru_id.in_(danbooru_ids)).all()
+
+
+def get_all_boorus_page(limit):
+    return Booru.query.count_paginate(per_page=limit)

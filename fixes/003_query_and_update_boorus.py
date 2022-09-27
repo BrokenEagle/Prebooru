@@ -10,7 +10,7 @@ import sys
 def initialize():
     global check_all_boorus
     sys.path.append(os.path.abspath('.'))
-    from app.logical.check.boorus import check_all_boorus
+    from app.logical.records.booru_rec import check_all_boorus
 
 
 def main():
