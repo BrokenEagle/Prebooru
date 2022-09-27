@@ -23,29 +23,29 @@ def reinstantiate_archive_item(archive):
     # Make these switchers
     retdata = {'error': False}
     data = process_archive_data(archive.data)
-    if archive.type == 'post':
+    if archive.type.name == 'post':
         return reinstantiate_archived_post(archive, True)
-    elif archive.type == 'illust':
+    elif archive.type.name == 'illust':
         return recreate_archived_illust(data)
-    elif archive.type == 'artist':
+    elif archive.type.name == 'artist':
         return recreate_archived_artist(data)
-    elif archive.type == 'booru':
+    elif archive.type.name == 'booru':
         return recreate_archived_booru(data)
     else:
-        return set_error(retdata, "Recreating %s not handled yet." % archive.type)
+        return set_error(retdata, "Recreating %s not handled yet." % archive.type.name)
 
 
 def relink_archive_item(archive):
     # Make these switches
     retdata = {'error': False}
-    if archive.type == 'post':
+    if archive.type.name == 'post':
         error = relink_archived_post(archive)
-    elif archive.type == 'illust':
+    elif archive.type.name == 'illust':
         error = relink_archived_illust(archive.data)
-    elif archive.type == 'artist':
+    elif archive.type.name == 'artist':
         error = relink_archived_artist(archive.data)
     else:
-        return set_error(retdata, "Relinking %s not handled yet." % archive.type)
+        return set_error(retdata, "Relinking %s not handled yet." % archive.type.name)
     if error is not None:
         return set_error(retdata, error)
     return retdata

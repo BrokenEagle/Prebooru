@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import os
+import enum
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
@@ -11,37 +12,44 @@ from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, NormalizedDatetime, image_server_url, classproperty
+from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, image_server_url, classproperty
 
 
 # ## CLASSES
+
+class ArchiveType(ModelEnum):
+    post = enum.auto()
+    illust = enum.auto()
+    artist = enum.auto()
+    booru = enum.auto()
+
 
 class Archive(JsonModel):
     # ## Declarations
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    type = DB.Column(DB.String(255), nullable=False)
+    type = DB.Column(IntEnum(ArchiveType), nullable=False)
     key = DB.Column(DB.String(255), nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
     expires = DB.Column(NormalizedDatetime(), nullable=True)
 
     @property
     def has_preview(self):
-        if self.type != 'post':
+        if self.type != ArchiveType.post:
             return
         return self.data['body']['width'] > PREVIEW_DIMENSIONS[0] or\
             self.data['body']['height'] > PREVIEW_DIMENSIONS[1]
 
     @property
     def file_url(self):
-        if self.type != 'post':
+        if self.type != ArchiveType.post:
             return
         return image_server_url('archive' + self._partial_network_path + self.data['body']['file_ext'], 'main')
 
     @property
     def preview_url(self):
-        if self.type != 'post':
+        if self.type != ArchiveType.post:
             return
         if not self.has_preview:
             return self.file_url
@@ -49,17 +57,19 @@ class Archive(JsonModel):
 
     @property
     def file_path(self):
-        if self.type != 'post':
+        if self.type != ArchiveType.post:
             return
         return os.path.join(MEDIA_DIRECTORY, 'archive', self._partial_file_path + self.data['body']['file_ext'])
 
     @property
     def preview_path(self):
-        if self.type != 'post' or not self.has_preview:
+        if self.type != ArchiveType.post or not self.has_preview:
             return
         return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')
 
     # ## Class properties
+
+    type_enum = ArchiveType
 
     @classproperty(cached=True)
     def searchable_attributes(cls):

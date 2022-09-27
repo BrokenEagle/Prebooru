@@ -20,14 +20,14 @@
                 <tr id="archive-{{ item.id }}">
                     <td>
                         <div class="id-link">{{ item.show_link }}</div>
-                        {% if item.type == 'post' %}
+                        {% if item.type.name == 'post' %}
                             <article class="archive-preview">
                                 <a href="{{ item.show_url }}">{{ helpers.archive.post_preview_link(item) }}</a>
                             </article>
                         {% endif %}
                     </td>
                     <td>
-                        <strong>Type:</strong> {{ item.type | title }}
+                        <strong>Type:</strong> {{ item.type.name | title }}
                         <br>
                         <strong>Key:</strong> {{ item.key }}
                         <br>

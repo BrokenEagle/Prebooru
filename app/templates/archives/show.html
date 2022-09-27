@@ -7,7 +7,7 @@
 {% block content %}
     <div id="archive-heading" class="heading">{{ archive.header }}</div>
     <div id="archive-content">
-        {% if archive.type == 'post' %}
+        {% if archive.type.name == 'post' %}
             <section id="media-container" onclick="return Prebooru.resizeImage(this)" class="image fullsize">
                 {% if archive.data['body']['file_ext'] in ['jpg', 'png', 'gif'] %}
                     {{ helpers.archive.post_file_link(archive) }}
@@ -18,7 +18,7 @@
         {% endif %}
         <ul>
             <li>
-                <strong>Type:</strong> {{ archive.type | title }}
+                <strong>Type:</strong> {{ archive.type.name | title }}
             </li>
             <li>
                 <strong>Key:</strong> {{ archive.key }}
