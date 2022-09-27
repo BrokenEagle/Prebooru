@@ -9,7 +9,7 @@
     <div id="api-data-content">
         <ul>
             <li>
-                <strong>Type:</strong> {{ api_datum.type | title }}
+                <strong>Type:</strong> {{ api_datum.type.name | title }}
             </li>
             <li>
                 <strong>Site ID:</strong> {{ helpers.api_data.get_site_name(api_datum) }}

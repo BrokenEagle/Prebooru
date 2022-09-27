@@ -25,7 +25,7 @@ from .pool_element import PoolPost, pool_element_delete
 from .similarity_data import SimilarityData
 from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
-from .base import JsonModel, NormalizedDatetime, IntEnum, secondarytable, image_server_url, classproperty
+from .base import JsonModel, ModelEnum, NormalizedDatetime, IntEnum, secondarytable, image_server_url, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -59,17 +59,9 @@ PostTags = secondarytable(
 
 # ## CLASSES
 
-class PostType(enum.Enum):
+class PostType(ModelEnum):
     user = enum.auto()
     subscription = enum.auto()
-
-    @classproperty(cached=False)
-    def names(cls):
-        return [e.name for e in cls]
-
-    @classproperty(cached=False)
-    def values(cls):
-        return [e.value for e in cls]
 
 
 class Post(JsonModel):

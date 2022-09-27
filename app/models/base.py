@@ -143,6 +143,16 @@ class StaticProperty:
         return self.fdel()
 
 
+class ModelEnum(enum.Enum):
+    @classproperty(cached=False)
+    def names(cls):
+        return [e.name for e in cls]
+
+    @classproperty(cached=False)
+    def values(cls):
+        return [e.value for e in cls]
+
+
 class NormalizedDatetime(DATETIME):
     def __init__(self, *args, **kwargs):
         kwargs['truncate_microseconds'] = True

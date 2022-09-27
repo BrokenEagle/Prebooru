@@ -6,7 +6,7 @@ import enum
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
-from .base import JsonModel, IntEnum, NormalizedDatetime, secondarytable, classproperty
+from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, secondarytable, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -23,21 +23,13 @@ SubscriptionElementErrors = secondarytable(
 
 # ## CLASSES
 
-class SubscriptionElementStatus(enum.Enum):
+class SubscriptionElementStatus(ModelEnum):
     active = enum.auto()
     unlinked = enum.auto()
     deleted = enum.auto()
     archived = enum.auto()
     error = enum.auto()
     duplicate = enum.auto()
-
-    @classproperty(cached=False)
-    def names(cls):
-        return [e.name for e in cls]
-
-    @classproperty(cached=False)
-    def values(cls):
-        return [e.value for e in cls]
 
 
 class SubscriptionElement(JsonModel):
