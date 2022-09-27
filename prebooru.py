@@ -113,6 +113,29 @@ def initialize_server_callbacks(args):
                 return {'error': True, 'message': "This route is only available from the watchdog."}
 
 
+def initialize_server_checks():
+    import uuid
+    import requests
+    import threading
+    from utility.print import print_info, print_error
+
+    unique_id = str(uuid.uuid4())
+
+    @PREBOORU_APP.route('/ping', methods=['GET'])
+    def ping():
+        return unique_id
+
+    def check_server_listening():
+        print(f"\nChecking server is listening on port {PREBOORU_PORT}\n")
+        resp = requests.get(f'http://127.0.0.1:{PREBOORU_PORT}/ping', timeout=10)
+        if resp.status_code != 200 or resp.text != unique_id:
+            print_error(f"\nServer not listening on port {PREBOORU_PORT}!\n")
+            exit(-1)
+        print_info("\nServer: OK\n")
+
+    threading.Timer(10, check_server_listening).start()
+
+
 def initialize_migrate():
     global PREOBOORU_MIGRATE
     from app import DB, PREBOORU_APP
@@ -158,6 +181,7 @@ def start_server(args):
         from app.logical.tasks import schedule  # noqa: F401
         from app.logical.database.server_info_db import initialize_server_fields
         initialize_server_callbacks(args)
+        initialize_server_checks()
         initialize_server_fields()
         validate_version()
         validate_integrity()
