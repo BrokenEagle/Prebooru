@@ -129,7 +129,8 @@ def initialize_migrate():
 def start_server(args):
     global SERVER_PID, SERVER_PID_FILE, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER,\
         load_default, put_get_json
-    from config import DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER
+    from config import DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER, RELOAD_INTERVAL,\
+        EXCLUDE_PATTERNS
     from utility.file import load_default, put_get_json
     SERVER_PID_FILE = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
     SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
@@ -168,10 +169,15 @@ def start_server(args):
     SCHEDULER.start()
     if not args.logging:
         logging.getLogger().handlers = []
+    app_args = {
+        'threaded': True,
+        'port': PREBOORU_PORT,
+        'reloader_interval': RELOAD_INTERVAL,
+        'exclude_patterns': EXCLUDE_PATTERNS,
+    }
     if args.public:
-        PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT, host="0.0.0.0", reloader_interval=60)
-    else:
-        PREBOORU_APP.run(threaded=True, port=PREBOORU_PORT, reloader_interval=60)
+        app_args['host'] = '0.0.0.0'
+    PREBOORU_APP.run(**app_args)
 
 
 def init_db(args):

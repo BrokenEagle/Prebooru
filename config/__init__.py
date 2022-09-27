@@ -64,3 +64,4 @@ DEBUG_MODE = get_environment_variable('DEBUG_MODE', DEBUG_MODE, eval_bool_string
 MEDIA_DIRECTORY = os.path.join(WORKING_DIRECTORY, MEDIA_FILEPATH)
 DATA_DIRECTORY = os.path.join(WORKING_DIRECTORY, DATA_FILEPATH)
 TEMP_DIRECTORY = os.path.join(WORKING_DIRECTORY, TEMP_FILEPATH)
+EXCLUDE_PATTERNS = EXCLUDE_PATTERNS.union({'*fixes*', '*migrations*', '*site-packages*'})
