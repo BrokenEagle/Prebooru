@@ -43,10 +43,12 @@ def process_upload(upload_id):
         upload = Upload.find(upload_id)
         printer("Upload:", upload.id)
         set_upload_status(upload, 'processing')
-        if upload.type == 'post':
+        if upload.request_url is not None:
             process_network_upload(upload)
-        elif upload.type == 'file':
+        elif upload.illust_url_id is not None and upload.media_filepath is not None:
             process_file_upload(upload)
+        else:
+            raise Exception(f"Missing values on {upload.shortlink}.")
 
     def msg_func(scope_vars, e):
         return f"Unhandled exception occurred on upload #{upload_id}: {repr(e)}"

@@ -55,7 +55,6 @@ class Upload(JsonModel):
     request_url = DB.Column(DB.String(255), nullable=True)
     successes = DB.Column(DB.Integer, nullable=False)
     failures = DB.Column(DB.Integer, nullable=False)
-    type = DB.Column(DB.String(255), nullable=False)
     status = DB.Column(IntEnum(UploadStatus), nullable=False)
     media_filepath = DB.Column(DB.String(255), nullable=True)
     sample_filepath = DB.Column(DB.String(255), nullable=True)
