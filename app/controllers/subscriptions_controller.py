@@ -265,7 +265,7 @@ def process_html(id):
         flash("Subscriptions not yet initialized.", 'error')
         return redirect(request.referrer)
     subscription = get_or_abort(Subscription, id)
-    if subscription.status != 'idle':
+    if subscription.status.name != 'idle':
         flash("Subscription currently processing.", 'error')
         return redirect(request.referrer)
     update_subscription_status(subscription, 'manual')

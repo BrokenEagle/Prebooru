@@ -24,7 +24,7 @@
                     <td>{{ subscription.show_link }}</td>
                     <td>{{ subscription.artist_show_link }}</td>
                     <td>
-                        <strong>Status:</strong> {{ subscription.status }}
+                        <strong>Status:</strong> {{ subscription.status.name }}
                         <br>
                         <strong>Checked:</strong> {{ helpers.base.format_time_ago(subscription.checked) }}
                     </td>

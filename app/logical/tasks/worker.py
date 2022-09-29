@@ -111,7 +111,7 @@ def process_subscription(subscription_id, job_id):
     def finally_func(scope_vars, error, data):
         nonlocal subscription
         subscription = subscription or Subscription.find(subscription_id)
-        if error is None and subscription.status != 'error':
+        if error is None and subscription.status.name != 'error':
             update_subscription_status(subscription, 'idle')
         new_post_ids = [post.id for post in subscription.posts if post.id not in starting_post_ids]
         if len(new_post_ids):

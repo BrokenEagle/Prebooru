@@ -1,5 +1,8 @@
 # APP/MODELS/SUBSCRIPTION.PY
 
+# ## PYTHON IMPORTS
+import enum
+
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
@@ -13,7 +16,7 @@ from .illust import IllustUrl
 from .post import Post
 from .error import Error
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, NormalizedDatetime, secondarytable
+from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -29,6 +32,13 @@ SubscriptionErrors = secondarytable(
 
 # ## CLASSES
 
+class SubscriptionStatus(ModelEnum):
+    idle = enum.auto()
+    manual = enum.auto()
+    automatic = enum.auto()
+    error = enum.auto()
+
+
 class Subscription(JsonModel):
     # ## Declarations
 
@@ -37,7 +47,7 @@ class Subscription(JsonModel):
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False)
     interval = DB.Column(DB.Float, nullable=False)
     expiration = DB.Column(DB.Float, nullable=True)
-    status = DB.Column(DB.String(31), nullable=False)
+    status = DB.Column(IntEnum(SubscriptionStatus), nullable=False)
     last_id = DB.Column(DB.Integer, nullable=True)
     requery = DB.Column(NormalizedDatetime(), nullable=True)
     checked = DB.Column(NormalizedDatetime(), nullable=True)
@@ -110,6 +120,9 @@ class Subscription(JsonModel):
     @memoized_property
     def post_count(self):
         return self._post_query.distinct().relation_count()
+
+    # ## Class properties
+    status_enum = SubscriptionStatus
 
     # ## Private methods
 

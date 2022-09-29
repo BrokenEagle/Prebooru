@@ -64,10 +64,10 @@ def get_last_job_status_link(subscription):
 
 
 def status_link(subscription):
-    if subscription.status == 'idle':
+    if subscription.status.name == 'idle':
         return 'idle'
     url = url_for('subscription.reset_html', id=subscription.id)
-    return general_link(subscription.status, url, method='PUT')
+    return general_link(subscription.status.name, url, method='PUT')
 
 
 # ###### Other functions

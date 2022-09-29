@@ -320,7 +320,7 @@ def _process_pending_subscription(subscription, printer):
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
-        if error is None and subscription.status != 'error':
+        if error is None and subscription.status.name != 'error':
             update_subscription_status(subscription, 'idle')
 
     update_subscription_status(subscription, 'automatic')
@@ -333,5 +333,5 @@ def _pending_subscription_callback(subscription_ids):
     print_info('pending_subscription_callback', subscription_ids)
     subscriptions = get_subscription_by_ids(subscription_ids)
     for subscription in subscriptions:
-        if subscription.status == 'automatic':
+        if subscription.status.name == 'automatic':
             update_subscription_status(subscription, 'idle')
