@@ -61,7 +61,7 @@ def process_upload(upload_id):
         upload = upload or Upload.find(upload_id)
         printer("Upload:", upload.status)
         printer("Posts:", len(upload.posts))
-        if upload.status in ['complete', 'duplicate'] and len(upload.posts) > 0:
+        if upload.status.name in ['complete', 'duplicate'] and len(upload.posts) > 0:
             printer("Starting secondary threads.")
             post_ids = [post.id for post in upload.posts]
             threading.Thread(target=process_similarity, args=(post_ids,)).start()

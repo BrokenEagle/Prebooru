@@ -1,5 +1,8 @@
 # APP/MODELS/UPLOAD.PY
 
+# ## PYTHON IMPORTS
+import enum
+
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -10,7 +13,7 @@ from ..logical.utility import unique_objects
 from .upload_url import UploadUrl
 from .post import Post
 from .error import Error
-from .base import JsonModel, NormalizedDatetime, secondarytable, classproperty
+from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, secondarytable, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -36,6 +39,14 @@ UploadPosts = secondarytable(
 
 # ## CLASSES
 
+class UploadStatus(ModelEnum):
+    complete = enum.auto()
+    pending = enum.auto()
+    processing = enum.auto()
+    duplicate = enum.auto()
+    error = enum.auto()
+
+
 class Upload(JsonModel):
     # ## Declarations
 
@@ -45,7 +56,7 @@ class Upload(JsonModel):
     successes = DB.Column(DB.Integer, nullable=False)
     failures = DB.Column(DB.Integer, nullable=False)
     type = DB.Column(DB.String(255), nullable=False)
-    status = DB.Column(DB.String(255), nullable=False)
+    status = DB.Column(IntEnum(UploadStatus), nullable=False)
     media_filepath = DB.Column(DB.String(255), nullable=True)
     sample_filepath = DB.Column(DB.String(255), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=True)
@@ -99,6 +110,8 @@ class Upload(JsonModel):
         raise Exception("Unable to find source for upload #%d" % self.id)
 
     # ## Class properties
+
+    status_enum = UploadStatus
 
     @classproperty(cached=True)
     def json_attributes(cls):

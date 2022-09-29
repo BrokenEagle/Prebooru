@@ -6,12 +6,12 @@
         <ul>
             <li>
                 <strong>Status:</strong>
-                {% if upload.status == 'pending' %}
+                {% if upload.status.name == 'pending' %}
                     {{ helpers.upload.check_pending_link(upload) }}
-                {% elif upload.status == 'error' %}
+                {% elif upload.status.name == 'error' %}
                     {{ helpers.upload.resubmit_link(upload) }}
                 {% else %}
-                    {{ upload.status }}
+                    {{ upload.status.name }}
                 {% endif %}
             </li>
             <li>

@@ -56,7 +56,7 @@
                             <em>none</em>
                         {% endfor %}
                     </td>
-                    <td>{{ upload.status }}</td>
+                    <td>{{ upload.status.name }}</td>
                     <td>{{ helpers.base.format_timestamp(upload.created) }}</td>
                 </tr>
             {% endfor %}

@@ -16,7 +16,7 @@
 
 {% block pagescript %}
     (function () {
-    const upload_status = "{{ upload.status }}";
+    const upload_status = "{{ upload.status.name }}";
     Uploads.initializeReloadInterval(upload_status);
     })();
 {% endblock pagescript %}
