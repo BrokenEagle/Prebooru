@@ -5,6 +5,7 @@ from flask import url_for, request, Markup
 
 # ## PACKAGE IMPORTS
 from utility.data import readable_bytes
+from utility.time import humanized_timedelta
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
@@ -74,7 +75,8 @@ def status_link(subscription):
 def average_interval(subscription):
     if subscription.element_count == 0:
         return Markup('<em>N/A</em>')
-    return val_or_none(subscription.average_keep_interval)
+    humanized_average_interval = subscription.average_interval and humanized_timedelta(subscription.average_interval)
+    return val_or_none(humanized_average_interval)
 
 
 def storage_bytes(subscription, type=None):
