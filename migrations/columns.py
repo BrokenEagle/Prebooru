@@ -99,3 +99,20 @@ def transfer_column(table_name, from_column, to_column):
         if len(data) < 1000:
             return
         index += 1
+
+
+# ## Combined operations
+
+def change_column_type(table_name, column_name, from_column_type, to_column_type, base_column_type, nullable):
+    print("Adding temp column")
+    add_column(table_name, 'temp', to_column_type)
+
+    print("Populating temp column")
+    for (_id, value, update) in transfer_column(table_name, (column_name, from_column_type), ('temp', to_column_type)):
+        yield value, update
+
+    print(f"Dropping {column_name} column")
+    drop_column(table_name, column_name)
+
+    print(f"Renaming temp column to {column_name}")
+    alter_column(table_name, 'temp', base_column_type, {'new_column_name': column_name, 'nullable': nullable})
