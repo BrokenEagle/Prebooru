@@ -4,6 +4,7 @@
 import os
 import sys
 import json
+import atexit
 import logging
 import traceback
 from io import BytesIO
@@ -113,6 +114,11 @@ def _error_handler(error):
     else:
         resp.status_code = 520
     return resp
+
+
+@atexit.register
+def _close_session():
+    SESSION.close()
 
 
 # ## CLASSES
