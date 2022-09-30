@@ -32,6 +32,13 @@ class SubscriptionElementStatus(ModelEnum):
     duplicate = enum.auto()
 
 
+class SubscriptionElementKeep(ModelEnum):
+    yes = enum.auto()
+    no = enum.auto()
+    maybe = enum.auto()
+    archive = enum.auto()
+
+
 class SubscriptionElement(JsonModel):
     # ## Declarations
 
@@ -41,7 +48,7 @@ class SubscriptionElement(JsonModel):
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(DB.String(32), nullable=True)
-    keep = DB.Column(DB.String(16), nullable=True)
+    keep = DB.Column(IntEnum(SubscriptionElementKeep, nullable=True), nullable=True)
     expires = DB.Column(NormalizedDatetime(), nullable=True)
     status = DB.Column(IntEnum(SubscriptionElementStatus), nullable=False)
 
@@ -49,9 +56,11 @@ class SubscriptionElement(JsonModel):
     # subscription <- Susbscription (MtO)
     errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('subscription_element', uselist=False, lazy=True))
+
     # ## Class properties
 
     status_enum = SubscriptionElementStatus
+    keep_enum = SubscriptionElementKeep
 
 
 # ## INITIALIZATION
