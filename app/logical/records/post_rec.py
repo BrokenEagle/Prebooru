@@ -157,7 +157,9 @@ def reinstantiate_archived_post(archive, create_sample):
     # Once the file move is successful, keep going even if there are errors.
     create_sample_preview_files(post, retdata)
     if post.is_video:
-        threading.Thread(target=create_video_sample_preview_files, args=(post, create_sample)).start()
+        threading.Thread(target=create_video_sample_preview_files,
+                         args=(post.file_path, post.video_preview_path,
+                               post.video_sample_path, create_sample)).start()
     relink_archived_post(archive, post)
     for notation_data in archive.data['relations']['notations']:
         notation = create_notation_from_raw_parameters(notation_data)
@@ -201,10 +203,10 @@ def create_sample_preview_files(post, retdata=None):
     return retdata
 
 
-def create_video_sample_preview_files(post, create_sample):
-    convert_mp4_to_webp(post.file_path, post.video_preview_path)
+def create_video_sample_preview_files(file_path, vpreview_path, vsample_path, create_sample):
+    convert_mp4_to_webp(file_path, vpreview_path)
     if create_sample:
-        convert_mp4_to_webm(post.file_path, post.video_sample_path)
+        convert_mp4_to_webm(file_path, vsample_path)
 
 
 def relink_archived_post(archive, post=None):

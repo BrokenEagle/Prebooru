@@ -12,7 +12,7 @@ from utility.file import get_directory_listing, delete_file
 from utility.time import seconds_from_now_local
 
 # ## LOCAL IMPORTS
-from ... import DB, SCHEDULER
+from ... import DB, SESSION, SCHEDULER
 from ...models.media_file import CACHE_DATA_DIRECTORY
 from ..records.post_rec import relocate_old_posts_to_alternate, check_all_posts_for_danbooru_id
 from ..records.artist_rec import check_all_artists_for_boorus
@@ -41,178 +41,107 @@ from . import JOB_CONFIG
 
 @SCHEDULER.task("interval", **JOB_CONFIG['expunge_cache_records']['config'])
 def expunge_cache_records_task():
-    if not get_job_enabled_status('expunge_cache_records'):
-        print("Task scheduler - Expunge Cache Records: disabled")
-        return
-    if not _set_db_semaphore('expunge_cache_records'):
-        print("Task scheduler - Expunge Cache Records: already running")
-        return
-    printer = buffered_print("Expunge Cache Records")
-    printer("PID:", os.getpid())
-    api_delete_count = expired_api_data_count()
-    printer("API data records to delete:", api_delete_count)
-    if api_delete_count > 0:
-        delete_expired_api_data()
-    expired_media_records = get_expired_media_files()
-    printer("Media files to delete:", len(expired_media_records))
-    if len(expired_media_records) > 0:
-        batch_delete_media(expired_media_records)
-    printer.print()
-    _free_db_semaphore('expunge_cache_records')
+    def _task(printer):
+        api_delete_count = expired_api_data_count()
+        printer("API data records to delete:", api_delete_count)
+        if api_delete_count > 0:
+            delete_expired_api_data()
+        expired_media_records = get_expired_media_files()
+        printer("Media files to delete:", len(expired_media_records))
+        if len(expired_media_records) > 0:
+            batch_delete_media(expired_media_records)
+
+    _execute_scheduled_task(_task, 'expunge_cache_records', True, True)
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['expunge_archive_records']['config'])
 def expunge_archive_records_task():
-    if not get_job_enabled_status('expunge_archive_records'):
-        print("Task scheduler - Expunge Archive Records: disabled")
-        return
-    if not _set_db_semaphore('expunge_archive_records'):
-        print("Task scheduler - Expunge Archive Records: already running")
-        return
-    printer = buffered_print("Expunge Archive Records")
-    printer("PID:", os.getpid())
-    archive_delete_count = expired_archive_count()
-    printer("Archive data records to delete:", archive_delete_count)
-    if archive_delete_count > 0:
-        delete_expired_archive()
-    printer.print()
-    _free_db_semaphore('expunge_archive_records')
+    def _task(printer):
+        archive_delete_count = expired_archive_count()
+        printer("Archive data records to delete:", archive_delete_count)
+        if archive_delete_count > 0:
+            delete_expired_archive()
+
+    _execute_scheduled_task(_task, 'expunge_archive_records', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_boorus']['config'])
 def check_all_boorus_task():
-    if not get_job_enabled_status('check_all_boorus'):
-        print("Task scheduler - Check All Boorus: disabled")
-        return
-    if not _set_db_semaphore('check_all_boorus'):
-        print("Task scheduler - Check All Boorus: already running")
-        return
-    printer = buffered_print("Check All Boorus")
-    printer("PID:", os.getpid())
-    check_all_boorus()
-    printer.print()
-    _free_db_semaphore('check_all_boorus')
+    def _task(printer):
+        check_all_boorus()
+
+    _execute_scheduled_task(_task, 'check_all_boorus', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_artists_for_boorus']['config'])
 def check_all_artists_for_boorus_task():
-    if not get_job_enabled_status('check_all_artists_for_boorus'):
-        print("Task scheduler - Check All Artists for Boorus: disabled")
-        return
-    if not _set_db_semaphore('check_all_artists_for_boorus'):
-        print("Task scheduler - Check All Artists For Boorus: already running")
-        return
-    printer = buffered_print("Check All Artists")
-    printer("PID:", os.getpid())
-    check_all_artists_for_boorus()
-    printer.print()
-    _free_db_semaphore('check_all_artists_for_boorus')
+    def _task(printer):
+        check_all_artists_for_boorus()
+
+    _execute_scheduled_task(_task, 'check_all_artists_for_boorus', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_posts_for_danbooru_id']['config'])
 def check_all_posts_for_danbooru_id_task():
-    if not get_job_enabled_status('check_all_posts_for_danbooru_id'):
-        print("Task scheduler - Check All Posts for Danbooru ID: disabled")
-        return
-    if not _set_db_semaphore('check_all_posts_for_danbooru_id'):
-        print("Task scheduler - Check All Posts For Danbooru ID: already running")
-        return
-    printer = buffered_print("Check All Posts")
-    printer("PID:", os.getpid())
-    check_all_posts_for_danbooru_id()
-    printer.print()
-    _free_db_semaphore('check_all_posts_for_danbooru_id')
+    def _task(printer):
+        check_all_posts_for_danbooru_id()
+
+    _execute_scheduled_task(_task, 'check_all_posts_for_danbooru_id', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_subscriptions']['config'])
 def check_pending_subscriptions():
-    if not get_subscriptions_ready():
-        print("Task scheduler - Subscription reset not yet initiated.")
-        return
-    if not get_job_enabled_status('check_pending_subscriptions'):
-        print("Task scheduler - Check Pending Subscriptions: disabled")
-        return
-    if not _set_db_semaphore('check_pending_subscriptions'):
-        print("Task scheduler - Check All Pending Subscriptions: already running")
-        return
-    manual = get_job_manual_status('check_pending_subscriptions')
-    printer = buffered_print("Check All Pending Subscriptions")
-    printer("PID:", os.getpid())
-    subscriptions = get_available_subscription(manual)
-    if len(subscriptions) > 0:
-        schedule_from_child('subscriptions-callback', 'app.logical.tasks.schedule:_pending_subscription_callback',
-                            [subscription.id for subscription in subscriptions], seconds_from_now_local(900))
-        for subscription in subscriptions:
-            printer("Processing subscription:", subscription.id)
-            _process_pending_subscription(subscription, printer)
-    else:
-        printer("No subscriptions to process.")
-    printer.print()
-    _free_db_semaphore('check_pending_subscriptions')
+    def _task(printer):
+        manual = get_job_manual_status('check_pending_subscriptions')
+        subscriptions = get_available_subscription(manual)
+        if len(subscriptions) > 0:
+            schedule_from_child('subscriptions-callback', 'app.logical.tasks.schedule:_pending_subscription_callback',
+                                [subscription.id for subscription in subscriptions], seconds_from_now_local(900))
+            for subscription in subscriptions:
+                printer("Processing subscription:", subscription.id)
+                _process_pending_subscription(subscription, printer)
+        else:
+            printer("No subscriptions to process.")
+
+    if _subscriptions_check():
+        _execute_scheduled_task(_task, 'check_pending_subscriptions', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_downloads']['config'])
 def check_pending_downloads():
-    if not get_subscriptions_ready():
-        print("Task scheduler - Subscription reset not yet initiated.")
-        return
-    if not get_job_enabled_status('check_pending_downloads'):
-        print("Task scheduler - Check Pending Downloads: disabled")
-        return
-    if not _set_db_semaphore('check_pending_downloads'):
-        print("Task scheduler - Check All Pending Downloads: already running")
-        return
-    printer = buffered_print("Check All Pending Downloads")
-    printer("PID:", os.getpid())
-    total = total_missing_downloads()
-    printer("Missing downloads:", total)
-    if total > 0:
-        manual = get_job_manual_status('check_pending_downloads')
-        download_missing_elements(manual)
-    printer.print()
-    _free_db_semaphore('check_pending_downloads')
+    def _task(printer):
+        total = total_missing_downloads()
+        printer("Missing downloads:", total)
+        if total > 0:
+            manual = get_job_manual_status('check_pending_downloads')
+            processed = download_missing_elements(manual)
+            printer("Elements processed:", processed)
+
+    if _subscriptions_check():
+        _execute_scheduled_task(_task, 'check_pending_downloads', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['process_expired_subscription_elements']['config'])
 def process_expired_subscription_elements():
-    if not get_job_enabled_status('process_expired_subscription_elements'):
-        print("Task scheduler - Process Expired Subscription Elements: disabled")
-        return
-    if not _set_db_semaphore('process_expired_subscription_elements'):
-        print("Task scheduler - Check All Expired Subscription Elements: already running")
-        return
-    printer = buffered_print("Process Expired Subscription Elements")
-    printer("PID:", os.getpid())
-    total = total_expired_subscription_elements()
-    if total > 0:
-        manual = get_job_manual_status('process_expired_subscription_elements')
-        printer("Expired subscriptions elements:", total)
-        start = time.time()
-        data = safe_db_execute('process_expired_subscription_elements', 'tasks.schedule', printer=printer,
-                               try_func=(lambda data: expire_subscription_elements(manual)))
-        print("expire_subscription_elements results:", data)
-        print("Task duration:", time.time() - start)
-    else:
-        printer("No subscriptions elements to process.")
-    printer.print()
-    _free_db_semaphore('process_expired_subscription_elements')
+    def _task(printer):
+        total = total_expired_subscription_elements()
+        if total > 0:
+            manual = get_job_manual_status('process_expired_subscription_elements')
+            printer("Expired subscriptions elements:", total)
+            start = time.time()
+            data = safe_db_execute('process_expired_subscription_elements', 'tasks.schedule', printer=printer,
+                                   try_func=(lambda data: expire_subscription_elements(manual)))
+            print("expire_subscription_elements results:", data)
+            print("Task duration:", time.time() - start)
+        else:
+            printer("No subscriptions elements to process.")
+
+    _execute_scheduled_task(_task, 'process_expired_subscription_elements', True, True)
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['relocate_old_posts']['config'])
 def relocate_old_posts_task():
-    if not get_job_enabled_status('relocate_old_posts'):
-        print("Task scheduler - Relocate Old Posts: disabled")
-        return
-    if not _set_db_semaphore('relocate_old_posts'):
-        print("Task scheduler - Relocate Old Posts: already running")
-        return
-    printer = buffered_print("Relocate Old Posts")
-    printer("PID:", os.getpid())
-    if ALTERNATE_MEDIA_DIRECTORY is None:
-        printer("Alternate media directory not configured.")
-    elif not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
-        printer("Alternate media directory not found.")
-    else:
+    def _task(printer):
         manual = get_job_manual_status('relocate_old_posts')
         start = time.time()
         posts_moved = relocate_old_posts_to_alternate(manual)
@@ -221,75 +150,85 @@ def relocate_old_posts_task():
         else:
             printer("Posts moved:", posts_moved)
         printer("Task duration:", time.time() - start)
-    printer.print()
-    _free_db_semaphore('relocate_old_posts')
+
+    if ALTERNATE_MEDIA_DIRECTORY is None:
+        print("Alternate media directory not configured.")
+    elif not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+        print("Alternate media directory not found.")
+    else:
+        _execute_scheduled_task(_task, 'relocate_old_posts', True, True)
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['delete_orphan_images']['config'])
 def delete_orphan_images_task():
-    if not get_job_enabled_status('delete_orphan_images'):
-        print("Task scheduler - Delete Orphan Images: disabled")
-        return
-    if not _set_db_semaphore('delete_orphan_images'):
-        print("Task scheduler - Delete Orphan Images: already running")
-        return
-    printer = buffered_print("Delete Orphan Images")
-    printer("PID:", os.getpid())
-    dir_listing = get_directory_listing(CACHE_DATA_DIRECTORY)
-    dir_md5s = [re.match(r'[0-9a-f]+', x).group(0) for x in dir_listing if re.match(r'[0-9a-f]+\.(jpg|png|gif)', x)]
-    cache_md5s = [item.md5 for item in get_all_media_files()]
-    bad_md5s = set(dir_md5s).difference(cache_md5s)
-    files_deleted = 0
-    for filename in dir_listing:
-        match = re.match(r'[0-9a-f]+', filename)
-        if not match or match.group(0) not in bad_md5s:
-            continue
-        print("Deleting file:", filename)
-        delete_file(os.path.join(CACHE_DATA_DIRECTORY, filename))
-        files_deleted += 1
-    printer("Files deleted:", files_deleted)
-    printer.print()
-    _free_db_semaphore('delete_orphan_images')
+    def _task(printer):
+        dir_listing = get_directory_listing(CACHE_DATA_DIRECTORY)
+        dir_md5s = [re.match(r'[0-9a-f]+', x).group(0) for x in dir_listing if re.match(r'[0-9a-f]+\.(jpg|png|gif)', x)]
+        cache_md5s = [item.md5 for item in get_all_media_files()]
+        bad_md5s = set(dir_md5s).difference(cache_md5s)
+        files_deleted = 0
+        for filename in dir_listing:
+            match = re.match(r'[0-9a-f]+', filename)
+            if not match or match.group(0) not in bad_md5s:
+                continue
+            print("Deleting file:", filename)
+            delete_file(os.path.join(CACHE_DATA_DIRECTORY, filename))
+            files_deleted += 1
+        printer("Files deleted:", files_deleted)
+
+    _execute_scheduled_task(_task, 'delete_orphan_images', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['vacuum_analyze_database']['config'])
 def vacuum_analyze_database_task():
+    def _task(*args):
+        with DB.engine.begin() as connection:
+            connection.execute("VACUUM")
+            connection.execute("ANALYZE")
+
     manual = get_job_manual_status('vacuum_analyze_database')
     if not manual and server_is_busy():
         print("Vaccuum/Analyze: Server busy, rescheduling....")
         reschedule_from_child('vacuum_analyze_database')
-        return
-    if not _set_db_semaphore('vacuum_analyze_database'):
-        print("Task scheduler - Vacuum/analyze DB: already running")
-        return
-    printer = buffered_print("Vacuum/analyze DB")
-    printer("PID:", os.getpid())
-    start_time = time.time()
-    with DB.engine.begin() as connection:
-        connection.execute("VACUUM")
-        connection.execute("ANALYZE")
-    printer("Execution time:", time.time() - start_time)
-    printer.print()
-    _free_db_semaphore('vacuum_analyze_database')
+    else:
+        _execute_scheduled_task(_task, 'vacuum_analyze_database', True, True)
 
 
 # #### Startup tasks
 
 @SCHEDULER.task('date', id="reset_subscription_status", next_run_time=seconds_from_now_local(60))
 def reset_subscription_status_task():
-    printer = buffered_print("Reset Subscription Status")
-    printer("PID:", os.getpid())
-    subscriptions = get_busy_subscriptions()
-    for subscription in subscriptions:
-        update_subscription_status(subscription, 'idle')
-    printer("Subscriptions reset:", len(subscriptions))
-    printer.print()
-    update_subscriptions_ready(True)
+    def _task(printer):
+        subscriptions = get_busy_subscriptions()
+        for subscription in subscriptions:
+            update_subscription_status(subscription, 'idle')
+        printer("Subscriptions reset:", len(subscriptions))
+        update_subscriptions_ready(True)
+
+    _execute_scheduled_task(_task, 'reset_subscription_status', False, False)
 
 
 # #### Private
 
 # ###### Semaphore
+
+def _execute_scheduled_task(func, id, has_enabled, has_lock):
+    display_name = ' '.join(word.title() for word in id.split('_'))
+    if has_enabled and not get_job_enabled_status(id):
+        print(f"Task scheduler - {display_name}: disabled")
+        return
+    if has_lock and not _set_db_semaphore(id):
+        print(f"Task scheduler - {display_name}: already running")
+        return
+    printer = buffered_print(display_name)
+    printer("PID:", os.getpid())
+    start_time = time.time()
+    func(printer)
+    printer("Execution time: %0.2f" % (time.time() - start_time))
+    printer.print()
+    _free_db_semaphore(id)
+    SESSION.remove()
+
 
 def _set_db_semaphore(id):
     status = get_job_lock_status(id)
@@ -302,6 +241,13 @@ def _set_db_semaphore(id):
 
 def _free_db_semaphore(id):
     update_job_lock_status(id, False)
+
+
+def _subscriptions_check():
+    if not get_subscriptions_ready():
+        print("Task scheduler - Subscription reset not yet initiated.")
+        return False
+    return True
 
 
 def _process_pending_subscription(subscription, printer):
@@ -335,3 +281,4 @@ def _pending_subscription_callback(subscription_ids):
     for subscription in subscriptions:
         if subscription.status.name == 'automatic':
             update_subscription_status(subscription, 'idle')
+    SESSION.remove()

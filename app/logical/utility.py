@@ -1,7 +1,33 @@
 # APP/LOGICAL/UTILITY.PY
 
+# ## PYTHON IMPORTS
+import threading
+
 # ## EXTERNAL IMPORTS
 from flask import url_for
+
+# ## LOCAL IMPORTS
+from .. import SESSION
+
+
+# ## CLASSES
+
+class SessionThread(threading.Thread):
+    def __init__(self, target=None, **ikwargs):
+        def _wrap(*wargs, **wkwargs):
+            target(*wargs, **wkwargs)
+            SESSION.remove()
+
+        super().__init__(target=_wrap, **ikwargs)
+
+
+class SessionTimer(threading.Timer):
+    def __init__(self, interval, function, **ikwargs):
+        def _wrap(*wargs, **wkwargs):
+            function(*wargs, **wkwargs)
+            SESSION.remove()
+
+        super().__init__(interval, _wrap, **ikwargs)
 
 
 # ## FUNCTIONS

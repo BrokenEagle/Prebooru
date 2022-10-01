@@ -13,7 +13,7 @@ from utility.time import time_ago, seconds_from_now_local, process_utc_timestrin
 from utility.print import buffered_print, print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
-from ... import SCHEDULER
+from ... import SESSION, SCHEDULER
 from ..logger import log_error
 from ..network import prebooru_json_request
 from ..database.server_info_db import get_last_activity

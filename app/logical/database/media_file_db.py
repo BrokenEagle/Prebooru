@@ -48,6 +48,10 @@ def batch_delete_media_files(media_files):
 
 # #### Query functions
 
+def get_media_file_by_id(id):
+    return MediaFile.find(id)
+
+
 def get_all_media_files():
     return MediaFile.query.all()
 
@@ -62,3 +66,9 @@ def get_media_file_by_url(media_url):
 
 def get_media_files_by_md5s(md5_list):
     return MediaFile.query.filter(MediaFile.md5.in_(md5_list)).all()
+
+
+# ###### Test
+
+def is_media_file(instance):
+    return isinstance(instance, MediaFile)

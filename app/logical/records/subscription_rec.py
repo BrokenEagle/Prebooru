@@ -14,6 +14,7 @@ from utility.print import buffered_print, print_info
 
 # ## LOCAL IMPORTS
 from ...models import Subscription, SubscriptionElement, Illust, IllustUrl, Post
+from ..utility import SessionThread
 from ..searchable import search_attributes
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
@@ -41,6 +42,7 @@ from ..database.base_db import safe_db_execute
 ILLUST_URL_PAGE_LIMIT = 50
 ILLUST_PAGE_LIMIT = 10
 POST_PAGE_LIMIT = 5
+DOWNLOAD_PAGE_LIMIT = 10
 EXPIRE_PAGE_LIMIT = 20
 
 SIMILARITY_SEMAPHORE = threading.Semaphore(2)
@@ -124,6 +126,7 @@ def download_subscription_elements(subscription, job_id=None):
 
 
 def download_missing_elements(manual=False):
+    max_pages = DOWNLOAD_PAGE_LIMIT if not manual else float('inf')
     q = SubscriptionElement.query.join(Subscription)\
                                  .filter(SubscriptionElement.post_id.is_(None),
                                          SubscriptionElement.status == 'active',
@@ -131,19 +134,18 @@ def download_missing_elements(manual=False):
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
+    element_count = 0
     while True:
         print(f"download_missing_elements: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:
             site_key = get_site_key(element.illust_url.site_id)
             source = SOURCEDICT[site_key]
             convert_network_subscription(element, source)
+            element_count += 1
         _process_similarity(page.items)
         _process_videos(page.items)
-        if not page.has_prev:
-            break
-        if not manual and page.page > 10:
-            print("download_missing_elements: Max pages reached!")
-            break
+        if not page.has_prev or (not manual and max_pages):
+            return element_count
         page = page.prev()
 
 
@@ -188,9 +190,8 @@ def expire_subscription_elements(manual):
             archive_subscription_post(element)
             retdata['archive'] += 1
         if not page.has_next or page.page >= max_pages:
-            break
+            return retdata
         page = page.next()
-    return retdata
 
 
 def update_subscription_elements(subscription, job_id=None):
@@ -292,7 +293,7 @@ def _process_similarity(elements):
             SIMILARITY_SEMAPHORE.release()
 
     post_ids = [element.post_id for element in elements]
-    threading.Thread(target=_process, args=(post_ids,)).start()
+    SessionThread(target=_process, args=(post_ids,)).start()
 
 
 def _process_videos(elements):
@@ -322,7 +323,7 @@ def _process_videos(elements):
     video_posts = [post for post in posts if post.is_video]
     if len(video_posts):
         post_ids = [post.id for post in video_posts]
-        thread = threading.Thread(target=_process, args=(post_ids,))
+        thread = SessionThread(target=_process, args=(post_ids,))
         thread.start()
 
 

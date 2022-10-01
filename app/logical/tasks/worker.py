@@ -9,7 +9,8 @@ from utility.time import minutes_ago, days_ago
 from utility.print import buffered_print
 
 # ## LOCAL IMPORTS
-from ..utility import unique_objects
+from ... import SESSION
+from ..utility import unique_objects, SessionThread, SessionTimer
 from ..similarity.generate_data import generate_post_similarity
 from ..similarity.populate_pools import populate_similarity_pools
 from ...models import Upload, Illust, Subscription
@@ -66,16 +67,17 @@ def process_upload(upload_id):
         if upload.status.name in ['complete', 'duplicate'] and len(upload.posts) > 0:
             printer("Starting secondary threads.")
             post_ids = [post.id for post in upload.posts]
-            threading.Thread(target=process_similarity, args=(post_ids,)).start()
-            threading.Thread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
-            threading.Thread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
+            SessionThread(target=process_similarity, args=(post_ids,)).start()
+            SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
+            SessionThread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
             video_post_ids = [post.id for post in upload.posts if post.is_video]
             if len(video_post_ids):
-                threading.Thread(target=process_videos, args=(video_post_ids,)).start()
+                SessionThread(target=process_videos, args=(video_post_ids,)).start()
 
     safe_db_execute('process_upload', 'tasks.worker', try_func=try_func, msg_func=msg_func, error_func=error_func,
                     finally_func=finally_func, printer=printer)
     printer.print()
+    SESSION.remove()
 
 
 def process_subscription(subscription_id, job_id):
@@ -118,8 +120,8 @@ def process_subscription(subscription_id, job_id):
         new_post_ids = [post.id for post in subscription.posts if post.id not in starting_post_ids]
         if len(new_post_ids):
             printer("Starting secondary threads.")
-            threading.Thread(target=check_for_matching_danbooru_posts, args=(new_post_ids,)).start()
-        threading.Timer(15, _query_unlock_subscription_job).start()  # Check later to give the DB time to catch up
+            SessionThread(target=check_for_matching_danbooru_posts, args=(new_post_ids,)).start()
+        SessionTimer(15, _query_unlock_subscription_job).start()  # Check later to give the DB time to catch up
 
     safe_db_execute('process_subscription', 'tasks.worker', try_func=try_func, msg_func=msg_func, printer=printer,
                     error_func=error_func, finally_func=finally_func)
@@ -127,6 +129,7 @@ def process_subscription(subscription_id, job_id):
     printer("Added posts:", subscription.artist.post_count - start_posts)
     printer("Added elements:", subscription.element_count - start_elements)
     printer.print()
+    SESSION.remove()
 
 
 # #### Secondary task functions

@@ -8,9 +8,11 @@ from utility.data import get_buffer_checksum
 from utility.file import create_directory, put_get_raw, delete_file
 
 # ## LOCAL IMPORTS
+from ... import SESSION
 from ..network import get_http_data
 from ..database.media_file_db import create_media_file_from_parameters, batch_delete_media_files,\
-    get_media_file_by_url, get_media_files_by_md5s, update_media_file_expires
+    get_media_file_by_url, get_media_files_by_md5s, update_media_file_expires, get_media_file_by_id,\
+    is_media_file
 
 
 # ## FUNCTIONS
@@ -31,7 +33,8 @@ def batch_delete_media(media_files):
 def batch_get_or_create_media(media_batches):
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = [executor.submit(get_or_create_media, url, source) for (url, source) in media_batches]
-        return [f.result() for f in futures]
+        results = [f.result() for f in futures]
+        return [(get_media_file_by_id(item) if isinstance(item, int) else item) for item in results]
 
 
 def get_or_create_media(download_url, source):
@@ -40,7 +43,9 @@ def get_or_create_media(download_url, source):
         media_file = create_media(download_url, source)
     else:
         update_media_file_expires(media_file)
-    return media_file
+    results = media_file.id if is_media_file(media_file) else media_file
+    SESSION.remove()
+    return results
 
 
 def create_media(download_url, source):

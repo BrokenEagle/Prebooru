@@ -9,6 +9,7 @@ from utility.print import print_error
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import SimilarityPool
+from ..utility import SessionThread
 from .similarity_pool_element_db import get_similarity_elements_by_post_id, batch_delete_similarity_pool_element
 from .base_db import update_column_attributes
 
@@ -72,7 +73,7 @@ def update_similarity_element_count(similarity_pool):
     if similarity_pool.id in COUNT_POOL_IDS:
         return
     COUNT_POOL_IDS.add(similarity_pool.id)
-    threading.Thread(target=_update, args=(similarity_pool.id,)).start()
+    SessionThread(target=_update, args=(similarity_pool.id,)).start()
 
 
 # ###### DELETE
