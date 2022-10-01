@@ -14,10 +14,10 @@ from .base_db import update_column_attributes, update_relationship_collections
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'type', 'active']
+COLUMN_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('image_urls', 'url', UploadUrl)]
 
-CREATE_ALLOWED_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'type', 'active',
+CREATE_ALLOWED_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'active',
                              'image_urls']
 
 
