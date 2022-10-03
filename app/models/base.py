@@ -276,7 +276,7 @@ class JsonModel(DB.Model):
             if type(value) is datetime.datetime:
                 data[attr] = date_time_or_null(value)
             elif isinstance(value, enum.Enum):
-                data[attr] = value.value
+                data[attr] = value.name
             elif type(value) is _AssociationList:
                 data[attr] = list(value)
             elif type(value) is InstrumentedList:
