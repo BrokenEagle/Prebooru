@@ -8,6 +8,7 @@ import logging
 # ## GLOBAL VARIABLES
 
 SHUTDOWN_ERROR_FILE = 'prebooru-shutdown-error.txt'
+PREBOORU_RUNNING = False
 
 
 # ## FUNCTIONS
@@ -126,6 +127,10 @@ def initialize_server_checks():
         return unique_id
 
     def check_server_listening():
+        while True:
+            if PREBOORU_RUNNING:
+                break
+            time.sleep(5)
         print(f"\nChecking server is listening on port {PREBOORU_PORT}\n")
         resp = requests.get(f'http://127.0.0.1:{PREBOORU_PORT}/ping', timeout=10)
         if resp.status_code != 200 or resp.text != unique_id:
@@ -151,7 +156,7 @@ def initialize_migrate():
 
 def start_server(args):
     global SERVER_PID, SERVER_PID_FILE, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER,\
-        load_default, put_get_json
+        load_default, put_get_json, PREBOORU_RUNNING
     from config import DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER, RELOAD_INTERVAL,\
         EXCLUDE_PATTERNS
     from utility.file import load_default, put_get_json
@@ -201,6 +206,7 @@ def start_server(args):
     }
     if args.public:
         app_args['host'] = '0.0.0.0'
+    PREBOORU_RUNNING = True
     PREBOORU_APP.run(**app_args)
 
 
