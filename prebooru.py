@@ -9,6 +9,7 @@ import logging
 
 SHUTDOWN_ERROR_FILE = 'prebooru-shutdown-error.txt'
 PREBOORU_RUNNING = False
+PREBOORU_ERROR = 0
 
 
 # ## FUNCTIONS
@@ -89,10 +90,11 @@ def initialize_server_callbacks(args):
         iterations = 0
         while True:
             if SERVER_INFO.active_requests <= expected_requests or iterations >= 8:
-                return
+                break
             print("Waiting for active requests to complete:", SERVER_INFO.active_requests)
             iterations += 1
             time.sleep(1)
+        print("Exiting server process.")
 
     if args.unique_id is not None:
         SERVER_INFO.unique_id = args.unique_id
@@ -118,6 +120,7 @@ def initialize_server_checks():
     import uuid
     import requests
     import threading
+    import _thread
     from utility.print import print_info, print_error
 
     unique_id = str(uuid.uuid4())
@@ -127,16 +130,27 @@ def initialize_server_checks():
         return unique_id
 
     def check_server_listening():
+        global PREBOORU_ERROR
         while True:
             if PREBOORU_RUNNING:
                 break
             time.sleep(5)
         print(f"\nChecking server is listening on port {PREBOORU_PORT}\n")
-        resp = requests.get(f'http://127.0.0.1:{PREBOORU_PORT}/ping', timeout=10)
-        if resp.status_code != 200 or resp.text != unique_id:
-            print_error(f"\nServer not listening on port {PREBOORU_PORT}!\n")
-            exit(-1)
-        print_info("\nServer: OK\n")
+        exit_server = False
+        try:
+            resp = requests.get(f'http://127.0.0.1:{PREBOORU_PORT}/ping', timeout=10)
+        except Exception as e:
+            print_error(f"\nException trying to ping the server on {PREBOORU_PORT}!\n", repr(e))
+            exit_server = True
+        else:
+            if resp.status_code != 200 or resp.text != unique_id:
+                print_error(f"\nServer not listening on port {PREBOORU_PORT}!\n")
+                exit_server = True
+        if exit_server:
+            PREBOORU_ERROR = -1
+            _thread.interrupt_main()
+        else:
+            print_info("\nServer: OK\n")
 
     threading.Timer(10, check_server_listening).start()
 
@@ -208,6 +222,7 @@ def start_server(args):
         app_args['host'] = '0.0.0.0'
     PREBOORU_RUNNING = True
     PREBOORU_APP.run(**app_args)
+    exit(PREBOORU_ERROR)
 
 
 def init_db(args):
@@ -290,9 +305,9 @@ def watchdog_loop(watchdog_info):
             watchdog_info['proc'] = proc = psutil.Process(p.pid)
         elif errorcode is not None:
             exit(errorcode)
-        errorcode = p.returncode and (p.returncode if (p.returncode < (1 << 31)) else (p.returncode - (1 << 32)))
         time.sleep(WATCHDOG_POLLING_INTERVAL)
-        if ((time.time() - last_checked) < 300):  # Only check the memory every 5 minutes
+        errorcode = p.poll() and (p.returncode if (p.returncode < (1 << 31)) else (p.returncode - (1 << 32)))
+        if errorcode is not None or ((time.time() - last_checked) < 300):  # Only check the memory every 5 minutes
             continue
         private_memory = sum([subproc.memory_info().private for subproc in get_proc_tree(proc)])
         if (private_memory > WATCHDOG_MAX_MEMORY_MB):
