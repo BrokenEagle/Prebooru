@@ -2,7 +2,6 @@
 
 # ## PYTHON IMPORTS
 import itertools
-import threading
 
 # ## PACKAGE IMPORTS
 from utility.time import minutes_ago, days_ago

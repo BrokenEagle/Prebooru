@@ -92,7 +92,10 @@ def storage_bytes(subscription, type=None):
 # #### Elements
 
 def keep_element_val(subscription_element):
-    return subscription_element.keep.name if subscription_element.keep is not None else Markup("<em>Not yet chosen</em>")
+    if subscription_element.keep is not None:
+        return subscription_element.keep.name
+    else:
+        return Markup("<em>Not yet chosen</em>")
 
 
 # ###### Link functions

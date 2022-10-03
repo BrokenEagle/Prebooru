@@ -6,7 +6,7 @@ import enum
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
-from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, secondarytable, classproperty
+from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, secondarytable
 
 
 # ## GLOBAL VARIABLES

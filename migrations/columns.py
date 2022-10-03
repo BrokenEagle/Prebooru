@@ -63,8 +63,10 @@ def initialize_column(table_name, column_name, column_type, *extra_columns):
         data = connection.execute(statement).fetchall()
         for item in data:
             (id, value, *extra_values) = item
+
             def _update(**kwargs):
                 connection.execute(t.update().where(t.c.id == id).values(**kwargs))
+
             yield id, value, _update, {extra_columns[i][0]: extra_values[i] for i in range(len(extra_values))}
         if len(data):
             print(f"{table_name} #{data[0][0]} - {table_name} #{data[-1][0]}")
