@@ -822,6 +822,25 @@ def get_twitter_illust_timeline(illust_id):
     return found_tweets
 
 
+def get_media_page(user_id, cursor=None):
+    params = TWITTER_BASE_PARAMS.copy()
+    if cursor is not None:
+        params['cursor'] = cursor
+    url_params = urllib.parse.urlencode(params)
+    return twitter_request(("https://api.twitter.com/2/timeline/media/%s.json?" % user_id) + url_params)
+
+
+def get_media_page_v2(user_id, count, cursor=None):
+    variables = TWITTER_MEDIA_TIMELINE_GRAPHQL.copy()
+    features = TWITTER_MEDIA_TIMELINE_FEATURES.copy()
+    variables['userId'] = str(user_id)
+    variables['count'] = count
+    if cursor is not None:
+        variables['cursor'] = cursor
+    url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features)})
+    return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params)
+
+
 def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
     print("Populating from media page: %d" % (user_id))
 
@@ -830,18 +849,14 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
         job_status['range'] = 'media:' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        variables = TWITTER_MEDIA_TIMELINE_GRAPHQL.copy()
-        features = TWITTER_MEDIA_TIMELINE_FEATURES.copy()
-        variables['userId'] = str(user_id)
-        variables['count'] = count
-        if cursor is not None:
-            variables['cursor'] = cursor
-        url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features)})
-        return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params)
+        if HAS_USER_AUTH:
+            return get_media_page_v2(user_id, count, cursor)
+        else:
+            return get_media_page(user_id, cursor)
 
     count = 100 if last_id is None else 20
     page = 1
-    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, v2=True)
+    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, v2=HAS_USER_AUTH)
     return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
