@@ -56,8 +56,13 @@ Subscriptions.dragKeepClick = function(obj) {
 Subscriptions.initializeReloadInterval = function (subscription_status) {
     if (subscription_status !== 'manual' && subscription_status !== 'automatic') return;
     const page_timer = setInterval(() => {
-        if (document.hidden) return;
-        window.location.reload();
+        if (document.hidden) {
+            document.onvisibilitychange = function () {
+                window.location.reload();
+            };
+        } else {
+            window.location.reload();
+        }
         clearInterval(page_timer);
     }, 15000);
 };
