@@ -13,6 +13,8 @@ from .base import JsonModel, ModelEnum, IntEnum, CompressedJSON, NormalizedDatet
 class ApiDataType(ModelEnum):
     illust = enum.auto()
     artist = enum.auto()
+    profile = enum.auto()
+    page = enum.auto()
 
 
 class ApiData(JsonModel):
