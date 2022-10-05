@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import os
+import sys
 import threading
 import traceback
 
@@ -23,3 +24,7 @@ class RepeatTimer(threading.Timer):
 def get_environment_variable(key, default, parser=str):
     value = os.environ.get(key)
     return default if value is None else parser(value)
+
+
+def is_interactive_shell():
+    return hasattr(sys, 'ps1')
