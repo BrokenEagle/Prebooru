@@ -1,7 +1,7 @@
-/** APP/STATIC/STYLES/SIMILARITY.CSS **/
+/** APP/STATIC/STYLES/IMAGE_HASHES.CSS **/
 
 /**** CHECK Page ****/
-div#similarity-heading {
+div#image-hash-heading {
     font-size: 32px;
 }
 
@@ -9,12 +9,12 @@ form#form.hidden {
     display: none;
 }
 
-textarea#similarity-urls {
+textarea#image-hash-urls-string {
     height: 4em;
     width: 50em;
 }
 
-input#similarity-score {
+input#image-hash-score {
     width: 5em;
 }
 
@@ -24,20 +24,20 @@ div#display-form {
     padding: 1em 0 0 1em;
 }
 
-div#similarity-results-content {
+div#image-hash-results-content {
     margin-left: 1em;
     margin-top: 1em;
 }
 
-div.similarity-result-container {
+div.image-hash-result-container {
     margin-top: 1em;
 }
 
-div.similarity-result-heading {
+div.image-hash-result-heading {
     font-size: 28px;
 }
 
-div.similarity-proxy-block {
+div.image-hash-proxy-block {
     margin-left: 1em;
     margin-top: 1em;
 }
@@ -60,7 +60,7 @@ div.proxy-image-details {
     margin-top: 1em;
 }
 
-div.similarity-result-block {
+div.image-hash-result-block {
     background-color: #eee;
     border: 2px solid #ddd;
     margin-top: 1em;
@@ -68,14 +68,14 @@ div.similarity-result-block {
     width: 95%;
 }
 
-div.similarity-post {
+div.image-hash-post {
     border: 1px solid grey;
     display: inline-block;
     margin: 5px;
     padding: 5px;
 }
 
-div.similarity-post-info {
+div.image-hash-post-info {
     font-size: 18px;
     margin-top: 1em;
 }

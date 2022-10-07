@@ -168,10 +168,14 @@ def regenerate_previews_link(post):
     return general_link("Regenerate previews", url, **addons)
 
 
-def regenerate_similarity_link(post):
-    url = url_for('similarity.regenerate_html', post_id=post.id)
-    addons = {'onclick': "return Posts.regenerateSimilarity(this)"}
-    return general_link("Regenerate similarity", url, **addons)
+def regenerate_image_matches_link(post):
+    url = url_for('image_hash.regenerate_html', post_id=post.id)
+    addons =\
+        {
+            'onclick': "return Posts.regenerateImageMatches(this)",
+            'title': "Will regenerate the image signatures used to match against other images.",
+        }
+    return general_link("Regenerate image matches", url, **addons)
 
 
 def disk_file_link(post):

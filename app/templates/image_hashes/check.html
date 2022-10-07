@@ -3,34 +3,34 @@
 {% from "posts/_macros.html" import post_preview %}
 
 {% block css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/similarity.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/image_hashes.css') }}">
 {% endblock css %}
 
 {% block linkscript %}
-    <script src="{{ url_for('static', filename='javascript/similarity.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascript/image_hashes.js') }}"></script>
 {% endblock linkscript %}
 
 {% block title %}
-    Similarity results
+    Image Match Results
 {% endblock title %}
 
 {% block content %}
-    <div id="similarity-content">
-        <div id="similarity-heading" class="heading">Similarity results</div>
-        <div id="similarity-form" class="{{ helpers }}">
-            {{ render_form(form, 'GET', url_for('similarity.check_html'), class=helpers.similarity.form_class(similar_results)) }}
+    <div id="image-hash-content">
+        <div id="image-hash-heading" class="heading">Image match results</div>
+        <div id="image-hash-form" class="{{ helpers }}">
+            {{ render_form(form, 'GET', url_for('image_hash.check_html'), class=helpers.image_hash.form_class(similar_results)) }}
             {% if similar_results is not none %}
                 <div id="display-form">
-                    <a href="#" onclick="return Similarity.showForm(this)">«Show form»</a>
+                    <a href="#" onclick="return ImageHashes.showForm(this)">«Show form»</a>
                 </div>
             {% endif %}
         </div>
         {% if similar_results is not none %}
-            <div id="similarity-results-content">
+            <div id="image-hash-results-content">
                 {% for similar_result in similar_results %}
-                    <div class="similarity-result-container">
-                        <div class="similarity-result-heading heading">Image #{{ loop.index }}</div>
-                        <div class="similarity-proxy-block">
+                    <div class="image-hash-result-container">
+                        <div class="image-hash-result-heading heading">Image #{{ loop.index }}</div>
+                        <div class="image-hash-proxy-block">
                             <article class="proxy-post">
                                 {{ helpers.media_file.file_link(similar_result.media_file) }}
                             </article>
@@ -38,11 +38,11 @@
                                 <strong>Image url:</strong> {{ similar_result.image_url }}
                             </div>
                         </div>
-                        <div class="similarity-result-block">
+                        <div class="image-hash-result-block">
                             {% for post_result in similar_result.post_results %}
-                                <div class="similarity-post">
+                                <div class="image-hash-post">
                                     {{ post_preview(post_result.post, True) }}
-                                    <div class="similarity-post-info">
+                                    <div class="image-hash-post-info">
                                         <strong>Score:</strong> {{ post_result.score }}
                                         <br>
                                         <strong>Type/Size:</strong> {{ post_result.post.file_ext.upper() }} @ {{ post_result.post.size }}
@@ -62,5 +62,5 @@
 {% endblock content %}
 
 {% block pagescript %}
-    Prebooru.initializeLazyLoad('.similarity-post');
+    Prebooru.initializeLazyLoad('.image-hash-post');
 {% endblock pagescript %}

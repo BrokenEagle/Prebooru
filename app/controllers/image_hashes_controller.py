@@ -1,4 +1,4 @@
-# APP/CONTROLLERS/SIMILARITY_CONTROLLER.PY
+# APP/CONTROLLERS/IMAGE_HASHES_CONTROLLER.PY
 
 # ## PYTHON IMPORTS
 from types import SimpleNamespace
@@ -12,50 +12,70 @@ from wtforms.validators import DataRequired
 from ..models import Post
 from ..logical.utility import set_error
 from ..logical.database.post_db import get_posts_by_id
-from ..logical.database.similarity_data_db import delete_similarity_data_by_post_id
+from ..logical.database.image_hash_db import delete_image_hash_by_post_id
 from ..logical.database.similarity_pool_db import delete_similarity_pool_by_post_id
-from ..logical.similarity.check_image import check_all_image_urls_similarity
-from ..logical.similarity.generate_data import generate_post_similarity
+from ..logical.similarity.check_image import check_all_image_urls_for_matches
+from ..logical.similarity.generate_data import generate_post_image_hashes
 from ..logical.similarity.populate_pools import populate_similarity_pools
-from .base_controller import process_request_values, CustomNameForm, parse_type, parse_string_list, nullify_blanks,\
-    set_default, check_param_requirements, eval_bool_string, jsonify_data
+from .base_controller import process_request_values, parse_type, parse_string_list, nullify_blanks, set_default,\
+    check_param_requirements, eval_bool_string, jsonify_data, get_form
 
 
 # ## GLOBAL VARIABLES
 
-bp = Blueprint("similarity", __name__)
+bp = Blueprint("image_hash", __name__)
 
 
-# #### Forms
+# #### Form
 
-def get_similarity_form(**kwargs):
-    # Class has to be declared every time because the custom_name isn't persistent accross page refreshes
-    class SimilarityForm(CustomNameForm):
-        urls_string = TextAreaField('URLs', id='similarity-urls', custom_name='urls_string',
-                                    description="Separated by carriage returns.", validators=[DataRequired()])
-        score = FloatField('Score', id='similarity-score',
-                           description="Lowest score of results to return. Default is 90.0.")
-        size = SelectField('Image size',
-                           choices=[("", ""), ('actual', 'Actual'), ('original', 'Original'), ('large', 'Large'),
-                                    ('medium', 'medium'), ('small', 'Small'), ('thumb', 'Thumb')],
-                           id='similarity-sim-clause')
-        sim_clause = SelectField('Similarity clause',
-                                 choices=[("", ""), ('chunk', 'Chunk'), ('cross0', 'Cross #0'), ('cross0', 'Cross #1'),
-                                          ('cross2', 'Cross #2'), ('all', 'All')],
-                                 id='similarity-sim-clause')
-    return SimilarityForm(**kwargs)
+FORM_CONFIG = {
+    'urls_string': {
+        'name': 'Urls',
+        'field': TextAreaField,
+        'kwargs': {
+            'validators': [DataRequired()],
+            'description': "Separated by carriage returns.",
+        },
+    },
+    'score': {
+        'field': FloatField,
+        'kwargs': {
+            'description': "Lowest score of results to return. Default is 90.0.",
+        },
+    },
+    'size': {
+        'name': 'Image size',
+        'field': SelectField,
+        'kwargs': {
+            'choices': [("", ""), ('actual', 'Actual'), ('original', 'Original'), ('large', 'Large'),
+                        ('medium', 'medium'), ('small', 'Small'), ('thumb', 'Thumb')],
+        },
+    },
+    'sim_clause': {
+        'name': 'Image size',
+        'field': SelectField,
+        'kwargs': {
+            'choices': [("", ""), ('chunk', 'Chunk'), ('cross0', 'Cross #0'), ('cross0', 'Cross #1'),
+                        ('cross2', 'Cross #2'), ('all', 'All')],
+        },
+    },
+}
 
 
 # ## FUNCTIONS
 
 # #### Helper functions
 
+def get_image_hash_form(**kwargs):
+    return get_form('image_hash', FORM_CONFIG, **kwargs)
+
+
 def convert_data_params(dataparams):
-    params = get_similarity_form(**dataparams).data
+    params = get_image_hash_form(**dataparams.get('image_hash', {})).data
     if 'urls' in dataparams:
         params['urls'] = dataparams['urls']
-    elif 'urls_string' in dataparams:
-        params['urls'] = parse_string_list(dataparams, 'urls_string', r'\r?\n')
+    elif 'urls_string' in params:
+        params['urls'] = parse_string_list(params, 'urls_string', r'\r?\n')
     else:
         params['urls'] = None
     params['score'] = parse_type(dataparams, 'score', float)
@@ -76,45 +96,45 @@ def check(include_posts):
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
     dataparams['url_string'] = '\r\n'.join(dataparams['urls'] or [])
-    similar_results = check_all_image_urls_similarity(dataparams['urls'], dataparams['score'],
-                                                      dataparams['size'], include_posts,
-                                                      sim_clause=dataparams['sim_clause'])
+    similar_results = check_all_image_urls_for_matches(dataparams['urls'], dataparams['score'],
+                                                       dataparams['size'], include_posts,
+                                                       sim_clause=dataparams['sim_clause'])
     retdata['similar_results'] = similar_results
     return retdata
 
 
-def generate_similarity():
+def regenerate_post_image_hash():
     post_id = request.values.get('post_id', type=int)
     post = Post.find(post_id) if post_id is not None else None
     retdata = {'error': False, 'post_id': post_id}
     if post is None:
         return set_error(retdata, "Must use a valid post id.")
-    delete_similarity_data_by_post_id(post.id)
+    delete_image_hash_by_post_id(post.id)
     delete_similarity_pool_by_post_id(post.id)
-    generate_post_similarity(post)
+    generate_post_image_hashes(post)
     populate_similarity_pools(post)
     return retdata
 
 
 # #### Route functions
 
-@bp.route('/similarity/check.json', methods=['GET'])
+@bp.route('/image_hash/check.json', methods=['GET'])
 def check_json():
     return jsonify_data(check(True))
 
 
-@bp.route('/similarity/check', methods=['GET'])
+@bp.route('/image_hash/check', methods=['GET'])
 def check_html():
     show_form = request.args.get('show_form', type=eval_bool_string)
     if show_form:
-        return render_template("similarity/check.html", similar_results=None, form=get_similarity_form())
+        return render_template("image_hashes/check.html", similar_results=None, form=get_image_hash_form())
     results = check(False)
     formparams = results['data']
     formparams['urls_string'] = '\r\n'.join(formparams['urls'] or [])
-    form = get_similarity_form(**formparams)
+    form = get_image_hash_form(**formparams)
     if results['error']:
         flash(results['message'], 'error')
-        return render_template("similarity/check.html", similar_results=None, form=form)
+        return render_template("image_hashes/check.html", similar_results=None, form=form)
     similar_results = []
     for i in range(len(results['similar_results'])):
         json_result = results['similar_results'][i]
@@ -126,25 +146,25 @@ def check_html():
             continue
         post_results = [SimpleNamespace(**post_result) for post_result in json_result['post_results']]
         del json_result['post_results']
-        similarity_result = SimpleNamespace(post_results=post_results, **json_result)
-        post_ids = [post_result.post_id for post_result in similarity_result.post_results]
+        image_match_result = SimpleNamespace(post_results=post_results, **json_result)
+        post_ids = [post_result.post_id for post_result in image_match_result.post_results]
         posts = get_posts_by_id(post_ids)
-        for post_result in similarity_result.post_results:
+        for post_result in image_match_result.post_results:
             post_result.post = next(filter(lambda x: x.id == post_result.post_id, posts), None)
-        similar_results.append(similarity_result)
-    return render_template("similarity/check.html", similar_results=similar_results, form=form)
+        similar_results.append(image_match_result)
+    return render_template("image_hashes/check.html", similar_results=similar_results, form=form)
 
 
-@bp.route('/similarity/regenerate.json', methods=['POST'])
+@bp.route('/image_hash/regenerate.json', methods=['POST'])
 def regenerate_json():
-    return generate_similarity()
+    return regenerate_post_image_hash()
 
 
-@bp.route('/similarity/regenerate', methods=['POST'])
+@bp.route('/image_hash/regenerate', methods=['POST'])
 def regenerate_html():
-    results = generate_similarity()
+    results = regenerate_post_image_hash()
     if results['error']:
         flash(results['message'], 'error')
     else:
-        flash("Similarity regenerated.")
+        flash("Image hash regenerated.")
     return redirect(request.referrer)

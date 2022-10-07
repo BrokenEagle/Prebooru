@@ -5,23 +5,22 @@ from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
 from ...models import SimilarityPool
-from ..database.similarity_data_db import get_similarity_data_by_post_id
+from ..database.image_hash_db import get_image_hash_by_post_id
 from ..database.similarity_pool_db import update_similarity_element_count, get_or_create_similarity_pool,\
     get_similarity_pools_by_ids
 from ..database.similarity_pool_element_db import create_similarity_pool_element_from_parameters,\
     update_similarity_pool_element_pairing, set_similarity_element_main, delete_similarity_pool_element
-from .base import get_similarity_data_matches, check_similarity_match_scores, filter_score_results
+from .base import get_image_hash_matches, check_image_match_scores, filter_score_results
 
 
 # ## FUNCTIONS
 
 def populate_similarity_pools(post, printer=print):
-    simdata_items = get_similarity_data_by_post_id(post.id)
+    imghash_items = get_image_hash_by_post_id(post.id)
     score_results = []
-    for simdata in simdata_items:
-        smatches = get_similarity_data_matches(simdata.image_hash, simdata.ratio, sim_clause='cross2',
-                                               post_id=simdata.post_id)
-        score_results += check_similarity_match_scores(smatches, simdata.image_hash, 90.0)
+    for imghash in imghash_items:
+        smatches = get_image_hash_matches(imghash.hash, imghash.ratio, sim_clause='cross2', post_id=imghash.post_id)
+        score_results += check_image_match_scores(smatches, imghash.hash, 90.0)
     final_results = filter_score_results(score_results)
     main_pool = get_or_create_similarity_pool(post.id)
     printer("Similarity pool results (post #%d): %d" % (post.id, len(final_results)))
@@ -32,10 +31,10 @@ def populate_similarity_pools(post, printer=print):
     sibling_pools = [get_or_create_similarity_pool(post_id) for post_id in sibling_post_ids]
     # Load similarity pools with all elements loaded
     sibling_pools = get_similarity_pools_by_ids(sibling_post_ids, options=(selectinload(SimilarityPool.elements),))
-    create_similarity_pairings(post.id, final_results, main_pool, sibling_pools)
+    create_image_match_pairings(post.id, final_results, main_pool, sibling_pools)
 
 
-def create_similarity_pairings(post_id, score_results, main_pool, sibling_pools):
+def create_image_match_pairings(post_id, score_results, main_pool, sibling_pools):
     index_pools = {pool.post_id: pool for pool in sibling_pools}
     index_post_ids = {pool.post_id: [element.post_id for element in pool.elements] for pool in sibling_pools}
     main_post_ids = [element.post_id for element in main_pool.elements]

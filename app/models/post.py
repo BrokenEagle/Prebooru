@@ -22,7 +22,7 @@ from .subscription_element import SubscriptionElement
 from .notation import Notation
 from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
-from .similarity_data import SimilarityData
+from .image_hash import ImageHash
 from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
 from .base import JsonModel, ModelEnum, NormalizedDatetime, IntEnum, secondarytable, image_server_url, classproperty
@@ -94,8 +94,8 @@ class Post(JsonModel):
     _tags = DB.relationship(UserTag, secondary=PostTags, lazy=True, backref=DB.backref('posts', lazy=True))
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
     _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False))
-    similarity_data = DB.relationship(SimilarityData, lazy=True, cascade='all,delete',
-                                      backref=DB.backref('post', lazy=True, uselist=False))
+    image_hashes = DB.relationship(ImageHash, lazy=True, cascade='all,delete',
+                                   backref=DB.backref('post', lazy=True, uselist=False))
     # Similarity pools and elements must be deleted specially because of sibling relationships
     similarity_pool = DB.relationship(SimilarityPool, lazy=True, uselist=False,
                                       backref=DB.backref('post', lazy=True, uselist=False))

@@ -4,14 +4,13 @@
 from ..database.post_db import get_posts_by_id
 from ..sources.base import get_media_source, NoSource
 from ..records.media_file_rec import batch_get_or_create_media
-from .base import get_image, get_image_hash, get_similarity_data_matches, check_similarity_match_scores,\
+from .base import get_image, get_image_hash, get_image_hash_matches, check_image_match_scores,\
     filter_score_results
 
 
 # ## FUNCTIONS
 
-def check_all_image_urls_similarity(image_urls, min_score, size, include_posts=False, sim_clause=None):
-    print('check_all_image_urls_similarity', sim_clause)
+def check_all_image_urls_for_matches(image_urls, min_score, size, include_posts=False, sim_clause=None):
     media_sources = [get_media_source(image_url) or NoSource() for image_url in image_urls]
     if size == 'actual':
         download_urls = image_urls
@@ -27,12 +26,13 @@ def check_all_image_urls_similarity(image_urls, min_score, size, include_posts=F
         if isinstance(media, str):
             post_results.append(None)
         else:
-            result = check_media_file_similarity(media, min_score, include_posts=include_posts, sim_clause=sim_clause)
+            result = check_media_file_image_matches(media, min_score, include_posts=include_posts,
+                                                    sim_clause=sim_clause)
             post_results.append(result)
-    similarity_results = []
+    image_match_results = []
     for i in range(len(image_urls)):
         is_error = isinstance(media_files[i], str)
-        similarity_result =\
+        image_match_result =\
             {
                 'image_url': normalized_urls[i],
                 'download_url': download_urls[i],
@@ -41,18 +41,18 @@ def check_all_image_urls_similarity(image_urls, min_score, size, include_posts=F
                 'error': is_error,
                 'message': media_files[i] if is_error else None,
             }
-        similarity_results.append(similarity_result)
-    return similarity_results
+        image_match_results.append(image_match_result)
+    return image_match_results
 
 
-def check_media_file_similarity(media_file, min_score, include_posts=False, sim_clause=None):
+def check_media_file_image_matches(media_file, min_score, include_posts=False, sim_clause=None):
     if type(media_file) is str:
         return media_file
     image = get_image(media_file.file_path)
     image_hash = get_image_hash(image)
     ratio = round(image.width / image.height, 4)
-    simdata_matches = get_similarity_data_matches(image_hash, ratio, sim_clause=sim_clause)
-    score_results = check_similarity_match_scores(simdata_matches, image_hash, min_score)
+    imghash_matches = get_image_hash_matches(image_hash, ratio, sim_clause=sim_clause)
+    score_results = check_image_match_scores(imghash_matches, image_hash, min_score)
     final_results = filter_score_results(score_results)
     if include_posts:
         post_ids = [result['post_id'] for result in final_results]

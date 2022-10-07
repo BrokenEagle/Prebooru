@@ -31,7 +31,7 @@ def initialize():
     SimilarityPoolElement.sibling = DB.relationship(SimilarityPoolElement, uselist=False, lazy=True,
                                                     remote_side=[SimilarityPoolElement.id])
     # Access the opposite side of the relationships to force the back references to be generated
-    Post.similarity_data.property._configure_started
+    Post.image_hashes.property._configure_started
     SimilarityPool.elements.property._configure_started
     SimilarityPoolElement.sibling.property._configure_started
     SimilarityPoolElement.set_relation_properties()

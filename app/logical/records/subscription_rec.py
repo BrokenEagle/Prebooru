@@ -21,7 +21,7 @@ from ..sources import SOURCEDICT
 from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..downloader.network import convert_network_subscription
-from ..similarity.generate_data import generate_post_similarity
+from ..similarity.generate_data import generate_post_image_hashes
 from ..records.post_rec import reinstantiate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
     update_subscription_element_status, link_subscription_post
@@ -45,11 +45,11 @@ POST_PAGE_LIMIT = 5
 DOWNLOAD_PAGE_LIMIT = 10
 EXPIRE_PAGE_LIMIT = 20
 
-SIMILARITY_SEMAPHORE = threading.Semaphore(2)
+IMAGEMATCH_SEMAPHORE = threading.Semaphore(2)
 VIDEO_SEMAPHORE = threading.Semaphore(1)
 
 WAITING_THREADS = {
-    'similarity': 0,
+    'image_match': 0,
     'video': 0,
 }
 
@@ -117,7 +117,7 @@ def download_subscription_elements(subscription, job_id=None):
         for element in page.items:
             if convert_network_subscription(element, source):
                 job_status['downloads'] += 1
-        _process_similarity(page.items)
+        _process_image_matches(page.items)
         _process_videos(page.items)
         if not page.has_prev:
             break
@@ -142,7 +142,7 @@ def download_missing_elements(manual=False):
             source = SOURCEDICT[site_key]
             convert_network_subscription(element, source)
             element_count += 1
-        _process_similarity(page.items)
+        _process_image_matches(page.items)
         _process_videos(page.items)
         if not page.has_prev or (not manual and max_pages):
             return element_count
@@ -275,22 +275,22 @@ def relink_element(element):
 
 # #### Private
 
-def _process_similarity(elements):
+def _process_image_matches(elements):
 
     def _process(post_ids):
-        print("Similarity semaphore waits:", WAITING_THREADS['similarity'])
-        WAITING_THREADS['similarity'] += 1
-        SIMILARITY_SEMAPHORE.acquire()
-        WAITING_THREADS['similarity'] -= 1
+        print("Image match semaphore waits:", WAITING_THREADS['image_match'])
+        WAITING_THREADS['image_match'] += 1
+        IMAGEMATCH_SEMAPHORE.acquire()
+        WAITING_THREADS['image_match'] -= 1
         try:
             posts = get_posts_by_id(post_ids)
             for post in posts:
-                generate_post_similarity(post)
+                generate_post_image_hashes(post)
         except Exception as e:
-            msg = "Error processing similarity on subscription: %s" % str(e)
-            log_error('subscription_rec.process_similarity', msg)
+            msg = "Error processing image matches on subscription: %s" % str(e)
+            log_error('subscription_rec._process_image_matches', msg)
         finally:
-            SIMILARITY_SEMAPHORE.release()
+            IMAGEMATCH_SEMAPHORE.release()
 
     post_ids = [element.post_id for element in elements]
     SessionThread(target=_process, args=(post_ids,)).start()

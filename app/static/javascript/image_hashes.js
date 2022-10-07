@@ -1,8 +1,8 @@
-// APP/STATIC/JAVASCRIPT/SIMILARITY.JS
+// APP/STATIC/JAVASCRIPT/IMAGE_HASHES.JS
 
-const Similarity = {};
+const ImageHashes = {};
 
-Similarity.showForm = function (obj) {
+ImageHashes.showForm = function (obj) {
     document.getElementById('form').classList.remove('hidden');
     obj.parentElement.style.display = 'none';
     return false;

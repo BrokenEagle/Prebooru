@@ -19,8 +19,8 @@ Posts.regeneratePreviews = function(obj) {
     return false;
 };
 
-Posts.regenerateSimilarity = function(obj) {
-    if (confirm("Regenerate similarity data and pools?")) {
+Posts.regenerateImageMatches = function(obj) {
+    if (confirm("Regenerate image matches?")) {
         Prebooru.postRequest(obj.href);
     }
     return false;

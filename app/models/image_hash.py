@@ -1,4 +1,4 @@
-# APP/MODELS/SIMILARITY_DATA.PY
+# APP/MODELS/IMAGE_HASH.PY
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -8,18 +8,18 @@ from .base import JsonModel
 
 # #### Constants
 
-BITS_PER_NIBBLE = 4
+BITS_PER_BYTE = 8
 
 
 # #### Configurable
 
 HASH_SIZE = 16            # Must be a power of 2
-CHARACTERS_PER_CHUNK = 2  # Must be a power of 2
+BYTES_PER_CHUNK = 1       # Must be a power of 2 or the value 1
 
 
 # #### Calculated
 
-BITS_PER_CHUNK = CHARACTERS_PER_CHUNK * BITS_PER_NIBBLE
+BITS_PER_CHUNK = BYTES_PER_CHUNK * BITS_PER_BYTE
 NUM_CHUNKS = (HASH_SIZE * HASH_SIZE) // BITS_PER_CHUNK
 TOTAL_BITS = HASH_SIZE * HASH_SIZE
 
@@ -31,17 +31,17 @@ def chunk_key(index):
 
 
 def chunk_index(index):
-    return index * CHARACTERS_PER_CHUNK
+    return index * BYTES_PER_CHUNK
 
 
 def hex_chunk(hashstr, index):
     strindex = chunk_index(index)
-    return hashstr[strindex: strindex + CHARACTERS_PER_CHUNK]
+    return hashstr[strindex: strindex + BYTES_PER_CHUNK]
 
 
 # ## CLASSES
 
-class SimilarityData(JsonModel):
+class ImageHash(JsonModel):
     # ## Declarations
 
     # #### Columns
@@ -52,8 +52,8 @@ class SimilarityData(JsonModel):
     # ## Property methods
 
     @property
-    def image_hash(self):
-        rethash = ""
+    def hash(self):
+        rethash = b""
         for i in range(0, NUM_CHUNKS):
             temp = getattr(self, chunk_key(i))
             if temp is None:
@@ -61,8 +61,8 @@ class SimilarityData(JsonModel):
             rethash += temp
         return rethash
 
-    @image_hash.setter
-    def image_hash(self, image_hash):
+    @hash.setter
+    def hash(self, image_hash):
         for i in range(0, NUM_CHUNKS):
             setattr(self, chunk_key(i), hex_chunk(image_hash, i))
 
@@ -150,7 +150,7 @@ class SimilarityData(JsonModel):
     # ## Class properties
 
     basic_attributes = ['id', 'post_id', 'ratio']
-    json_attributes = basic_attributes + ['image_hash']
+    json_attributes = basic_attributes + ['hash']
 
 
 # ## INITIALIZATION
@@ -159,4 +159,4 @@ def initialize():
     # Initialize chunk attributes, CHUNK00 - CHUNKXX
     for i in range(0, NUM_CHUNKS):
         key = chunk_key(i)
-        setattr(SimilarityData, key, DB.Column(DB.String(2), nullable=False))
+        setattr(ImageHash, key, DB.Column(DB.BLOB(2), nullable=False))

@@ -10,7 +10,7 @@ from utility.print import buffered_print
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..utility import unique_objects, SessionThread, SessionTimer
-from ..similarity.generate_data import generate_post_similarity
+from ..similarity.generate_data import generate_post_image_hashes
 from ..similarity.populate_pools import populate_similarity_pools
 from ...models import Upload, Illust, Subscription
 from ..records.artist_rec import update_artist_from_source, check_artists_for_boorus
@@ -66,7 +66,7 @@ def process_upload(upload_id):
         if upload.status.name in ['complete', 'duplicate'] and len(upload.posts) > 0:
             printer("Starting secondary threads.")
             post_ids = [post.id for post in upload.posts]
-            SessionThread(target=process_similarity, args=(post_ids,)).start()
+            SessionThread(target=process_image_matches, args=(post_ids,)).start()
             SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
             SessionThread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
             video_post_ids = [post.id for post in upload.posts if post.is_video]
@@ -133,11 +133,11 @@ def process_subscription(subscription_id, job_id):
 
 # #### Secondary task functions
 
-def process_similarity(post_ids):
-    printer = buffered_print("Process Similarity")
+def process_image_matches(post_ids):
+    printer = buffered_print("Process Image Matches")
     posts = get_posts_by_id(post_ids)
     for post in posts:
-        generate_post_similarity(post, printer=printer)
+        generate_post_image_hashes(post, printer=printer)
         populate_similarity_pools(post, printer=printer)
     printer.print()
 
