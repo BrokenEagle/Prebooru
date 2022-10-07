@@ -134,7 +134,7 @@ def get_form(model_name, config, **data_args):
 
     for key in config:
         key_config = config[key]['kwargs'].copy() if 'kwargs' in config[key] else {}
-        key_config['id'] = f'{model_name}-' + kebab_case(key)
+        key_config['id'] = kebab_case(model_name) + '-' + kebab_case(key)
         key_config['custom_name'] = f'{model_name}[{key}]'
         name = config[key]['name'] if 'name' in config[key] else display_case(key)
         field = config[key]['field'](name, **key_config)
