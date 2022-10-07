@@ -70,7 +70,7 @@ div#subscription-elements-container {
 }
 
 article.subscription-element {
-    height: 450px;
+    height: 460px;
     margin: 2em 1em 4em;
     width: 340px;
 }
@@ -214,10 +214,15 @@ article.subscription-element ul {
     margin-left: 20px;
 }
 
+article.subscription-element article.post {
+    margin: 0 0 10px 0;
+    width: unset;
+}
+
 article.subscription-element.subscription-no-post {
     background: #f0f0f0;
     box-shadow: 0 0 0 2px #ddd;
-    max-height: 450px;
+    max-height: 460px;
     overflow-x: hidden;
     padding: 0.5em;
     width: 325px;
