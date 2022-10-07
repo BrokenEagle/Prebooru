@@ -275,6 +275,8 @@ class JsonModel(DB.Model):
             value = getattr(self, attr)
             if type(value) is datetime.datetime:
                 data[attr] = date_time_or_null(value)
+            elif type(value) is bytes:
+                data[attr] = value.hex()
             elif isinstance(value, enum.Enum):
                 data[attr] = value.name
             elif type(value) is _AssociationList:
