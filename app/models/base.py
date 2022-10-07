@@ -5,7 +5,6 @@ import enum
 import json
 import zlib
 import datetime
-from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
 from flask import url_for, Markup
@@ -358,6 +357,10 @@ class JsonModel(DB.Model):
     def json_attributes(cls):
         return cls.basic_attributes
 
+    @classproperty(cached=False)
+    def repr_attributes(cls):
+        return cls.basic_attributes
+
     @StaticProperty
     def rowid():
         return DB.column("rowid")
@@ -366,9 +369,13 @@ class JsonModel(DB.Model):
 
     def __repr__(self):
         data = {}
-        for attr in self.basic_attributes:
+        for attr in self.repr_attributes:
             data[attr] = getattr(self, attr)
-        return self.model_name.title() + repr(SimpleNamespace(**data))[9:]
+            if isinstance(data[attr], bytes):
+                data[attr] = f'blob({data[attr].hex()})'
+        inner_string = ', '.join(f"{k}={data[k]}" for k in self.repr_attributes)
+        model_name = self.__class__.__name__
+        return f"{model_name}({inner_string})"
 
     @classmethod
     def _model_name(cls):

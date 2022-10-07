@@ -151,6 +151,7 @@ class ImageHash(JsonModel):
 
     basic_attributes = ['id', 'post_id', 'ratio']
     json_attributes = basic_attributes + ['hash']
+    repr_attributes = json_attributes
 
 
 # ## INITIALIZATION
