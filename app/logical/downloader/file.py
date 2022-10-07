@@ -8,28 +8,17 @@ from ...models import Post
 from ..media import get_pixel_hash
 from ..database.post_db import create_post_and_add_illust_url
 from ..database.error_db import create_and_append_error, extend_errors, is_error
-from .base import convert_image_upload, convert_video_upload, load_post_image, check_existing, check_filetype,\
-    check_image_dimensions, check_video_info, save_image, save_video, save_thumb
+from .base import convert_media_upload, load_post_image, check_existing, check_filetype, check_image_dimensions,\
+    check_video_info, save_image, save_video, save_thumb
 
 
 # ## FUNCTIONS
 
 def convert_file_upload(upload, source):
-    illust_url = upload.illust_url
-    illust = illust_url.illust
-    if source.illust_has_videos(illust):
-        if upload.sample_filepath is None:
-            msg = "Must include sample filepath on video uploads (illust #%d)." % illust.id
-            create_and_append_error('logical.downloader.file.convert_file_upload', msg, upload)
-        else:
-            return convert_video_upload(illust, upload, source, create_video_post, 'user')
-    elif source.illust_has_images(illust):
-        return convert_image_upload([illust_url], upload, source, create_image_post, 'user')
-    create_and_append_error('logical.downloader.file.convert_file_upload', "No valid illust URLs.", upload)
-    return False
+    return convert_media_upload([upload.illust_url], upload, source, create_image_post, create_video_post, 'user')
+
 
 # #### Post creation functions
-
 
 def create_image_post(illust_url, record, source, post_type):
     file_ext = get_file_extension(record.media_filepath)

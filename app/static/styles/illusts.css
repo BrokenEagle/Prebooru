@@ -134,19 +134,18 @@ div#illust-posts {
     margin-top: 2em;
 }
 
-div#image-posts-container {
+div#media-posts-container {
     display: flex;
     flex-wrap: wrap;
 }
 
-div.image-post {
+div.media-post {
     margin-top: 1em;
     width: 25%;
 }
 
-div.image-post-preview,
-div.video-post-preview {
-    margin-top: 1em;
+div.media-post-info {
+    height: 10em;
 }
 
 div.no-post-preview {

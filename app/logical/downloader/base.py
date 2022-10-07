@@ -19,20 +19,18 @@ from ..database.error_db import create_error, create_and_append_error, extend_er
 
 # #### Main execution functions
 
-def convert_video_upload(illust_url, upload, source, create_video_func, post_type):
-    if illust_url.sample is None:
-        msg = "Did not find thumbnail for video on illust #%d" % illust_url.illust_id
-        create_and_append_error('logical.downloader.convert_video_upload', msg, upload)
-        return False
-    else:
-        post = create_video_func(illust_url, upload, source, post_type)
-        return record_outcome(post, upload)
-
-
-def convert_image_upload(illust_urls, upload, source, create_image_func, post_type):
+def convert_media_upload(illust_urls, upload, source, create_image_func, create_video_func, post_type):
     result = False
     for illust_url in illust_urls:
-        post = create_image_func(illust_url, upload, source, post_type)
+        if source.image_url_mapper(illust_url):
+            post = create_image_func(illust_url, upload, source, post_type)
+        elif source.video_url_mapper(illust_url):
+            post = create_video_func(illust_url, upload, source, post_type)
+        else:
+            url = source.get_full_url(illust_url)
+            msg = f"Invalid media URL {url} on {illust_url.illust_shortlink}"
+            create_and_append_error('logical.downloader.convert_media_upload', msg, upload)
+            continue
         result = record_outcome(post, upload) or result
     return result
 

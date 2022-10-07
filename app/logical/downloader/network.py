@@ -6,8 +6,8 @@ from ..media import get_pixel_hash
 from ...models import Post
 from ..database.post_db import create_post_and_add_illust_url, update_post_from_parameters
 from ..database.error_db import create_error, create_and_append_error, append_error, extend_errors, is_error
-from .base import convert_image_upload, convert_video_upload, load_post_image, check_existing, check_filetype,\
-    check_image_dimensions, check_video_info, save_image, save_video, save_thumb
+from .base import convert_media_upload, load_post_image, check_existing, check_filetype, check_image_dimensions,\
+    check_video_info, save_image, save_video, save_thumb
 
 
 # ## FUNCTIONS
@@ -15,35 +15,18 @@ from .base import convert_image_upload, convert_video_upload, load_post_image, c
 # #### Main execution functions
 
 def convert_network_upload(illust, upload, source):
-    if source.illust_has_videos(illust):
-        return convert_video_upload(illust.urls[0], upload, source, create_video_post, 'user')
-    elif source.illust_has_images(illust):
-        all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
-        image_illust_urls = [illust_url for illust_url in source.image_illust_download_urls(illust)
-                             if (len(all_upload_urls) == 0) or (illust_url.url in all_upload_urls)]
-        return convert_image_upload(image_illust_urls, upload, source, create_image_post, 'user')
-    create_and_append_error('downloader.file.convert_network_upload', "No valid illust URLs.", upload)
-    return False
+    all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
+    media_illust_urls = [illust_url for illust_url in source.image_illust_download_urls(illust)
+                         if (len(all_upload_urls) == 0) or (illust_url.url in all_upload_urls)]
+    return convert_media_upload(media_illust_urls, upload, source, create_image_post, create_video_post, 'user')
 
 
 def convert_network_subscription(subscription, source):
-    illust = subscription.illust_url.illust
-    if source.illust_has_videos(illust):
-        return convert_video_upload(illust.urls[0], subscription, source, create_video_post, 'subscription')
-    elif source.illust_has_images(illust):
-        return convert_image_upload([subscription.illust_url], subscription, source, create_image_post, 'subscription')
-    create_and_append_error('downloader.file.convert_network_subscription', "No valid illust URLs.", subscription)
-    return False
+    return convert_media_upload([subscription.illust_url], subscription, source, create_image_post, create_video_post, 'subscription')
 
 
 def redownload_post(post, illust_url, source):
-    illust = illust_url.illust
-    if source.illust_has_videos(illust):
-        return convert_video_upload(illust_url, post, source, update_video_post, None)
-    elif source.illust_has_images(illust):
-        return convert_image_upload([illust_url], post, source, update_image_post, None)
-    create_and_append_error('downloader.network.redownload_post', "No valid illust URLs.", post)
-    return False
+    return convert_media_upload(illust_url, post, source, create_image_post, create_video_post, None)
 
 
 # #### Auxiliary functions

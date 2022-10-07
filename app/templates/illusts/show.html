@@ -1,5 +1,5 @@
 {% extends "illusts/_base.html" %}
-{% from "illust_urls/_macros.html" import image_urls_section, video_urls_section %}
+{% from "illust_urls/_macros.html" import media_urls_section %}
 
 {% block title %}
     {{ illust.header }}
@@ -12,14 +12,12 @@
         {% include "illusts/_site_content.html" %}
     </div>
     <div id="illust-posts">
-        {% if illust.type == 'image' %}
-            {{ image_urls_section(illust.ordered_urls, illust) }}
-        {% elif illust.type == 'video' %}
-            {{ video_urls_section(illust.urls[0]) }}
+        {% if illust.type == 'image' or illust.type == 'video'  %}
+            {{ media_urls_section(illust.ordered_urls, illust) }}
         {% endif %}
     </div>
 {% endblock content %}
 
 {% block pagescript %}
-    Prebooru.initializeLazyLoad('.image-post-preview');
+    Prebooru.initializeLazyLoad('.media-post-preview');
 {% endblock pagescript %}

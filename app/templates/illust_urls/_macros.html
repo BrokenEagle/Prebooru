@@ -1,22 +1,27 @@
 {% from "posts/_macros.html" import post_preview %}
 
-{% macro image_urls_section(illust_urls, illust) -%}
-    <section id="image-posts">
-        <h3>Image URLs</h3>
-        <div id="image-posts-container">
+{% macro media_urls_section(illust_urls, illust) -%}
+    <section id="media-posts">
+        <h3>Media URLs</h3>
+        <div id="media-posts-container">
             {% for illust_url in illust_urls %}
-                <div class="image-post">
-                    <div class="image-post-info">
+                <div class="media-post">
+                    <div class="media-post-info">
                         <ul>
                             <li>
-                                <strong>Edit( {{ helpers.base.general_link('image', illust_url.edit_url) }} )</strong>
+                                <strong>Edit( {{ helpers.base.general_link(illust_url.type, illust_url.edit_url) }} )</strong>
                             </li>
                             <li>
                                 <strong>Order: {{ illust_url.order }}</strong>
                             </li>
                             <li>
-                                <strong>URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}
+                                <strong>{{ illust_url.type.title() }} URL:</strong> {{ helpers.base.url_link(illust_url.full_url, max_len=45) }}
                             </li>
+                            {% if illust_url.sample is not none %}
+                                <li>
+                                    <strong>Thumb URL:</strong> {{ helpers.base.url_link(illust_url.sample_url, max_len=45) }}
+                                </li>
+                            {% endif %}
                             <li>
                                 <strong>Dimensions:</strong> {{ illust_url.width }} x {{ illust_url.height }}
                             </li>
@@ -25,17 +30,17 @@
                             </li>
                             {% if illust_url.post is none %}
                                 <li>
-                                    <strong>Upload( {{ helpers.illust_url.upload_media_link('image', illust_url) }} )</strong>
+                                    <strong>Upload( {{ helpers.illust_url.upload_media_link(illust_url.type, illust_url) }} )</strong>
                                 </li>
                             {% elif illust_url.active and illust.active %}
                                 <li>
-                                    <strong>Redownload( {{ helpers.illust_url.redownload_post_link('image', illust_url) }} )</strong>
+                                    <strong>Redownload( {{ helpers.illust_url.redownload_post_link(illust_url.type, illust_url) }} )</strong>
                                 </li>
                             {% endif %}
                         </ul>
                     </div>
                     {% if illust_url.post is not none %}
-                        <div class="image-post-preview">{{ post_preview(illust_url.post, True) }}</div>
+                        <div class="media-post-preview">{{ post_preview(illust_url.post, True) }}</div>
                     {% elif illust_url.active and illust.active %}
                         <div class="no-post-preview">
                             {{ helpers.illust_url.preview_link(illust_url) }}
@@ -47,50 +52,5 @@
                 </div>
             {% endfor %}
         </div>
-    </section>
-{%- endmacro %}
-
-{% macro video_urls_section(illust_url) -%}
-    <section id="video-posts">
-        <h3>Video URLs</h3>
-        <div class="video-post-info">
-            <ul>
-                <li>
-                    <strong>Edit( {{ helpers.base.general_link('video', illust_url.edit_url) }} )</strong>
-                </li>
-                {% if illust_url is not none %}
-                    <li>
-                        <strong>Video URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}
-                    </li>
-                {% endif %}
-                {% if illust_url.sample is not none %}
-                    <li>
-                        <strong>Thumb URL:</strong> {{ helpers.base.url_link(illust_url.sample_url) }}
-                    </li>
-                {% endif %}
-                <li>
-                    <strong>Dimensions:</strong> {{ illust_url.width }} x {{ illust_url.height }}
-                </li>
-                <li>
-                    <strong>Active:</strong> {{ illust_url.active | tojson }}
-                </li>
-                {% if illust_url.post is none %}
-                    <li>
-                        <strong>Upload( {{ helpers.illust_url.upload_media_link('video', illust_url) }} )</strong>
-                    </li>
-                {% else %}
-                    <li>
-                        <strong>Redownload( {{ helpers.illust_url.redownload_post_link('video', illust_url) }} )</strong>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
-        {% if illust_url.post is not none %}
-            <div class="video-post-preview">{{ post_preview(illust_url.post) }}</div>
-        {% else %}
-            <div class="no-post-preview">
-                <span class="explanation">No post.</span>
-            </div>
-        {% endif %}
     </section>
 {%- endmacro %}

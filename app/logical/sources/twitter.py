@@ -999,20 +999,24 @@ def get_illust_url_info(entry):
 def get_tweet_illust_urls(tweet):
     media_urls = get_tweet_image_urls(tweet)
     video_urls = get_tweet_video_urls(tweet)
-    if len(video_urls):
-        video_urls[0].update(
-            sample_id=media_urls[0]['site_id'],
-            sample=media_urls[0]['url']
+    for i, video_url in enumerate(video_urls):
+        media_url = next((media for media in media_urls if media['order'] == video_url['order']), None)
+        if media_url is None:
+            continue
+        video_url.update(
+            sample_id=media_url['site_id'],
+            sample=media_url['url']
         )
-        media_urls = video_urls
+        index = media_urls.index(media_url)
+        media_urls[index] = video_url
     return media_urls
 
 
 def get_tweet_image_urls(tweet):
     illust_urls = []
-    image_url_data = safe_get(tweet, 'entities', 'media') or []
-    for i in range(len(image_url_data)):
-        url, site_id, dimensions = get_illust_url_info(image_url_data[i])
+    url_data = safe_get(tweet, 'entities', 'media') or []
+    for i in range(len(url_data)):
+        url, site_id, dimensions = get_illust_url_info(url_data[i])
         if url is None:
             continue
         illust_urls.append({
@@ -1027,21 +1031,23 @@ def get_tweet_image_urls(tweet):
 
 
 def get_tweet_video_urls(tweet):
+    video_urls = []
     url_data = safe_get(tweet, 'extended_entities', 'media') or []
-    video_url_data = [url_entry for url_entry in url_data if url_entry['type'] in ['animated_gif', 'video']]
-    if len(video_url_data) == 0:
-        return []
-    url, site_id, dimensions = get_illust_url_info(video_url_data[0])
-    if url is None:
-        return []
-    return [{
-        'site_id': site_id,
-        'url': url,
-        'width': dimensions[0],
-        'height': dimensions[1],
-        'order': 1,
-        'active': True,
-    }]
+    for i in range(len(url_data)):
+        if url_data[i]['type'] not in ['animated_gif', 'video']:
+            continue
+        url, site_id, dimensions = get_illust_url_info(url_data[i])
+        if url is None:
+            continue
+        video_urls.append({
+            'site_id': site_id,
+            'url': url,
+            'width': dimensions[0],
+            'height': dimensions[1],
+            'order': i + 1,
+            'active': True,
+        })
+    return video_urls
 
 
 def get_illust_parameters_from_tweet(tweet):
