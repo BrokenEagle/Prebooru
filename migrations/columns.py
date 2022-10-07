@@ -30,6 +30,32 @@ def alter_columns(table_name, alter_column_commands):
             batch_op.alter_column(column_name, existing_type=getattr(sa, column_type)(), **alter_args)
 
 
+def transfer_columns(table_name, from_config, to_config):
+    from_names = [k for k in from_config]
+    columns = [sa.Column(k, getattr(sa, v)) for (k, v) in from_config.items()] +\
+              [sa.Column(k, getattr(sa, v)) for (k, v) in to_config.items()]
+    t = sa.Table(table_name, sa.MetaData(), sa.Column('id', sa.Integer), *columns)
+    all_names = ['id'] + from_names
+    base_statement = sa.select([t.c.id] + [getattr(t.c, name) for name in from_names]).limit(1000)
+    connection = op.get_bind()
+    index = 0
+    while True:
+        statement = base_statement.offset(index * 1000)
+        page_data = connection.execute(statement).fetchall()
+        if len(page_data):
+            print(f"{table_name} #{page_data[0][0]} - {table_name} #{page_data[-1][0]}")
+        for item in page_data:
+            mapped_data = {all_names[i]: item[i] for i in range(len(item))}
+
+            def _update(**kwargs):
+                connection.execute(t.update().where(t.c.id == mapped_data['id']).values(**kwargs))
+
+            yield id, mapped_data, _update
+        if len(page_data) < 1000:
+            return
+        index += 1
+
+
 # ## Single operations
 
 def add_column(table_name, column_name, column_type):
@@ -118,3 +144,23 @@ def change_column_type(table_name, column_name, from_column_type, to_column_type
 
     print(f"Renaming temp column to {column_name}")
     alter_column(table_name, 'temp', base_column_type, {'new_column_name': column_name, 'nullable': nullable})
+
+
+def change_columns_type(table_name, columns_config):
+    print("Adding temp columns")
+    add_commands = [(k + '_temp', v['to']) for (k, v) in columns_config.items()]
+    add_columns(table_name, add_commands)
+
+    print("Populating temp columns")
+    from_config = {k: v['from'] for (k, v) in columns_config.items()}
+    to_config = {k + '_temp': v['to'] for (k, v) in columns_config.items()}
+    for (_id, mapped_data, update) in transfer_columns(table_name, from_config, to_config):
+        yield mapped_data, update
+
+    print("Dropping old columns")
+    drop_columns(table_name, [k for k in columns_config])
+
+    print("Renaming temp columns and setting nullable")
+    alter_commands = [(k + '_temp', v['base'], {'new_column_name': k, 'nullable': v['nullable']})
+                      for (k, v) in columns_config.items()]
+    alter_columns(table_name, alter_commands)
