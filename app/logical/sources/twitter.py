@@ -17,6 +17,7 @@ from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_
 from utility.data import safe_get, decode_json, fixup_crlf, safe_check
 from utility.time import get_current_time, datetime_from_epoch, add_days, get_date
 from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
+from utility.print import print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
 from ..logger import log_network_error
@@ -580,7 +581,8 @@ def check_token_file():
 def get_global_objects(data, type_name):
     objects = safe_get(data, 'globalObjects', type_name)
     if type(objects) is not dict:
-        print("get_global_objects", data)
+        if DEBUG_MODE:
+            log_network_error('sources.twitter.get_global_objects', response)
         raise Exception("Global data not found.")
     return list(objects.values())
 
@@ -602,7 +604,8 @@ def get_twitter_timeline_cursor(type_name, instruction, entryname):
 def get_twitter_scroll_bottom_cursor(data):
     instructions = safe_get(data, 'timeline', 'instructions')
     if type(instructions) is not list:
-        print("get_twitter_scroll_bottom_cursor", data)
+        if DEBUG_MODE:
+            log_network_error('sources.twitter.get_twitter_scroll_bottom_cursor', response)
         raise Exception("Invalid JSON response.")
     for instruction in instructions:
         for type_name in instruction:
@@ -653,7 +656,7 @@ def get_timeline(page_func, **kwargs):
         data = page_func(cursor=cursor[0], **kwargs)
         if data['error']:
             return data['message']
-        print("get_timeline:", page)
+        print(f"Gettime timeline page #{page}")
         result = timeline_iterator(data, cursor, tweet_ids, **kwargs)
         if result is None:
             return
@@ -718,7 +721,7 @@ def check_request_wait(wait):
     if next_wait is not None:
         sleep_time = next_wait - get_current_time().timestamp()
         if sleep_time > 0.0:
-            print("Twitter request: sleeping -", sleep_time)
+            print_info("Twitter request: sleeping -", sleep_time)
             time.sleep(sleep_time)
     update_next_wait('twitter', MINIMUM_QUERY_INTERVAL)
 
@@ -731,7 +734,7 @@ def twitter_request(url, method='GET', wait=True):
         try:
             response = REQUEST_METHODS[method](url, headers=TWITTER_HEADERS, timeout=10)
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
-            print("Pausing for network timeout...")
+            print_warning("Pausing for network timeout...")
             error = e
             time.sleep(5)
             continue
@@ -740,13 +743,16 @@ def twitter_request(url, method='GET', wait=True):
         if not reauthenticated and reauthentication_check(response):
             authenticate_guest(True)
             reauthenticated = True
+        elif response.status_code in [503]:
+            print_warning("Pausing for server error:", response.text)
+            time.sleep(60)
         else:
-            print("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, response.reason, response.text))
+            print_error("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, response.reason, response.text))
             if DEBUG_MODE:
                 log_network_error('sources.twitter.twitter_request', response)
             return {'error': True, 'message': "HTTP %d - %s" % (response.status_code, response.reason)}
     else:
-        print("Connection errors exceeded!")
+        print_error("Connection errors exceeded!")
         return {'error': True, 'message': repr(error)}
     try:
         data = response.json()
