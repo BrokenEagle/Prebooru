@@ -220,6 +220,7 @@ def update_subscription_elements(subscription, job_id=None):
             }
             create_subscription_element_from_parameters(createparams)
             job_status['elements'] += 1
+        page += 1
     update_job_status(job_id, job_status)
 
 
