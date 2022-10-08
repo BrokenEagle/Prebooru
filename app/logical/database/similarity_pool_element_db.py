@@ -1,5 +1,8 @@
 # APP/LOGICAL/DATABASE/SIMILARITY_POOL_ELEMENT_DB.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy import or_
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import SimilarityPoolElement
@@ -43,19 +46,22 @@ def set_similarity_element_main(element, val):
 # ###### DELETE
 
 def delete_similarity_pool_element(similarity_pool_element):
-    from .similarity_pool_db import update_similarity_element_count
     sibling_pool_element = similarity_pool_element.sibling
     similarity_pool_element.sibling_id = None
     if sibling_pool_element is not None:
         sibling_pool_element.sibling_id = None
     SESSION.commit()
-    main_pool = similarity_pool_element.pool
     SESSION.delete(similarity_pool_element)
-    update_similarity_element_count(main_pool)
     if sibling_pool_element is not None:
         sibling_pool = sibling_pool_element.pool
         SESSION.delete(sibling_pool_element)
-        update_similarity_element_count(sibling_pool)
+
+
+def delete_similarity_pool_elements_by_post_id(post_id):
+    SimilarityPoolElement.query.filter(or_(SimilarityPoolElement.pool_id == post_id, SimilarityPoolElement.post_id == post_id)).update({'sibling_id': None})
+    SESSION.commit()
+    SimilarityPoolElement.query.filter(or_(SimilarityPoolElement.pool_id == post_id, SimilarityPoolElement.post_id == post_id)).delete()
+    SESSION.commit()
 
 
 def batch_delete_similarity_pool_element(similarity_pool_elements):

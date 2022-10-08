@@ -13,7 +13,7 @@ from ..models import Post
 from ..logical.utility import set_error
 from ..logical.database.post_db import get_posts_by_id
 from ..logical.database.image_hash_db import delete_image_hash_by_post_id
-from ..logical.database.similarity_pool_db import delete_similarity_pool_by_post_id
+from ..logical.database.similarity_pool_element_db import delete_similarity_pool_elements_by_post_id
 from ..logical.similarity.check_image import check_all_image_urls_for_matches
 from ..logical.similarity.generate_data import generate_post_image_hashes
 from ..logical.similarity.populate_pools import populate_similarity_pools
@@ -110,7 +110,7 @@ def regenerate_post_image_hash():
     if post is None:
         return set_error(retdata, "Must use a valid post id.")
     delete_image_hash_by_post_id(post.id)
-    delete_similarity_pool_by_post_id(post.id)
+    delete_similarity_pool_elements_by_post_id(post.id)
     generate_post_image_hashes(post)
     populate_similarity_pools(post)
     return retdata

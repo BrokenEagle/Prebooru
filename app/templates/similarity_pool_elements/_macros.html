@@ -1,5 +1,37 @@
 {% from "posts/_macros.html" import post_preview %}
 
+{% macro similar_posts(post) -%}
+    <div id="similar-posts-heading" class="heading">
+        Similar posts
+        (&thinsp;{{ helpers.similarity_pool.pool_count_link(post) }}&thinsp;)
+    </div>
+    <div id="similar-posts-container">
+        {% for element in post.similar_posts %}
+            <div class="similar-post-block">
+                <div class="similar-heading">
+                    <strong>{{ helpers.similarity_pool.pool_show_link(element.sibling) }}</strong>
+                    &ensp;(&thinsp;{{ helpers.similarity_pool.delete_element_link(element, False) }}&thinsp;)
+                </div>
+                <article class="post similar-post">
+                    <a href="{{ element.post.show_url }}">{{ helpers.post.post_preview_link(element.post, False) }}</a>
+                </article>
+                <div>
+                    <strong>Score:</strong> {{ element.score }}
+                    {% if post.pixel_md5 == element.post.pixel_md5 %}<span class="post-pixel-match">&lt; <span class="post-pixel-match-text">Pixel Match</span> &gt;</span>{% endif %}
+                    <br>
+                    <strong>Type/Size:</strong> {{ element.post.size }} @ {{ element.post.file_ext.upper() }}
+                    <br>
+                    <strong>Dimensions:</strong> (&thinsp;{{ element.post.width }} x {{ element.post.height }}&thinsp;)
+                    <br>
+                    <strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(element.post) }}
+                </div>
+            </div>
+        {% else %}
+            <span class="explanation">There are no similar posts.</span>
+        {% endfor %}
+    </div>
+{%- endmacro %}
+
 {% macro similarity_pool_element_preview(element) -%}
     <article id="similarity-element-{{ element.id }}" class="similarity-element">
         <div class="input">
@@ -12,7 +44,7 @@
             </label>
         </div>
         <div class="similar-post-controls">
-            <strong>{{ helpers.similarity_pool.sibling_pool_link(element) }}</strong>&nbsp;
+            <strong>{{ helpers.similarity_pool.pool_show_link(element.sibling) }}</strong>&nbsp;
             (&thinsp;{{ helpers.similarity_pool.delete_element_link(element, True) }}&thinsp;)
         </div>
         {{ post_preview(element.post, True) }}
@@ -37,14 +69,14 @@
             <div class="similarity-element-preview-delete">(&thinsp;{{ helpers.similarity_pool.delete_element_link(element, True) }}&thinsp;)</div>
         </div>
         <div class="similarity-element-preview-display">
-            <div class="similarity-element-post">{{ post_preview(element.pool.post) }}</div>
+            <div class="similarity-element-post">{{ post_preview(element.pool) }}</div>
             <div class="similarity-element-post">{{ post_preview(element.post) }}</div>
             <div class="similarity-element-info-block">
                 <strong>(L) {{ helpers.similarity_pool.pool_show_link(element) }}</strong>
                 <br>
-                &emsp;<strong>Size:</strong> {{ element.pool.post.size }} @ {{ element.pool.post.file_ext.upper() }}
+                &emsp;<strong>Size:</strong> {{ element.pool.size }} @ {{ element.pool.file_ext.upper() }}
                 <br>
-                &emsp;<strong>WxH:</strong> ( {{ element.pool.post.width }} x {{ element.pool.post.height }} )
+                &emsp;<strong>WxH:</strong> ( {{ element.pool.width }} x {{ element.pool.height }} )
                 <br>
                 <br>
                 <strong>(R) {{ helpers.similarity_pool.pool_show_link(element.sibling) }}</strong>

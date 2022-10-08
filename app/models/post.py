@@ -23,7 +23,6 @@ from .notation import Notation
 from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
-from .similarity_pool import SimilarityPool
 from .similarity_pool_element import SimilarityPoolElement
 from .base import JsonModel, ModelEnum, NormalizedDatetime, IntEnum, secondarytable, image_server_url, classproperty
 
@@ -97,10 +96,12 @@ class Post(JsonModel):
     image_hashes = DB.relationship(ImageHash, lazy=True, cascade='all,delete',
                                    backref=DB.backref('post', lazy=True, uselist=False))
     # Similarity pools and elements must be deleted specially because of sibling relationships
-    similarity_pool = DB.relationship(SimilarityPool, lazy=True, uselist=False,
-                                      backref=DB.backref('post', lazy=True, uselist=False))
+    similarity_pool = DB.relationship(SimilarityPoolElement, lazy=True,
+                                      backref=DB.backref('pool', lazy=True, uselist=False),
+                                      foreign_keys=[SimilarityPoolElement.pool_id])
     similarity_elements = DB.relationship(SimilarityPoolElement, lazy=True,
-                                          backref=DB.backref('post', lazy=True, uselist=False))
+                                          backref=DB.backref('post', lazy=True, uselist=False),
+                                          foreign_keys=[SimilarityPoolElement.post_id])
     # uploads <- Upload (MtM)
 
     # #### Association proxies
@@ -215,12 +216,13 @@ class Post(JsonModel):
 
     @memoized_property
     def similar_post_count(self):
-        return self._similar_pool_element_query.get_count() if self.similarity_pool is not None else 0
+        return self._similar_pool_element_query.get_count()
 
     @memoized_property
     def similar_posts(self):
         query = self._similar_pool_element_query
-        query = query.options(selectinload(SimilarityPoolElement.post),
+        query = query.options(selectinload(SimilarityPoolElement.pool),
+                              selectinload(SimilarityPoolElement.post),
                               selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
         query = query.order_by(SimilarityPoolElement.score.desc())
         return query.limit(10).all()
@@ -241,7 +243,7 @@ class Post(JsonModel):
 
     @property
     def _similar_pool_element_query(self):
-        return SimilarityPoolElement.query.filter(SimilarityPoolElement.pool_id == self.similarity_pool.id)
+        return SimilarityPoolElement.query.filter(SimilarityPoolElement.pool_id == self.id)
 
     # ## Methods
 

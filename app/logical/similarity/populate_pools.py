@@ -4,10 +4,8 @@
 from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
-from ...models import SimilarityPool
+from ...models import Post
 from ..database.image_hash_db import get_image_hash_by_post_id
-from ..database.similarity_pool_db import update_similarity_element_count, get_or_create_similarity_pool,\
-    get_similarity_pools_by_ids
 from ..database.similarity_pool_element_db import create_similarity_pool_element_from_parameters,\
     update_similarity_pool_element_pairing, set_similarity_element_main, delete_similarity_pool_element
 from .base import get_image_hash_matches, check_image_match_scores, filter_score_results
@@ -15,50 +13,26 @@ from .base import get_image_hash_matches, check_image_match_scores, filter_score
 
 # ## FUNCTIONS
 
-def populate_similarity_pools(post, printer=print):
-    imghash_items = get_image_hash_by_post_id(post.id)
+def populate_similarity_pools(main_post, printer=print):
+    imghash_items = get_image_hash_by_post_id(main_post.id)
     score_results = []
     for imghash in imghash_items:
         smatches = get_image_hash_matches(imghash.hash, imghash.ratio, sim_clause='cross2', post_id=imghash.post_id)
         score_results += check_image_match_scores(smatches, imghash.hash, 90.0)
     final_results = filter_score_results(score_results)
-    main_pool = get_or_create_similarity_pool(post.id)
-    printer("Similarity pool results (post #%d): %d" % (post.id, len(final_results)))
+    printer("Similarity pool results (post #%d): %d" % (main_post.id, len(final_results)))
     if len(final_results) == 0:
         return
     sibling_post_ids = set(result['post_id'] for result in score_results)
-    # Creates similarity pools if they don't exist
-    sibling_pools = [get_or_create_similarity_pool(post_id) for post_id in sibling_post_ids]
-    # Load similarity pools with all elements loaded
-    sibling_pools = get_similarity_pools_by_ids(sibling_post_ids, options=(selectinload(SimilarityPool.elements),))
-    create_image_match_pairings(post.id, final_results, main_pool, sibling_pools)
-
-
-def create_image_match_pairings(post_id, score_results, main_pool, sibling_pools):
-    index_pools = {pool.post_id: pool for pool in sibling_pools}
-    index_post_ids = {pool.post_id: [element.post_id for element in pool.elements] for pool in sibling_pools}
-    main_post_ids = [element.post_id for element in main_pool.elements]
+    sibling_posts = Post.query.options(selectinload(Post.similarity_pool)).filter(Post.id.in_(sibling_post_ids)).all()
     for result in score_results:
-        print("Creating sibling pairs (post #%d): %s" % (post_id, str(result)))
-        if result['post_id'] in main_post_ids:
-            spe1 = next(filter(lambda x: x.post_id == result['post_id'], main_pool.elements))
-            if spe1.sibling_id is not None:
-                continue
-            set_similarity_element_main(spe1, True)
-        else:
-            spe1 = create_similarity_pool_element_from_parameters({'pool_id': main_pool.id, 'main': True, **result})
-            update_similarity_element_count(main_pool)
-        sibling_pool = index_pools[result['post_id']]
-        sibling_pool_post_ids = index_post_ids[result['post_id']] if result['post_id'] in index_post_ids else []
-        if post_id in sibling_pool_post_ids:
-            spe2 = next(filter(lambda x: x.post_id == post_id, sibling_pool.elements))
-            if spe2.sibling_id is not None:
-                delete_similarity_pool_element(spe1)
-                continue
-            set_similarity_element_main(spe2, False)
-        else:
-            params = {'pool_id': sibling_pool.id, 'post_id': post_id, 'score': result['score'], 'main': False}
+        spe1 = next((element for element in main_post.similarity_pool if element.post_id == result['post_id']), None)
+        if spe1 is None:
+            spe1 = create_similarity_pool_element_from_parameters({'pool_id': main_post.id, 'main': True, **result})
+        sibling_post = next(post for post in sibling_posts if post.id == result['post_id'])
+        spe2 = next((element for element in sibling_post.similarity_pool if element.post_id == main_post.id), None)
+        if spe2 is None:
+            params = {'pool_id': sibling_post.id, 'post_id': main_post.id, 'score': result['score'], 'main': False}
             spe2 = create_similarity_pool_element_from_parameters(params)
-            update_similarity_element_count(sibling_pool)
         print("Sibling pair: %d <-> %d" % (spe1.id, spe2.id))
         update_similarity_pool_element_pairing(spe1, spe2)
