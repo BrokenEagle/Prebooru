@@ -19,6 +19,7 @@ T_JOBS_ENABLED = Table(
     MetaData(),
     Column('id', Unicode(255), primary_key=True),
     Column('enabled', Boolean(), nullable=False),
+    sqlite_with_rowid=False,
 )
 
 T_JOBS_LOCK = Table(
@@ -26,6 +27,7 @@ T_JOBS_LOCK = Table(
     MetaData(),
     Column('id', Unicode(255), primary_key=True),
     Column('locked', Boolean(), nullable=False),
+    sqlite_with_rowid=False,
 )
 
 T_JOBS_MANUAL = Table(
@@ -33,6 +35,7 @@ T_JOBS_MANUAL = Table(
     MetaData(),
     Column('id', Unicode(255), primary_key=True),
     Column('manual', Boolean(), nullable=False),
+    sqlite_with_rowid=False,
 )
 
 
@@ -41,6 +44,7 @@ T_JOBS_TIME = Table(
     MetaData(),
     Column('id', Unicode(255), primary_key=True),
     Column('time', Float(), nullable=False),
+    sqlite_with_rowid=False,
 )
 
 T_JOBS_STATUS = Table(
@@ -48,6 +52,7 @@ T_JOBS_STATUS = Table(
     MetaData(),
     Column('id', Unicode(255), primary_key=True),
     Column('data', JSON(), nullable=False),
+    sqlite_with_rowid=False,
 )
 
 

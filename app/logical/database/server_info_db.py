@@ -25,6 +25,7 @@ T_SERVER_INFO = Table(
     MetaData(naming_convention=NAMING_CONVENTION),
     Column('field', Unicode(255), primary_key=True),
     Column('info', Unicode(255), nullable=False),
+    sqlite_with_rowid=False,
 )
 
 INFO_FIELDS = ['server_last_activity', 'user_last_activity', 'twitter_next_wait', 'pixiv_next_wait',
