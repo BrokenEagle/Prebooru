@@ -29,8 +29,8 @@ def rename_table(old_name, new_name, old_config, new_config):
     create_constraints(new_name, create_commands)
 
 
-def remove_temp_tables(table_names):
-    temp_names = ['_alembic_tmp_' + name for name in table_names]
+def remove_temp_tables(table_names, add_precursor=True):
+    temp_names = ['_alembic_tmp_' + name for name in table_names] if add_precursor else table_names
     conn = op.get_bind()
     inspector = Inspector.from_engine(conn)
     tables = inspector.get_table_names()
