@@ -36,7 +36,7 @@ def update_illust_from_source(illust, source):
         # These are only removable through the HTML/JSON UPDATE routes
         updateparams['tags'] += [tag for tag in illust.tags if tag not in updateparams['tags']]
     update_illust_from_parameters(illust, updateparams)
-    if illust.artist.site_artist_id != updateparams['site_artist_id']:
+    if 'site_artist_id' in updateparams and illust.artist.site_artist_id != updateparams['site_artist_id']:
         artist = get_or_create_artist_from_source(updateparams['site_artist_id'], source)
         if artist is None:
             artist = get_blank_artist()
