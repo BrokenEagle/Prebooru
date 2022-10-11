@@ -1,4 +1,4 @@
-# APP/CONTROLLERS/SIMILARITY_POOL_ELEMENTS_CONTROLLER.PY
+# APP/CONTROLLERS/SIMILARITY_MATCHES_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, flash, redirect, render_template
@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 # ## LOCAL IMPORTS
 from ..models import SimilarityPoolElement
 from ..logical.utility import search_url_for
-from ..logical.database.similarity_pool_element_db import delete_similarity_pool_element,\
+from ..logical.database.similarity_match_db import delete_similarity_pool_element,\
     batch_delete_similarity_pool_element
 from .base_controller import get_data_params, get_or_abort, parse_list_type, process_request_values, get_params_value,\
     search_filter, default_order, index_json_response, paginate, get_or_error, show_json_response

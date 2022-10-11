@@ -19,4 +19,4 @@ from . import archives_helper as archive  # noqa: F401
 from . import media_files_helper as media_file  # noqa: F401
 from . import tasks_helper as task  # noqa: F401
 from . import image_hashes_helper as image_hash  # noqa: F401
-from . import similarity_pools_helper as similarity_pool  # noqa: F401
+from . import similarity_matches_helper as similarity_match  # noqa: F401

@@ -31,7 +31,7 @@ from . import api_data_controller as api_data  # noqa: F401
 from . import archives_controller as archive  # noqa: F401
 from . import media_files_controller as media_file  # noqa: F401
 from . import image_hashes_controller as image_hash  # noqa: F401
-from . import similarity_pool_elements_controller as similarity_pool_element  # noqa: F401
+from . import similarity_matches_controller as similarity_match  # noqa: F401
 
 # #### Misc
 from . import proxy_controller as proxy  # noqa: F401

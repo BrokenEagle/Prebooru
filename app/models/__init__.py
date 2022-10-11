@@ -32,7 +32,7 @@ from .subscription_element import SubscriptionElement, SubscriptionElementErrors
 
 # #### Similarity data
 from .image_hash import ImageHash  # noqa: F401
-from .similarity_pool_element import SimilarityPoolElement  # noqa: F401
+from .similarity_match import SimilarityPoolElement  # noqa: F401
 
 # #### Cache data
 from .api_data import ApiData  # noqa: F401

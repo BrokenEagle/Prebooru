@@ -65,7 +65,7 @@ def initialize_controllers():
     PREBOORU_APP.register_blueprint(controllers.static.bp)
     PREBOORU_APP.register_blueprint(controllers.task.bp)
     PREBOORU_APP.register_blueprint(controllers.image_hash.bp)
-    PREBOORU_APP.register_blueprint(controllers.similarity_pool_element.bp)
+    PREBOORU_APP.register_blueprint(controllers.similarity_match.bp)
     if not HAS_EXTERNAL_IMAGE_SERVER:
         PREBOORU_APP.register_blueprint(controllers.media.bp)
 

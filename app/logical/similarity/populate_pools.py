@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 # ## LOCAL IMPORTS
 from ...models import Post
 from ..database.image_hash_db import get_image_hash_by_post_id
-from ..database.similarity_pool_element_db import create_similarity_pool_element_from_parameters,\
+from ..database.similarity_match_db import create_similarity_pool_element_from_parameters,\
     update_similarity_pool_element_pairing, set_similarity_element_main, delete_similarity_pool_element
 from .base import get_image_hash_matches, check_image_match_scores, filter_score_results
 
