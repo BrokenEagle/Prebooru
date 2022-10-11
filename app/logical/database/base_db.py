@@ -73,7 +73,7 @@ def update_column_attributes(item, attrs, dataparams):
             printer("Setting basic attr (%s):" % item.shortlink, attr, getattr(item, attr), dataparams[attr])
             setattr(item, attr, dataparams[attr])
             is_dirty = True
-    if item.id is None:
+    if item not in SESSION:
         SESSION.add(item)
     if is_dirty:
         printer.print()
