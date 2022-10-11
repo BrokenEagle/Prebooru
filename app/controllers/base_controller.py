@@ -104,23 +104,23 @@ def paginate(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT):
 
 # #### ID helpers
 
-def get_or_abort(model, id, options=None):
+def get_or_abort(model, *args, options=None):
     options = options if options is not None else {}
     if len(options):
-        item = model.query.options(*options).filter_by(id=id).first()
+        item = model.query.options(*options).filter_by(id=args[0]).first()
     else:
-        item = model.find(id)
+        item = model.find(*args)
     if item is None:
         abort(404, "%s not found." % model.__name__)
     return item
 
 
-def get_or_error(model, id, options=None):
+def get_or_error(model, *args, options=None):
     options = options if options is not None else {}
     if len(options):
-        item = model.query.options(*options).filter_by(id=id).first()
+        item = model.query.options(*options).filter_by(id=args[0]).first()
     else:
-        item = model.find(id)
+        item = model.find(*args)
     if item is None:
         return {'error': True, 'message': "%s not found." % model.__name__}
     return item
