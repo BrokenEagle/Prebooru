@@ -7,7 +7,7 @@ div#similarity-page-controls {
     width: 95%;
 }
 
-div#similarity-pool-controls {
+div#similarity-match-controls {
     bottom: 1em;
     position: absolute;
     right: 2em;
@@ -27,7 +27,7 @@ form#form div.checkbox-active label {
     background: linear-gradient(270deg, dodgerblue, transparent);
 }
 
-article.similarity-element-multi-preview {
+article.similarity-match-multi-preview {
     border: 1px solid #ccc;
     border-radius: 50px;
     display: inline-block;
@@ -35,39 +35,39 @@ article.similarity-element-multi-preview {
     width: 900px;
 }
 
-div.similarity-element-preview-controls {
+div.similarity-match-preview-controls {
     display: flex;
     margin: 1em;
 }
 
-div.similarity-element-preview-delete {
+div.similarity-match-preview-delete {
     font-size: 24px;
     padding-right: 1em;
     text-align: right;
     width: 28%;
 }
 
-div.similarity-element-preview-display {
+div.similarity-match-preview-display {
     border-top: 1px solid #aaa;
 }
 
-div.similarity-element-post {
+div.similarity-match-post {
     display: inline-block;
     padding: 5px;
     vertical-align: top;
 }
 
-div.similarity-element-post:first-of-type {
+div.similarity-match-post:first-of-type {
     border-right: 1px solid #aaa;
 }
 
-div.similarity-element-info-block {
+div.similarity-match-info-block {
     display: inline-block;
     font-size: 20px;
     padding-top: 1em;
     vertical-align: top;
 }
 
-span.similarity-element-info-score {
+span.similarity-match-info-score {
     font-size: 150%;
 }

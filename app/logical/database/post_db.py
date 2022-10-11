@@ -8,7 +8,6 @@ from ... import SESSION
 from ...models import Post, SubscriptionElement
 from .base_db import update_column_attributes
 from .pool_element_db import delete_pool_element
-from .similarity_pool_element_db import delete_similarity_pool_elements_by_post_id
 
 
 # ## GLOBAL VARIABLES
@@ -67,7 +66,6 @@ def set_post_alternate(post, alternate):
 # ###### Delete
 
 def delete_post(post):
-    delete_similarity_pool_elements_by_post_id(post.id)
     for pool_element in post._pools:
         delete_pool_element(pool_element)
     SESSION.delete(post)

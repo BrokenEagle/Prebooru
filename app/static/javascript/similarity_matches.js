@@ -2,9 +2,9 @@
 
 /* global Prebooru */
 
-const SimilarityPools = {};
+const SimilarityMatches = {};
 
-SimilarityPools.deleteElement = function(obj) {
+SimilarityMatches.deleteElement = function(obj) {
     fetch(obj.href, {method: 'DELETE'})
         .then((resp) => resp.json())
         .then((data) => {
@@ -12,19 +12,19 @@ SimilarityPools.deleteElement = function(obj) {
                 Prebooru.error(data.message);
             } else {
                 Prebooru.message("Deleted element.");
-                SimilarityPools.removeArticle(obj);
+                SimilarityMatches.removeArticle(obj);
                 document.getElementById('image-select-counter').innerText = document.querySelectorAll('.similarity-element .checkbox-active').length;
             }
         });
     return false;
 };
 
-SimilarityPools.removeArticle = function(obj) {
+SimilarityMatches.removeArticle = function(obj) {
     let $article = Prebooru.closest(obj, 'article');
     $article.outerHTML = "";
 };
 
-SimilarityPools.toggleCheckbox = function(obj) {
+SimilarityMatches.toggleCheckbox = function(obj) {
     let $div = Prebooru.closest(obj, 'div');
     if (obj.checked) {
         $div.classList.add('checkbox-active');
@@ -33,21 +33,21 @@ SimilarityPools.toggleCheckbox = function(obj) {
     }
 };
 
-SimilarityPools.updateAllInputs = function() {
+SimilarityMatches.updateAllInputs = function() {
     document.querySelectorAll('form#form input[type=checkbox]').forEach((input) => {
-        SimilarityPools.toggleCheckbox(input);
+        SimilarityMatches.toggleCheckbox(input);
     });
 };
 
-SimilarityPools.submitForm = function (event, type) {
+SimilarityMatches.submitForm = function (event, type) {
     event.preventDefault();
-    let msg = (type === 'pool' ? "Remove posts from similarity pool?" : "Remove all selected similarity elements?");
+    let msg = (type === 'pool' ? "Remove all similarity matches?" : "Remove all selected similarity matches?");
     if (confirm(msg)) {
         document.getElementById('form').submit();
     }
     return false;
 };
 
-SimilarityPools.initializeEventCallbacks = function() {
-    document.addEventListener('prebooru:update-inputs', SimilarityPools.updateAllInputs);
+SimilarityMatches.initializeEventCallbacks = function() {
+    document.addEventListener('prebooru:update-inputs', SimilarityMatches.updateAllInputs);
 };

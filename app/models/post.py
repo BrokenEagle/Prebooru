@@ -6,6 +6,7 @@ import enum
 import itertools
 
 # ## EXTERNAL IMPORTS
+from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -23,7 +24,7 @@ from .notation import Notation
 from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
-from .similarity_pool_element import SimilarityPoolElement
+from .similarity_match import SimilarityMatch
 from .base import JsonModel, ModelEnum, NormalizedDatetime, IntEnum, secondarytable, image_server_url, classproperty
 
 
@@ -96,12 +97,12 @@ class Post(JsonModel):
     image_hashes = DB.relationship(ImageHash, lazy=True, cascade='all,delete',
                                    backref=DB.backref('post', lazy=True, uselist=False))
     # Similarity pools and elements must be deleted specially because of sibling relationships
-    similarity_pool = DB.relationship(SimilarityPoolElement, lazy=True,
-                                      backref=DB.backref('pool', lazy=True, uselist=False),
-                                      foreign_keys=[SimilarityPoolElement.pool_id])
-    similarity_elements = DB.relationship(SimilarityPoolElement, lazy=True,
-                                          backref=DB.backref('post', lazy=True, uselist=False),
-                                          foreign_keys=[SimilarityPoolElement.post_id])
+    similarity_matches_forward = DB.relationship(SimilarityMatch, lazy=True, cascade='all,delete',
+                                                 backref=DB.backref('forward_post', lazy=True, uselist=False),
+                                                 foreign_keys=[SimilarityMatch.forward_id])
+    similarity_matches_reverse = DB.relationship(SimilarityMatch, lazy=True, cascade='all,delete',
+                                                 backref=DB.backref('reverse_post', lazy=True, uselist=False),
+                                                 foreign_keys=[SimilarityMatch.reverse_id])
     # uploads <- Upload (MtM)
 
     # #### Association proxies
@@ -188,6 +189,10 @@ class Post(JsonModel):
         if self.is_video:
             return os.path.join(self.subdirectory_path, 'video_preview', self._partial_file_path + 'webp')
 
+    @property
+    def similarity_matches(self):
+        return self.similarity_matches_forward + self.similarity_matches_reverse
+
     @memoized_property
     def related_posts(self):
         illust_posts = [illust.posts for illust in self.illusts]
@@ -216,15 +221,16 @@ class Post(JsonModel):
 
     @memoized_property
     def similar_post_count(self):
-        return self._similar_pool_element_query.get_count()
+        return self._similar_match_query.get_count()
 
     @memoized_property
     def similar_posts(self):
-        query = self._similar_pool_element_query
-        query = query.options(selectinload(SimilarityPoolElement.pool),
-                              selectinload(SimilarityPoolElement.post),
-                              selectinload(SimilarityPoolElement.sibling).selectinload(SimilarityPoolElement.pool))
-        query = query.order_by(SimilarityPoolElement.score.desc())
+        query = self._similar_match_query
+        query = query.options(selectinload(SimilarityMatch.forward_post),
+                              selectinload(SimilarityMatch.reverse_post))
+        query = query.order_by(SimilarityMatch.score.desc(),
+                               SimilarityMatch.forward_id.desc(),
+                               SimilarityMatch.reverse_id.desc())
         return query.limit(10).all()
 
     # ###### Private
@@ -242,8 +248,9 @@ class Post(JsonModel):
         return '%s.' % (self.md5)
 
     @property
-    def _similar_pool_element_query(self):
-        return SimilarityPoolElement.query.filter(SimilarityPoolElement.pool_id == self.id)
+    def _similar_match_query(self):
+        clause = or_(SimilarityMatch.forward_id == self.id, SimilarityMatch.reverse_id == self.id)
+        return SimilarityMatch.query.filter(clause)
 
     # ## Methods
 

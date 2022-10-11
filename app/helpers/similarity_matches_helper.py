@@ -13,22 +13,23 @@ from .base_helper import general_link
 # #### Link functions
 
 def pool_count_link(post):
-    url = search_url_for('similarity_pool_element.index_html', pool_id=post.id)
+    url = search_url_for('similarity_match.index_html', post_id=post.id)
     return general_link(post.similar_post_count, url)
+
+
+def pool_show_link(post):
+    url = search_url_for('similarity_match.index_html', post_id=post.id)
+    return general_link(f'{post.shortlink}', url)
 
 
 def delete_element_link(element, is_json):
     if is_json:
-        url = url_for('similarity_pool_element.delete_json', id=element.id)
+        url = url_for('similarity_match.delete_json', forward_id=element.forward_id, reverse_id=element.reverse_id)
         addons = {
             'class': 'warning-link',
-            'onclick': "return SimilarityPools.deleteElement(this)",
+            'onclick': "return SimilarityMatches.deleteElement(this)",
         }
         return general_link("remove", url, **addons)
     else:
-        return general_link("remove", element.delete_url, method="DELETE", **{'class': 'warning-link'})
-
-
-def pool_show_link(element):
-    url = search_url_for('similarity_pool_element.index_html', pool_id=element.pool_id)
-    return general_link(element.pool.shortlink, url)
+        url = url_for('similarity_match.delete_html', forward_id=element.forward_id, reverse_id=element.reverse_id)
+        return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})

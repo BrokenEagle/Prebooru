@@ -7,30 +7,37 @@ from .base import JsonModel
 
 # ## CLASSES
 
-class SimilarityPoolElement(JsonModel):
-    # ## Declarations
+class SimilarityMatch(JsonModel):
+    # ## Public
 
     # #### Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    pool_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, index=True)
-    sibling_id = DB.Column(DB.Integer, DB.ForeignKey('similarity_pool_element.id'), nullable=True)
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False)
+    forward_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, primary_key=True)
+    reverse_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, primary_key=True)
     score = DB.Column(DB.Float, nullable=False)
-    main = DB.Column(DB.Boolean, nullable=False)
 
     # #### Relationships
     # post <- Post (MtO)
-    # sibling <- SimilarityPoolElement (OtO)
 
+    # #### Instance properties
 
-# ## INITIALIZATION
+    @property
+    def id(self):
+        return f"{self.forward_id}-{self.reverse_id}"
 
-def initialize():
-    from .post import Post
-    SimilarityPoolElement.sibling = DB.relationship(SimilarityPoolElement, uselist=False, lazy=True,
-                                                    remote_side=[SimilarityPoolElement.id])
-    # Access the opposite side of the relationships to force the back references to be generated
-    Post.image_hashes.property._configure_started
-    Post.similarity_pool.property._configure_started
-    SimilarityPoolElement.sibling.property._configure_started
-    SimilarityPoolElement.set_relation_properties()
+    @property
+    def shortlink(self):
+        return f"similarity match #{self.id}"
+
+    # #### Class methods
+
+    @classmethod
+    def find(cls, forward_id, reverse_id):
+        return cls.query.filter_by(forward_id=forward_id, reverse_id=reverse_id).first()
+
+    # ## Private
+
+    # #### Class variables
+
+    __table_args__ = {
+        'sqlite_with_rowid': False,
+    }

@@ -1,31 +1,31 @@
 {% extends "similarity_matches/_base.html" %}
 {% from "layouts/_macros.html" import image_select_controls, page_navigation %}
-{% from "similarity_matches/_macros.html" import similarity_pool_element_previews %}
+{% from "similarity_matches/_macros.html" import similarity_match_previews %}
 
 {% block title %}
-    Similarity Pool Elements
+    Similarity Matches
 {% endblock title %}
 
 {% block content %}
-    <div id="similarity-pool-elements-container">
+    <div id="similarity-matches-container">
         <div id="similarity-page-controls">
-            <div id="similarity-pool-controls">
+            <div id="similarity-match-controls">
                 {% call image_select_controls('similar-element-input') %}
-                    <strong>[ <a class="warning-link" href="#" onclick="return SimilarityPools.submitForm(this, 'element')">DELETE</a> ]</strong>
+                    <strong>[ <a class="warning-link" href="#" onclick="return SimilarityMatches.submitForm(this, 'element')">DELETE</a> ]</strong>
                 {% endcall %}
             </div>
         </div>
-        <form id="form" method="post" action="{{ url_for('similarity_pool_element.batch_delete_html') }}">
-            {% for element in similarity_pool_elements.items %}{{ similarity_pool_element_previews(element) }}{% endfor %}
+        <form id="form" method="post" action="{{ url_for('similarity_match.batch_delete_html') }}">
+            {% for element in similarity_matches.items %}{{ similarity_match_previews(element) }}{% endfor %}
         </form>
     </div>
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(similarity_pool_elements) }}
+    {{ page_navigation(similarity_matches) }}
 {% endblock pages %}
 
 {% block pagescript %}
     Prebooru.initializeLazyLoad('.similar-post-block');
-    SimilarityPools.initializeEventCallbacks();
+    SimilarityMatches.initializeEventCallbacks();
 {% endblock pagescript %}

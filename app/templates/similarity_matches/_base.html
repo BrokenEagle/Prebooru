@@ -1,13 +1,13 @@
 {% extends "layouts/base.html" %}
 
 {% block css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/similarity_pool_elements.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/similarity_matches.css') }}">
 {% endblock css %}
 
 {% block linkscript %}
-    <script src="{{ url_for('static', filename='javascript/similarity_pools.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascript/similarity_matches.js') }}"></script>
 {% endblock linkscript %}
 
 {% block secondary_links %}
-    {% include "similarity_pool_elements/_secondary_links.html" %}
+    {% include "similarity_matches/_secondary_links.html" %}
 {% endblock secondary_links %}

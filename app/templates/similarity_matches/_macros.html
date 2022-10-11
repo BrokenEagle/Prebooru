@@ -3,27 +3,27 @@
 {% macro similar_posts(post) -%}
     <div id="similar-posts-heading" class="heading">
         Similar posts
-        (&thinsp;{{ helpers.similarity_pool.pool_count_link(post) }}&thinsp;)
+        (&thinsp;{{ helpers.similarity_match.pool_count_link(post) }}&thinsp;)
     </div>
     <div id="similar-posts-container">
         {% for element in post.similar_posts %}
             <div class="similar-post-block">
                 <div class="similar-heading">
-                    <strong>{{ helpers.similarity_pool.pool_show_link(element.sibling) }}</strong>
-                    &ensp;(&thinsp;{{ helpers.similarity_pool.delete_element_link(element, False) }}&thinsp;)
+                    <strong>{{ helpers.similarity_match.pool_show_link(element.reverse_post) }}</strong>
+                    &ensp;(&thinsp;{{ helpers.similarity_match.delete_element_link(element, False) }}&thinsp;)
                 </div>
                 <article class="post similar-post">
-                    <a href="{{ element.post.show_url }}">{{ helpers.post.post_preview_link(element.post, False) }}</a>
+                    <a href="{{ element.reverse_post.show_url }}">{{ helpers.post.post_preview_link(element.reverse_post, False) }}</a>
                 </article>
                 <div>
                     <strong>Score:</strong> {{ element.score }}
-                    {% if post.pixel_md5 == element.post.pixel_md5 %}<span class="post-pixel-match">&lt; <span class="post-pixel-match-text">Pixel Match</span> &gt;</span>{% endif %}
+                    {% if post.pixel_md5 == element.reverse_post.pixel_md5 %}<span class="post-pixel-match">&lt; <span class="post-pixel-match-text">Pixel Match</span> &gt;</span>{% endif %}
                     <br>
-                    <strong>Type/Size:</strong> {{ element.post.size }} @ {{ element.post.file_ext.upper() }}
+                    <strong>Type/Size:</strong> {{ element.reverse_post.size }} @ {{ element.reverse_post.file_ext.upper() }}
                     <br>
-                    <strong>Dimensions:</strong> (&thinsp;{{ element.post.width }} x {{ element.post.height }}&thinsp;)
+                    <strong>Dimensions:</strong> (&thinsp;{{ element.reverse_post.width }} x {{ element.reverse_post.height }}&thinsp;)
                     <br>
-                    <strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(element.post) }}
+                    <strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(element.reverse_post) }}
                 </div>
             </div>
         {% else %}
@@ -32,61 +32,61 @@
     </div>
 {%- endmacro %}
 
-{% macro similarity_pool_element_preview(element) -%}
-    <article id="similarity-element-{{ element.id }}" class="similarity-element">
+{% macro similarity_match_preview(element) -%}
+    <article id="similarity-match-{{ element.id }}" class="similarity-match">
         <div class="input">
-            <label for="similar-post-{{ element.post.id }}">
+            <label for="similar-post-{{ element.reverse_post.id }}">
                 <input type="checkbox"
                        class="similar-post-input"
-                       id="similar-post-{{ element.post.id }}"
-                       name="similarity_pool_element[id][]"
+                       id="similar-post-{{ element.reverse_post.id }}"
+                       name="similarity_match[id][]"
                        value="{{ element.id }}">
             </label>
         </div>
         <div class="similar-post-controls">
-            <strong>{{ helpers.similarity_pool.pool_show_link(element.sibling) }}</strong>&nbsp;
-            (&thinsp;{{ helpers.similarity_pool.delete_element_link(element, True) }}&thinsp;)
+            <strong>{{ helpers.similarity_match.pool_show_link(element.reverse_post) }}</strong>&nbsp;
+            (&thinsp;{{ helpers.similarity_match.delete_element_link(element, True) }}&thinsp;)
         </div>
-        {{ post_preview(element.post, True) }}
+        {{ post_preview(element.reverse_post, True) }}
         <div>
             <strong>Score:</strong> {{ element.score }}
         </div>
     </article>
 {%- endmacro %}
 
-{% macro similarity_pool_element_previews(element) -%}
-    <article class="similarity-element-multi-preview">
-        <div class="similarity-element-preview-controls">
-            <label for="similarity-element-{{ element.id }}-input">
+{% macro similarity_match_previews(element) -%}
+    <article class="similarity-match-multi-preview">
+        <div class="similarity-match-preview-controls">
+            <label for="similarity-match-{{ element.id }}-input">
                 <input type="checkbox"
                        class="similar-element-input"
-                       id="similarity-element-{{ element.id }}-input"
-                       name="similarity_pool_element[id][]"
+                       id="similarity-match-{{ element.id }}-input"
+                       name="similarity_match[id][]"
                        value="{{ element.id }}"
-                       onchange="return SimilarityPools.toggleCheckbox(this)"
+                       onchange="return SimilarityMatches.toggleCheckbox(this)"
                        onclick="return Prebooru.selectClick(this)">
             </label>
-            <div class="similarity-element-preview-delete">(&thinsp;{{ helpers.similarity_pool.delete_element_link(element, True) }}&thinsp;)</div>
+            <div class="similarity-match-preview-delete">(&thinsp;{{ helpers.similarity_match.delete_element_link(element, True) }}&thinsp;)</div>
         </div>
-        <div class="similarity-element-preview-display">
-            <div class="similarity-element-post">{{ post_preview(element.pool) }}</div>
-            <div class="similarity-element-post">{{ post_preview(element.post) }}</div>
-            <div class="similarity-element-info-block">
-                <strong>(L) {{ helpers.similarity_pool.pool_show_link(element) }}</strong>
+        <div class="similarity-match-preview-display">
+            <div class="similarity-match-post">{{ post_preview(element.forward_post) }}</div>
+            <div class="similarity-match-post">{{ post_preview(element.reverse_post) }}</div>
+            <div class="similarity-match-info-block">
+                <strong>(L) {{ helpers.similarity_match.pool_show_link(element.forward_post) }}</strong>
                 <br>
-                &emsp;<strong>Size:</strong> {{ element.pool.size }} @ {{ element.pool.file_ext.upper() }}
+                &emsp;<strong>Size:</strong> {{ element.forward_post.size }} @ {{ element.forward_post.file_ext.upper() }}
                 <br>
-                &emsp;<strong>WxH:</strong> ( {{ element.pool.width }} x {{ element.pool.height }} )
-                <br>
-                <br>
-                <strong>(R) {{ helpers.similarity_pool.pool_show_link(element.sibling) }}</strong>
-                <br>
-                &emsp;<strong>Size:</strong> {{ element.post.size }} @ {{ element.post.file_ext.upper() }}
-                <br>
-                &emsp;<strong>WxH:</strong> ( {{ element.post.width }} x {{ element.post.height }} )
+                &emsp;<strong>WxH:</strong> ( {{ element.forward_post.width }} x {{ element.forward_post.height }} )
                 <br>
                 <br>
-                <span class="similarity-element-info-score"><strong>Score:</strong> {{ element.score }}</span>
+                <strong>(R) {{ helpers.similarity_match.pool_show_link(element.reverse_post) }}</strong>
+                <br>
+                &emsp;<strong>Size:</strong> {{ element.reverse_post.size }} @ {{ element.reverse_post.file_ext.upper() }}
+                <br>
+                &emsp;<strong>WxH:</strong> ( {{ element.reverse_post.width }} x {{ element.reverse_post.height }} )
+                <br>
+                <br>
+                <span class="similarity-match-info-score"><strong>Score:</strong> {{ element.score }}</span>
             </div>
         </div>
     </article>

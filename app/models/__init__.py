@@ -32,7 +32,7 @@ from .subscription_element import SubscriptionElement, SubscriptionElementErrors
 
 # #### Similarity data
 from .image_hash import ImageHash  # noqa: F401
-from .similarity_match import SimilarityPoolElement  # noqa: F401
+from .similarity_match import SimilarityMatch  # noqa: F401
 
 # #### Cache data
 from .api_data import ApiData  # noqa: F401
@@ -65,7 +65,7 @@ def initialize():
             ArtistNotations, Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations,
             PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, UploadPosts, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,
-            SubscriptionElementErrors, ImageHash, SimilarityPoolElement, ApiData, Archive,
+            SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,
             MediaFile, Domain,
         ]
     for model in models:
