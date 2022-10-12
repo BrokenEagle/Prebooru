@@ -1,14 +1,10 @@
-# APP/LOGICAL/SIMILARITY/POPULATE_POOLS.PY
-
-# ## PYTHON IMPORTS
-from sqlalchemy.orm import selectinload
+# APP/LOGICAL/RECORDS/SIMILARITY_MATCH_REC.PY
 
 # ## LOCAL IMPORTS
-from ...models import Post
 from ..database.image_hash_db import get_image_hash_by_post_id
 from ..database.similarity_match_db import create_similarity_match_from_parameters,\
     update_similarity_match_from_parameters
-from .base import get_image_hash_matches, check_image_match_scores, filter_score_results
+from .image_hash_rec import get_image_hash_matches, check_image_match_scores, filter_score_results
 
 
 # ## FUNCTIONS

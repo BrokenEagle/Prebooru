@@ -21,7 +21,6 @@ from ..sources import SOURCEDICT
 from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..downloader.network import convert_network_subscription
-from ..similarity.generate_data import generate_post_image_hashes
 from ..records.post_rec import reinstantiate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
     update_subscription_element_status, link_subscription_post
@@ -35,6 +34,7 @@ from ..database.subscription_element_db import unlink_subscription_post, delete_
 from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
     add_subscription_error
 from ..database.base_db import safe_db_execute
+from .image_hash_rec import generate_post_image_hashes
 
 
 # ## GLOBAL VARIABLES
