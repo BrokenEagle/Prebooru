@@ -1,6 +1,6 @@
 [flake8]
 max-line-length = 120
-ignore =
+ignore = W503
 exclude = migrations/versions*,migrations/env.py,config/local.py
 classmethod-decorators = classmethod,classproperty
 max-complexity = 10

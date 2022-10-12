@@ -5,7 +5,7 @@ from ..network import get_http_data
 from ..media import get_pixel_hash
 from ...models import Post
 from ..database.post_db import create_post_and_add_illust_url, update_post_from_parameters
-from ..database.error_db import create_error, create_and_append_error, append_error, extend_errors, is_error
+from ..database.error_db import create_error, append_error, extend_errors, is_error
 from .base import convert_media_upload, load_post_image, check_existing, check_filetype, check_image_dimensions,\
     check_video_info, save_image, save_video, save_thumb
 
@@ -22,7 +22,8 @@ def convert_network_upload(illust, upload, source):
 
 
 def convert_network_subscription(subscription, source):
-    return convert_media_upload([subscription.illust_url], subscription, source, create_image_post, create_video_post, 'subscription')
+    return convert_media_upload([subscription.illust_url], subscription, source,
+                                create_image_post, create_video_post, 'subscription')
 
 
 def redownload_post(post, illust_url, source):

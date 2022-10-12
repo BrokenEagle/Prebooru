@@ -56,7 +56,7 @@ def validate_integrity():
 
 
 def validate_foreign_keys():
-    from .. import DB, SESSION
+    from .. import DB
     from ..models import TABLES
     table_fkeys = {}
     engine = DB.get_engine(bind=None).engine

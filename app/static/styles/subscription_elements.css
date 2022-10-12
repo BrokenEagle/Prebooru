@@ -215,7 +215,7 @@ article.subscription-element ul {
 }
 
 article.subscription-element article.post {
-    margin: 0 0 10px 0;
+    margin: 0 0 10px;
     width: unset;
 }
 
