@@ -13,7 +13,7 @@ from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
 from ... import DB
-from .jobs_db import is_any_job_locked
+from .jobs_db import is_any_job_locked, is_any_job_manual
 
 
 # ## GLOBAL VARIABLES
@@ -109,7 +109,7 @@ def update_last_activity(type):
 def server_is_busy():
     return any((
         get_last_activity('user') > minutes_ago(15),
-        (get_last_activity('server') > minutes_ago(5)) and is_any_job_locked(),
+        (get_last_activity('server') > minutes_ago(5)) and (is_any_job_locked() or is_any_job_manual()),
     ))
 
 

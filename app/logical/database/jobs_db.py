@@ -251,6 +251,11 @@ def is_any_job_locked():
     return any(lock for lock in all_locks.values())
 
 
+def is_any_job_manual():
+    all_manuals = get_all_job_manual()
+    return any(manual for manual in all_manuals.values())
+
+
 def get_all_job_timevals():
     with SCHEDULER_JOBSTORES.engine.begin() as conn:
         statement = select([T_JOBS_TIME.c.id, T_JOBS_TIME.c.time])
