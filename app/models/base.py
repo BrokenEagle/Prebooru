@@ -109,11 +109,14 @@ class CacheClassProperty:
         self.cached = cached
 
     def __get__(self, owner_self, owner_cls):
-        val = self.func(owner_cls)
         if self.cached:
-            # Overwrites the class method with the value
-            setattr(owner_cls, self.func.__name__, val)
-        return val
+            keyname = '_' + owner_cls.__name__ + '_' + self.func.__name__
+            if not hasattr(owner_cls, keyname):
+                val = self.func(owner_cls)
+                setattr(owner_cls, keyname, val)
+            return getattr(owner_cls, keyname)
+        else:
+            return self.func(owner_cls)
 
 
 class StaticProperty:
