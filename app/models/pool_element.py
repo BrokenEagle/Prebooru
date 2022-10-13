@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import math
+import enum
 
 # ## EXTERNAL IMPORTS
 from flask import url_for
@@ -11,7 +12,7 @@ from config import DEFAULT_PAGINATE_LIMIT
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
-from .base import JsonModel
+from .base import JsonModel, ModelEnum, IntEnum
 
 
 # ## FUNCTIONS
@@ -41,6 +42,13 @@ def pool_element_delete(pool_id, item):
 
 # ## CLASSES
 
+class PoolElementType(ModelEnum):
+    pool_element = -1  # This should never actually be set
+    pool_post = enum.auto()
+    pool_illust = enum.auto()
+    pool_notation = enum.auto()
+
+
 class PoolElement(JsonModel):
     # ## Declarations
 
@@ -52,7 +60,7 @@ class PoolElement(JsonModel):
     id = DB.Column(DB.Integer, primary_key=True)
     pool_id = DB.Column(DB.Integer, DB.ForeignKey('pool.id'), nullable=False, index=True)
     position = DB.Column(DB.Integer, nullable=False)
-    type = DB.Column(DB.String(50), nullable=False)
+    type = DB.Column(IntEnum(PoolElementType), nullable=False)
 
     # ## Relationships
     # pool <- Pool (MtO)
@@ -69,11 +77,14 @@ class PoolElement(JsonModel):
         page = math.ceil(self.position1 / DEFAULT_PAGINATE_LIMIT)
         return url_for('pool.show_html', id=self.pool_id, page=page)
 
+    # ## Class properties
+
+    type_enum = PoolElementType
+
     # #### Private
-    __tablename__ = 'pool_element'
     __mapper_args__ = {
-        'polymorphic_identity': 'pool_element',
-        "polymorphic_on": type
+        'polymorphic_identity': PoolElementType.pool_element,
+        'polymorphic_on': type,
     }
 
 
@@ -91,9 +102,8 @@ class PoolPost(PoolElement):
     # item <- Post (MtO)
 
     # #### Private
-    __tablename__ = 'pool_post'
     __mapper_args__ = {
-        'polymorphic_identity': 'pool_post',
+        'polymorphic_identity': PoolElementType.pool_post,
     }
 
 
@@ -111,9 +121,8 @@ class PoolIllust(PoolElement):
     # item <- Illust (MtO)
 
     # #### Private
-    __tablename__ = 'pool_illust'
     __mapper_args__ = {
-        'polymorphic_identity': 'pool_illust',
+        'polymorphic_identity': PoolElementType.pool_illust,
     }
 
 
@@ -131,9 +140,8 @@ class PoolNotation(PoolElement):
     # item <- Notation (OtO)
 
     # #### Private
-    __tablename__ = 'pool_notation'
     __mapper_args__ = {
-        'polymorphic_identity': 'pool_notation',
+        'polymorphic_identity': PoolElementType.pool_notation,
     }
 
 
