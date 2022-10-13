@@ -64,7 +64,7 @@ def create():
 
 def append_item(tag):
     retdata = {'error': False, 'item': tag.to_json()}
-    if tag.type == 'site_tag':
+    if tag.type == tag.type_enum.site_tag:
         return set_error(retdata, "Site tags cannot be appended.")
     dataparams = get_data_params(request, 'tag')
     dataparams.update({k: parse_type(dataparams, k, int) for (k, v) in dataparams.items() if k in APPEND_KEYS})
@@ -79,7 +79,7 @@ def append_item(tag):
 
 def remove_item(tag):
     retdata = {'error': False, 'item': tag.to_json()}
-    if tag.type == 'site_tag':
+    if tag.type == tag.type_enum.site_tag:
         return set_error(retdata, "Site tags cannot be removed.")
     dataparams = get_data_params(request, 'tag')
     dataparams.update({k: parse_type(dataparams, k, int) for (k, v) in dataparams.items() if k in APPEND_KEYS})
