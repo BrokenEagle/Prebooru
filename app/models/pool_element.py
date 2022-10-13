@@ -77,13 +77,14 @@ class PoolElement(JsonModel):
         page = math.ceil(self.position1 / DEFAULT_PAGINATE_LIMIT)
         return url_for('pool.show_html', id=self.pool_id, page=page)
 
+    # ## Class properties
+
     type_enum = PoolElementType
 
     # #### Private
-    __tablename__ = 'pool_element'
     __mapper_args__ = {
         'polymorphic_identity': PoolElementType.pool_element,
-        "polymorphic_on": type,
+        'polymorphic_on': type,
     }
 
 
@@ -101,7 +102,6 @@ class PoolPost(PoolElement):
     # item <- Post (MtO)
 
     # #### Private
-    __tablename__ = 'pool_post'
     __mapper_args__ = {
         'polymorphic_identity': PoolElementType.pool_post,
     }
@@ -121,7 +121,6 @@ class PoolIllust(PoolElement):
     # item <- Illust (MtO)
 
     # #### Private
-    __tablename__ = 'pool_illust'
     __mapper_args__ = {
         'polymorphic_identity': PoolElementType.pool_illust,
     }
@@ -141,7 +140,6 @@ class PoolNotation(PoolElement):
     # item <- Notation (OtO)
 
     # #### Private
-    __tablename__ = 'pool_notation'
     __mapper_args__ = {
         'polymorphic_identity': PoolElementType.pool_notation,
     }
