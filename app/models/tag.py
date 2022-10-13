@@ -1,15 +1,24 @@
 # APP/MODELS/TAG.PY
 
+# ## PYTHON IMPORTS
+import enum
+
 # ## EXTERNAL IMPORTS
 from flask import Markup
 from sqlalchemy.util import memoized_property
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel
+from .base import JsonModel, ModelEnum, IntEnum
 
 
 # ## CLASSES
+
+class TagType(ModelEnum):
+    tag = -1  # This should never actually be set
+    site_tag = enum.auto()
+    user_tag = enum.auto()
+
 
 class Tag(JsonModel):
     # ## Declarations
@@ -21,7 +30,7 @@ class Tag(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
-    type = DB.Column(DB.String(50), nullable=False)
+    type = DB.Column(IntEnum(TagType), nullable=False)
 
     # ## Property methods
 
@@ -31,7 +40,7 @@ class Tag(JsonModel):
 
     @property
     def display_type(self):
-        return self.type.replace('_', ' ').capitalize()
+        return self.type.name.replace('_', ' ').capitalize()
 
     @memoized_property
     def recent_posts(self):
@@ -42,12 +51,15 @@ class Tag(JsonModel):
         q = q.limit(10)
         return q.all()
 
+    # ## Class properties
+
+    type_enum = TagType
+
     # #### Private
 
-    __tablename__ = 'tag'
     __mapper_args__ = {
-        'polymorphic_identity': 'tag',
-        "polymorphic_on": type
+        'polymorphic_identity': TagType.tag,
+        'polymorphic_on': type,
     }
 
 
@@ -81,9 +93,8 @@ class SiteTag(Tag):
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust._tags)\
                    .filter(Tag.id == self.id)
 
-    __tablename__ = 'site_tag'
     __mapper_args__ = {
-        'polymorphic_identity': 'site_tag',
+        'polymorphic_identity': TagType.site_tag,
     }
 
 
@@ -117,9 +128,8 @@ class UserTag(Tag):
         from .post import Post
         return Post.query.join(UserTag, Post._tags).filter(UserTag.id == self.id)
 
-    __tablename__ = 'user_tag'
     __mapper_args__ = {
-        'polymorphic_identity': 'user_tag',
+        'polymorphic_identity': TagType.user_tag,
     }
 
 

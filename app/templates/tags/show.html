@@ -16,17 +16,17 @@
             <li>
                 <strong>Type:</strong>&emsp;{{ tag.display_type }}
             </li>
-            {% if tag.type == 'site_tag' %}
+            {% if tag.type == tag.type_enum.site_tag %}
                 <li>
                     <strong>Links:</strong>&emsp;{{ helpers.tag.tag_search_links(tag) }}
                 </li>
             {% endif %}
         </ul>
     </div>
-    {% if tag.type == 'site_tag' %}
+    {% if tag.type == tag.type_enum.site_tag %}
         {{ illusts_display(helpers.tag.illust_search(tag, 'illust'), tag.illust_count, 'tag-illusts', False) }}
         <div id="tag-posts">{{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag, 'illust')) }}</div>
-    {% elif tag.type == 'user_tag' %}
+    {% elif tag.type == tag.type_enum.user_tag %}
         {{ illusts_display(helpers.tag.illust_search(tag, 'post'), tag.illust_count, 'tag-illusts', False) }}
         <div id="tag-posts">{{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag, 'post')) }}</div>
     {% endif %}
