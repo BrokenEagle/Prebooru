@@ -51,14 +51,15 @@ class Tag(JsonModel):
         q = q.limit(10)
         return q.all()
 
+    # ## Class properties
+
     type_enum = TagType
 
     # #### Private
 
-    __tablename__ = 'tag'
     __mapper_args__ = {
         'polymorphic_identity': TagType.tag,
-        "polymorphic_on": type
+        'polymorphic_on': type,
     }
 
 
@@ -92,7 +93,6 @@ class SiteTag(Tag):
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust._tags)\
                    .filter(Tag.id == self.id)
 
-    __tablename__ = 'site_tag'
     __mapper_args__ = {
         'polymorphic_identity': TagType.site_tag,
     }
@@ -128,7 +128,6 @@ class UserTag(Tag):
         from .post import Post
         return Post.query.join(UserTag, Post._tags).filter(UserTag.id == self.id)
 
-    __tablename__ = 'user_tag'
     __mapper_args__ = {
         'polymorphic_identity': TagType.user_tag,
     }
