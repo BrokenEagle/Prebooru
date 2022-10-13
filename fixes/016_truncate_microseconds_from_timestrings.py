@@ -36,7 +36,7 @@ def datetime_model_iterator():
                 break
         if not has_datetime:
             continue
-        print("Processing:", model._model_name())
+        print("Processing:", name)
         yield model
 
 
