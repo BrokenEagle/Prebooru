@@ -69,12 +69,7 @@ def initialize():
             MediaFile, Domain,
         ]
     for model in models:
-        if hasattr(model, '__table__'):
-            key = model.__table__.name
-        elif hasattr(model, 'name'):
-            key = model.name
-        else:
-            raise Exception("Unrecognized model type: %s" % str(model))
+        key = model._model_name()
         TABLES[key] = model
 
 

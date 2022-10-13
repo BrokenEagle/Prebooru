@@ -1,6 +1,7 @@
 # APP/MODELS/BASE.PY
 
 # ## PYTHON IMPORTS
+import re
 import enum
 import json
 import zlib
@@ -95,6 +96,7 @@ def secondarytable(*args):
     table = DB.Table(*args, sqlite_with_rowid=False)
     table.rowid = DB.column("rowid")
     table.query = SESSION.query(table)
+    table._model_name = lambda: args[0]
     return table
 
 
@@ -382,4 +384,7 @@ class JsonModel(DB.Model):
 
     @classmethod
     def _model_name(cls):
-        return cls.__table__.name
+        keyname = '__model_name_' + cls.__name__
+        if not hasattr(cls, keyname):
+            setattr(cls, keyname, re.sub(r'([a-z])([A-Z])', r'\1_\2', cls.__name__).lower())
+        return getattr(cls, keyname)
