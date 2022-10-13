@@ -1,14 +1,23 @@
 # APP/MODELS/SITE_DATA.PY
 
+# ## PYTHON IMPORTS
+import enum
+
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import declared_attr
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, NormalizedDatetime
+from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime
 
 
 # ## CLASSES
+
+class SiteDataType(ModelEnum):
+    site_data = -1  # This should never actually be set
+    pixiv_data = enum.auto()
+    twitter_data = enum.auto()
+
 
 class SiteData(JsonModel):
     # ## Declarations
@@ -20,14 +29,17 @@ class SiteData(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False)
-    type = DB.Column(DB.String(50), nullable=False)
+    type = DB.Column(IntEnum(SiteDataType), nullable=False)
+
+    # ## Class properties
+
+    type_enum = SiteDataType
 
     # ## Private
 
-    __tablename__ = 'site_data'
     __mapper_args__ = {
-        'polymorphic_identity': 'site_data',
-        "polymorphic_on": type
+        'polymorphic_identity': SiteDataType.site_data,
+        'polymorphic_on': type,
     }
 
 
@@ -54,9 +66,8 @@ class PixivData(SiteData):
 
     # ## Private
 
-    __tablename__ = 'pixiv_data'
     __mapper_args__ = {
-        'polymorphic_identity': 'pixiv_data',
+        'polymorphic_identity': SiteDataType.pixiv_data,
     }
 
 
@@ -80,9 +91,8 @@ class TwitterData(SiteData):
 
     # ## Private
 
-    __tablename__ = 'twitter_data'
     __mapper_args__ = {
-        'polymorphic_identity': 'twitter_data',
+        'polymorphic_identity': SiteDataType.twitter_data,
     }
 
 
