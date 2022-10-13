@@ -20,6 +20,7 @@ DOMAINS = {v: k for k, v in SITES.items()}
 # ## CLASSES
 
 class Site(Enum):
+    CUSTOM = 0
     PIXIV = auto()
     PXIMG = auto()
     TWITTER = auto()

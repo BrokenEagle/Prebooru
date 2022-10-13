@@ -8,7 +8,6 @@ from utility.file import get_http_filename, get_file_extension
 
 # ## LOCAL IMPORTS
 from ..sites import get_site_key, get_site_id, get_site_domain
-from ..sources import SOURCES, SOURCEDICT
 from ..utility import set_error
 from ..database.error_db import is_error
 
@@ -36,6 +35,10 @@ class NoSource():
     def get_media_extension(url):
         return get_file_extension(get_http_filename(url)).replace('jpeg', 'jpg')
 
+    @staticmethod
+    def artist_booru_search_url(url):
+        return None
+
 
 # ## FUNCTIONS
 
@@ -49,30 +52,35 @@ def get_image_site_id(url):
 # #### Source lookup functions
 
 def get_post_source(request_url):
+    _import_package()
     for source in SOURCES:
         if source.is_request_url(request_url):
             return source
 
 
 def get_artist_source(artist_url):
+    _import_package()
     for source in SOURCES:
         if source.is_artist_url(artist_url):
             return source
 
 
 def get_illust_source(illust_url):
+    _import_package()
     for source in SOURCES:
         if source.is_post_url(illust_url):
             return source
 
 
 def get_artist_id_source(artist_url):
+    _import_package()
     for source in SOURCES:
         if source.is_artist_id_url(artist_url):
             return source
 
 
 def get_media_source(image_url):
+    _import_package()
     for source in SOURCES:
         if source.is_image_url(image_url) or source.is_video_url(image_url):
             return source
@@ -124,5 +132,13 @@ def get_preview_url(url, site_id):
 
 
 def get_source_by_id(site_id):
+    _import_package()
     site_key = get_site_key(site_id)
     return SOURCEDICT[site_key]
+
+
+# #### Private
+
+def _import_package():
+    global SOURCES, SOURCEDICT
+    from ..sources import SOURCES, SOURCEDICT

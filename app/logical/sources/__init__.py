@@ -5,15 +5,17 @@
 # ## COLLATION IMPORTS
 from . import pixiv
 from . import twitter
+from .base import NoSource
 
 
 # ## GLOBAL VARIABLES
 
 SOURCES = [pixiv, twitter]
 SOURCEDICT = {
+    'CUSTOM': NoSource,
     'PIXIV': pixiv,
     'PXIMG': pixiv,
     'TWITTER': twitter,
     'TWIMG': twitter,
-    'TWVIDEO': twitter
+    'TWVIDEO': twitter,
 }

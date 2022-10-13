@@ -35,6 +35,7 @@ def check_artists_for_boorus(artists, booru_dict=None):
     from ..sources.danbooru import get_artists_by_multiple_urls
     booru_dict = booru_dict if booru_dict is not None else {}
     query_urls = [artist.booru_search_url for artist in artists]
+    query_urls = [url for url in query_urls if url is not None]
     results = get_artists_by_multiple_urls(query_urls)
     if results['error']:
         print(results['message'])
