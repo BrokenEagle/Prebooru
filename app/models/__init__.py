@@ -22,6 +22,7 @@ from .booru import Booru, BooruNames, BooruArtists  # noqa: F401
 # #### Local data
 from .error import Error  # noqa: F401
 from .post import Post, PostIllustUrls, PostErrors, PostNotations, PostTags  # noqa: F401
+from .duplicate_post import DuplicatePost, UploadDuplicatePost, SubscriptionDuplicatePost  # noqa: F401
 from .upload_url import UploadUrl  # noqa: F401
 from .upload import Upload, UploadUrls, UploadErrors, UploadPosts  # noqa: F401
 from .notation import Notation  # noqa: F401
@@ -66,6 +67,7 @@ def initialize():
             PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, UploadPosts, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,
             SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,
+            DuplicatePost, UploadDuplicatePost, SubscriptionDuplicatePost,
             MediaFile, Domain,
         ]
     for model in models:

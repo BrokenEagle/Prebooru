@@ -25,6 +25,7 @@ from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
+from .duplicate_post import DuplicatePost, duplicate_post_create
 from .base import JsonModel, ModelEnum, NormalizedDatetime, IntEnum, secondarytable, image_server_url, classproperty
 
 
@@ -103,11 +104,14 @@ class Post(JsonModel):
     similarity_matches_reverse = DB.relationship(SimilarityMatch, lazy=True, cascade='all,delete',
                                                  backref=DB.backref('reverse_post', lazy=True, uselist=False),
                                                  foreign_keys=[SimilarityMatch.reverse_id])
+    _duplicate_records = DB.relationship(DuplicatePost, lazy=True, cascade='all,delete',
+                                           backref=DB.backref('post', uselist=False, lazy=True))
     # uploads <- Upload (MtM)
 
     # #### Association proxies
     tags = association_proxy('_tags', 'name')
     pools = association_proxy('_pools', 'pool')
+    duplicate_records = association_proxy('_duplicate_records', 'item', creator=lambda item: duplicate_post_create(item))
 
     # ## Property methods
 

@@ -6,6 +6,7 @@ import enum
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
+from .duplicate_post import SubscriptionDuplicatePost
 from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, secondarytable
 
 
@@ -45,7 +46,7 @@ class SubscriptionElement(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=False, index=True)
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
+    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True, index=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(DB.String(32), nullable=True)
     keep = DB.Column(IntEnum(SubscriptionElementKeep, nullable=True), nullable=True)
@@ -56,17 +57,36 @@ class SubscriptionElement(JsonModel):
     # subscription <- Susbscription (MtO)
     errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('subscription_element', uselist=False, lazy=True))
+    duplicate_posts = DB.relationship(SubscriptionDuplicatePost, lazy=True, cascade='all,delete',
+                                      backref=DB.backref('item', uselist=False, lazy=True))
 
-    # ## Class properties
+    # #### Instance properties
+
+    @property
+    def duplicate_elements(self):
+        return _duplicate_element_query.all()
+
+    @property
+    def duplicate_element_count(self):
+        return _duplicate_element_query.get_count()
+
+    # #### Class properties
 
     status_enum = SubscriptionElementStatus
     keep_enum = SubscriptionElementKeep
+
+    # ## Private
+
+    @property:
+    def _duplicate_element_query(self):
+        return SubscriptionElement.query.filter_by(md5=self.md5)
 
 
 # ## INITIALIZATION
 
 def initialize():
     from .subscription import Subscription
+    DB.Index(None, SubscriptionElement.md5, unique=False, sqlite_where=SubscriptionElement.md5.is_not(None))
     # Access the opposite side of the relationship to force the back reference to be generated
     Subscription.elements.property._configure_started
     SubscriptionElement.set_relation_properties()

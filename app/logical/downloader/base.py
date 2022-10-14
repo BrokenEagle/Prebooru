@@ -84,10 +84,12 @@ def check_existing(buffer, illust_url, record):
         post_append_illust_url(post, illust_url)
         if record.model_name == 'subscription_element':
             duplicate_subscription_post(record, post.md5)
-        return create_error('downloader.base.check_existing', "Media already uploaded on post #%d" % post.id)
-    if record.model_name == 'subscription_element' and check_deleted_subscription_post(md5):
-        duplicate_subscription_post(record, md5)
-        return create_error('downloader.base.check_existing', "Media already marked as deleted: %s" % md5)
+        return None
+    if record.model_name == 'subscription_element':
+        record.md5 = md5
+        if record.duplicate_element_count > 1:
+            duplicate_subscription_post(record, md5)
+            return None
     return md5
 
 

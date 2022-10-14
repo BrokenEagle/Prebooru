@@ -44,7 +44,7 @@ class Subscription(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False)
+    artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
     interval = DB.Column(DB.Float, nullable=False)
     expiration = DB.Column(DB.Float, nullable=True)
     status = DB.Column(IntEnum(SubscriptionStatus), nullable=False)
