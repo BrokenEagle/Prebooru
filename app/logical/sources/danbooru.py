@@ -117,7 +117,7 @@ def get_danbooru_posts_by_md5s(md5_list):
             return data
         posts = [post for post in data['json'] if 'md5' in post]
         all_posts.extend(posts)
-        if len(data) < 200:
+        if len(data['json']) < 200:
             break
         params['page'] = 'b' + str(min(post['id'] for post in posts))
     return {'error': False, 'posts': all_posts}
