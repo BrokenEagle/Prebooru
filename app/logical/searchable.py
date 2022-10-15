@@ -285,7 +285,7 @@ def boolean_filters(model, columnname, params):
 
 def relationship_exists_filters(model, attribute, params, relation_model, relation_property):
     if relation_property.secondaryjoin is not None:
-        raise Exception("Exists not available for fk relations. Use _has instead.")
+        raise Exception("Exists not available for secondary table relations. Use _has instead.")
     primaryjoin = relation_property.primaryjoin
     if primaryjoin.right.table == model.__table__:
         if is_truthy(params[attribute + '_exists']):
