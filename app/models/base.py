@@ -94,7 +94,6 @@ def classproperty(cached=False):
 
 def secondarytable(*args):
     table = DB.Table(*args, sqlite_with_rowid=False)
-    table.rowid = DB.column("rowid")
     table.query = SESSION.query(table)
     table._model_name = lambda: args[0]
     return table
