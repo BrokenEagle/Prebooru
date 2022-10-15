@@ -2,6 +2,7 @@
 
 # EXTERNAL IMPORTS
 import alembic.op as op
+import sqlalchemy as sa
 from sqlalchemy.engine.reflection import Inspector
 
 # LOCAL IMPORTS
@@ -11,6 +12,21 @@ from .constraints import drop_constraints, create_constraints
 # ## FUNCTIONS
 
 # ## Single operations
+
+def create_table(name, col_config, ck_config=None, fk_config=None, pk_config=None, uq_config=None, with_rowid=True):
+    columns = [sa.Column(v['name'], getattr(sa, v['type']), nullable=v['nullable']) for v in col_config]
+    constraints = []
+    if pk_config is not None and isinstance(pk_config, (tuple, list)):
+        constraints += [sa.PrimaryKeyConstraint(*pk['columns'], name=op.f(pk['name'])) for pk in pk_config]
+    if fk_config is not None and isinstance(fk_config, (tuple, list)):
+        constraints += [sa.ForeignKeyConstraint(fk['columns'], fk['references'], name=op.f(fk['name']))
+                        for fk in fk_config]
+    if uq_config is not None and isinstance(pk_config, (tuple, list)):
+        constraints += [sa.create_unique_constraint(op.f(uq['name']), uq['columns']) for uq in uq_config]
+    if ck_config is not None and isinstance(ck_config, (tuple, list)):
+        constraints += [sa.CheckConstraint(ck['value'], name=op.f(ck['name'])) for ck in ck_config]
+    op.create_table(name, *columns, *constraints, sqlite_with_rowid=with_rowid)
+
 
 def drop_table(table_name):
     op.drop_table(table_name)
