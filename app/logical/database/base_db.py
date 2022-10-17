@@ -64,7 +64,7 @@ def set_association_attributes(params, associations):
             params[association_key] = params[key]
 
 
-def update_column_attributes(item, attrs, dataparams):
+def update_column_attributes(item, attrs, dataparams, commit=True):
     """For updating column attributes with scalar values"""
     printer = buffered_print('update_column_attributes', safe=True, header=False)
     is_dirty = False
@@ -77,11 +77,11 @@ def update_column_attributes(item, attrs, dataparams):
         SESSION.add(item)
     if is_dirty:
         printer.print()
-        _safe_db_commit(item, 'update_column_attributes', "Error on record create/update")
+        _safe_db_commit(item, 'update_column_attributes', "Error on record create/update", commit=commit)
     return is_dirty
 
 
-def update_relationship_collections(item, relationships, updateparams):
+def update_relationship_collections(item, relationships, updateparams, commit=True):
     """For updating multiple values to collection relationships with scalar values"""
     printer = buffered_print('update_relationship_collections', safe=True, header=False)
     is_dirty = False
@@ -107,11 +107,11 @@ def update_relationship_collections(item, relationships, updateparams):
             is_dirty = True
     if is_dirty:
         printer.print()
-        _safe_db_commit(item, 'update_relationship_collections', "Error on adding/removing collection values")
+        _safe_db_commit(item, 'update_relationship_collections', "Error on adding/removing collection values", commit=commit)
     return is_dirty
 
 
-def append_relationship_collections(item, relationships, updateparams):
+def append_relationship_collections(item, relationships, updateparams, commit=True):
     """For appending a single value to collection relationships with scalar values"""
     printer = buffered_print('append_relationship_collections', safe=True, header=False)
     is_dirty = False
@@ -131,15 +131,18 @@ def append_relationship_collections(item, relationships, updateparams):
             is_dirty = True
     if is_dirty:
         printer.print()
-        _safe_db_commit(item, 'append_relationship_collections', "Error on adding collection value")
+        _safe_db_commit(item, 'append_relationship_collections', "Error on adding collection value", commit=commit)
     return is_dirty
 
 
 # #### Private functions
 
-def _safe_db_commit(item, func_name, message):
+def _safe_db_commit(item, func_name, message, commit=True):
     try:
-        SESSION.commit()
+        if commit:
+            SESSION.commit()
+        else:
+            SESSION.flush()
     except Exception as e:
         error_message = (message + ' : %s\n\t%s') % (e, str(item))
         safe_print("\a%s : %s" % (func_name, error_message))
