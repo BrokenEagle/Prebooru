@@ -59,6 +59,9 @@ class PoolElement(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     pool_id = DB.Column(DB.Integer, DB.ForeignKey('pool.id'), nullable=False, index=True)
+    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
+    illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
+    notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
     position = DB.Column(DB.Integer, nullable=False)
     type = DB.Column(IntEnum(PoolElementType), nullable=False)
 
@@ -86,6 +89,11 @@ class PoolElement(JsonModel):
         'polymorphic_identity': PoolElementType.pool_element,
         'polymorphic_on': type,
     }
+    __table_args__ = (
+        DB.CheckConstraint(
+            "post_id IS NOT NULL OR illust_id IS NOT NULL OR notation_id IS NOT NULL",
+            name="null_check"),
+    )
 
 
 class PoolPost(PoolElement):
@@ -96,7 +104,8 @@ class PoolPost(PoolElement):
     polymorphic_base = False
 
     # #### Columns
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True, index=True)
+    illust_id = None
+    notation_id = None
 
     # ## Relationships
     # item <- Post (MtO)
@@ -115,7 +124,8 @@ class PoolIllust(PoolElement):
     polymorphic_base = False
 
     # #### Columns
-    illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True, index=True)
+    post_id = None
+    notation_id = None
 
     # ## Relationships
     # item <- Illust (MtO)
@@ -134,7 +144,8 @@ class PoolNotation(PoolElement):
     polymorphic_base = False
 
     # #### Columns
-    notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True, index=True)
+    post_id = None
+    illust_id = None
 
     # ## Relationships
     # item <- Notation (OtO)
@@ -148,6 +159,9 @@ class PoolNotation(PoolElement):
 # ## INITIALIZATION
 
 def initialize():
+    DB.Index(None, PoolElement.post_id, PoolElement.pool_id, unique=True, sqlite_where=PoolElement.post_id.is_not(None))
+    DB.Index(None, PoolElement.illust_id, PoolElement.pool_id, unique=True, sqlite_where=PoolElement.illust_id.is_not(None))
+    DB.Index(None, PoolElement.notation_id, PoolElement.pool_id, unique=True, sqlite_where=PoolElement.notation_id.is_not(None))
     PoolElement.polymorphic_columns = {
         'post_id': PoolPost,
         'illust_id': PoolIllust,
