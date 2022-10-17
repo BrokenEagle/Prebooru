@@ -16,6 +16,7 @@ def create_constraints(table_name, add_constraint_commands):
         'primary': _create_primary_key_batch_op,
         'foreignkey': _create_foreign_key_batch_op,
         'unique': _create_unique_constraint_batch_op,
+        'check': _create_check_constraint_batch_op,
     }
     with op.batch_alter_table(table_name, schema=None, naming_convention=NAMING_CONVENTION) as batch_op:
         for (constraint_name, constraint_type, *args) in add_constraint_commands:
@@ -50,3 +51,7 @@ def _create_foreign_key_batch_op(batch_op, constraint_name, source_table, fk_col
 
 def _create_unique_constraint_batch_op(batch_op, constraint_name, keys):
     batch_op.create_unique_constraint(batch_op.f(constraint_name), keys)
+
+
+def _create_check_constraint_batch_op(batch_op, constraint_name, constraint_value):
+    batch_op.create_check_constraint(constraint_name, constraint_value)
