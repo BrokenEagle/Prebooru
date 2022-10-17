@@ -57,10 +57,26 @@ class SubscriptionElement(JsonModel):
     errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('subscription_element', uselist=False, lazy=True))
 
-    # ## Class properties
+    # #### Instance properties
+
+    @property
+    def duplicate_elements(self):
+        return self._duplicate_element_query.all()
+
+    @property
+    def duplicate_element_count(self):
+        return self._duplicate_element_query.get_count()
+
+    # #### Class properties
 
     status_enum = SubscriptionElementStatus
     keep_enum = SubscriptionElementKeep
+
+    # ## Private
+
+    @property
+    def _duplicate_element_query(self):
+        return SubscriptionElement.query.filter(SubscriptionElement.md5 == self.md5, SubscriptionElement.id != self.id)
 
 
 # ## INITIALIZATION

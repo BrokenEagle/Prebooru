@@ -11,6 +11,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from .. import DB
 from ..logical.utility import unique_objects
 from .upload_url import UploadUrl
+from .upload_element import UploadElement
 from .post import Post
 from .error import Error
 from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, secondarytable, classproperty
@@ -67,6 +68,8 @@ class Upload(JsonModel):
     posts = DB.relationship(Post, secondary=UploadPosts, lazy=True, backref=DB.backref('uploads', lazy=True))
     errors = DB.relationship(Error, secondary=UploadErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('upload', uselist=False, lazy=True))
+    elements = DB.relationship(UploadElement, lazy=True, cascade='all,delete',
+                               backref=DB.backref('upload', uselist=False, lazy=True))
 
     # #### Association proxies
     post_ids = association_proxy('posts', 'id')

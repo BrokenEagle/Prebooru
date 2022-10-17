@@ -1,5 +1,8 @@
 # APP/LOGICAL/DATABASE/ILLUST_DB.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy.orm import selectinload
+
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 
@@ -154,3 +157,10 @@ def illust_delete_commentary(illust, description_id):
 
 def get_site_illust(site_illust_id, site_id):
     return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).first()
+
+
+def get_site_illusts(site_id, site_illust_ids, load_urls=False):
+    q = Illust.query
+    if load_urls:
+        q = q.options(selectinload(Illust.urls))
+    return q.filter(Illust.site_id == site_id, Illust.site_illust_id.in_(site_illust_ids)).all()

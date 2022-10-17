@@ -14,11 +14,9 @@ from .base import convert_media_upload, load_post_image, check_existing, check_f
 
 # #### Main execution functions
 
-def convert_network_upload(illust, upload, source):
-    all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
-    media_illust_urls = [illust_url for illust_url in source.image_illust_download_urls(illust)
-                         if (len(all_upload_urls) == 0) or (illust_url.url in all_upload_urls)]
-    return convert_media_upload(media_illust_urls, upload, source, create_image_post, create_video_post, 'user')
+def convert_network_upload(upload_element, source):
+    return convert_media_upload([upload_element.illust_url], upload_element, source,
+                                create_image_post, create_video_post, 'user')
 
 
 def convert_network_subscription(subscription, source):
@@ -71,8 +69,8 @@ def create_image_post(illust_url, record, source, post_type):
     if isinstance(buffer, list):
         return buffer
     md5 = check_existing(buffer, illust_url, record)
-    if is_error(md5):
-        return [md5]
+    if md5 is None:
+        return None
     post_errors = []
     image_file_ext = check_filetype(buffer, file_ext, post_errors)
     image = load_post_image(buffer)
@@ -98,8 +96,8 @@ def create_video_post(illust_url, record, source, post_type):
     if isinstance(buffer, list):
         return buffer
     md5 = check_existing(buffer, illust_url, record)
-    if is_error(md5):
-        return [md5]
+    if md5 is None:
+        return None
     post_errors = []
     video_file_ext = check_filetype(buffer, file_ext, post_errors)
     temppost = Post(md5=md5, file_ext=video_file_ext)

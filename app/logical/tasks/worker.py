@@ -20,6 +20,7 @@ from ..records.similarity_match_rec import populate_similarity_pools
 from ..database.base_db import safe_db_execute
 from ..database.post_db import get_posts_by_id
 from ..database.upload_db import set_upload_status, has_duplicate_posts
+from ..database.upload_element_db import create_upload_element_from_parameters
 from ..database.subscription_db import update_subscription_status, update_subscription_active,\
     check_processing_subscriptions
 from ..database.error_db import create_and_append_error, append_error
@@ -199,12 +200,19 @@ def process_network_upload(upload):
     # The artist will have already been created in the create illust step if it didn't exist
     if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist, source)
-    if convert_network_upload(illust, upload, source):
-        set_upload_status(upload, 'complete')
-    elif has_duplicate_posts(upload):
-        set_upload_status(upload, 'duplicate')
-    else:
-        set_upload_status(upload, 'error')
+    all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
+    upload_elements = upload.elements
+    for illust_url in illust.urls:
+        if (len(all_upload_urls) > 0) and (illust_url.url not in all_upload_urls):
+            continue
+        element = next((element for element in upload_elements if element.illust_url_id == illust_url.id), None)
+        if element is None:
+            element = create_upload_element_from_parameters({'upload_id': upload.id, 'illust_url_id': illust_url.id})
+        if convert_network_upload(element,  source):
+            upload.successes += 1
+        else:
+            upload.failures += 1
+    set_upload_status(upload, 'complete')
 
 
 def process_file_upload(upload):

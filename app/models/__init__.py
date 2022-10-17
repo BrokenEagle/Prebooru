@@ -5,6 +5,11 @@
 # ## PYTHON IMPORTS
 from types import ModuleType
 
+# ## EXTERNAL IMPORTS
+import sqlalchemy
+
+# ## LOCAL IMPORTS
+from .. import DB
 
 # ## COLLATION IMPORTS
 
@@ -22,8 +27,9 @@ from .booru import Booru, BooruNames, BooruArtists  # noqa: F401
 # #### Local data
 from .error import Error  # noqa: F401
 from .post import Post, PostIllustUrls, PostErrors, PostNotations, PostTags  # noqa: F401
-from .upload_url import UploadUrl  # noqa: F401
 from .upload import Upload, UploadUrls, UploadErrors, UploadPosts  # noqa: F401
+from .upload_element import UploadElement, UploadElementErrors  # noqa: F401
+from .upload_url import UploadUrl  # noqa: F401
 from .notation import Notation  # noqa: F401
 from .pool import Pool  # noqa: F401
 from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation  # noqa: F401
@@ -66,11 +72,17 @@ def initialize():
             PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, UploadPosts, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,
             SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,
+            UploadElement, UploadElementErrors,
             MediaFile, Domain,
         ]
     for model in models:
         key = model._model_name()
         TABLES[key] = model
+        if isinstance(model, sqlalchemy.Table):
+            if not hasattr(model, '_secondary_table'):
+                model._secondary_table = False
+        elif issubclass(model, DB.Model):
+            model.__table__._secondary_table = False
 
 
 # ## INITIALIZATION

@@ -9,6 +9,7 @@ from utility.data import get_buffer_checksum
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
 from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
+from ..database.upload_element_db import update_upload_element_from_parameters
 from ..database.subscription_element_db import link_subscription_post, \
     check_deleted_subscription_post, update_subscription_element_status, duplicate_subscription_post
 from ..database.post_db import post_append_illust_url, get_post_by_md5
@@ -31,7 +32,7 @@ def convert_media_upload(illust_urls, upload, source, create_image_func, create_
             msg = f"Invalid media URL {url} on {illust_url.illust_shortlink}"
             create_and_append_error('logical.downloader.convert_media_upload', msg, upload)
             continue
-        result = record_outcome(post, upload) or result
+        result = (record_outcome(post, upload) if post is not None else False) or result
     return result
 
 
@@ -44,14 +45,12 @@ def record_outcome(post, record):
         if len(valid_errors) != len(post_errors):
             print("\aInvalid data returned in outcome:", [item for item in post_errors if not is_error(item)])
         extend_errors(record, valid_errors)
-        if record.model_name == 'upload':
-            add_upload_failure(record)
-        elif record.model_name == 'subscription_element' and record.status.name == 'active':
+        if record.model_name == 'subscription_element' and record.status.name == 'active':
             update_subscription_element_status(record, 'error')
         return False
-    if record.model_name == 'upload':
-        upload_append_post(record, post)
-        add_upload_success(record)
+    if record.model_name == 'upload_element':
+        upload_append_post(record.upload, post)
+        update_upload_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
     elif record.model_name == 'subscription_element':
         link_subscription_post(record, post)
     return True
@@ -82,12 +81,16 @@ def check_existing(buffer, illust_url, record):
     post = get_post_by_md5(md5)
     if post is not None:
         post_append_illust_url(post, illust_url)
-        if record.model_name == 'subscription_element':
+        if record.model_name == 'upload_element':
+            update_upload_element_from_parameters(record, {'status': 'duplicate', 'md5': post.md5})
+        elif record.model_name == 'subscription_element':
             duplicate_subscription_post(record, post.md5)
-        return create_error('downloader.base.check_existing', "Media already uploaded on post #%d" % post.id)
-    if record.model_name == 'subscription_element' and check_deleted_subscription_post(md5):
-        duplicate_subscription_post(record, md5)
-        return create_error('downloader.base.check_existing', "Media already marked as deleted: %s" % md5)
+        return None
+    if record.model_name == 'subscription_element':
+        record.md5 = md5  # Set the MD5 now so that the count function can be used
+        if record.duplicate_element_count > 1:
+            duplicate_subscription_post(record, md5)
+            return None
     return md5
 
 

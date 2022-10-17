@@ -92,10 +92,19 @@ def classproperty(cached=False):
     return _decorator
 
 
+def instance_bind(instance, method):
+    def binding_scope_fn(*args, **kwargs):
+        return method(instance, *args, **kwargs)
+    return binding_scope_fn
+
+
 def secondarytable(*args):
     table = DB.Table(*args, sqlite_with_rowid=False)
     table.query = SESSION.query(table)
     table._model_name = lambda: args[0]
+    table._secondary_table = True
+    for col in table.columns.keys():
+        setattr(table, col, getattr(table.c, col))
     return table
 
 
@@ -387,3 +396,5 @@ class JsonModel(DB.Model):
         if not hasattr(cls, keyname):
             setattr(cls, keyname, re.sub(r'([a-z])([A-Z])', r'\1_\2', cls.__name__).lower())
         return getattr(cls, keyname)
+
+    _secondary_table = False

@@ -1,6 +1,9 @@
 # APP/LOGICAL/QUERY_EXTENSIONS.PY
 
 # ## PYTHON IMPORTS
+from types import SimpleNamespace
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy import func
 import sqlalchemy.orm
 import flask_sqlalchemy
@@ -141,6 +144,8 @@ def initialize():
         sqlalchemy.orm.Query.relation_count = relation_count
         sqlalchemy.orm.Query.count_paginate = count_paginate
         sqlalchemy.orm.Query.limit_paginate = limit_paginate
+        sqlalchemy.orm.Query.all2 = secondary_all
+        sqlalchemy.orm.Query.first2 = secondary_first
         flask_sqlalchemy.Pagination.first = paginate_first
         flask_sqlalchemy.Pagination.last = paginate_last
         INIT = True
@@ -177,6 +182,18 @@ def limit_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
     return LimitPaginate(query=self, page=page, per_page=per_page)
 
 
+def secondary_all(self):
+    _secondary_check(self, 'all2')
+    results = self.all()
+    return [_result(item, _columns(self)) for item in results]
+
+
+def secondary_first(self):
+    _secondary_check(self, 'first2')
+    item = self.first()
+    return _result(item, _columns(self)) if item is not None else None
+
+
 @property
 def paginate_first(self):
     return ((self.page - 1) * self.per_page) + 1
@@ -196,3 +213,16 @@ def _has_entity(self, model):
 
 def _query_model(query):
     return query.column_descriptions[0]['entity']
+
+
+def _secondary_check(query, name):
+    if not query._raw_columns[0]._secondary_table:
+        raise Exception(f"'{name}' only supported for secondary tables.")
+
+
+def _result(item, columns):
+    return SimpleNamespace(**{columns[0]: item[0], columns[1]: item[1]})
+
+
+def _columns(query):
+    return query._raw_columns[0].columns.keys()

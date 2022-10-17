@@ -24,8 +24,8 @@ def create_image_post(illust_url, record, source, post_type):
     file_ext = get_file_extension(record.media_filepath)
     buffer = put_get_raw(record.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url, record)
-    if is_error(md5):
-        return [md5]
+    if md5 is None:
+        return None
     post_errors = []
     image_file_ext = check_filetype(buffer, file_ext, post_errors)
     image = load_post_image(buffer)
@@ -47,8 +47,8 @@ def create_video_post(illust_url, upload, source, post_type):
     file_ext = get_file_extension(upload.media_filepath)
     buffer = put_get_raw(upload.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url)
-    if is_error(md5):
-        return [md5]
+    if md5 is None:
+        return None
     post_errors = []
     video_file_ext = check_filetype(buffer, file_ext, post_errors)
     temppost = Post(md5=md5, file_ext=video_file_ext)
