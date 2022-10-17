@@ -18,7 +18,7 @@ def create_constraints(table_name, add_constraint_commands):
         'unique': _create_unique_constraint_batch_op,
     }
     with op.batch_alter_table(table_name, schema=None, naming_convention=NAMING_CONVENTION) as batch_op:
-        for (constraint_name, constraint_type, args) in add_constraint_commands:
+        for (constraint_name, constraint_type, *args) in add_constraint_commands:
             switcher[constraint_type](batch_op, constraint_name, *args)
 
 
