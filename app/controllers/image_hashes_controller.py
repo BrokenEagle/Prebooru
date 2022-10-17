@@ -117,12 +117,12 @@ def regenerate_post_image_hash():
 
 # #### Route functions
 
-@bp.route('/image_hash/check.json', methods=['GET'])
+@bp.route('/image_hashes/check.json', methods=['GET'])
 def check_json():
     return jsonify_data(check(True))
 
 
-@bp.route('/image_hash/check', methods=['GET'])
+@bp.route('/image_hashes/check', methods=['GET'])
 def check_html():
     show_form = request.args.get('show_form', type=eval_bool_string)
     if show_form:
@@ -154,12 +154,12 @@ def check_html():
     return render_template("image_hashes/check.html", similar_results=similar_results, form=form)
 
 
-@bp.route('/image_hash/regenerate.json', methods=['POST'])
+@bp.route('/image_hashes/regenerate.json', methods=['POST'])
 def regenerate_json():
     return regenerate_post_image_hash()
 
 
-@bp.route('/image_hash/regenerate', methods=['POST'])
+@bp.route('/image_hashes/regenerate', methods=['POST'])
 def regenerate_html():
     results = regenerate_post_image_hash()
     if results['error']:
