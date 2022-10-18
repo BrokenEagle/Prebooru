@@ -11,7 +11,7 @@ from utility.data import eval_bool_string
 # ## LOCAL IMPORTS
 from .. import SCHEDULER
 from ..logical.utility import set_error
-from ..logical.tasks.worker import process_upload
+from ..logical.records.upload_rec import process_upload
 from ..logical.records.media_file_rec import batch_get_or_create_media
 from ..models import Upload, UploadElement, IllustUrl, Illust
 from ..logical.sources.base import get_post_source, get_preview_url

@@ -13,8 +13,9 @@ from utility.time import get_current_time, days_from_now, hours_from_now
 from utility.print import buffered_print, print_info
 
 # ## LOCAL IMPORTS
+from ... import SESSION
 from ...models import Subscription, SubscriptionElement, Illust, IllustUrl, Post
-from ..utility import SessionThread
+from ..utility import SessionThread, SessionTimer
 from ..searchable import search_attributes
 from ..sites import get_site_key
 from ..sources import SOURCEDICT
@@ -28,11 +29,11 @@ from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.archive_db import get_archive
 from ..database.error_db import is_error
-from ..database.jobs_db import get_job_status_data, update_job_status
+from ..database.jobs_db import get_job_status_data, update_job_status, update_job_lock_status
 from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post
 from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
-    add_subscription_error
+    add_subscription_error, update_subscription_status, update_subscription_active, check_processing_subscriptions
 from ..database.base_db import safe_db_execute
 from .image_hash_rec import generate_post_image_hashes
 
@@ -64,6 +65,61 @@ else:
 
 
 # ## FUNCTIONS
+
+# #### Primary task functions
+
+def process_subscription(subscription_id, job_id):
+    printer = buffered_print("Process Subscription")
+    subscription = None
+    start_illusts = 0
+    start_posts = 0
+    start_elements = 0
+    starting_post_ids = []
+
+    def try_func(scope_vars):
+        nonlocal subscription, start_illusts, start_posts, start_elements, starting_post_ids
+        subscription = Subscription.find(subscription_id)
+        start_illusts = subscription.artist.illust_count
+        start_posts = subscription.artist.post_count
+        start_elements = subscription.element_count
+        starting_post_ids = [post.id for post in subscription.posts]
+        update_job_lock_status('process_subscription', True)
+        download_subscription_illusts(subscription, job_id)
+        download_subscription_elements(subscription, job_id)
+        job_status = get_job_status_data(job_id)
+        job_status['stage'] = 'done'
+        job_status['range'] = None
+        update_job_status(job_id, job_status)
+
+    def msg_func(scope_vars, e):
+        return f"Unhandled exception occurred on subscripton pool #{subscription_id}: {repr(e)}"
+
+    def error_func(scope_vars, e):
+        nonlocal subscription
+        subscription = subscription or Subscription.find(subscription_id)
+        update_subscription_status(subscription, 'error')
+        update_subscription_active(subscription, False)
+
+    def finally_func(scope_vars, error, data):
+        nonlocal subscription
+        subscription = subscription or Subscription.find(subscription_id)
+        if error is None and subscription.status.name != 'error':
+            update_subscription_status(subscription, 'idle')
+        SessionTimer(15, _query_unlock).start()  # Check later to give the DB time to catch up
+
+    def _query_unlock():
+        if not check_processing_subscriptions():
+            update_job_lock_status('process_subscription', False)
+
+    safe_db_execute('process_subscription', 'records.subscription_rec',
+                    try_func=try_func, msg_func=msg_func, printer=printer,
+                    error_func=error_func, finally_func=finally_func)
+    printer("Added illusts:", subscription.artist.illust_count - start_illusts)
+    printer("Added posts:", subscription.artist.post_count - start_posts)
+    printer("Added elements:", subscription.element_count - start_elements)
+    printer.print()
+    SESSION.remove()
+
 
 def download_subscription_illusts(subscription, job_id=None):
     update_subscription_requery(subscription, hours_from_now(4))

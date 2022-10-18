@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired
 from .. import SCHEDULER
 from ..models import Subscription, Artist
 from ..logical.utility import set_error
-from ..logical.tasks.worker import process_subscription
+from ..logical.records.subscription_rec import process_subscription
 from ..logical.database.subscription_db import create_subscription_from_parameters,\
     update_subscription_from_parameters, update_subscription_status, delay_subscription_elements,\
     delete_subscription
