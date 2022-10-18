@@ -8,33 +8,14 @@ from utility.data import get_buffer_checksum
 
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
-from ..database.upload_db import add_upload_success, add_upload_failure, upload_append_post
 from ..database.upload_element_db import update_upload_element_from_parameters
-from ..database.subscription_element_db import link_subscription_post, \
-    check_deleted_subscription_post, update_subscription_element_status, duplicate_subscription_post
-from ..database.post_db import post_append_illust_url, get_post_by_md5
-from ..database.error_db import create_error, create_and_append_error, extend_errors, is_error
+from ..database.subscription_element_db import link_subscription_post, update_subscription_element_status,\
+    duplicate_subscription_post
+from ..database.post_db import post_append_illust_url, get_post_by_md5, set_post_type
+from ..database.error_db import create_error, extend_errors, is_error
 
 
 # ## FUNCTIONS
-
-# #### Main execution functions
-
-def convert_media_upload(illust_urls, upload, source, create_image_func, create_video_func, post_type):
-    result = False
-    for illust_url in illust_urls:
-        if source.image_url_mapper(illust_url):
-            post = create_image_func(illust_url, upload, source, post_type)
-        elif source.video_url_mapper(illust_url):
-            post = create_video_func(illust_url, upload, source, post_type)
-        else:
-            url = source.get_full_url(illust_url)
-            msg = f"Invalid media URL {url} on {illust_url.illust_shortlink}"
-            create_and_append_error('logical.downloader.convert_media_upload', msg, upload)
-            continue
-        result = (record_outcome(post, upload) if post is not None else False) or result
-    return result
-
 
 # #### Helper functions
 
@@ -49,7 +30,8 @@ def record_outcome(post, record):
             update_subscription_element_status(record, 'error')
         return False
     if record.model_name == 'upload_element':
-        upload_append_post(record.upload, post)
+        if post.type != post.type_enum.user:
+            set_post_type(post, post.type_enum.user)
         update_upload_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
     elif record.model_name == 'subscription_element':
         link_subscription_post(record, post)

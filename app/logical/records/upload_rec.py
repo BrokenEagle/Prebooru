@@ -160,7 +160,7 @@ def process_network_upload(upload):
         element = next((element for element in upload_elements if element.illust_url_id == illust_url.id), None)
         if element is None:
             element = create_upload_element_from_parameters({'upload_id': upload.id, 'illust_url_id': illust_url.id})
-        if convert_network_upload(element, source):
+        if convert_network_upload(element):
             upload.successes += 1
         else:
             upload.failures += 1
@@ -175,7 +175,7 @@ def process_file_upload(upload):
         update_illust_from_source(illust, source)
     if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist, source)
-    if convert_file_upload(upload, source):
+    if convert_file_upload(upload):
         set_upload_status(upload, 'complete')
     else:
         set_upload_status(upload, 'error')

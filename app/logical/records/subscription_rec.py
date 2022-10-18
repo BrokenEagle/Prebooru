@@ -171,7 +171,7 @@ def download_subscription_elements(subscription, job_id=None):
         job_status['range'] = f"({page.first} - {page.last}) / {page.count}"
         update_job_status(job_id, job_status)
         for element in page.items:
-            if convert_network_subscription(element, source):
+            if convert_network_subscription(element):
                 job_status['downloads'] += 1
         _process_image_matches(page.items)
         _process_videos(page.items)
@@ -196,7 +196,7 @@ def download_missing_elements(manual=False):
         for element in page.items:
             site_key = get_site_key(element.illust_url.site_id)
             source = SOURCEDICT[site_key]
-            convert_network_subscription(element, source)
+            convert_network_subscription(element)
             element_count += 1
         _process_image_matches(page.items)
         _process_videos(page.items)
@@ -287,7 +287,7 @@ def redownload_element(element):
     def try_func(scope_vars):
         nonlocal element, source
         initial_errors = [error.id for error in element.errors]
-        if convert_network_subscription(element, source):
+        if convert_network_subscription(element):
             update_subscription_element_status(element, 'active')
             return {'error': False}
         else:

@@ -63,6 +63,11 @@ def set_post_alternate(post, alternate):
     SESSION.commit()
 
 
+def set_post_type(post, post_type):
+    post.type = post_type
+    SESSION.commit()
+
+
 # ###### Delete
 
 def delete_post(post):

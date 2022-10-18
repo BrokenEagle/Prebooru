@@ -4,28 +4,37 @@
 from ..network import get_http_data
 from ..media import get_pixel_hash
 from ...models import Post
-from ..database.post_db import create_post_and_add_illust_url, update_post_from_parameters
+from ..database.post_db import create_post_and_add_illust_url
 from ..database.error_db import create_error, append_error, extend_errors, is_error
-from .base import convert_media_upload, load_post_image, check_existing, check_filetype, check_image_dimensions,\
-    check_video_info, save_image, save_video, save_thumb
+from .base import load_post_image, check_existing, check_filetype, check_image_dimensions,\
+    check_video_info, save_image, save_video, save_thumb, record_outcome
 
 
 # ## FUNCTIONS
 
 # #### Main execution functions
 
-def convert_network_upload(upload_element, source):
-    return convert_media_upload([upload_element.illust_url], upload_element, source,
-                                create_image_post, create_video_post, 'user')
+def convert_network_element(element, post_type):
+    if element.illust_url.type == 'image':
+        post = create_image_post(element, post_type)
+    elif element.illust_url.type == 'video':
+        post = create_video_post(element, post_type)
+    if post is not None:
+        record_outcome(post, element)
+    return post is not None
 
 
-def convert_network_subscription(subscription, source):
-    return convert_media_upload([subscription.illust_url], subscription, source,
-                                create_image_post, create_video_post, 'subscription')
+def convert_network_upload(upload_element):
+    return convert_network_element(upload_element, 'user')
 
 
-def redownload_post(post, illust_url, source):
-    return convert_media_upload(illust_url, post, source, create_image_post, create_video_post, None)
+def convert_network_subscription(subscription_element):
+    return convert_network_element(subscription_element, 'subscription')
+
+
+def redownload_post(post, illust_url):
+    post.illust_url = illust_url
+    return convert_network_element(post, None)
 
 
 # #### Auxiliary functions
@@ -61,7 +70,9 @@ def download_media(illust_url, source, record, sample):
 
 # #### Post creation functions
 
-def create_image_post(illust_url, record, source, post_type):
+def create_image_post(record, post_type):
+    illust_url = record.illust_url
+    source = illust_url._source
     file_ext = get_media_extension(illust_url, source)
     if is_error(file_ext):
         return [file_ext]
@@ -88,7 +99,9 @@ def create_image_post(illust_url, record, source, post_type):
     return post
 
 
-def create_video_post(illust_url, record, source, post_type):
+def create_video_post(record, post_type):
+    illust_url = record.illust_url
+    source = illust_url._source
     file_ext = get_media_extension(illust_url, source)
     if is_error(file_ext):
         return [file_ext]
@@ -111,51 +124,6 @@ def create_video_post(illust_url, record, source, post_type):
     save_thumb(thumb_binary, temppost, post_errors)
     post = create_post_and_add_illust_url(illust_url, vinfo['width'], vinfo['height'], video_file_ext, md5, len(buffer),
                                           post_type, None, vinfo['duration'], vinfo['audio'])
-    if len(post_errors):
-        extend_errors(post, post_errors)
-    return post
-
-
-# #### Post update functions
-
-def update_image_post(illust_url, post, source, *args):
-    file_ext = get_media_extension(illust_url, source)
-    if is_error(file_ext):
-        return [file_ext]
-    buffer = download_media(illust_url, source, post, False)
-    if isinstance(buffer, list):
-        return buffer
-    post_errors = []
-    check_filetype(buffer, file_ext, post_errors)
-    image = load_post_image(buffer)
-    if is_error(image):
-        return post_errors + [image]
-    image_width, image_height = check_image_dimensions(image, illust_url, post_errors)
-    if not save_image(buffer, image, post, post_errors):
-        return post_errors
-    if len(post_errors):
-        extend_errors(post, post_errors)
-    return post
-
-
-def update_video_post(illust_url, post, source, *args):
-    file_ext = get_media_extension(illust_url, source)
-    if is_error(file_ext):
-        return [file_ext]
-    buffer = download_media(illust_url, source, post, False)
-    if isinstance(buffer, list):
-        return buffer
-    post_errors = []
-    check_filetype(buffer, file_ext, post_errors)
-    error = save_video(buffer, post)
-    if error is not None:
-        return post_errors + [error]
-    vinfo = check_video_info(post, illust_url, post_errors)
-    update_post_from_parameters(post, vinfo)
-    thumb_binary = download_media(illust_url, source, post, True)
-    if isinstance(thumb_binary, list):
-        return post_errors + thumb_binary
-    save_thumb(thumb_binary, post, post_errors)
     if len(post_errors):
         extend_errors(post, post_errors)
     return post

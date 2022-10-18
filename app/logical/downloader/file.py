@@ -8,19 +8,27 @@ from ...models import Post
 from ..media import get_pixel_hash
 from ..database.post_db import create_post_and_add_illust_url
 from ..database.error_db import extend_errors, is_error
-from .base import convert_media_upload, load_post_image, check_existing, check_filetype, check_image_dimensions,\
-    check_video_info, save_image, save_video, save_thumb
+from .base import load_post_image, check_existing, check_filetype, check_image_dimensions,\
+    check_video_info, save_image, save_video, save_thumb, record_outcome
 
 
 # ## FUNCTIONS
 
-def convert_file_upload(upload, source):
-    return convert_media_upload([upload.illust_url], upload, source, create_image_post, create_video_post, 'user')
+def convert_file_upload(upload_element):
+    if upload_element.illust_url.type == 'image':
+        post = create_image_post(upload_element, 'user')
+    elif upload_element.illust_url.type == 'video':
+        post = create_video_post(upload_element, 'user')
+    if post is not None:
+        record_outcome(post, upload_element)
+    return post is not None
 
 
 # #### Post creation functions
 
-def create_image_post(illust_url, record, source, post_type):
+def create_image_post(record, post_type):
+    illust_url = record.illust_url
+    source = illust_url._source
     file_ext = get_file_extension(record.media_filepath)
     buffer = put_get_raw(record.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url, record)
@@ -43,9 +51,11 @@ def create_image_post(illust_url, record, source, post_type):
     return post
 
 
-def create_video_post(illust_url, upload, source, post_type):
-    file_ext = get_file_extension(upload.media_filepath)
-    buffer = put_get_raw(upload.media_filepath, 'rb')
+def create_video_post(record, post_type):
+    illust_url = record.illust_url
+    source = illust_url._source
+    file_ext = get_file_extension(record.media_filepath)
+    buffer = put_get_raw(record.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url)
     if md5 is None:
         return None
@@ -56,7 +66,7 @@ def create_video_post(illust_url, upload, source, post_type):
     if error is not None:
         return post_errors + [error]
     vinfo = check_video_info(temppost, illust_url, post_errors)
-    thumb_binary = put_get_raw(upload.sample_filepath, 'rb')
+    thumb_binary = put_get_raw(record.sample_filepath, 'rb')
     save_thumb(thumb_binary, temppost, post_errors)
     post = create_post_and_add_illust_url(illust_url, vinfo['width'], vinfo['height'], video_file_ext, md5, len(buffer),
                                           post_type, None, vinfo['duration'], vinfo['audio'])
