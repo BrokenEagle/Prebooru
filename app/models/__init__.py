@@ -27,7 +27,7 @@ from .booru import Booru, BooruNames, BooruArtists  # noqa: F401
 # #### Local data
 from .error import Error  # noqa: F401
 from .post import Post, PostIllustUrls, PostErrors, PostNotations, PostTags  # noqa: F401
-from .upload import Upload, UploadUrls, UploadErrors, UploadPosts  # noqa: F401
+from .upload import Upload, UploadUrls, UploadErrors  # noqa: F401
 from .upload_element import UploadElement, UploadElementErrors  # noqa: F401
 from .upload_url import UploadUrl  # noqa: F401
 from .notation import Notation  # noqa: F401
@@ -69,7 +69,7 @@ def initialize():
             Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,
             IllustCommentaries, IllustNotations, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
             ArtistNotations, Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations,
-            PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, UploadPosts, Notation, Pool, PoolElement, PoolPost,
+            PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,
             SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,
             UploadElement, UploadElementErrors,

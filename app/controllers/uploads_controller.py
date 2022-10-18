@@ -13,7 +13,7 @@ from .. import SCHEDULER
 from ..logical.utility import set_error
 from ..logical.tasks.worker import process_upload
 from ..logical.records.media_file_rec import batch_get_or_create_media
-from ..models import Upload, Post, IllustUrl, Illust
+from ..models import Upload, UploadElement, IllustUrl, Illust
 from ..logical.sources.base import get_post_source, get_preview_url
 from ..logical.database.upload_db import create_upload_from_parameters, set_upload_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -29,7 +29,7 @@ bp = Blueprint("upload", __name__)
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(Upload.posts).selectinload(Post.illust_urls).selectinload(IllustUrl.illust).options(
+    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.illust).options(
         selectinload(Illust._tags),
         selectinload(Illust.artist),
     ),
@@ -38,13 +38,13 @@ SHOW_HTML_OPTIONS = (
 )
 
 INDEX_HTML_OPTIONS = (
-    selectinload(Upload.posts),
+    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.post),
     selectinload(Upload.image_urls),
     selectinload(Upload.errors),
 )
 
 JSON_OPTIONS = (
-    selectinload(Upload.posts),
+    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.post),
     selectinload(Upload.image_urls),
     selectinload(Upload.errors),
 )

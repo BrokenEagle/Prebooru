@@ -31,11 +31,6 @@ UploadErrors = secondarytable(
     DB.Column('upload_id', DB.Integer, DB.ForeignKey('upload.id'), primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
 )
-UploadPosts = secondarytable(
-    'upload_posts',
-    DB.Column('upload_id', DB.Integer, DB.ForeignKey('upload.id'), primary_key=True),
-    DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
-)
 
 
 # ## CLASSES
@@ -65,16 +60,23 @@ class Upload(JsonModel):
     # #### Relationships
     image_urls = DB.relationship(UploadUrl, secondary=UploadUrls, lazy=True, uselist=True, cascade='all,delete',
                                  backref=DB.backref('upload', lazy=True, uselist=False))
-    posts = DB.relationship(Post, secondary=UploadPosts, lazy=True, backref=DB.backref('uploads', lazy=True))
     errors = DB.relationship(Error, secondary=UploadErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('upload', uselist=False, lazy=True))
     elements = DB.relationship(UploadElement, lazy=True, cascade='all,delete',
                                backref=DB.backref('upload', uselist=False, lazy=True))
 
     # #### Association proxies
-    post_ids = association_proxy('posts', 'id')
+    illust_urls = association_proxy('elements', 'illust_url')
 
     # ## Property methods
+
+    @property
+    def posts(self):
+        return [illust_url.post for illust_url in self.illust_urls if illust_url.post is not None]
+
+    @property
+    def post_ids(self):
+        return [post.id for post in self.posts]
 
     @property
     def site_id(self):
