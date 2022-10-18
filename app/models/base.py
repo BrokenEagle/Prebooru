@@ -240,6 +240,10 @@ class JsonModel(DB.Model):
         return self._model_name()
 
     @property
+    def table_name(self):
+        return self._table_name()
+
+    @property
     def shortlink(self):
         return "%s #%d" % (self.model_name, self.id) if self.id is not None else "new %s" % self.model_name
 
@@ -249,7 +253,7 @@ class JsonModel(DB.Model):
 
     @property
     def show_url(self):
-        return url_for(self.model_name + ".show_html", id=self.id)
+        return url_for(self.table_name + ".show_html", id=self.id)
 
     @property
     def show_link(self):
@@ -257,23 +261,23 @@ class JsonModel(DB.Model):
 
     @property
     def index_url(self):
-        return url_for(self.model_name + ".index_html")
+        return url_for(self.table_name + ".index_html")
 
     @property
     def create_url(self):
-        return url_for(self.model_name + ".create_html")
+        return url_for(self.table_name + ".create_html")
 
     @property
     def update_url(self):
-        return url_for(self.model_name + ".update_html", id=self.id)
+        return url_for(self.table_name + ".update_html", id=self.id)
 
     @property
     def edit_url(self):
-        return url_for(self.model_name + ".edit_html", id=self.id)
+        return url_for(self.table_name + ".edit_html", id=self.id)
 
     @property
     def delete_url(self):
-        return url_for(self.model_name + ".delete_html", id=self.id)
+        return url_for(self.table_name + ".delete_html", id=self.id)
 
     def column_dict(self):
         return {k: get_column_for_serialize(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
@@ -396,5 +400,9 @@ class JsonModel(DB.Model):
         if not hasattr(cls, keyname):
             setattr(cls, keyname, re.sub(r'([a-z])([A-Z])', r'\1_\2', cls.__name__).lower())
         return getattr(cls, keyname)
+
+    @classmethod
+    def _table_name(cls):
+        return cls.__table__.name
 
     _secondary_table = False
