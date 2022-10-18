@@ -36,6 +36,7 @@ IllustNotations = secondarytable(
     'illust_notations',
     DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
     DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),
+    DB.Index(None, 'notation_id', 'illust_id'),
 )
 
 

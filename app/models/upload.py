@@ -30,6 +30,7 @@ UploadErrors = secondarytable(
     'upload_errors',
     DB.Column('upload_id', DB.Integer, DB.ForeignKey('upload.id'), primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
+    DB.Index(None, 'error_id', 'upload_id'),
 )
 
 

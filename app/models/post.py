@@ -36,18 +36,21 @@ PostIllustUrls = secondarytable(
     'post_illust_urls',
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
     DB.Column('illust_url_id', DB.Integer, DB.ForeignKey('illust_url.id'), primary_key=True),
+    DB.Index(None, 'illust_url_id', 'post_id'),
 )
 
 PostErrors = secondarytable(
     'post_errors',
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
+    DB.Index(None, 'error_id', 'post_id'),
 )
 
 PostNotations = secondarytable(
     'post_notations',
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
     DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),
+    DB.Index(None, 'notation_id', 'post_id'),
 )
 
 PostTags = secondarytable(

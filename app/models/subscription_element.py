@@ -18,6 +18,7 @@ SubscriptionElementErrors = secondarytable(
     DB.Column('subscription_element_id', DB.Integer, DB.ForeignKey('subscription_element.id'),
               primary_key=True),
     DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
+    DB.Index(None, 'error_id', 'subscription_element_id'),
 )
 
 

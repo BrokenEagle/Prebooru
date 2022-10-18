@@ -42,6 +42,7 @@ ArtistNotations = secondarytable(
     'artist_notations',
     DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
     DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),
+    DB.Index(None, 'notation_id', 'artist_id'),
 )
 
 
