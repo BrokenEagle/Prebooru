@@ -107,7 +107,8 @@ def update_relationship_collections(item, relationships, updateparams, commit=Tr
             is_dirty = True
     if is_dirty:
         printer.print()
-        _safe_db_commit(item, 'update_relationship_collections', "Error on adding/removing collection values", commit=commit)
+        msg = "Error on adding/removing collection values"
+        _safe_db_commit(item, 'update_relationship_collections', msg, commit=commit)
     return is_dirty
 
 

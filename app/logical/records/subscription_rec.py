@@ -149,8 +149,6 @@ def download_subscription_illusts(subscription, job_id=None):
 def download_subscription_elements(subscription, job_id=None):
     job_status = get_job_status_data(job_id) or {'downloads': 0}
     job_status['stage'] = 'downloads'
-    site_key = get_site_key(subscription.artist.site_id)
-    source = SOURCEDICT[site_key]
     q = SubscriptionElement.query.filter_by(subscription_id=subscription.id, post_id=None, status='active')
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
@@ -183,8 +181,6 @@ def download_missing_elements(manual=False):
     while True:
         print(f"download_missing_elements: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:
-            site_key = get_site_key(element.illust_url.site_id)
-            source = SOURCEDICT[site_key]
             convert_network_subscription(element)
             element_count += 1
         _process_image_matches(page.items)
@@ -279,11 +275,8 @@ def update_subscription_elements(subscription, job_id=None):
 
 
 def redownload_element(element):
-    site_key = get_site_key(element.subscription.artist.site_id)
-    source = SOURCEDICT[site_key]
-
     def try_func(scope_vars):
-        nonlocal element, source
+        nonlocal element
         initial_errors = [error.id for error in element.errors]
         if convert_network_subscription(element):
             update_subscription_element_status(element, 'active')

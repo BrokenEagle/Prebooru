@@ -159,9 +159,12 @@ class PoolNotation(PoolElement):
 # ## INITIALIZATION
 
 def initialize():
-    DB.Index(None, PoolElement.post_id, PoolElement.pool_id, unique=True, sqlite_where=PoolElement.post_id.is_not(None))
-    DB.Index(None, PoolElement.illust_id, PoolElement.pool_id, unique=True, sqlite_where=PoolElement.illust_id.is_not(None))
-    DB.Index(None, PoolElement.notation_id, PoolElement.pool_id, unique=True, sqlite_where=PoolElement.notation_id.is_not(None))
+    DB.Index(None, PoolElement.post_id, PoolElement.pool_id, unique=True,
+             sqlite_where=PoolElement.post_id.is_not(None))
+    DB.Index(None, PoolElement.illust_id, PoolElement.pool_id, unique=True,
+             sqlite_where=PoolElement.illust_id.is_not(None))
+    DB.Index(None, PoolElement.notation_id, PoolElement.pool_id, unique=True,
+             sqlite_where=PoolElement.notation_id.is_not(None))
     PoolElement.polymorphic_columns = {
         'post_id': PoolPost,
         'illust_id': PoolIllust,

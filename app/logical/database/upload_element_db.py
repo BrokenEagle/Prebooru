@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Upload, UploadElement
+from ...models import UploadElement
 from .base_db import update_column_attributes
 
 

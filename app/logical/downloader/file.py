@@ -28,7 +28,6 @@ def convert_file_upload(upload_element):
 
 def create_image_post(record, post_type):
     illust_url = record.illust_url
-    source = illust_url._source
     file_ext = get_file_extension(record.media_filepath)
     buffer = put_get_raw(record.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url, record)
@@ -53,7 +52,6 @@ def create_image_post(record, post_type):
 
 def create_video_post(record, post_type):
     illust_url = record.illust_url
-    source = illust_url._source
     file_ext = get_file_extension(record.media_filepath)
     buffer = put_get_raw(record.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url)

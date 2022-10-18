@@ -40,5 +40,5 @@ class SimilarityMatch(JsonModel):
 
     __table_args__ = (
         DB.Index(None, 'reverse_id', 'forward_id', unique=True),
-        {'sqlite_with_rowid': False,},
+        {'sqlite_with_rowid': False},
     )

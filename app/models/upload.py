@@ -12,7 +12,6 @@ from .. import DB
 from ..logical.utility import unique_objects
 from .upload_url import UploadUrl
 from .upload_element import UploadElement
-from .post import Post
 from .error import Error
 from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, secondarytable, classproperty
 

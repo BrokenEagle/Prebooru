@@ -6,7 +6,7 @@ import enum
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
-from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, secondarytable
+from .base import JsonModel, ModelEnum, IntEnum, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -50,18 +50,18 @@ class UploadElement(JsonModel):
 
     @property
     def duplicate_elements(self):
-        return _duplicate_element_query.all()
+        return self._duplicate_element_query.all()
 
     def duplicate_posts(self):
-        return _duplicate_posts_query.all()
+        return self._duplicate_posts_query.all()
 
     @property
     def duplicate_element_count(self):
-        return _duplicate_element_query.get_count()
+        return self._duplicate_element_query.get_count()
 
     @property
     def duplicate_post_count(self):
-        return _duplicate_post_query.get_count()
+        return self._duplicate_post_query.get_count()
 
     # #### Class properties
 
@@ -71,10 +71,12 @@ class UploadElement(JsonModel):
 
     @property
     def _duplicate_element_query(self):
+        from .subscription_element import SubscriptionElement
         return SubscriptionElement.query.filter_by(md5=self.md5)
 
     @property
     def _duplicate_post_query(self):
+        from .post import Post
         return Post.query.filter_by(md5=self.md5)
 
 

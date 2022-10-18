@@ -1,9 +1,5 @@
 # APP/LOGICAL/BATCH_LOADER.PY
 
-# ## EXTERNAL IMPORTS
-from sqlalchemy.orm import selectinload
-
-
 # ## FUNCTIONS
 
 def selectinload_batch_primary(records, relation):
