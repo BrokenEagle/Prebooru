@@ -11,32 +11,34 @@ from config import NAMING_CONVENTION
 
 # #### Batch operations
 
-def create_constraints(table_name, add_constraint_commands):
+def create_constraints(table_name, add_constraint_commands, batch_kwargs=None):
     switcher = {
         'primary': _create_primary_key_batch_op,
         'foreignkey': _create_foreign_key_batch_op,
         'unique': _create_unique_constraint_batch_op,
         'check': _create_check_constraint_batch_op,
     }
-    with op.batch_alter_table(table_name, schema=None, naming_convention=NAMING_CONVENTION) as batch_op:
+    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
+    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
         for (constraint_name, constraint_type, *args) in add_constraint_commands:
             switcher[constraint_type](batch_op, constraint_name, *args)
 
 
-def drop_constraints(table_name, drop_constraint_commands):
-    with op.batch_alter_table(table_name, schema=None, naming_convention=NAMING_CONVENTION) as batch_op:
+def drop_constraints(table_name, drop_constraint_commands, batch_kwargs=None):
+    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
+    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
         for (constraint_name, constraint_type) in drop_constraint_commands:
             batch_op.drop_constraint(batch_op.f(constraint_name), type_=constraint_type)
 
 
 # #### Single operations
 
-def create_constraint(table_name, constraint_name, constraint_type, args):
-    create_constraints(table_name, [(constraint_name, constraint_type, args)])
+def create_constraint(table_name, constraint_name, constraint_type, args, **kwargs):
+    create_constraints(table_name, [(constraint_name, constraint_type, args)], **kwargs)
 
 
-def drop_constraint(table_name, constraint_name, constraint_type):
-    drop_constraints(table_name, [(constraint_name, constraint_type)])
+def drop_constraint(table_name, constraint_name, constraint_type, **kwargs):
+    drop_constraints(table_name, [(constraint_name, constraint_type)], **kwargs)
 
 
 # #### Private functions

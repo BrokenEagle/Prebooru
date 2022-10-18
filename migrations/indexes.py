@@ -12,8 +12,9 @@ from config import NAMING_CONVENTION
 
 # #### Batch operations
 
-def create_indexes(table_name, add_index_commands):
-    with op.batch_alter_table(table_name, schema=None, naming_convention=NAMING_CONVENTION) as batch_op:
+def create_indexes(table_name, add_index_commands, batch_kwargs=None):
+    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
+    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
         for (index_name, index_keys, *other) in add_index_commands:
             unique = other[0]  # Unique must always be specified explicitly
             kwargs = other[1] if len(other) > 1 else {}
@@ -23,8 +24,9 @@ def create_indexes(table_name, add_index_commands):
             batch_op.create_index(batch_op.f(index_name), index_keys, unique=unique, **kwargs)
 
 
-def drop_indexes(table_name, index_names):
-    with op.batch_alter_table(table_name, schema=None, naming_convention=NAMING_CONVENTION) as batch_op:
+def drop_indexes(table_name, index_names, batch_kwargs=None):
+    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
+    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
         for index_name in index_names:
             batch_op.drop_index(batch_op.f(index_name))
 

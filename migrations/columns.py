@@ -12,20 +12,23 @@ from config import NAMING_CONVENTION
 
 # #### Batch operations
 
-def add_columns(table_name, add_column_commands):
-    with op.batch_alter_table(table_name, schema=None, naming_convention=NAMING_CONVENTION) as batch_op:
+def add_columns(table_name, add_column_commands, batch_kwargs=None):
+    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
+    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
         for (column_name, column_type) in add_column_commands:
             batch_op.add_column(sa.Column(column_name, getattr(sa, column_type)(), nullable=True))
 
 
-def drop_columns(table_name, column_names):
-    with op.batch_alter_table(table_name, schema=None, naming_convention=NAMING_CONVENTION) as batch_op:
+def drop_columns(table_name, column_names, batch_kwargs=None):
+    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
+    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
         for column_name in column_names:
             batch_op.drop_column(column_name)
 
 
-def alter_columns(table_name, alter_column_commands):
-    with op.batch_alter_table(table_name, schema=None, naming_convention=NAMING_CONVENTION) as batch_op:
+def alter_columns(table_name, alter_column_commands, batch_kwargs=None):
+    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
+    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
         for (column_name, column_type, alter_args) in alter_column_commands:
             batch_op.alter_column(column_name, existing_type=getattr(sa, column_type)(), **alter_args)
 
@@ -58,16 +61,16 @@ def transfer_columns(table_name, from_config, to_config):
 
 # ## Single operations
 
-def add_column(table_name, column_name, column_type):
-    add_columns(table_name, [(column_name, column_type)])
+def add_column(table_name, column_name, column_type, **kwargs):
+    add_columns(table_name, [(column_name, column_type)], **kwargs)
 
 
-def drop_column(table_name, column_name):
-    drop_columns(table_name, [column_name])
+def drop_column(table_name, column_name, **kwargs):
+    drop_columns(table_name, [column_name], **kwargs)
 
 
-def alter_column(table_name, column_name, column_type, alter_args):
-    alter_columns(table_name, [(column_name, column_type, alter_args)])
+def alter_column(table_name, column_name, column_type, alter_args, **kwargs):
+    alter_columns(table_name, [(column_name, column_type, alter_args)], **kwargs)
 
 
 def initialize_column(table_name, column_name, column_type, *extra_columns):
@@ -131,7 +134,7 @@ def transfer_column(table_name, from_column, to_column):
 
 # ## Combined operations
 
-def change_column_type(table_name, column_name, from_column_type, to_column_type, base_column_type, nullable):
+def change_column_type(table_name, column_name, from_column_type, to_column_type, base_column_type, nullable, **kwargs):
     print("Adding temp column")
     add_column(table_name, 'temp', to_column_type)
 
