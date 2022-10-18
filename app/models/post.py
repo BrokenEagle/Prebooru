@@ -34,8 +34,8 @@ from .base import JsonModel, ModelEnum, NormalizedDatetime, IntEnum, secondaryta
 
 PostIllustUrls = secondarytable(
     'post_illust_urls',
-    DB.Column('illust_url_id', DB.Integer, DB.ForeignKey('illust_url.id'), primary_key=True),
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
+    DB.Column('illust_url_id', DB.Integer, DB.ForeignKey('illust_url.id'), primary_key=True),
 )
 
 PostErrors = secondarytable(
@@ -52,8 +52,8 @@ PostNotations = secondarytable(
 
 PostTags = secondarytable(
     'post_tags',
-    DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
+    DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
 )
 
 

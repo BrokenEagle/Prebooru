@@ -22,14 +22,14 @@ from .base import JsonModel, NormalizedDatetime, secondarytable, polymorphic_acc
 
 IllustTags = secondarytable(
     'illust_tags',
-    DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
     DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
+    DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
 )
 
 IllustCommentaries = secondarytable(
     'illust_commentaries',
-    DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
     DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
+    DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
 )
 
 IllustNotations = secondarytable(
