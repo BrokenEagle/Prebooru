@@ -193,8 +193,12 @@ def add_tag_link(post):
 
 
 def add_to_pool_link(post):
-    addons = {'onclick': "return Prebooru.createPool(this, 'post')", 'data-post-id': post.id}
-    return general_link("Add to pool", url_for('pool_element.create_html'), **addons)
+    url = url_for('pool_element.create_json', preview='true')
+    addons = {
+        'onclick': "return Pools.createElement(this, 'post')",
+        'data-post-id': post.id,
+    }
+    return general_link("Add to pool", url, **addons)
 
 
 def danbooru_post_link(post):

@@ -107,8 +107,11 @@ def add_notation_link(illust):
 
 
 def add_pool_link(illust):
-    url = url_for('pool_element.create_html')
-    addons = {'onclick': "return Prebooru.createPool(this, 'illust')", 'data-illust-id': illust.id}
+    url = url_for('pool_element.create_json', preview='true')
+    addons = {
+        'onclick': "return Pools.createElement(this, 'illust')",
+        'data-illust-id': illust.id,
+    }
     return general_link("Add to pool", url, **addons)
 
 

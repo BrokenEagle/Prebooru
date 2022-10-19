@@ -40,8 +40,9 @@ def create_pool_element_from_parameters(pool, createparams):
 def delete_pool_element(pool_element):
     pool = pool_element.pool
     SESSION.delete(pool_element)
+    SESSION.flush()
     pool._elements.reorder()
-    SESSION.commit()
+    SESSION.flush()
     pool.element_count = pool._get_element_count()
     SESSION.commit()
 
@@ -50,7 +51,7 @@ def delete_pool_element(pool_element):
 
 def create_pool_element_for_item(pool, id_key, dataparams):
     itemclass = ID_MODEL_DICT[id_key]
-    itemtype = itemclass.__table__.name
+    itemtype = itemclass._model_name()
     id = dataparams[id_key]
     item = itemclass.find(id)
     retdata = {'error': False, 'dataparams': dataparams}
@@ -58,12 +59,15 @@ def create_pool_element_for_item(pool, id_key, dataparams):
         return set_error(retdata, "%s not found." % itemtype)
     pool_ids = [pool.id for pool in item.pools]
     if pool.id in pool_ids:
-        return set_error(retdata, "%s #%d already added to pool #%d." % (itemtype, item.id, pool.id))
+        return set_error(retdata, "%s already added to %s." % (item.shortlink, pool.shortlink))
     pool.updated = get_current_time()
     pool.elements.append(item)
-    SESSION.commit()
+    SESSION.flush()
     pool.element_count = pool._get_element_count()
-    SESSION.commit()
+    SESSION.flush()
     pool_ids += [pool.id]
-    retdata.update({'pool': pool.to_json(), 'type': itemtype, 'item': item.to_json(), 'data': pool_ids})
+    pool_element_ids = [pool_element.id for pool_element in item._pools]
+    retdata.update({'pool': pool.basic_json(), 'type': itemtype, 'item': item.basic_json(),
+                    'element_ids': pool_element_ids, 'data': pool_ids})
+    SESSION.commit()
     return retdata

@@ -39,7 +39,12 @@ def page_navigation(pool_element):
 
 
 def remove_pool_link(pool_element):
-    return general_link("remove", pool_element.delete_url, method="DELETE", **{'class': 'warning-link'})
+    url = url_for('pool_element.delete_json', id=pool_element.id, preview='true')
+    addons = {
+        'class': 'warning-link',
+        'onclick': "return Pools.deleteElement(this)",
+    }
+    return general_link("remove", url, **addons)
 
 
 # #### Private functions

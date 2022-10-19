@@ -4,6 +4,7 @@
 
 {% block linkscript %}
     {{ super() }}
+    <script src="{{ url_for('static', filename='javascript/pools.js') }}"></script>
     {% if post.subscription_element is not none %}<script src="{{ url_for('static', filename='javascript/subscriptions.js') }}"></script>{% endif %}
 {% endblock linkscript %}
 

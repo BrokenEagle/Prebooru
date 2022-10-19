@@ -1,6 +1,11 @@
 {% extends "illusts/_base.html" %}
 {% from "illust_urls/_macros.html" import media_urls_section %}
 
+{% block linkscript %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='javascript/pools.js') }}"></script>
+{% endblock linkscript %}
+
 {% block title %}
     {{ illust.header }}
 {% endblock title %}

@@ -1,7 +1,11 @@
 # APP/CONTROLLERS/POOL_ELEMENTS_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
-from flask import Blueprint, request, url_for, flash, redirect
+from flask import Blueprint, request, redirect
+from sqlalchemy.orm import selectinload
+
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
 from ..models import Pool, PoolElement
@@ -9,7 +13,7 @@ from ..logical.utility import set_error
 from ..logical.database.pool_element_db import create_pool_element_from_parameters, delete_pool_element
 from .base_controller import get_data_params, get_or_abort, get_or_error, check_param_requirements,\
     index_json_response, show_json_response, process_request_values, get_params_value, search_filter, default_order,\
-    parse_type
+    parse_type, render_template_ws
 
 
 # ## GLOBAL VARIABLES
@@ -70,10 +74,6 @@ def create():
     return retdata
 
 
-def delete(pool_element):
-    delete_pool_element(pool_element)
-
-
 # #### Route functions
 
 # ###### SHOW
@@ -93,37 +93,39 @@ def index_json():
 
 # ###### CREATE
 
-@bp.route('/pool_elements', methods=['POST'])
-def create_html():
-    result = create()
-    if result['error']:
-        flash(result['message'], 'error')
-        return redirect(request.referrer)
-    flash("Added to pool.")
-    return redirect(url_for('%s.show_html' % result['type'], id=result['item']['id']))
-
-
 @bp.route('/pool_elements.json', methods=['POST'])
 def create_json():
-    return create()
+    result = create()
+    if result['error']:
+        return result
+    is_preview = request.values.get('preview', type=eval_bool_string, default=False)
+    if is_preview:
+        pool_elements = PoolElement.query.options(selectinload(PoolElement.pool))\
+                                         .filter(PoolElement.id.in_(result['element_ids'])).all()
+        result['html'] = render_template_ws("pools/_section.html", pool_elements=pool_elements,
+                                            section_id=f"{result['type']}-pools")
+    return result
 
 
 # ###### DELETE
-
-@bp.route('/pool_elements/<int:id>', methods=['DELETE'])
-def delete_html(id):
-    pool_element = get_or_abort(PoolElement, id)
-    delete(pool_element)
-    flash("Removed from pool.")
-    return redirect(request.referrer)
-
 
 @bp.route('/pool_elements/<int:id>.json', methods=['DELETE'])
 def delete_json(id):
     pool_element = get_or_error(PoolElement, id)
     if type(pool_element) is dict:
         return pool_element
-    return {'error': False}
+    is_preview = request.values.get('preview', type=eval_bool_string, default=False)
+    item_json = pool_element.item.basic_json()
+    item_table = pool_element.item.table_name
+    item_fkey = item_table + '_id'
+    delete_pool_element(pool_element)
+    retdata = {'error': False, 'type': item_table, 'item': item_json}
+    if is_preview:
+        pool_elements = PoolElement.query.options(selectinload(PoolElement.pool))\
+                                         .filter(getattr(PoolElement, item_fkey) == item_json['id']).all()
+        html = render_template_ws("pools/_section.html", pool_elements=pool_elements, section_id=f"{item_table}-pools")
+        retdata['html'] = html
+    return retdata
 
 
 # ###### MISC

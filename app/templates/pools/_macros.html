@@ -62,15 +62,15 @@
 {%- endmacro %}
 
 {% macro pools_section(pool_elements, section_id) -%}
-    {% if pool_elements is not none %}
-        {% if pool_elements is not iterable %}
-            {% set pool_elements = [pool_elements] %}
-            {% set singular = True %}
-        {% else %}
-            {% set singular = False %}
-        {% endif %}
-        {% if pool_elements | length > 0 %}
-            <section id="{{ section_id }}">
+    <section id="{{ section_id }}" class="pool-section">
+        {% if pool_elements is not none %}
+            {% if pool_elements is not iterable %}
+                {% set pool_elements = [pool_elements] %}
+                {% set singular = True %}
+            {% else %}
+                {% set singular = False %}
+            {% endif %}
+            {% if pool_elements | length > 0 %}
                 <h4>{{ "Pool" if singular else "Pools" }}</h4>
                 <ul>
                     {% for pool_element in pool_elements %}
@@ -85,7 +85,7 @@
                         </li>
                     {% endfor %}
                 </ul>
-            </section>
+            {% endif %}
         {% endif %}
-    {% endif %}
+    </section>
 {%- endmacro %}
