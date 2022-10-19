@@ -19,11 +19,11 @@ from ..records.artist_rec import check_all_artists_for_boorus
 from ..records.booru_rec import check_all_boorus
 from ..records.media_file_rec import batch_delete_media
 from ..records.subscription_rec import download_subscription_illusts, download_missing_elements,\
-    expire_subscription_elements
+    unlink_expired_subscription_elements, delete_expired_subscription_elements, archive_expired_subscription_elements
 from ..database.base_db import safe_db_execute
 from ..database.subscription_db import get_available_subscription, update_subscription_status,\
     update_subscription_active, get_busy_subscriptions, get_subscription_by_ids
-from ..database.subscription_element_db import total_missing_downloads, total_expired_subscription_elements
+from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_db import expired_archive_count, delete_expired_archive
@@ -121,22 +121,52 @@ def check_pending_downloads():
         _execute_scheduled_task(_task, 'check_pending_downloads', True, True)
 
 
-@SCHEDULER.task('interval', **JOB_CONFIG['process_expired_subscription_elements']['config'])
-def process_expired_subscription_elements():
+@SCHEDULER.task('interval', **JOB_CONFIG['unlink_expired_subscription_elements']['config'])
+def unlink_expired_subscription_elements_task():
     def _task(printer):
-        total = total_expired_subscription_elements()
+        total = expired_subscription_elements('unlink').get_count()
         if total > 0:
-            manual = get_job_manual_status('process_expired_subscription_elements')
+            manual = get_job_manual_status('unlink_expired_subscription_elements')
             printer("Expired subscriptions elements:", total)
-            start = time.time()
-            data = safe_db_execute('process_expired_subscription_elements', 'tasks.schedule', printer=printer,
-                                   try_func=(lambda data: expire_subscription_elements(manual)))
-            print("expire_subscription_elements results:", data)
-            print("Task duration:", time.time() - start)
+            data = safe_db_execute('unlink_expired_subscription_elements', 'tasks.schedule', printer=printer,
+                                   try_func=(lambda data: unlink_expired_subscription_elements(manual)))
+            printer("Unlinked subscription elements:", data)
         else:
             printer("No subscriptions elements to process.")
 
-    _execute_scheduled_task(_task, 'process_expired_subscription_elements', True, True)
+    _execute_scheduled_task(_task, 'unlink_expired_subscription_elements', True, True)
+
+
+@SCHEDULER.task('interval', **JOB_CONFIG['delete_expired_subscription_elements']['config'])
+def delete_expired_subscription_elements_task():
+    def _task(printer):
+        total = expired_subscription_elements('delete').get_count()
+        if total > 0:
+            manual = get_job_manual_status('delete_expired_subscription_elements')
+            printer("Expired subscriptions elements:", total)
+            data = safe_db_execute('delete_expired_subscription_elements', 'tasks.schedule', printer=printer,
+                                   try_func=(lambda data: delete_expired_subscription_elements(manual)))
+            printer("Deleted subscription elements:", data)
+        else:
+            printer("No subscriptions elements to process.")
+
+    _execute_scheduled_task(_task, 'delete_expired_subscription_elements', True, True)
+
+
+@SCHEDULER.task('interval', **JOB_CONFIG['archive_expired_subscription_elements']['config'])
+def archive_expired_subscription_elements_task():
+    def _task(printer):
+        total = expired_subscription_elements('archive').get_count()
+        if total > 0:
+            manual = get_job_manual_status('archive_expired_subscription_elements')
+            printer("Expired subscriptions elements:", total)
+            data = safe_db_execute('archive_expired_subscription_elements', 'tasks.schedule', printer=printer,
+                                   try_func=(lambda data: archive_expired_subscription_elements(manual)))
+            printer("Archived subscription elements:", data)
+        else:
+            printer("No subscriptions elements to process.")
+
+    _execute_scheduled_task(_task, 'archive_expired_subscription_elements', True, True)
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['relocate_old_posts']['config'])

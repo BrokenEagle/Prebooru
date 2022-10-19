@@ -1,11 +1,15 @@
 # APP/LOGICAL/DATABASE/SUBSCRIPTION_ELEMENT_DB.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy import and_, or_
+
 # ## PACKAGE IMPORTS
+from config import EXPIRED_SUBSCRIPTION
 from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Subscription, SubscriptionElement
+from ...models import Subscription, SubscriptionElement, Post
 from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
 from .base_db import update_column_attributes
 
@@ -15,6 +19,15 @@ from .base_db import update_column_attributes
 COLUMN_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'expires']
 
 CREATE_ALLOWED_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'expires']
+
+if EXPIRED_SUBSCRIPTION is True:
+    EXPIRED_SUBSCRIPTION_ACTION = 'archive'
+elif EXPIRED_SUBSCRIPTION in ['unlink', 'delete', 'archive']:
+    EXPIRED_SUBSCRIPTION_ACTION = EXPIRED_SUBSCRIPTION
+elif EXPIRED_SUBSCRIPTION is False:
+    EXPIRED_SUBSCRIPTION_ACTION = None
+else:
+    raise ValueError("Bad value set in config for EXPIRED_SUBSCRIPTION.")
 
 
 # ## FUNCTIONS
@@ -104,9 +117,16 @@ def check_deleted_subscription_post(md5):
                           ).first() is not None
 
 
-def total_expired_subscription_elements():
-    return SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
-                                            SubscriptionElement.post_id.is_not(None)).get_count()
+def expired_subscription_elements(expire_type):
+    switcher = {
+        'unlink': lambda q: q.join(Post, SubscriptionElement.post)
+                             .filter(or_(_expired_clause('yes', 'unlink'), (Post.type == 'user'))),
+        'delete': lambda q: q.filter(_expired_clause('no', 'delete')),
+        'archive': lambda q: q.filter(_expired_clause('archive', 'archive')),
+    }
+    query = SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
+                                             SubscriptionElement.post_id.is_not(None))
+    return switcher[expire_type](query)
 
 
 def total_missing_downloads():
@@ -129,3 +149,12 @@ def _update_subscription_element_keep(element, value):
         element.expires = None  # Keep the element around until/unless a decision is made on it
     elif value is None:
         element.expires = days_from_now(element.subscription.expiration)  # Reset the expiration
+
+
+def _expired_clause(keep, action):
+    main_clause = (SubscriptionElement.keep == keep)
+    if (action == EXPIRED_SUBSCRIPTION_ACTION):
+        keep_clause = or_(main_clause, SubscriptionElement.keep.is_(None))
+    else:
+        keep_clause = main_clause
+    return and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.status == 'active', keep_clause)

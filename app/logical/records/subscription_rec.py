@@ -4,17 +4,15 @@
 import threading
 
 # ## EXTERNAL IMPORTS
-from sqlalchemy import and_, or_
 from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
-from config import EXPIRED_SUBSCRIPTION
-from utility.time import get_current_time, days_from_now, hours_from_now
+from utility.time import days_from_now, hours_from_now
 from utility.print import buffered_print, print_info
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Subscription, SubscriptionElement, Illust, IllustUrl, Post
+from ...models import Subscription, SubscriptionElement, Illust, IllustUrl
 from ..utility import SessionThread, SessionTimer
 from ..searchable import search_attributes
 from ..sites import get_site_key
@@ -31,7 +29,7 @@ from ..database.archive_db import get_archive
 from ..database.error_db import is_error
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_lock_status
 from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
-    archive_subscription_post
+    archive_subscription_post, expired_subscription_elements
 from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
     add_subscription_error, update_subscription_status, update_subscription_active, check_processing_subscriptions
 from ..database.base_db import safe_db_execute
@@ -53,15 +51,6 @@ WAITING_THREADS = {
     'image_match': 0,
     'video': 0,
 }
-
-if EXPIRED_SUBSCRIPTION is True:
-    EXPIRED_SUBSCRIPTION_ACTION = 'archive'
-elif EXPIRED_SUBSCRIPTION in ['unlink', 'delete', 'archive']:
-    EXPIRED_SUBSCRIPTION_ACTION = EXPIRED_SUBSCRIPTION
-elif EXPIRED_SUBSCRIPTION is False:
-    EXPIRED_SUBSCRIPTION_ACTION = None
-else:
-    raise ValueError("Bad value set in config for EXPIRED_SUBSCRIPTION.")
 
 
 # ## FUNCTIONS
@@ -205,38 +194,46 @@ def download_missing_elements(manual=False):
         page = page.prev()
 
 
-def expire_subscription_elements(manual):
-    retdata = {'unlink': 0, 'delete': 0, 'archive': 0}
+def unlink_expired_subscription_elements(manual):
+    unlink_count = 0
     max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
-    # First pass - Unlink all "yes" elements or those that were manually downloaded by the user
-    q = SubscriptionElement.query.join(Post, SubscriptionElement.post)\
-                                 .filter(or_(_expired_clause('yes', 'unlink'), (Post.type == 'user')))
+    q = expired_subscription_elements('unlink')
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=50)
     while True:
-        print(f"\nexpire_subscription_elements-unlink: {page.first} - {page.last} / Total({page.count})\n")
+        print(f"\nunlink_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Unlinking {element.shortlink}")
             unlink_subscription_post(element)
-            retdata['unlink'] += 1
+            unlink_count += 1
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
-    # Second pass - Hard delete all "no" element posts
-    q = SubscriptionElement.query.filter(_expired_clause('no', 'delete'))
+    return unlink_count
+
+
+def delete_expired_subscription_elements(manual):
+    delete_count = 0
+    max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
+    q = expired_subscription_elements('delete')
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=10)
     while True:
-        print(f"\nexpire_subscription_elements-delete: {page.first} - {page.last} / Total({page.count})\n")
+        print(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Deleting post of {element.shortlink}")
             delete_subscription_post(element)
-            retdata['delete'] += 1
+            delete_count += 1
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
-    # Third pass - Soft delete (archive with ### expiration) all unchosen element posts
-    q = SubscriptionElement.query.filter(_expired_clause('archive', 'archive'))
+    return delete_count
+
+
+def archive_expired_subscription_elements(manual):
+    archive_count = 0
+    max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
+    q = expired_subscription_elements('archive')
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=10)
     while True:
@@ -244,10 +241,11 @@ def expire_subscription_elements(manual):
         for element in page.items:
             print(f"Archiving post of {element.shortlink}")
             archive_subscription_post(element)
-            retdata['archive'] += 1
+            archive_count += 1
         if not page.has_next or page.page >= max_pages:
-            return retdata
+            break
         page = page.next()
+    return archive_count
 
 
 def update_subscription_elements(subscription, job_id=None):
@@ -382,12 +380,3 @@ def _process_videos(elements):
         post_ids = [post.id for post in video_posts]
         thread = SessionThread(target=_process, args=(post_ids,))
         thread.start()
-
-
-def _expired_clause(keep, action):
-    main_clause = (SubscriptionElement.keep == keep)
-    if (action == EXPIRED_SUBSCRIPTION_ACTION):
-        keep_clause = or_(main_clause, SubscriptionElement.keep.is_(None))
-    else:
-        keep_clause = main_clause
-    return and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.status == 'active', keep_clause)

@@ -25,7 +25,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td colspan="5">
+                    <td colspan="6">
                         <span class="heading">Danbooru Tasks</span>
                     </td>
                 </tr>
@@ -50,7 +50,13 @@
                     {{ task_row('check_pending_downloads', tasks) }}
                 </tr>
                 <tr>
-                    {{ task_row('process_expired_subscription_elements', tasks) }}
+                    {{ task_row('unlink_expired_subscription_elements', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('delete_expired_subscription_elements', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('archive_expired_subscription_elements', tasks) }}
                 </tr>
                 <tr>
                     <td colspan="5">

@@ -62,23 +62,9 @@ def run_html(name):
 def _initialize():
     global TASK_MAP
     #  Schedule is only importable after the app has been fully initialized, so wait until the first app request
-    from ..logical.tasks.schedule import check_all_boorus_task, check_all_artists_for_boorus_task,\
-        check_all_posts_for_danbooru_id_task, expunge_cache_records_task, expunge_archive_records_task,\
-        delete_orphan_images_task, vacuum_analyze_database_task, check_pending_subscriptions, check_pending_downloads,\
-        process_expired_subscription_elements, relocate_old_posts_task
-    TASK_MAP = {
-        'check_all_boorus': check_all_boorus_task,
-        'check_all_artists_for_boorus': check_all_artists_for_boorus_task,
-        'check_all_posts_for_danbooru_id': check_all_posts_for_danbooru_id_task,
-        'check_pending_subscriptions': check_pending_subscriptions,
-        'check_pending_downloads': check_pending_downloads,
-        'process_expired_subscription_elements': process_expired_subscription_elements,
-        'expunge_cache_records': expunge_cache_records_task,
-        'expunge_archive_records': expunge_archive_records_task,
-        'relocate_old_posts': relocate_old_posts_task,
-        'delete_orphan_images': delete_orphan_images_task,
-        'vacuum_analyze_database': vacuum_analyze_database_task,
-    }
+    from ..logical.tasks import schedule
+    tasknames = [k for k in dir(schedule) if k.endswith('_task') and not k.startswith('_')]
+    TASK_MAP = dict((k[:-5], getattr(schedule, k)) for k in tasknames)
 
 
 def _run_program(func, name):

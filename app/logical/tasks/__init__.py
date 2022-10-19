@@ -65,10 +65,26 @@ JOB_CONFIG = {
         },
         'leeway': 180,
     },
-    'process_expired_subscription_elements': {
+    'unlink_expired_subscription_elements': {
         'config': {
-            'id': 'process_expired_subscription_elements',
+            'id': 'unlink_expired_subscription_elements',
+            'hours': 8,
+            'jitter': 1200,
+        },
+        'leeway': 600,
+    },
+    'delete_expired_subscription_elements': {
+        'config': {
+            'id': 'delete_expired_subscription_elements',
             'hours': 2,
+            'jitter': 1200,
+        },
+        'leeway': 600,
+    },
+    'archive_expired_subscription_elements': {
+        'config': {
+            'id': 'archive_expired_subscription_elements',
+            'hours': 4,
             'jitter': 1200,
         },
         'leeway': 600,
