@@ -21,7 +21,7 @@ from ..database.jobs_db import create_job_tables, get_all_job_info, delete_job,\
     create_job_enabled, get_all_job_enabled, get_all_job_manual, create_job_manual,\
     create_job_lock, get_all_job_locks, update_job_lock_status, delete_lock,\
     create_job_timeval, get_all_job_timevals, update_job_timeval, delete_timeval,\
-    update_job_manual_status
+    update_job_manual_status, delete_manual, delete_enabled
 from . import JOB_CONFIG, ALL_JOB_INFO, ALL_JOB_ENABLED, ALL_JOB_LOCKS, ALL_JOB_TIMEVALS,\
     ALL_JOB_MANUAL
 
@@ -138,7 +138,7 @@ def _get_initial_job_enabled():
     for id in enabled:
         if id not in ALL_JOB_ENABLED:
             print("Task Scheduler - Deleting unused enabled:", id)
-            delete_lock(id)
+            delete_enabled(id)
     return enabled
 
 
@@ -147,7 +147,7 @@ def _get_initial_job_manual():
     for id in manual:
         if id not in ALL_JOB_MANUAL:
             print("Task Scheduler - Deleting unused manual:", id)
-            delete_lock(id)
+            delete_manual(id)
     return manual
 
 
