@@ -285,25 +285,11 @@ class JsonModel(DB.Model):
     def archive_dict(self):
         return {k: get_column_for_serialize(self, k) for k in self.archive_columns if hasattr(self, k)}
 
+    def basic_json(self):
+        return self._json(self.basic_attributes)
+
     def to_json(self):
-        data = {}
-        for attr in self.json_attributes:
-            value = getattr(self, attr)
-            if type(value) is datetime.datetime:
-                data[attr] = date_time_or_null(value)
-            elif type(value) is bytes:
-                data[attr] = value.hex()
-            elif isinstance(value, enum.Enum):
-                data[attr] = value.name
-            elif type(value) is _AssociationList:
-                data[attr] = list(value)
-            elif type(value) is InstrumentedList:
-                data[attr] = [t.to_json() for t in value]
-            elif hasattr(value, 'to_json'):
-                data[attr] = value.to_json()
-            else:
-                data[attr] = value
-        return data
+        return self._json(self.json_attributes)
 
     @classmethod
     def relations(cls):
@@ -393,6 +379,26 @@ class JsonModel(DB.Model):
         inner_string = ', '.join(f"{k}={data[k]}" for k in self.repr_attributes)
         model_name = self.__class__.__name__
         return f"{model_name}({inner_string})"
+
+    def _json(self, attributes):
+        data = {}
+        for attr in attributes:
+            value = getattr(self, attr)
+            if type(value) is datetime.datetime:
+                data[attr] = date_time_or_null(value)
+            elif type(value) is bytes:
+                data[attr] = value.hex()
+            elif isinstance(value, enum.Enum):
+                data[attr] = value.name
+            elif type(value) is _AssociationList:
+                data[attr] = list(value)
+            elif type(value) is InstrumentedList:
+                data[attr] = [t.to_json() for t in value]
+            elif hasattr(value, 'to_json'):
+                data[attr] = value.to_json()
+            else:
+                data[attr] = value
+        return data
 
     @classmethod
     def _model_name(cls):
