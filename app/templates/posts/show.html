@@ -40,5 +40,7 @@
 {% endblock content %}
 
 {% block pagescript %}
-    Posts.initializePlay();
+    {% if post.is_video %}
+        Posts.initializePlay();
+    {% endif %}
 {% endblock pagescript %}
