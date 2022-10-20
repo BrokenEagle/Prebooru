@@ -281,6 +281,14 @@ def redownload_element(element):
         if convert_network_subscription(element):
             update_subscription_element_status(element, 'active')
             return {'error': False}
+        elif element.status.name == 'duplicate':
+            post = element.illust_url.post
+            if post is None:
+                duplicate_string = '; '.join([dupelement.shortlink for dupelement in element.duplicate_elements])
+                msg = "Duplicate of previous elements: " + duplicate_string
+            else:
+                msg = f'Duplicate of {element.illust_url.post.shortlink}'
+            return {'error': True, 'message': msg}
         else:
             update_subscription_element_status(element, 'error')
             new_errors = [error for error in element.errors if error.id not in initial_errors]
