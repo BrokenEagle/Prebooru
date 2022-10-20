@@ -90,7 +90,7 @@ def check_all_posts_for_danbooru_id_task():
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_subscriptions']['config'])
-def check_pending_subscriptions():
+def check_pending_subscriptions_task():
     def _task(printer):
         manual = get_job_manual_status('check_pending_subscriptions')
         subscriptions = get_available_subscription(manual)
@@ -108,7 +108,7 @@ def check_pending_subscriptions():
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_downloads']['config'])
-def check_pending_downloads():
+def check_pending_downloads_task():
     def _task(printer):
         total = total_missing_downloads()
         printer("Missing downloads:", total)
