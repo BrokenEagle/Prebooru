@@ -74,7 +74,7 @@ def check_posts_for_valid_md5():
             if post.md5 != checksum:
                 print("\nMISMATCHING CHECKSUM: post #", post.id)
                 for illust_url in post.illust_urls:
-                    if redownload_post(post, illust_url, illust_url._source):
+                    if redownload_post(post, illust_url):
                         break
                 else:
                     print("Unable to download!", 'post #', post.id)

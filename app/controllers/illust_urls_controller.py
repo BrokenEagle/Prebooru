@@ -266,6 +266,6 @@ def redownload_html(id):
         flash("Illust URL has no existing post.", 'error')
         return redirect(request.referrer)
     source = get_source_by_id(illust_url.site_id)
-    if not redownload_post(post, illust_url, source):
+    if not redownload_post(post, illust_url):
         flash("Error redownloading post.", 'error')
     return redirect(post.show_url)
