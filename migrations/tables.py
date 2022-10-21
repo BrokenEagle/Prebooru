@@ -3,9 +3,9 @@
 # EXTERNAL IMPORTS
 import alembic.op as op
 import sqlalchemy as sa
-from sqlalchemy.engine.reflection import Inspector
 
 # LOCAL IMPORTS
+from . import get_inspector
 from .constraints import drop_constraints, create_constraints
 
 
@@ -47,9 +47,7 @@ def rename_table(old_name, new_name, old_config, new_config):
 
 def remove_temp_tables(table_names, add_precursor=True):
     temp_names = ['_alembic_tmp_' + name for name in table_names] if add_precursor else table_names
-    conn = op.get_bind()
-    inspector = Inspector.from_engine(conn)
-    tables = inspector.get_table_names()
+    tables = get_inspector().get_table_names()
     drop_tables = [name for name in temp_names if name in tables]
     for name in drop_tables:
         drop_table(name)

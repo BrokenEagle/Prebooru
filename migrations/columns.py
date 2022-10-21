@@ -7,6 +7,9 @@ import sqlalchemy as sa
 # PACKAGE IMPORTS
 from config import NAMING_CONVENTION
 
+# LOCAL IMPORTS
+from . import get_inspector
+
 
 # ## FUNCTIONS
 
@@ -150,6 +153,12 @@ def change_column_type(table_name, column_name, from_column_type, to_column_type
 
 
 def change_columns_type(table_name, columns_config):
+    existing_columns = get_inspector().get_columns(table_name)
+    remove_columns = [col['name'] for col in existing_columns if col['name'][:-5] in columns_config]
+    if len(remove_columns):
+        print("Removing existing temp columns")
+        drop_columns(table_name, remove_columns)
+
     print("Adding temp columns")
     add_commands = [(k + '_temp', v['to']) for (k, v) in columns_config.items()]
     add_columns(table_name, add_commands)
