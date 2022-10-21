@@ -174,6 +174,35 @@ class NormalizedDatetime(DATETIME):
         super().__init__(*args, **kwargs)
 
 
+class BlobMD5(DB.TypeDecorator):
+    impl = DB.BLOB
+    cache_ok = True
+
+    def __init__(self, nullable=False):
+        super(BlobMD5, self).__init__()
+        self._nullable = nullable
+
+    def process_bind_param(self, value, dialect):
+        if isinstance(value, bytes):
+            return value
+        if isinstance(value, str):
+            match = re.match(r'(?:0x)?([0-9a-f]{32})', value, re.IGNORECASE)
+            if match:
+                return bytes.fromhex(match.group(1))
+        if isinstance(value, int):
+            return value.to_bytes(16, 'big')
+        if value is None and self._nullable:
+            return None
+        raise ValueError(f"Illegal value to bind for MD5: {value}")
+
+    def process_result_value(self, value, dialect):
+        if isinstance(value, bytes):
+            return value.hex()
+        if value is None and self._nullable:
+            return None
+        raise ValueError(f"Illegal value in DB found for MD5: {value}")
+
+
 class IntEnum(DB.TypeDecorator):
     """
     Enables passing in a Python enum and storing the enum's *value* in the database.

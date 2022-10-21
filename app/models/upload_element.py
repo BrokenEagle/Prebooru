@@ -6,7 +6,7 @@ import enum
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
-from .base import JsonModel, ModelEnum, IntEnum, secondarytable
+from .base import JsonModel, ModelEnum, IntEnum, BlobMD5, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -38,7 +38,7 @@ class UploadElement(JsonModel):
     id = DB.Column(DB.Integer, primary_key=True)
     upload_id = DB.Column(DB.Integer, DB.ForeignKey('upload.id'), nullable=False, index=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
-    md5 = DB.Column(DB.String(32), nullable=True)
+    md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
     status = DB.Column(IntEnum(UploadElementStatus), nullable=False)
 
     # #### Relationships

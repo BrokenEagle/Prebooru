@@ -105,6 +105,7 @@ def parse_cast(value, type):
 def column_type(model, columnname):
     switcher = {
         base.IntEnum: 'ENUM',
+        base.BlobMD5: 'STRING',
         sqltypes.Integer: 'INTEGER',
         sqltypes.Float: 'FLOAT',
         sqltypes.DateTime: 'DATETIME',
