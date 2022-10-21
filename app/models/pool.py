@@ -17,7 +17,7 @@ from .post import Post
 from .illust import Illust
 from .notation import Notation
 from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation, pool_element_create, pool_element_delete
-from .base import JsonModel, NormalizedDatetime
+from .base import JsonModel, EpochTimestamp
 
 
 # ## GLOBAL VARIABLES
@@ -35,8 +35,8 @@ class Pool(JsonModel):
     name = DB.Column(DB.String(255), nullable=False)
     element_count = DB.Column(DB.Integer, nullable=False)
     series = DB.Column(DB.Boolean, nullable=False)
-    created = DB.Column(NormalizedDatetime(), nullable=False)
-    updated = DB.Column(NormalizedDatetime(), nullable=False)
+    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # #### Relationships
     _elements = DB.relationship(PoolElement, backref='pool', order_by=PoolElement.position, lazy=True,

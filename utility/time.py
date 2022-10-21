@@ -26,7 +26,11 @@ def process_utc_timestring(timestring):
 
 
 def datetime_from_epoch(timestamp):
-    return _normalize_time(datetime.datetime.fromtimestamp(timestamp))
+    return _normalize_time(datetime.datetime.utcfromtimestamp(timestamp))
+
+
+def datetime_to_epoch(timeval):
+    return timeval.replace(tzinfo=datetime.timezone.utc).timestamp()
 
 
 def get_current_time():

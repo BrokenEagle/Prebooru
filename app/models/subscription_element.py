@@ -6,7 +6,7 @@ import enum
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
-from .base import JsonModel, ModelEnum, IntEnum, BlobMD5, NormalizedDatetime, secondarytable
+from .base import JsonModel, ModelEnum, IntEnum, BlobMD5, EpochTimestamp, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -50,7 +50,7 @@ class SubscriptionElement(JsonModel):
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
     keep = DB.Column(IntEnum(SubscriptionElementKeep, nullable=True), nullable=True)
-    expires = DB.Column(NormalizedDatetime(), nullable=True)
+    expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     status = DB.Column(IntEnum(SubscriptionElementStatus), nullable=False)
 
     # #### Relationships

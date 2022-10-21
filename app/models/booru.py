@@ -11,7 +11,7 @@ from .illust import Illust
 from .illust_url import IllustUrl
 from .post import Post
 from .label import Label
-from .base import JsonModel, NormalizedDatetime, secondarytable, classproperty
+from .base import JsonModel, EpochTimestamp, secondarytable, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -40,8 +40,8 @@ class Booru(JsonModel):
     current_name = DB.Column(DB.String(255), nullable=False)
     banned = DB.Column(DB.Boolean, nullable=False)
     deleted = DB.Column(DB.Boolean, nullable=False)
-    created = DB.Column(NormalizedDatetime(), nullable=False)
-    updated = DB.Column(NormalizedDatetime(), nullable=False)
+    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # #### Relationships
     _names = DB.relationship(Label, secondary=BooruNames, lazy=True)

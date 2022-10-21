@@ -8,7 +8,7 @@ from sqlalchemy.orm import declared_attr
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime
+from .base import JsonModel, ModelEnum, IntEnum, EpochTimestamp
 
 
 # ## CLASSES
@@ -51,8 +51,8 @@ class PixivData(SiteData):
     polymorphic_base = False
 
     # #### Columns
-    site_uploaded = DB.Column(NormalizedDatetime(), nullable=True)
-    site_updated = DB.Column(NormalizedDatetime(), nullable=True)
+    site_uploaded = DB.Column(EpochTimestamp(nullable=True), nullable=True)
+    site_updated = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     title = DB.Column(DB.UnicodeText, nullable=True)
     bookmarks = DB.Column(DB.Integer, nullable=True)
     views = DB.Column(DB.Integer, nullable=True)

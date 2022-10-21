@@ -25,7 +25,7 @@ from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
-from .base import JsonModel, ModelEnum, NormalizedDatetime, IntEnum, secondarytable, image_server_url, classproperty,\
+from .base import JsonModel, ModelEnum, EpochTimestamp, IntEnum, secondarytable, image_server_url, classproperty,\
     BlobMD5
 
 
@@ -79,7 +79,7 @@ class Post(JsonModel):
     md5 = DB.Column(BlobMD5(nullable=False), index=True, unique=True, nullable=False)
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
-    created = DB.Column(NormalizedDatetime(), nullable=False)
+    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     type = DB.Column(IntEnum(PostType), nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
     pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)

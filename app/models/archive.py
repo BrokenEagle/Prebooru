@@ -12,7 +12,7 @@ from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, ModelEnum, IntEnum, NormalizedDatetime, image_server_url, classproperty
+from .base import JsonModel, ModelEnum, IntEnum, EpochTimestamp, image_server_url, classproperty
 
 
 # ## CLASSES
@@ -32,7 +32,7 @@ class Archive(JsonModel):
     type = DB.Column(IntEnum(ArchiveType), nullable=False)
     key = DB.Column(DB.String(255), nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
-    expires = DB.Column(NormalizedDatetime(), nullable=True)
+    expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
 
     @property
     def has_preview(self):

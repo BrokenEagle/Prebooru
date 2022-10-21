@@ -5,7 +5,7 @@ import enum
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, ModelEnum, IntEnum, CompressedJSON, NormalizedDatetime, classproperty
+from .base import JsonModel, ModelEnum, IntEnum, CompressedJSON, EpochTimestamp, classproperty
 
 
 # ## CLASSES
@@ -26,7 +26,7 @@ class ApiData(JsonModel):
     site_id = DB.Column(DB.Integer, nullable=False)
     data_id = DB.Column(DB.Integer, nullable=False)
     data = DB.Column(CompressedJSON(), nullable=False)
-    expires = DB.Column(NormalizedDatetime(), nullable=False)
+    expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # ## Class properties
 

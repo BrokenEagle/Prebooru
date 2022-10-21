@@ -16,6 +16,7 @@ from sqlalchemy.ext.associationproxy import _AssociationList
 
 # ## PACKAGE IMPORTS
 from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
+from utility.time import process_utc_timestring, datetime_from_epoch, datetime_to_epoch
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION, SERVER_INFO
@@ -173,6 +174,34 @@ class NormalizedDatetime(DATETIME):
         kwargs.pop('regexp', None)
         super().__init__(*args, **kwargs)
 
+
+class EpochTimestamp(DB.TypeDecorator):
+    impl = DB.Integer
+    cache_ok = True
+
+    def __init__(self, nullable=False):
+        super(EpochTimestamp, self).__init__()
+        self._nullable = nullable
+
+    def process_bind_param(self, value, dialect):
+        if isinstance(value, float):
+            value = int(value)
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            value = process_utc_timestring(value)
+        if isinstance(value, datetime.datetime):
+            return int(datetime_to_epoch(value))
+        if value is None and self._nullable:
+            return None
+        raise ValueError(f"Illegal value to bind for timestamp: {value}")
+
+    def process_result_value(self, value, dialect):
+        if isinstance(value, int):
+            return datetime_from_epoch(value)
+        if value is None and self._nullable:
+            return None
+        raise ValueError(f"Illegal value in DB found for timestamp: {value}")
 
 class BlobMD5(DB.TypeDecorator):
     impl = DB.BLOB

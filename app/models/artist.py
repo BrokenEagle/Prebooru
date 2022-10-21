@@ -15,7 +15,7 @@ from .subscription import Subscription
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel, NormalizedDatetime, secondarytable, classproperty
+from .base import JsonModel, EpochTimestamp, secondarytable, classproperty
 
 
 # ## GLOBAL VARIABLES
@@ -56,10 +56,10 @@ class Artist(JsonModel):
     site_id = DB.Column(DB.Integer, nullable=False)
     site_artist_id = DB.Column(DB.Integer, nullable=False)
     current_site_account = DB.Column(DB.String(255), nullable=False)
-    site_created = DB.Column(NormalizedDatetime(), nullable=True)
+    site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     active = DB.Column(DB.Boolean, nullable=False)
-    created = DB.Column(NormalizedDatetime(), nullable=False)
-    updated = DB.Column(NormalizedDatetime(), nullable=False)
+    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # #### Relationships
     _site_accounts = DB.relationship(Label, secondary=ArtistSiteAccounts, lazy=True)

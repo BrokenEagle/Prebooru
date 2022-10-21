@@ -6,7 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ## LOCAL IMPORTS
 from .. import DB
 from .pool_element import PoolNotation
-from .base import JsonModel, NormalizedDatetime
+from .base import JsonModel, EpochTimestamp
 
 
 # ## CLASSES
@@ -17,8 +17,8 @@ class Notation(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     body = DB.Column(DB.UnicodeText, nullable=False)
-    created = DB.Column(NormalizedDatetime(), nullable=False)
-    updated = DB.Column(NormalizedDatetime(), nullable=False)
+    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # #### Relationships
     _pool = DB.relationship(PoolNotation, lazy=True, uselist=False, cascade='all,delete',

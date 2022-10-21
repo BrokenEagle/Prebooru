@@ -106,6 +106,7 @@ def column_type(model, columnname):
     switcher = {
         base.IntEnum: 'ENUM',
         base.BlobMD5: 'STRING',
+        base.EpochTimestamp: 'DATETIME',
         sqltypes.Integer: 'INTEGER',
         sqltypes.Float: 'FLOAT',
         sqltypes.DateTime: 'DATETIME',
