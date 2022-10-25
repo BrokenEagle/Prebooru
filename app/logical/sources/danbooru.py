@@ -127,7 +127,7 @@ def get_uploads_by_md5(md5):
     request_url = '/uploads.json'
     params = {
         'search[uploader_name]': DANBOORU_USERNAME,
-        'search[media_assets][md5]': md5,
+        'search[upload_media_assets][media_asset][md5]': md5,
         'only': 'id,source,media_assets[md5]',
     }
     data = danbooru_request(request_url, params)
