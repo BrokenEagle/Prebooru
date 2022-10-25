@@ -8,22 +8,23 @@
     <div id="similar-posts-container">
         {% for element in post.similar_posts %}
             <div class="similar-post-block">
+                {% set relation_post = element.reverse_post if element.reverse_id != post.id else element.forward_post %}
                 <div class="similar-heading">
-                    <strong>{{ helpers.similarity_match.pool_show_link(element.reverse_post) }}</strong>
+                    <strong>{{ helpers.similarity_match.pool_show_link(relation_post) }}</strong>
                     &ensp;(&thinsp;{{ helpers.similarity_match.delete_element_link(element, False) }}&thinsp;)
                 </div>
                 <article class="post similar-post">
-                    <a href="{{ element.reverse_post.show_url }}">{{ helpers.post.post_preview_link(element.reverse_post, False) }}</a>
+                    <a href="{{ relation_post.show_url }}">{{ helpers.post.post_preview_link(relation_post, False) }}</a>
                 </article>
                 <div>
                     <strong>Score:</strong> {{ element.score }}
-                    {% if post.pixel_md5 == element.reverse_post.pixel_md5 %}<span class="post-pixel-match">&lt; <span class="post-pixel-match-text">Pixel Match</span> &gt;</span>{% endif %}
+                    {% if post.pixel_md5 == relation_post.pixel_md5 %}<span class="post-pixel-match">&lt; <span class="post-pixel-match-text">Pixel Match</span> &gt;</span>{% endif %}
                     <br>
-                    <strong>Type/Size:</strong> {{ element.reverse_post.size }} @ {{ element.reverse_post.file_ext.upper() }}
+                    <strong>Type/Size:</strong> {{ relation_post.size }} @ {{ relation_post.file_ext.upper() }}
                     <br>
-                    <strong>Dimensions:</strong> (&thinsp;{{ element.reverse_post.width }} x {{ element.reverse_post.height }}&thinsp;)
+                    <strong>Dimensions:</strong> (&thinsp;{{ relation_post.width }} x {{ relation_post.height }}&thinsp;)
                     <br>
-                    <strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(element.reverse_post) }}
+                    <strong>Danbooru:</strong> {{ helpers.post.danbooru_post_link(relation_post) }}
                 </div>
             </div>
         {% else %}
