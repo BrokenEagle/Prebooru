@@ -1,6 +1,7 @@
 # UTILITY/TIME.PY
 
 # ## PYTHON IMPORTS
+import time
 import logging
 import datetime
 
@@ -112,6 +113,16 @@ def time_from_now(timeval, precision=2):
         return "already past"
     return humanized_timedelta(delta, precision) + " from now"
 
+
+def get_timer(name):
+    time_buffer = [time.perf_counter()]
+
+    def accumulator(checkpoint):
+        time_buffer.append(time.perf_counter())
+        duration = time_buffer[-1] - time_buffer[-2]
+        print(f"[{name}]-{checkpoint}: {duration}")
+
+    return accumulator
 
 # ## Private
 
