@@ -139,7 +139,7 @@ def process_network_upload(upload):
     if error is not None:
         append_error(upload, error)
     requery_time = days_ago(1)
-    illust = Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).first()
+    illust = Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
     if illust is None:
         illust = create_illust_from_source(site_illust_id, source)
         if illust is None:

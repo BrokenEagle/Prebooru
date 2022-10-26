@@ -72,7 +72,7 @@ def validate_foreign_keys():
             print_warning(f"Error record #{i + 1}")
             name, rowid, parent, fkid = error
             model = TABLES[name]
-            record = model.query.filter(model.rowid == rowid).first()
+            record = model.query.filter(model.rowid == rowid).fetchone()
             print(record)
             if name in table_fkeys:
                 fkeys = table_fkeys[name]

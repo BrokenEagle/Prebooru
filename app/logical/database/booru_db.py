@@ -99,7 +99,7 @@ def booru_append_artist(booru, artist):
 # #### Query functions
 
 def get_booru(danbooru_id):
-    return Booru.query.filter_by(danbooru_id=danbooru_id).first()
+    return Booru.query.filter_by(danbooru_id=danbooru_id).one_or_none()
 
 
 def get_boorus(danbooru_ids):

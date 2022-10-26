@@ -107,7 +107,7 @@ def paginate(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT):
 def get_or_abort(model, *args, options=None):
     options = options if options is not None else {}
     if len(options):
-        item = model.query.options(*options).filter_by(id=args[0]).first()
+        item = model.query.options(*options).filter_by(id=args[0]).one_or_none()
     else:
         item = model.find(*args)
     if item is None:
@@ -118,7 +118,7 @@ def get_or_abort(model, *args, options=None):
 def get_or_error(model, *args, options=None):
     options = options if options is not None else {}
     if len(options):
-        item = model.query.options(*options).filter_by(id=args[0]).first()
+        item = model.query.options(*options).filter_by(id=args[0]).one_or_none()
     else:
         item = model.find(*args)
     if item is None:

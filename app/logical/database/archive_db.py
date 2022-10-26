@@ -74,7 +74,7 @@ def delete_expired_archive():
 # #### Query functions
 
 def get_archive(type, key):
-    return Archive.query.filter_by(type=type, key=key).first()
+    return Archive.query.filter_by(type=type, key=key).one_or_none()
 
 
 def get_archive_posts_by_md5s(data_keys):

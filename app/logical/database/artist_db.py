@@ -159,7 +159,7 @@ def delete_artist(artist):
 # ###### Misc
 
 def get_blank_artist():
-    artist = Artist.query.filter(site_id=0, site_artist_id=1).first()
+    artist = Artist.query.filter(site_id=0, site_artist_id=1).one_or_none()
     if not artist:
         createparams = {
             'site_id': 0,
@@ -192,7 +192,7 @@ def artist_delete_profile(artist, description_id):
 # #### Query functions
 
 def get_site_artist(site_artist_id, site_id):
-    return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).first()
+    return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).one_or_none()
 
 
 def get_artists_without_boorus_page(limit):

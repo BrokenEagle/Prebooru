@@ -291,7 +291,7 @@ class JsonModel(DB.Model):
 
     @classmethod
     def find(cls, id):
-        return cls.query.filter_by(id=id).first()
+        return cls.query.filter_by(id=id).one_or_none()
 
     @property
     def model_name(self):

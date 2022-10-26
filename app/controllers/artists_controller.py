@@ -139,7 +139,7 @@ def uniqueness_check(dataparams, artist):
     site_id = dataparams['site_id'] if 'site_id' in dataparams else artist.site_id
     site_artist_id = dataparams['site_artist_id'] if 'site_artist_id' in dataparams else artist.site_artist_id
     if site_id != artist.site_id or site_artist_id != artist.site_artist_id:
-        return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).first()
+        return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -234,7 +234,7 @@ def query_booru(artist):
         return artist_data
     existing_booru_ids = [booru.id for booru in artist.boorus]
     for data in artist_data['artists']:
-        booru = Booru.query.filter_by(danbooru_id=data['id']).first()
+        booru = Booru.query.filter_by(danbooru_id=data['id']).one_or_none()
         if booru is None:
             params = \
                 {

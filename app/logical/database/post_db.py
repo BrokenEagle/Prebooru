@@ -130,7 +130,7 @@ def get_posts_by_md5s(md5s):
 
 
 def get_post_by_md5(md5):
-    return Post.query.filter_by(md5=md5).first()
+    return Post.query.filter_by(md5=md5).one_or_none()
 
 
 def alternate_posts_query(days):

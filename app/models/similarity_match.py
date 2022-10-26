@@ -32,7 +32,7 @@ class SimilarityMatch(JsonModel):
 
     @classmethod
     def find(cls, forward_id, reverse_id):
-        return cls.query.filter_by(forward_id=forward_id, reverse_id=reverse_id).first()
+        return cls.query.filter_by(forward_id=forward_id, reverse_id=reverse_id).one_or_none()
 
     # ## Private
 

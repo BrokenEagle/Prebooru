@@ -191,7 +191,7 @@ def uniqueness_check(dataparams, illust):
     site_id = dataparams['site_id'] if 'site_id' in dataparams else illust.site_id
     site_illust_id = dataparams['site_illust_id'] if 'site_illust_id' in dataparams else illust.site_illust_id
     if site_id != illust.site_id or site_illust_id != illust.site_illust_id:
-        return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).first()
+        return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -288,7 +288,7 @@ def query_create():
     site_artist_id = source.get_artist_id_by_illust_id(retdata['site_illust_id'])
     if site_artist_id is None:
         return set_error(retdata, "Unable to find site artist ID with URL.")
-    artist = Artist.query.filter_by(site_id=retdata['site_id'], site_artist_id=int(site_artist_id)).first()
+    artist = Artist.query.filter_by(site_id=retdata['site_id'], site_artist_id=int(site_artist_id)).one_or_none()
     if artist is None:
         return set_error(retdata, "Unable to find Prebooru artist... artist must exist before creating an illust.")
     createparams['artist_id'] = artist.id

@@ -156,7 +156,7 @@ def illust_delete_commentary(illust, description_id):
 # #### Query functions
 
 def get_site_illust(site_illust_id, site_id):
-    return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).first()
+    return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
 
 
 def get_site_illusts(site_id, site_illust_ids, load_urls=False):
