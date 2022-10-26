@@ -89,6 +89,7 @@ def _teardown_request(error=None):
 
 
 def _error_handler(error):
+    SESSION.remove()
     if not request.path.endswith('.json'):
         if issubclass(error.__class__, HTTPException):
             return error.get_response()
