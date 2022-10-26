@@ -73,12 +73,20 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
         mode = cursor.fetchone()
         if mode != ('wal',):
             logger.error("Unable to set journal mode to WAL")
+    cursor.execute('PRAGMA synchronous = NORMAL')
+    cursor.execute('PRAGMA temp_store = MEMORY')
+    cursor.execute('PRAGMA mmap_size = 0x7FFF0000')
+    cursor.execute('PRAGMA cache_size = -32000')
     cursor.close()
 
 
 def _fk_pragma_on_close(dbapi_connection, connection_record, database):
     DATABASE_INFO.connections[database].discard(connection_record.uuid)
     logger.debug('DBCLOSE-%s(%d) [%d]--%s--', database, len(DATABASE_INFO.connections[database]), connection_record.pid, connection_record.uuid)
+    cursor = dbapi_connection.cursor()
+    cursor.execute('PRAGMA analysis_limit = 400')
+    cursor.execute('PRAGMA optimize')
+    cursor.close()
 
 
 def _fk_open_connections():
