@@ -58,6 +58,8 @@ logger.addHandler(LOGHANDLER)
 # ## FUNCTIONS
 
 def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
+    if DEBUG_LOG:
+        dbapi_connection.set_trace_callback(print)
     connection_record.uuid = str(uuid.uuid4())
     connection_record.pid = os.getpid()
     DATABASE_INFO.connections[database].add(connection_record.uuid)
