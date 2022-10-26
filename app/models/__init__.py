@@ -46,6 +46,10 @@ from .archive import Archive  # noqa: F401
 from .media_file import MediaFile  # noqa: F401
 from .domain import Domain  # noqa: F401
 
+# #### Server data
+
+from .server_info import ServerInfo
+
 
 # ## GLOBAL VARIABLES
 
@@ -74,6 +78,7 @@ def initialize():
             SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,
             UploadElement, UploadElementErrors,
             MediaFile, Domain,
+            ServerInfo,
         ]
     for model in models:
         key = model._model_name()
