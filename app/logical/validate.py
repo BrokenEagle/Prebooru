@@ -27,27 +27,22 @@ def validate_python():
         exit(-1)
 
 
-def validate_version():
-    from .. import DB
-    with DB.engine.begin() as conn:
-        database_head = migration.MigrationContext.configure(conn).get_current_heads()[0]
+def validate_version(conn):
+    database_head = migration.MigrationContext.configure(conn).get_current_heads()[0]
     directory_head = script.ScriptDirectory.from_config(config.Config(ALEMBIC_SCRIPT_FILE)).get_heads()[0]
     if database_head != directory_head:
         logging.warning("Must upgrade the database: (current) %s -> (head) %s", database_head, directory_head)
         exit(-1)
 
 
-def validate_integrity():
-    from .. import DB
-    engine = DB.get_engine(bind=None).engine
-    connection = engine.connect()
-    check = connection.execute("PRAGMA quick_check").first()
+def validate_integrity(conn):
+    check = conn.execute("PRAGMA quick_check").fetchone()
     if check != ('ok',):
         logging.error("The database has malformed data on disk")
-        table_names = connection.execute("SELECT name FROM 'main'.sqlite_master WHERE type='table';").fetchall()
+        table_names = conn.execute("SELECT name FROM 'main'.sqlite_master WHERE type='table';").fetchall()
         table_names = sorted(itertools.chain(*table_names))
         for name in table_names:
-            check = connection.execute("PRAGMA quick_check(%s)" % name).first()
+            check = conn.execute("PRAGMA quick_check(%s)" % name).fetchone()
             status = 'OK' if check == ('ok',) else 'BAD'
             print("    %s: %s" % (name, status))
         exit(-1)
@@ -55,13 +50,10 @@ def validate_integrity():
         print_info("\nDatabase: OK\n")
 
 
-def validate_foreign_keys():
-    from .. import DB
+def validate_foreign_keys(conn):
     from ..models import TABLES
     table_fkeys = {}
-    engine = DB.get_engine(bind=None).engine
-    connection = engine.connect()
-    errors = connection.execute("PRAGMA foreign_key_check").fetchall()
+    errors = conn.execute("PRAGMA foreign_key_check").fetchall()
     if len(errors) > 0:
         logging.error("The database has orphaned foreign keys")
         print("\n    %-40s %-10s %-40s %s" % ("Table", "Row ID", "Parent", "FKey ID"))
@@ -77,7 +69,7 @@ def validate_foreign_keys():
             if name in table_fkeys:
                 fkeys = table_fkeys[name]
             else:
-                fkeys = table_fkeys[name] = connection.execute(f"PRAGMA foreign_key_list({name})").fetchall()
+                fkeys = table_fkeys[name] = conn.execute(f"PRAGMA foreign_key_list({name})").fetchall()
             error_fkey = next(fkey for fkey in fkeys if fkey[0] == fkid)
             print("FKEY", error_fkey)
             print('--------------------INVESTIGATE-------------------\n')

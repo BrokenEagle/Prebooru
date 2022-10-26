@@ -193,12 +193,14 @@ def start_server(args):
         # Scheduled tasks must be added only after everything else has been initialized
         from app.logical.tasks import schedule  # noqa: F401
         from app.logical.database.server_info_db import initialize_server_fields
+        from app import SESSION
         initialize_server_callbacks(args)
         initialize_server_checks()
         initialize_server_fields()
-        validate_version()
-        validate_integrity()
-        validate_foreign_keys()
+        with SESSION.connection() as conn:
+            validate_version(conn)
+            validate_integrity(conn)
+            validate_foreign_keys(conn)
         print("\n========== Starting server - Prebooru-%s ==========" % VERSION)
         SERVER_PID = os.getpid()
         put_get_json(SERVER_PID_FILE, 'w', [SERVER_PID])
