@@ -7,7 +7,7 @@ import time
 
 # ## PACKAGE IMPORTS
 from config import ALTERNATE_MEDIA_DIRECTORY
-from utility.print import buffered_print, print_info
+from utility.uprint import buffered_print, print_info
 from utility.file import get_directory_listing, delete_file
 from utility.time import seconds_from_now_local
 

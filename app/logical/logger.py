@@ -9,7 +9,7 @@ import traceback
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY
 from utility.file import load_default, put_get_json
-from utility.print import print_error
+from utility.uprint import print_error
 
 
 # ## GLOBAL VARIABLES

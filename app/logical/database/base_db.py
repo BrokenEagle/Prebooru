@@ -9,7 +9,7 @@ import sqlalchemy
 
 # ## PACKAGE IMPORTS
 from utility.time import process_utc_timestring
-from utility.print import safe_print, buffered_print
+from utility.uprint import safe_print, buffered_print
 
 # ## LOCAL IMPORTS
 from ... import SESSION

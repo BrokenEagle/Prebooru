@@ -8,7 +8,7 @@ import threading
 from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
 from utility.data import get_buffer_checksum
 from utility.file import create_directory, put_get_raw, copy_file, delete_file
-from utility.print import print_error, exception_print
+from utility.uprint import print_error, exception_print
 
 # ### LOCAL IMPORTS
 from ... import SESSION

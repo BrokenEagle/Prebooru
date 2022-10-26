@@ -10,7 +10,7 @@ import datetime
 # ## PACKAGE IMPORTS
 from utility import RepeatTimer
 from utility.time import time_ago, seconds_from_now_local, process_utc_timestring
-from utility.print import buffered_print, print_info, print_warning, print_error
+from utility.uprint import buffered_print, print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
 from ... import SCHEDULER

@@ -4,7 +4,7 @@
 import itertools
 
 # ## PACKAGE IMPORTS
-from utility.print import exception_print
+from utility.uprint import exception_print
 
 # ## LOCAL IMPORTS
 from ... import SESSION

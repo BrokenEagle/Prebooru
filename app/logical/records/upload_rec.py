@@ -6,7 +6,7 @@ import itertools
 # ## PACKAGE IMPORTS
 from utility.time import minutes_ago, days_ago
 from utility.data import add_dict_entry
-from utility.print import buffered_print
+from utility.uprint import buffered_print
 
 # ## LOCAL IMPORTS
 from ... import SESSION

@@ -17,7 +17,7 @@ from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_
 from utility.data import safe_get, decode_json, fixup_crlf, safe_check
 from utility.time import get_current_time, datetime_from_epoch, add_days, get_date
 from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
-from utility.print import print_info, print_warning, print_error
+from utility.uprint import print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
 from ..logger import log_network_error

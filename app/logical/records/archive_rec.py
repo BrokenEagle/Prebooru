@@ -5,7 +5,7 @@ import os
 import logging
 
 # ## PACKAGE IMPORTS
-from utility.print import exception_print
+from utility.uprint import exception_print
 from utility.file import delete_file
 
 # ## LOCAL IMPORTS

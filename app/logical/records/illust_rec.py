@@ -2,7 +2,7 @@
 
 # ## PACKAGE IMPORTS
 from utility.data import merge_dicts
-from utility.print import print_warning
+from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
 from ... import SESSION

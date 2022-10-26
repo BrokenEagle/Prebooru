@@ -120,7 +120,7 @@ def initialize_server_checks():
     import requests
     import threading
     import _thread
-    from utility.print import print_info, print_error
+    from utility.uprint import print_info, print_error
 
     unique_id = str(uuid.uuid4())
 

@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
 from utility.time import days_from_now, hours_from_now
-from utility.print import buffered_print, print_info
+from utility.uprint import buffered_print, print_info
 
 # ## LOCAL IMPORTS
 from ... import SESSION
