@@ -146,6 +146,8 @@ def initialize():
         sqlalchemy.orm.Query.limit_paginate = limit_paginate
         sqlalchemy.orm.Query.all2 = secondary_all
         sqlalchemy.orm.Query.first2 = secondary_first
+        sqlalchemy.orm.Query.one2 = secondary_one
+        sqlalchemy.orm.Query.one_or_none2 = secondary_one_or_none
         flask_sqlalchemy.Pagination.first = paginate_first
         flask_sqlalchemy.Pagination.last = paginate_last
         INIT = True
@@ -191,6 +193,18 @@ def secondary_all(self):
 def secondary_first(self):
     _secondary_check(self, 'first2')
     item = self.first()
+    return _result(item, _columns(self)) if item is not None else None
+
+
+def secondary_one(self):
+    _secondary_check(self, 'first2')
+    item = self.one()
+    return _result(item, _columns(self)) if item is not None else None
+
+
+def secondary_one_or_none(self):
+    _secondary_check(self, 'first2')
+    item = self.one_or_none()
     return _result(item, _columns(self)) if item is not None else None
 
 
