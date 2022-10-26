@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import json
+import uuid
 import atexit
 import logging
 import traceback
@@ -45,6 +46,7 @@ ENGINE_OPTIONS = {
 }
 
 SERVER_INFO = SimpleNamespace(addr="127.0.0.1", allow_requests=True, active_requests=0, unique_id=None)
+DATABASE_INFO = SimpleNamespace(connections={'prebooru': set(), 'jobs': set()})
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG if DEBUG_LOG else logging.WARNING)
@@ -53,7 +55,11 @@ logger.addHandler(LOGHANDLER)
 
 # ## FUNCTIONS
 
-def _fk_pragma_on_connect(dbapi_connection, connection_record):
+def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
+    connection_record.uuid = str(uuid.uuid4())
+    connection_record.pid = os.getpid()
+    DATABASE_INFO.connections[database].add(connection_record.uuid)
+    logger.debug('DBOPEN-%s(%d) [%d]--%s--', database, len(DATABASE_INFO.connections[database]), connection_record.pid, connection_record.uuid)
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA journal_mode")
     mode = cursor.fetchone()
@@ -64,6 +70,11 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record):
         if mode != ('wal',):
             logger.error("Unable to set journal mode to WAL")
     cursor.close()
+
+
+def _fk_pragma_on_close(dbapi_connection, connection_record, database):
+    DATABASE_INFO.connections[database].discard(connection_record.uuid)
+    logger.debug('DBCLOSE-%s(%d) [%d]--%s--', database, len(DATABASE_INFO.connections[database]), connection_record.pid, connection_record.uuid)
 
 
 def _before_request():
@@ -188,8 +199,10 @@ METADATA = MetaData(naming_convention=NAMING_CONVENTION)
 DB = SQLAlchemy(PREBOORU_APP, metadata=METADATA)
 SESSION = DB.session
 
-event.listen(DB.engine, 'connect', _fk_pragma_on_connect)
-event.listen(SCHEDULER_JOBSTORES.engine, 'connect', _fk_pragma_on_connect)
+event.listen(DB.get_engine(bind=None).engine, 'connect', lambda conn, rec: _fk_pragma_on_connect(conn, rec, 'prebooru'))
+event.listen(SCHEDULER_JOBSTORES.engine, 'connect', lambda conn, rec: _fk_pragma_on_connect(conn, rec, 'jobs'))
+event.listen(DB.get_engine(bind=None).engine, 'close', lambda conn, rec: _fk_pragma_on_close(conn, rec, 'prebooru'))
+event.listen(SCHEDULER_JOBSTORES.engine, 'close', lambda conn, rec: _fk_pragma_on_close(conn, rec, 'jobs'))
 
 PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
 PREBOORU_APP.before_request(_before_request)
