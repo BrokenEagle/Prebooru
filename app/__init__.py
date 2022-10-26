@@ -24,6 +24,8 @@ from werkzeug.exceptions import HTTPException
 
 # ## PACKAGE IMPORTS
 from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION, DEBUG_LOG, LOGHANDLER
+from utility import RepeatTimer, is_interactive_shell
+from utility.uprint import buffered_print
 
 # ## LOCAL IMPORTS
 from .logical import query_extensions
@@ -75,6 +77,16 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
 def _fk_pragma_on_close(dbapi_connection, connection_record, database):
     DATABASE_INFO.connections[database].discard(connection_record.uuid)
     logger.debug('DBCLOSE-%s(%d) [%d]--%s--', database, len(DATABASE_INFO.connections[database]), connection_record.pid, connection_record.uuid)
+
+
+def _fk_open_connections():
+    printer = buffered_print("OPEN DB CONNECTIONS")
+    printer("PID:", os.getpid())
+    for key in DATABASE_INFO.connections:
+        printer('  %s: %d' % (key, len(DATABASE_INFO.connections[key])))
+        for uid in DATABASE_INFO.connections[key]:
+            printer('    %s' % uid)
+    printer.print()
 
 
 def _before_request():
@@ -209,6 +221,10 @@ PREBOORU_APP.before_request(_before_request)
 PREBOORU_APP.teardown_request(_teardown_request)
 PREBOORU_APP.errorhandler(Exception)(_error_handler)
 
+if DEBUG_LOG and not is_interactive_shell() and (not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true"):
+    RECHECK_DB = RepeatTimer(60, _fk_open_connections)
+    RECHECK_DB.setDaemon(True)
+    RECHECK_DB.start()
 
 # #### Extend Python imports
 query_extensions.initialize()
