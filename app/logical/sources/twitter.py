@@ -579,10 +579,10 @@ def check_token_file():
 # #### Network auxiliary functions
 
 def get_global_objects(data, type_name):
-    objects = safe_get(data, 'globalObjects', type_name)
+    objects = safe_get(data['body'], 'globalObjects', type_name)
     if type(objects) is not dict:
         if DEBUG_MODE:
-            log_network_error('sources.twitter.get_global_objects', response)
+            log_network_error('sources.twitter.get_global_objects', data['response'])
         raise Exception("Global data not found.")
     return list(objects.values())
 
@@ -602,10 +602,10 @@ def get_twitter_timeline_cursor(type_name, instruction, entryname):
 
 
 def get_twitter_scroll_bottom_cursor(data):
-    instructions = safe_get(data, 'timeline', 'instructions')
+    instructions = safe_get(data['body'], 'timeline', 'instructions')
     if type(instructions) is not list:
         if DEBUG_MODE:
-            log_network_error('sources.twitter.get_twitter_scroll_bottom_cursor', response)
+            log_network_error('sources.twitter.get_twitter_scroll_bottom_cursor', data['response'])
         raise Exception("Invalid JSON response.")
     for instruction in instructions:
         for type_name in instruction:
@@ -620,8 +620,8 @@ def timeline_iterator(data, cursor, tweet_ids, user_id=None, last_id=None, v2=Fa
     else:
         results =\
             {
-                'tweets': {tweet['id_str']: tweet for tweet in get_global_objects(data['body'], 'tweets')},
-                'users': {user['id_str']: user for user in get_global_objects(data['body'], 'users')},
+                'tweets': {tweet['id_str']: tweet for tweet in get_global_objects(data, 'tweets')},
+                'users': {user['id_str']: user for user in get_global_objects(data, 'users')},
             }
     tweets = [tweet for tweet in results['tweets'].values()]
     if len(results['tweets']) == 0:
@@ -640,7 +640,7 @@ def timeline_iterator(data, cursor, tweet_ids, user_id=None, last_id=None, v2=Fa
         tweet_ids.clear()
         tweet_ids.extend(valid_ids)
         return True
-    found_cursor = results['cursors']['bottom'] if v2 else get_twitter_scroll_bottom_cursor(data['body'])
+    found_cursor = results['cursors']['bottom'] if v2 else get_twitter_scroll_bottom_cursor(data)
     if found_cursor is None:
         print("Reached end of timeline!")
         return True
@@ -758,7 +758,7 @@ def twitter_request(url, method='GET', wait=True):
         data = response.json()
     except Exception:
         return {'error': True, 'message': "Error decoding response into JSON."}
-    return {'error': False, 'body': data}
+    return {'error': False, 'body': data, 'response': response}
 
 
 def get_graphql_timeline_entries(data, found_tweets):
