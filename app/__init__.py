@@ -232,7 +232,7 @@ PREBOORU_APP.teardown_request(_teardown_request)
 PREBOORU_APP.errorhandler(Exception)(_error_handler)
 
 if DEBUG_LOG and not is_interactive_shell() and (not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true"):
-    RECHECK_DB = RepeatTimer(60, _fk_open_connections)
+    RECHECK_DB = RepeatTimer(60, _fk_open_connections, jitter=True)
     RECHECK_DB.setDaemon(True)
     RECHECK_DB.start()
 
