@@ -22,7 +22,7 @@ from werkzeug.formparser import parse_form_data
 from werkzeug.exceptions import HTTPException
 
 # ## PACKAGE IMPORTS
-from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION
+from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION, DEBUG_LOG
 
 # ## LOCAL IMPORTS
 from .logical import query_extensions
@@ -47,7 +47,7 @@ ENGINE_OPTIONS = {
 SERVER_INFO = SimpleNamespace(addr="127.0.0.1", allow_requests=True, active_requests=0, unique_id=None)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG if DEBUG_LOG else logging.WARNING)
 logger.addHandler(logging.StreamHandler())
 
 

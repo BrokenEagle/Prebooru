@@ -3,7 +3,6 @@
 # ## PYTHON IMPORTS
 import os
 import time
-import logging
 
 # ## GLOBAL VARIABLES
 
@@ -186,10 +185,6 @@ def start_server(args):
             print("Install flaskwork module: pip install flask-flaskwork --upgrade")
         else:
             Flaskwork(PREBOORU_APP)
-    if args.logging:
-        logging.basicConfig()
-        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-        logging.getLogger('apscheduler').setLevel(logging.DEBUG)
     if args.title:
         os.system('title Prebooru Server')
     if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
@@ -209,8 +204,6 @@ def start_server(args):
         put_get_json(SERVER_PID_FILE, 'w', [SERVER_PID])
     PREBOORU_APP.name = 'prebooru'
     SCHEDULER.start()
-    if not args.logging:
-        logging.getLogger().handlers = []
     app_args = {
         'threaded': True,
         'port': PREBOORU_PORT,
@@ -394,8 +387,6 @@ if __name__ == '__main__':
                         help="Start with a new database file.")
     parser.add_argument('--extension', required=False, default=False, action="store_true",
                         help="Enable Chrome extension.")
-    parser.add_argument('--logging', required=False, default=False, action="store_true",
-                        help="Display the SQL commands.")
     parser.add_argument('--title', required=False, default=False, action="store_true",
                         help="Adds server title to console window.")
     parser.add_argument('--public', required=False, default=False, action="store_true",

@@ -20,9 +20,14 @@ VERSION = '2.25.2'
 
 # ## INTITIALIZATION
 
+DEBUG_LOG = get_environment_variable('DEBUG_LOG', False)
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG if DEBUG_LOG else logging.INFO)
 logger.addHandler(logging.StreamHandler())
+
+if not DEBUG_LOG:
+    logging.getLogger().handlers = []
 
 try:
     if not get_environment_variable('DEFAULT_CONFIG', False):
