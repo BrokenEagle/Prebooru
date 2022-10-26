@@ -22,9 +22,13 @@ VERSION = '2.25.2'
 
 DEBUG_LOG = get_environment_variable('DEBUG_LOG', False)
 
+LOGHANDLER = logging.StreamHandler()
+LOGHANDLER.setLevel(logging.DEBUG)
+LOGHANDLER.setFormatter(logging.Formatter('%(levelname)s{%(name)s} @%(asctime)s,%(msecs)03d: %(message)s', '%H:%M:%S'))
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG if DEBUG_LOG else logging.INFO)
-logger.addHandler(logging.StreamHandler())
+logger.addHandler(LOGHANDLER)
 
 if not DEBUG_LOG:
     logging.getLogger().handlers = []
