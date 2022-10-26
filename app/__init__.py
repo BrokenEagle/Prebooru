@@ -41,8 +41,8 @@ ENGINE_OPTIONS = {
         'check_same_thread': False,
         'timeout': 60},
     'echo_pool': True,
-    'pool_recycle': 15}\
-    if 'sqlite' in PREBOORU_DB_URL else {}
+    'pool_recycle': 15,
+}
 
 SERVER_INFO = SimpleNamespace(addr="127.0.0.1", allow_requests=True, active_requests=0, unique_id=None)
 
