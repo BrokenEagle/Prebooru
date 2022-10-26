@@ -220,9 +220,11 @@ def start_server(args):
 
 
 def init_db(args):
-    check = input("This will destroy any existing information. Proceed (y/n)? ")
-    if check.lower() != 'y':
-        return
+    if args.drop or args.new:
+        check = input("This will destroy any existing information. Proceed (y/n)? ")
+        if check.lower() != 'y':
+            return
+
     from config import DB_PATH
     from utility.file import create_directory
     if args.new:
@@ -234,7 +236,8 @@ def init_db(args):
     from app import DB, PREBOORU_APP
     from app.models import NONCE  # noqa: F401, F811
     create_directory(DB_PATH)
-    DB.drop_all()
+    if args.drop:
+        DB.drop_all()
     DB.create_all()
 
     print("Setting current migration to HEAD")
@@ -393,6 +396,8 @@ if __name__ == '__main__':
                         help="Adds server title to console window.")
     parser.add_argument('--public', required=False, default=False, action="store_true",
                         help="Makes the server visible to other computers.")
+    parser.add_argument('--drop', required=False, default=False, action="store_true",
+                        help="Drops the tables before recreating with the 'init' option.")
     parser.add_argument('--unique-id', required=False, help="Unique identifier required to access admin routes.")
     args = parser.parse_args()
     main(args)
