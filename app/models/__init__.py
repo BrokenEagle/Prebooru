@@ -50,6 +50,9 @@ from .domain import Domain  # noqa: F401
 
 from .server_info import ServerInfo
 
+# #### Job data
+from .jobs import JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
+
 
 # ## GLOBAL VARIABLES
 
@@ -79,6 +82,7 @@ def initialize():
             UploadElement, UploadElementErrors,
             MediaFile, Domain,
             ServerInfo,
+            JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus,
         ]
     for model in models:
         key = model._model_name()

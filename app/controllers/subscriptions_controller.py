@@ -14,8 +14,7 @@ from ..logical.records.subscription_rec import process_subscription
 from ..logical.database.subscription_db import create_subscription_from_parameters,\
     update_subscription_from_parameters, update_subscription_status, delay_subscription_elements,\
     delete_subscription
-from ..logical.database.jobs_db import get_job_status_data, check_job_status_exists, create_job_status,\
-    update_job_status
+from ..logical.database.jobs_db import get_job_status_data, create_or_update_job_status
 from ..logical.database.server_info_db import get_subscriptions_ready
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
@@ -162,7 +161,7 @@ def show_json(id):
 def show_html(id):
     subscription = get_or_abort(Subscription, id)
     job_id = request.args.get('job')
-    job_status = get_job_status_data(job_id) if job_id else None
+    job_status = get_job_status_data(job_id)
     return render_template("subscriptions/show.html", subscription=subscription, job_status=job_status,
                            job_id=job_id)
 
@@ -278,10 +277,8 @@ def process_html(id):
         'elements': 0,
         'downloads': 0,
     }
-    if check_job_status_exists(job_id):
-        update_job_status(job_id, job_status)
-    else:
-        create_job_status(job_id, job_status)
+    create_or_update_job_status(job_id, job_status)
+    SESSION.commit()
     SCHEDULER.add_job(job_id, process_subscription, args=(subscription.id, job_id))
     flash("Subscription started.")
     return redirect(url_for('subscription.show_html', id=subscription.id, job=job_id))

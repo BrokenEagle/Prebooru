@@ -1,287 +1,118 @@
 # APP/LOGICAL/DATABASE/JOBS_DB.PY
 
-# ## PYTHON IMPORTS
-import datetime
-
 # ## EXTERNAL IMPORTS
-from sqlalchemy import select, exists, Table, Column, MetaData, Unicode, Boolean, Float, JSON
+from sqlalchemy import inspect
 
 # ## LOCAL IMPORTS
-from ... import SCHEDULER_JOBSTORES
+from ... import SESSION, DB
+from ...models.jobs import JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
 
 
 # ## GLOBAL VARIABLES
 
-T_JOBS_INFO = SCHEDULER_JOBSTORES.jobs_t
+JOB_ITEMS = {model._model_name(): model for model in [JobInfo, JobEnable, JobManual, JobLock, JobTime, JobStatus]}
 
-T_JOBS_ENABLED = Table(
-    'job_enabled',
-    MetaData(),
-    Column('id', Unicode(255), primary_key=True),
-    Column('enabled', Boolean(), nullable=False),
-    sqlite_with_rowid=False,
-)
+JOB_ITEMS_CREATE = {
+    'job_enable': lambda x, v: JobEnable(id=x, enabled=v),
+    'job_manual': lambda x, v: JobManual(id=x, manual=v),
+    'job_lock': lambda x, v: JobLock(id=x, locked=v),
+    'job_time': lambda x, v: JobTime(id=x, time=v),
+    'job_status': lambda x, v: JobStatus(id=x, data=v),
+}
 
-T_JOBS_LOCK = Table(
-    'job_locks',
-    MetaData(),
-    Column('id', Unicode(255), primary_key=True),
-    Column('locked', Boolean(), nullable=False),
-    sqlite_with_rowid=False,
-)
-
-T_JOBS_MANUAL = Table(
-    'job_manual',
-    MetaData(),
-    Column('id', Unicode(255), primary_key=True),
-    Column('manual', Boolean(), nullable=False),
-    sqlite_with_rowid=False,
-)
-
-
-T_JOBS_TIME = Table(
-    'job_times',
-    MetaData(),
-    Column('id', Unicode(255), primary_key=True),
-    Column('time', Float(), nullable=False),
-    sqlite_with_rowid=False,
-)
-
-T_JOBS_STATUS = Table(
-    'job_status',
-    MetaData(),
-    Column('id', Unicode(255), primary_key=True),
-    Column('data', JSON(), nullable=False),
-    sqlite_with_rowid=False,
-)
+JOB_ITEMS_UPDATE = {
+    'job_enable': lambda x, v: setattr(x, 'enabled', v),
+    'job_manual': lambda x, v: setattr(x, 'manual', v),
+    'job_lock': lambda x, v: setattr(x, 'locked', v),
+    'job_time': lambda x, v: setattr(x, 'time', v),
+}
 
 
 # ## FUNCTIONS
 
 # ### Create
 
-def create_job_tables():
-    T_JOBS_INFO.create(SCHEDULER_JOBSTORES.engine, True)
-    T_JOBS_ENABLED.create(SCHEDULER_JOBSTORES.engine, True)
-    T_JOBS_LOCK.create(SCHEDULER_JOBSTORES.engine, True)
-    T_JOBS_MANUAL.create(SCHEDULER_JOBSTORES.engine, True)
-    T_JOBS_TIME.create(SCHEDULER_JOBSTORES.engine, True)
-    T_JOBS_STATUS.create(SCHEDULER_JOBSTORES.engine, True)
-
-
-def create_job_enabled(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_ENABLED.insert().values(id=id, enabled=True)
-        conn.execute(statement)
-
-
-def create_job_manual(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_MANUAL.insert().values(id=id, manual=False)
-        conn.execute(statement)
-
-
-def create_job_lock(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_LOCK.insert().values(id=id, locked=False)
-        conn.execute(statement)
-
-
-def create_job_timeval(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_TIME.insert().values(id=id, time=0.0)
-        conn.execute(statement)
-
-
-def create_job_status(id, data):
-    if id is None:
-        return
-    print('create_job_status', id, data)
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_STATUS.insert().values(id=id, data=data)
-        conn.execute(statement)
+def create_job_item(jobtype, id, val):
+    item = JOB_ITEMS_CREATE[jobtype](id, val)
+    SESSION.add(item)
+    SESSION.flush()
+    return item
 
 
 # #### Update
 
-def update_job_next_run_time(id, timestamp):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement =\
-            T_JOBS_INFO.update().where(T_JOBS_INFO.c.id == id)\
-                       .values(next_run_time=timestamp)
-        conn.execute(statement)
+def update_job_item(item, value):
+    JOB_ITEMS_UPDATE[item.table_name](item, value)
+    SESSION.flush()
 
 
-def update_job_enabled_status(id, boolval):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement =\
-            T_JOBS_ENABLED.update().where(T_JOBS_ENABLED.c.id == id)\
-                          .values(enabled=boolval)
-        conn.execute(statement)
-
-
-def update_job_manual_status(id, boolval):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement =\
-            T_JOBS_MANUAL.update().where(T_JOBS_MANUAL.c.id == id)\
-                         .values(manual=boolval)
-        conn.execute(statement)
-
-
-def update_job_lock_status(id, boolval):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement =\
-            T_JOBS_LOCK.update().where(T_JOBS_LOCK.c.id == id)\
-                       .values(locked=boolval)
-        conn.execute(statement)
-
-
-def update_job_timeval(id, timestamp):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement =\
-            T_JOBS_TIME.update().where(T_JOBS_TIME.c.id == id)\
-                       .values(time=timestamp)
-        conn.execute(statement)
+def update_job_by_id(job_type, id, value_dict):
+    JOB_ITEMS[job_type].query.filter_by(id=id).update(value_dict)
+    SESSION.flush()
 
 
 def update_job_status(id, data):
     if id is None:
         return
-    print('update_job_status', id, data)
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement =\
-            T_JOBS_STATUS.update().where(T_JOBS_STATUS.c.id == id)\
-                         .values(data=data)
-        conn.execute(statement)
+    job = JobStatus.find(id)
+    job.data = data
+    SESSION.commit()
 
 
 # #### Delete
 
-def delete_job(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_INFO.delete().where(T_JOBS_INFO.c.id == id)
-        conn.execute(statement)
-
-
-def delete_enabled(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_ENABLED.delete().where(T_JOBS_ENABLED.c.id == id)
-        conn.execute(statement)
-
-
-def delete_manual(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_MANUAL.delete().where(T_JOBS_MANUAL.c.id == id)
-        conn.execute(statement)
-
-
-def delete_lock(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_LOCK.delete().where(T_JOBS_LOCK.c.id == id)
-        conn.execute(statement)
-
-
-def delete_timeval(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_TIME.delete().where(T_JOBS_TIME.c.id == id)
-        conn.execute(statement)
-
-
-def delete_status(id):
-    if id is None:
-        return
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = T_JOBS_STATUS.delete().where(T_JOBS_STATUS.c.id == id)
-        conn.execute(statement)
+def delete_job_item(item):
+    SESSION.delete(item)
+    SESSION.flush()
 
 
 # #### Query
 
 def get_all_job_info():
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_INFO.c.id, T_JOBS_INFO.c.next_run_time])
-        timestamps = conn.execute(statement).fetchall()
-        return {f[0]: datetime.datetime.fromtimestamp(f[1]) for f in timestamps}
+    return {item.id: item.next_run_time for item in JobInfo.query.all()}
 
 
-def get_all_job_enabled():
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_ENABLED.c.id, T_JOBS_ENABLED.c.enabled])
-        enabled = conn.execute(statement).fetchall()
-        return {f[0]: f[1] for f in enabled}
+def get_all_job_items(job_type):
+    return {item.id: item for item in JOB_ITEMS[job_type].query.all()}
 
 
-def get_all_job_manual():
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_MANUAL.c.id, T_JOBS_MANUAL.c.manual])
-        manual = conn.execute(statement).fetchall()
-        return {f[0]: f[1] for f in manual}
-
-
-def get_job_enabled_status(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_ENABLED.c.enabled]).where(T_JOBS_ENABLED.c.id == id)
-        status = conn.execute(statement).fetchone()
-        return status[0] if status is not None else None
-
-
-def get_job_manual_status(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_MANUAL.c.manual]).where(T_JOBS_MANUAL.c.id == id)
-        status = conn.execute(statement).fetchone()
-        return status[0] if status is not None else None
-
-
-def get_all_job_locks():
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_LOCK.c.id, T_JOBS_LOCK.c.locked])
-        locks = conn.execute(statement).fetchall()
-        return {f[0]: f[1] for f in locks}
-
-
-def get_job_lock_status(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_LOCK.c.locked]).where(T_JOBS_LOCK.c.id == id)
-        status = conn.execute(statement).fetchone()
-        return status[0] if status is not None else None
+def get_job_item(job_type, id):
+    return JOB_ITEMS[job_type].find(id)
 
 
 def is_any_job_locked():
-    all_locks = get_all_job_locks()
-    return any(lock for lock in all_locks.values())
+    return JobLock.query.filter(JobLock.locked.is_(True)).first() is not None
 
 
 def is_any_job_manual():
-    all_manuals = get_all_job_manual()
-    return any(manual for manual in all_manuals.values())
-
-
-def get_all_job_timevals():
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_TIME.c.id, T_JOBS_TIME.c.time])
-        vals = conn.execute(statement).fetchall()
-        return {f[0]: f[1] for f in vals}
-
-
-def get_job_timeval(id):
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_TIME.c.time]).where(T_JOBS_TIME.c.id == id)
-        val = conn.execute(statement).fetchone()
-        return val[0] if val is not None else None
-
-
-def check_job_status_exists(id):
-    if id is None:
-        return False
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = exists(T_JOBS_STATUS.c.id).where(T_JOBS_STATUS.c.id == id).select()
-        return (conn.execute(statement).fetchone())[0]
+    return JobManual.query.filter(JobManual.locked.is_(True)).first() is not None
 
 
 def get_job_status_data(id):
     if id is None:
         return None
-    with SCHEDULER_JOBSTORES.engine.begin() as conn:
-        statement = select([T_JOBS_STATUS.c.data]).where(T_JOBS_STATUS.c.id == id)
-        val = conn.execute(statement).fetchone()
-        return val[0] if val is not None else None
+    item = JobStatus.find(id)
+    return item.data if item else None
+
+
+# ## Misc
+
+def create_or_update_job_status(id, status):
+    item = JobStatus.find(id)
+    if item is None:
+        item = JobStatus(id=id)
+    item.data = status
+    SESSION.flush()
+
+
+def check_tables():
+    required_names = ['alembic_version'] + [item._table_name() for item in JOB_ITEMS.values()]
+    valid_names = ['sqlite_stat1'] + required_names
+    with DB.get_engine(bind='jobs').connect() as conn:
+        table_names = inspect(conn).get_table_names()
+        for name in table_names:
+            if name not in valid_names:
+                conn.execute(f'DROP TABLE {name}')
+    missing_tables = set(required_names).difference(table_names)
+    if len(missing_tables) > 0:
+        raise Exception(f"""Missing tables: {missing_tables}. Must run "prebooru.py init".""")

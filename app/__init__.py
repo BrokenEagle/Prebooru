@@ -198,7 +198,9 @@ SCHEDULER_JOBSTORES = SQLAlchemyJobStore(url=SCHEDULER_DB_URL + '?check_same_thr
 PREBOORU_APP = Flask("", template_folder=os.path.join('app', 'templates'), static_folder=os.path.join('app', 'static'))
 PREBOORU_APP.config.from_mapping(
     SQLALCHEMY_DATABASE_URI=PREBOORU_DB_URL,
-    SQLALCHEMY_BINDS={},
+    SQLALCHEMY_BINDS={
+        'jobs': SCHEDULER_DB_URL,
+    },
     SQLALCHEMY_ENGINE_OPTIONS=ENGINE_OPTIONS,
     JSON_SORT_KEYS=False,
     SQLALCHEMY_ECHO=False,
@@ -222,9 +224,9 @@ DB = SQLAlchemy(PREBOORU_APP, metadata=METADATA)
 SESSION = DB.session
 
 event.listen(DB.get_engine(bind=None).engine, 'connect', lambda conn, rec: _fk_pragma_on_connect(conn, rec, 'prebooru'))
-event.listen(SCHEDULER_JOBSTORES.engine, 'connect', lambda conn, rec: _fk_pragma_on_connect(conn, rec, 'jobs'))
+event.listen(DB.get_engine(bind='jobs').engine, 'connect', lambda conn, rec: _fk_pragma_on_connect(conn, rec, 'jobs'))
 event.listen(DB.get_engine(bind=None).engine, 'close', lambda conn, rec: _fk_pragma_on_close(conn, rec, 'prebooru'))
-event.listen(SCHEDULER_JOBSTORES.engine, 'close', lambda conn, rec: _fk_pragma_on_close(conn, rec, 'jobs'))
+event.listen(DB.get_engine(bind='jobs').engine, 'close', lambda conn, rec: _fk_pragma_on_close(conn, rec, 'jobs'))
 
 PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
 PREBOORU_APP.before_request(_before_request)

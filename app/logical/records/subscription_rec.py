@@ -27,7 +27,7 @@ from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.archive_db import get_archive
 from ..database.error_db import is_error
-from ..database.jobs_db import get_job_status_data, update_job_status, update_job_lock_status
+from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
 from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post, expired_subscription_elements
 from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
@@ -72,7 +72,8 @@ def process_subscription(subscription_id, job_id):
         start_posts = subscription.artist.post_count
         start_elements = subscription.element_count
         starting_post_ids = [post.id for post in subscription.posts]
-        update_job_lock_status('process_subscription', True)
+        update_job_by_id('job_lock', 'process_subscription', True)
+        SESSION.commit()
         download_subscription_illusts(subscription, job_id)
         download_subscription_elements(subscription, job_id)
         job_status = get_job_status_data(job_id)
@@ -98,7 +99,8 @@ def process_subscription(subscription_id, job_id):
 
     def _query_unlock():
         if not check_processing_subscriptions():
-            update_job_lock_status('process_subscription', False)
+            update_job_by_id('job_lock', 'process_subscription', False)
+            SESSION.commit()
 
     safe_db_execute('process_subscription', 'records.subscription_rec',
                     try_func=try_func, msg_func=msg_func, printer=printer,

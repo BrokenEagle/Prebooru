@@ -27,8 +27,7 @@ from ..database.subscription_element_db import total_missing_downloads, expired_
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_db import expired_archive_count, delete_expired_archive
-from ..database.jobs_db import get_job_enabled_status, update_job_lock_status, get_job_lock_status,\
-    get_job_manual_status
+from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id
 from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready,\
     update_subscriptions_ready
 from .initialize import reschedule_from_child, schedule_from_child
@@ -92,7 +91,7 @@ def check_all_posts_for_danbooru_id_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_subscriptions']['config'])
 def check_pending_subscriptions_task():
     def _task(printer):
-        manual = get_job_manual_status('check_pending_subscriptions')
+        manual = _is_job_manual('check_pending_subscriptions')
         subscriptions = get_available_subscription(manual)
         if len(subscriptions) > 0:
             schedule_from_child('subscriptions-callback', 'app.logical.tasks.schedule:_pending_subscription_callback',
@@ -113,7 +112,7 @@ def check_pending_downloads_task():
         total = total_missing_downloads()
         printer("Missing downloads:", total)
         if total > 0:
-            manual = get_job_manual_status('check_pending_downloads')
+            manual = _is_job_manual('check_pending_downloads')
             processed = download_missing_elements(manual)
             printer("Elements processed:", processed)
 
@@ -126,7 +125,7 @@ def unlink_expired_subscription_elements_task():
     def _task(printer):
         total = expired_subscription_elements('unlink').get_count()
         if total > 0:
-            manual = get_job_manual_status('unlink_expired_subscription_elements')
+            manual = _is_job_manual('unlink_expired_subscription_elements')
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('unlink_expired_subscription_elements', 'tasks.schedule', printer=printer,
                                    try_func=(lambda data: unlink_expired_subscription_elements(manual)))
@@ -142,7 +141,7 @@ def delete_expired_subscription_elements_task():
     def _task(printer):
         total = expired_subscription_elements('delete').get_count()
         if total > 0:
-            manual = get_job_manual_status('delete_expired_subscription_elements')
+            manual = _is_job_manual('delete_expired_subscription_elements')
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('delete_expired_subscription_elements', 'tasks.schedule', printer=printer,
                                    try_func=(lambda data: delete_expired_subscription_elements(manual)))
@@ -158,7 +157,7 @@ def archive_expired_subscription_elements_task():
     def _task(printer):
         total = expired_subscription_elements('archive').get_count()
         if total > 0:
-            manual = get_job_manual_status('archive_expired_subscription_elements')
+            manual = _is_job_manual('archive_expired_subscription_elements')
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('archive_expired_subscription_elements', 'tasks.schedule', printer=printer,
                                    try_func=(lambda data: archive_expired_subscription_elements(manual)))
@@ -172,7 +171,7 @@ def archive_expired_subscription_elements_task():
 @SCHEDULER.task("interval", **JOB_CONFIG['relocate_old_posts']['config'])
 def relocate_old_posts_task():
     def _task(printer):
-        manual = get_job_manual_status('relocate_old_posts')
+        manual = _is_job_manual('relocate_old_posts')
         start = time.time()
         posts_moved = relocate_old_posts_to_alternate(manual)
         if posts_moved is None:
@@ -216,8 +215,7 @@ def vacuum_analyze_database_task():
             connection.execute("VACUUM")
             connection.execute("ANALYZE")
 
-    manual = get_job_manual_status('vacuum_analyze_database')
-    if not manual and server_is_busy():
+    if not _is_job_manual('vacuum_analyze_database') and server_is_busy():
         print("Vaccuum/Analyze: Server busy, rescheduling....")
         reschedule_from_child('vacuum_analyze_database')
     else:
@@ -234,6 +232,7 @@ def reset_subscription_status_task():
             update_subscription_status(subscription, 'idle')
         printer("Subscriptions reset:", len(subscriptions))
         update_subscriptions_ready(True)
+        SESSION.commit()
 
     _execute_scheduled_task(_task, 'reset_subscription_status', False, False)
 
@@ -244,7 +243,7 @@ def reset_subscription_status_task():
 
 def _execute_scheduled_task(func, id, has_enabled, has_lock):
     display_name = ' '.join(word.title() for word in id.split('_'))
-    if has_enabled and not get_job_enabled_status(id):
+    if has_enabled and not _is_job_enabled(id):
         print(f"Task scheduler - {display_name}: disabled")
         return
     if has_lock and not _set_db_semaphore(id):
@@ -256,26 +255,40 @@ def _execute_scheduled_task(func, id, has_enabled, has_lock):
     func(printer)
     printer("Execution time: %0.2f" % (time.time() - start_time))
     printer.print()
-    _free_db_semaphore(id)
+    if has_lock:
+        _free_db_semaphore(id)
     SESSION.remove()
 
 
+def _is_job_enabled(id):
+    item = get_job_item('job_enable', id)
+    return item.enabled if item is not None else False
+
+
+def _is_job_manual(id):
+    item = get_job_item('job_manual', id)
+    return item.manual if item is not None else False
+
+
 def _set_db_semaphore(id):
-    status = get_job_lock_status(id)
-    if status is None or status:
+    item = get_job_item('job_lock', id)
+    if item is None or item.locked:
         return False
-    update_job_lock_status(id, True)
+    update_job_item(item, True)
     update_last_activity('server')
+    SESSION.commit()
     return True
 
 
 def _free_db_semaphore(id):
-    update_job_lock_status(id, False)
+    update_job_by_id('job_lock', id, {'locked': False})
+    SESSION.commit()
 
 
 def _subscriptions_check():
     if not get_subscriptions_ready():
         print("Task scheduler - Subscription reset not yet initiated.")
+        SESSION.remove()
         return False
     return True
 

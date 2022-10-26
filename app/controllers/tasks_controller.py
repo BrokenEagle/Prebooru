@@ -9,8 +9,7 @@ from utility.data import eval_bool_string
 # ## LOCAL IMPORTS
 from .. import SCHEDULER
 from ..logical.tasks.initialize import reschedule_task
-from ..logical.database.jobs_db import get_all_job_enabled, get_all_job_locks, get_all_job_info,\
-    update_job_enabled_status, update_job_manual_status
+from ..logical.database.jobs_db import get_all_job_items, get_all_job_info, update_job_by_id
 
 
 # ## GLOBAL VARIABLES
@@ -26,8 +25,8 @@ TASKS_MAP = None
 
 @bp.route('/tasks', methods=['GET'])
 def list_html():
-    enabled = get_all_job_enabled()
-    locks = get_all_job_locks()
+    enabled = {item.id: item.enabled for item in get_all_job_items('job_enable').values()}
+    locks = {item.id: item.locked for item in get_all_job_items('job_lock').values()}
     timevals = get_all_job_info()
     return render_template("tasks/list.html", tasks={'enabled': enabled, 'locks': locks, 'timevals': timevals})
 
@@ -38,7 +37,8 @@ def update_html(name):
         enable = request.values.get('enable', type=eval_bool_string)
         if enable is not None:
             flash(f"Updated value for '{name}': {enable}")
-            update_job_enabled_status(name, enable)
+            update_job_by_id('job_enable', name, enable)
+            SESSION.commit()
         else:
             flash("Enable argument not set.", 'error')
     else:
@@ -68,11 +68,13 @@ def _initialize():
 
 
 def _run_program(func, name):
-    update_job_manual_status(name, True)
+    update_job_by_id('job_manual', name, True)
+    SESSION.commit()
     try:
         func()
     finally:
-        update_job_manual_status(name, False)
+        update_job_by_id('job_manual', name, False)
+        SESSION.commit()
 
 
 # ## INITIALIZE
