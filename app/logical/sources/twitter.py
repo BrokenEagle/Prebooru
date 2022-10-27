@@ -512,13 +512,19 @@ def process_twitter_timestring(time_string):
         pass
 
 
-def convert_entity_text(twitter_data, key, *subkeys):
+def convert_entity_text(twitter_data, key, url_subkeys, mention_subkeys=None):
     text = twitter_data[key]
-    url_entries = safe_get(twitter_data, 'entities', *subkeys) or []
+    url_entries = safe_get(twitter_data, 'entities', *url_subkeys) or []
     for url_entry in reversed(url_entries):
         replace_url = url_entry['expanded_url']
         start_index, end_index = url_entry['indices']
         text = text[:start_index] + replace_url + text[end_index:]
+    if mention_subkeys is not None:
+        mention_entries = safe_get(twitter_data, 'entities', *mention_subkeys) or []
+        for mention in mention_entries:
+            user_id = mention['id_str']
+            screen_name = mention['screen_name']
+            text = re.sub(rf'@{screen_name}\b', f'@{screen_name} (twuser #{user_id})', text)
     return text
 
 
@@ -951,7 +957,7 @@ def get_twitter_artist(artist_id):
 # ###### ILLUST
 
 def get_tweet_commentary(twitter_data):
-    text = convert_entity_text(twitter_data, 'full_text', 'urls')
+    text = convert_entity_text(twitter_data, 'full_text', ['urls'], ['user_mentions'])
     text = fixup_crlf(SHORT_URL_REPLACE_RG.sub('', text).strip())
     if safe_get(twitter_data, 'is_quote_status'):
         # If the quoted tweet is no longer available, then it will still register as a quote tweet.
@@ -1078,7 +1084,7 @@ def get_illust_parameters_from_tweet(tweet):
 # ###### ARTIST
 
 def get_twuser_profile(twitter_data):
-    return fixup_crlf(convert_entity_text(twitter_data, 'description', 'description', 'urls'))
+    return fixup_crlf(convert_entity_text(twitter_data, 'description', ['description', 'urls']))
 
 
 def get_twuser_webpages(twuser):
