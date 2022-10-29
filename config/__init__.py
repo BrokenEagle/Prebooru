@@ -30,9 +30,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG if DEBUG_LOG else logging.INFO)
 logger.addHandler(LOGHANDLER)
 
-if not DEBUG_LOG:
-    logging.getLogger().handlers = []
-
 try:
     if not get_environment_variable('DEFAULT_CONFIG', False, eval_bool_string):
         from .local import *
