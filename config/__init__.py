@@ -20,7 +20,7 @@ VERSION = '2.25.2'
 
 # ## INTITIALIZATION
 
-DEBUG_LOG = get_environment_variable('DEBUG_LOG', False)
+DEBUG_LOG = get_environment_variable('DEBUG_LOG', False, eval_bool_string)
 
 LOGHANDLER = logging.StreamHandler()
 LOGHANDLER.setLevel(logging.DEBUG)
@@ -34,7 +34,7 @@ if not DEBUG_LOG:
     logging.getLogger().handlers = []
 
 try:
-    if not get_environment_variable('DEFAULT_CONFIG', False):
+    if not get_environment_variable('DEFAULT_CONFIG', False, eval_bool_string):
         from .local import *
 except ImportError:
     logger.warning("Unable to load 'config\\local.py , using default config instead.")
