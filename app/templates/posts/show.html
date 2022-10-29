@@ -41,7 +41,5 @@
 {% endblock content %}
 
 {% block pagescript %}
-    {% if post.is_video %}
-        Posts.initializePlay();
-    {% endif %}
+    {% if post.is_video %}Posts.initializePlay();{% endif %}
 {% endblock pagescript %}

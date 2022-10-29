@@ -3,9 +3,6 @@
 # ## PYTHON IMPORTS
 import datetime
 
-# ## PACKAGE IMPORTS
-from utility.time import datetime_from_epoch, datetime_to_epoch
-
 # ## LOCAL IMPORTS
 from .. import DB
 from .base import JsonModel

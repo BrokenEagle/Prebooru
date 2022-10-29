@@ -23,7 +23,7 @@ def process_utc_timestring(timestring):
     try:
         return _normalize_time(datetime.datetime.fromisoformat(timestring.replace('Z', '+00:00')).replace(tzinfo=None))
     except Exception:
-        logging.error(f"Failed to parse datetime string: %s", timestring)
+        logging.error("Failed to parse datetime string: %s", timestring)
 
 
 def datetime_from_epoch(timestamp):
@@ -123,6 +123,7 @@ def get_timer(name):
         print(f"[{name}]-{checkpoint}: {duration}")
 
     return accumulator
+
 
 # ## Private
 

@@ -63,7 +63,8 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
     connection_record.uuid = str(uuid.uuid4())
     connection_record.pid = os.getpid()
     DATABASE_INFO.connections[database].add(connection_record.uuid)
-    logger.debug('DBOPEN-%s(%d) [%d]--%s--', database, len(DATABASE_INFO.connections[database]), connection_record.pid, connection_record.uuid)
+    logger.debug('DBOPEN-%s(%d) [%d]--%s--', database, len(DATABASE_INFO.connections[database]),
+                 connection_record.pid, connection_record.uuid)
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA journal_mode")
     mode = cursor.fetchone()
@@ -82,7 +83,8 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
 
 def _fk_pragma_on_close(dbapi_connection, connection_record, database):
     DATABASE_INFO.connections[database].discard(connection_record.uuid)
-    logger.debug('DBCLOSE-%s(%d) [%d]--%s--', database, len(DATABASE_INFO.connections[database]), connection_record.pid, connection_record.uuid)
+    logger.debug('DBCLOSE-%s(%d) [%d]--%s--', database, len(DATABASE_INFO.connections[database]),
+                 connection_record.pid, connection_record.uuid)
     cursor = dbapi_connection.cursor()
     cursor.execute('PRAGMA analysis_limit = 400')
     cursor.execute('PRAGMA optimize')

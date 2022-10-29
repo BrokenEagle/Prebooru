@@ -7,7 +7,7 @@ from wtforms.validators import DataRequired
 
 
 # ## LOCAL IMPORTS
-from .. import SCHEDULER
+from .. import SCHEDULER, SESSION
 from ..models import Subscription, Artist
 from ..logical.utility import set_error
 from ..logical.records.subscription_rec import process_subscription

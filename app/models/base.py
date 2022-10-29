@@ -203,6 +203,7 @@ class EpochTimestamp(DB.TypeDecorator):
             return None
         raise ValueError(f"Illegal value in DB found for timestamp: {value}")
 
+
 class BlobMD5(DB.TypeDecorator):
     impl = DB.BLOB
     cache_ok = True
