@@ -13,6 +13,7 @@ from config import PIXIV_PHPSESSID
 from utility.data import safe_get, fixup_crlf
 from utility.time import get_current_time, process_utc_timestring
 from utility.file import get_file_extension, get_http_filename
+from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
 from ..database.error_db import create_error, is_error
@@ -278,14 +279,22 @@ def normalize_image_url(image_url):
 
 #   Network
 
-def pixiv_request(url, wait=True):
-    if wait:
-        next_wait = get_next_wait('pixiv')
-        update_next_wait('pixiv', MINIMUM_QUERY_INTERVAL)
+def check_request_wait(wait):
+    if not wait:
+        return
+    next_wait = get_next_wait('pixiv')
+    if next_wait is not None:
         sleep_time = next_wait - get_current_time().timestamp()
         if sleep_time > 0.0:
-            print("Pixiv request: sleeping -", sleep_time)
+            update_next_wait('pixiv', MINIMUM_QUERY_INTERVAL + sleep_time)
+            print_info("Pixiv request: sleeping -", sleep_time)
             time.sleep(sleep_time)
+            return
+    update_next_wait('pixiv', MINIMUM_QUERY_INTERVAL)
+
+
+def pixiv_request(url, wait=True):
+    check_request_wait(wait)
     for i in range(3):
         try:
             response = requests.get(url, headers=API_HEADERS, cookies=API_JAR, timeout=10)
