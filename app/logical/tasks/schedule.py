@@ -231,8 +231,7 @@ def reset_subscription_status_task():
         for subscription in subscriptions:
             update_subscription_status(subscription, 'idle')
         printer("Subscriptions reset:", len(subscriptions))
-        update_subscriptions_ready(True)
-        SESSION.commit()
+        update_subscriptions_ready()
 
     _execute_scheduled_task(_task, 'reset_subscription_status', False, False)
 

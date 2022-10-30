@@ -72,7 +72,7 @@ def process_subscription(subscription_id, job_id):
         start_posts = subscription.artist.post_count
         start_elements = subscription.element_count
         starting_post_ids = [post.id for post in subscription.posts]
-        update_job_by_id('job_lock', 'process_subscription', True)
+        update_job_by_id('job_lock', 'process_subscription', {'locked': True})
         SESSION.commit()
         download_subscription_illusts(subscription, job_id)
         download_subscription_elements(subscription, job_id)
@@ -99,7 +99,7 @@ def process_subscription(subscription_id, job_id):
 
     def _query_unlock():
         if not check_processing_subscriptions():
-            update_job_by_id('job_lock', 'process_subscription', False)
+            update_job_by_id('job_lock', 'process_subscription', {'locked': False})
             SESSION.commit()
 
     safe_db_execute('process_subscription', 'records.subscription_rec',

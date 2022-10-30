@@ -101,6 +101,7 @@ def create_or_update_job_status(id, status):
     item = JobStatus.find(id)
     if item is None:
         item = JobStatus(id=id)
+        SESSION.add(item)
     item.data = status
     SESSION.flush()
 

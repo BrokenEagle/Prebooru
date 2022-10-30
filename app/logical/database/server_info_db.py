@@ -108,6 +108,7 @@ def update_next_wait(kind, duration):
     field = kind + '_next_wait'
     value = FIELD_UPDATERS[field](duration)
     update_field(field, value)
+    SESSION.commit()
 
 
 @checkinit
@@ -117,9 +118,10 @@ def get_subscriptions_ready():
 
 
 @checkinit
-def update_subscriptions_ready(ready):
-    value = FIELD_UPDATERS['subscriptions_ready'](ready)
+def update_subscriptions_ready():
+    value = FIELD_UPDATERS['subscriptions_ready'](True)
     update_field('subscriptions_ready', value)
+    SESSION.commit()
 
 
 # #### Initialization

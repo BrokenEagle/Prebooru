@@ -37,7 +37,7 @@ def update_html(name):
         enable = request.values.get('enable', type=eval_bool_string)
         if enable is not None:
             flash(f"Updated value for '{name}': {enable}")
-            update_job_by_id('job_enable', name, enable)
+            update_job_by_id('job_enable', name, {'enabled': enable})
             SESSION.commit()
         else:
             flash("Enable argument not set.", 'error')
@@ -68,12 +68,12 @@ def _initialize():
 
 
 def _run_program(func, name):
-    update_job_by_id('job_manual', name, True)
+    update_job_by_id('job_manual', name, {'manual': True})
     SESSION.commit()
     try:
         func()
     finally:
-        update_job_by_id('job_manual', name, False)
+        update_job_by_id('job_manual', name, {'manual': False})
         SESSION.commit()
 
 
