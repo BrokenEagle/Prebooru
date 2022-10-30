@@ -252,7 +252,6 @@ def _check_timeout(info, timevals, printer):
             next_run_time = datetime.datetime.now() + datetime.timedelta(seconds=next_run_offset)
             info[id] = next_run_time
         elif timevals[id].time != info[id].timestamp():
-            print(id, timevals[id].time, info[id].timestamp())
             update_job_by_id('job_time', id, {'time': info[id].timestamp()})
 
 

@@ -103,8 +103,7 @@ def _fk_open_connections():
 
 def _before_request():
     from app.logical.database.server_info_db import update_last_activity
-    msg = f"\nBefore request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
-    logger.info(msg)
+    logger.info("Before request: Allow - %s, Active = %d\n", SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
     SERVER_INFO.active_requests += 1
     if request.endpoint is not None and not re.match(r'^(?:shutdown|ping|scheduler|static|media)', request.endpoint):
         try:
@@ -118,8 +117,7 @@ def _before_request():
 def _teardown_request(error=None):
     if error is not None:
         logger.warning(f"\nRequest error: {error}\n")
-    msg = f"\nAfter request: Allow - {SERVER_INFO.allow_requests}, Active = {SERVER_INFO.active_requests}\n"
-    logger.info(msg)
+    logger.info("After request: Allow - %s, Active = %d\n", SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
     SERVER_INFO.active_requests = max(SERVER_INFO.active_requests - 1, 0)
 
 
@@ -176,7 +174,7 @@ class MethodRewriteMiddleware(object):
 
     def __call__(self, environ, start_response):
         SERVER_INFO.addr = environ['HTTP_HOST'].split(':')[0]
-        logger.info(f"\nMiddleware: Server addr - {SERVER_INFO.addr}\n")
+        logger.info("Middleware: Server addr - %d\n", SERVER_INFO.addr)
         if environ['REQUEST_METHOD'] == 'POST':
             environ['wsgi.input'] = stream = BytesIO(get_input_stream(environ).read())
             _, form, _ = parse_form_data(environ)

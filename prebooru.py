@@ -171,7 +171,7 @@ def start_server(args):
     global SERVER_PID, SERVER_PID_FILE, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER,\
         load_default, put_get_json, PREBOORU_RUNNING
     from config import DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER, RELOAD_INTERVAL,\
-        EXCLUDE_PATTERNS, DEBUG_LOG
+        EXCLUDE_PATTERNS
     from utility.file import load_default, put_get_json
     SERVER_PID_FILE = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
     SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
@@ -207,8 +207,7 @@ def start_server(args):
         put_get_json(SERVER_PID_FILE, 'w', [SERVER_PID])
     PREBOORU_APP.name = 'prebooru'
     SCHEDULER.start()
-    if not DEBUG_LOG:
-        logging.getLogger().handlers = []
+    logging.getLogger().handlers = []
     app_args = {
         'threaded': True,
         'port': PREBOORU_PORT,
