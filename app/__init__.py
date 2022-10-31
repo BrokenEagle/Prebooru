@@ -92,7 +92,7 @@ def _fk_pragma_on_close(dbapi_connection, connection_record, database):
 
 
 def _fk_open_connections():
-    printer = buffered_print("OPEN DB CONNECTIONS")
+    printer = buffered_print("OPEN DB CONNECTIONS", header=False)
     printer("PID:", os.getpid())
     for key in DATABASE_INFO.connections:
         printer('  %s: %d' % (key, len(DATABASE_INFO.connections[key])))
