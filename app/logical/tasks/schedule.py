@@ -241,21 +241,24 @@ def reset_subscription_status_task():
 # ###### Semaphore
 
 def _execute_scheduled_task(func, id, has_enabled, has_lock):
-    display_name = ' '.join(word.title() for word in id.split('_'))
-    if has_enabled and not _is_job_enabled(id):
-        print(f"Task scheduler - {display_name}: disabled")
-        return
-    if has_lock and not _set_db_semaphore(id):
-        print(f"Task scheduler - {display_name}: already running")
-        return
-    printer = buffered_print(display_name)
-    printer("PID:", os.getpid())
-    start_time = time.time()
-    func(printer)
-    printer("Execution time: %0.2f" % (time.time() - start_time))
-    printer.print()
-    if has_lock:
-        _free_db_semaphore(id)
+    def _execute():
+        display_name = ' '.join(word.title() for word in id.split('_'))
+        if has_enabled and not _is_job_enabled(id):
+            print(f"Task scheduler - {display_name}: disabled")
+            return
+        if has_lock and not _set_db_semaphore(id):
+            print(f"Task scheduler - {display_name}: already running")
+            return
+        printer = buffered_print(display_name)
+        printer("PID:", os.getpid())
+        start_time = time.time()
+        func(printer)
+        printer("Execution time: %0.2f" % (time.time() - start_time))
+        printer.print()
+        if has_lock:
+            _free_db_semaphore(id)
+
+    _execute()
     SESSION.remove()
 
 
