@@ -111,6 +111,9 @@ def _before_request():
         except Exception as e:
             # Don't fail the request if the database is locked
             logger.warning(f"Unable to update last activity:\r\n {e}")
+            SESSION.rollback()
+        else:
+            SESSION.commit()
     return None if SERVER_INFO.allow_requests else ""
 
 
