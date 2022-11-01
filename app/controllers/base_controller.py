@@ -43,7 +43,7 @@ def referrer_check(endpoint, request):
 
 
 def show_json_response(model, id, options=None):
-    results = get_or_error(model, id, options)
+    results = get_or_error(model, id, options=options)
     return results.to_json() if type(results) is not dict else results
 
 
