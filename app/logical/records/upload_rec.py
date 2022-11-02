@@ -6,7 +6,7 @@ import itertools
 # ## PACKAGE IMPORTS
 from utility.time import minutes_ago, days_ago
 from utility.data import add_dict_entry
-from utility.uprint import buffered_print
+from utility.uprint import buffered_print, print_warning
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -109,8 +109,14 @@ def populate_all_upload_elements(uploads):
     illust_index = {}
     upload_elements = {}
     for upload in uploads:
-        source = get_post_source(upload.request_url)
-        site_illust_id = source.get_illust_id(upload.request_url)
+        source = upload._source
+        if upload.request_url is not None:
+            site_illust_id = source.get_illust_id(upload.request_url)
+        elif upload.illust_url_id is not None:
+            site_illust_id = upload.illust_url.illust.site_illust_id
+        else:
+            print_warning(f"Unable to find an illust for {upload.shortlink}")
+            continue
         site_id = source.SITE_ID
         add_dict_entry(illust_lookup, site_id, site_illust_id)
         illust_index[upload.id] = {'site_id': site_id, 'site_illust_id': site_illust_id}
