@@ -110,7 +110,7 @@ def upgrade_():
     create_table('upload_element', **ELEMENT_TABLE_CONFIG)
     create_indexes('upload_element', [
         ('ix_upload_element_md5', ['md5'], False, {'sqlite_where': 'md5 IS NOT NULL'}),
-        ('ix_upload_element_upload_id', ['upload_id'], False, {'sqlite_where': 'upload_id IS NOT NULL'}),
+        ('ix_upload_element_upload_id', ['upload_id'], False),
     ])
     create_table('upload_element_errors', **ELEMENT_ERRORS_TABLE_CONFIG)
 
