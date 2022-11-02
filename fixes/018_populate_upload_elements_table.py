@@ -19,18 +19,21 @@ POSTID_RG = re.compile(r'post #(\d+)')
 # ## FUNCTIONS
 
 def initialize():
-    global SESSION, Upload, Error, UploadErrors, SubscriptionElementErrors, selectinload_batch_primary,\
-        selectinload_batch_relations, populate_all_upload_elements
+    global SESSION, Upload, IllustUrl, Error, UploadErrors, SubscriptionElementErrors,\
+        selectinload_batch_primary, selectinload_batch_relations, populate_all_upload_elements
     sys.path.append(os.path.abspath('.'))
     from app import SESSION
-    from app.models import Upload, Error, UploadErrors, SubscriptionElementErrors
+    from app.models import Upload, IllustUrl, Error, UploadErrors, SubscriptionElementErrors
     from app.logical.batch_loader import selectinload_batch_relations
     from app.logical.records.upload_rec import populate_all_upload_elements
 
 
 def create_missing_upload_elements():
     q = Upload.query
-    q = q.options(selectinload(Upload.image_urls), selectinload(Upload.elements), selectinload(Upload.errors))
+    q = q.options(selectinload(Upload.image_urls),
+                  selectinload(Upload.elements),
+                  selectinload(Upload.illust_url).selectinload(IllustUrl.illust),
+                  selectinload(Upload.errors))
     page = q.count_paginate(per_page=200)
     while True:
         print(f"\npopulate_all_upload_elements: {page.first} - {page.last} / Total({page.count})\n")
