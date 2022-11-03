@@ -14,7 +14,7 @@ Subscriptions.networkHandler = function(obj) {
             } else {
                 Prebooru.message("Updated element.");
             }
-            if (data.html) {
+            if (data.html && $element.parentElement) {
                 $element.outerHTML = data.html;
                 let $post = $element.querySelector('.post');
                 if ($post) {
