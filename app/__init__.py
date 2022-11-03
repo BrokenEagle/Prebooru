@@ -7,6 +7,7 @@ import sys
 import json
 import uuid
 import atexit
+import sqlite3
 import logging
 import traceback
 from io import BytesIO
@@ -87,7 +88,10 @@ def _fk_pragma_on_close(dbapi_connection, connection_record, database):
                  connection_record.pid, connection_record.uuid)
     cursor = dbapi_connection.cursor()
     cursor.execute('PRAGMA analysis_limit = 400')
-    cursor.execute('PRAGMA optimize')
+    try:
+        cursor.execute('PRAGMA optimize')
+    except sqlite3.OperationalError:
+        cursor.execute('ROLLBACK')
     cursor.close()
 
 
