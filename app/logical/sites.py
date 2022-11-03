@@ -1,12 +1,16 @@
 # APP/LOGICAL/SITES.PY
 
 # ## PYTHON IMPORTS
-from enum import Enum, auto
+import enum
+
+# ## PACKAGE IMPORTS
+from utility.obj import AttrEnum
 
 
 # ## GLOBAL VARIABLES
 
 SITES = {
+    'CUSTOM': None,
     'PIXIV': 'www.pixiv.net',
     'PXIMG': 'i.pximg.net',
     'TWITTER': 'twitter.com',
@@ -19,13 +23,22 @@ DOMAINS = {v: k for k, v in SITES.items()}
 
 # ## CLASSES
 
-class Site(Enum):
+class Site(AttrEnum):
     CUSTOM = 0
-    PIXIV = auto()
-    PXIMG = auto()
-    TWITTER = auto()
-    TWIMG = auto()
-    TWVIDEO = auto()
+    PIXIV = enum.auto()
+    PXIMG = enum.auto()
+    TWITTER = enum.auto()
+    TWIMG = enum.auto()
+    TWVIDEO = enum.auto()
+
+    @property
+    def source(self):
+        from .sources import SOURCEDICT
+        return SOURCEDICT[self.name]
+
+    @property
+    def domain(self):
+        return SITES[self.name]
 
 
 # ## FUNCTIONS

@@ -13,6 +13,7 @@ from utility.data import eval_bool_string, is_falsey
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
 from ..logical.utility import set_error
+from ..logical.sites import SiteDescriptor
 from ..logical.sources.base import get_source_by_id, get_illust_required_params
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
@@ -87,7 +88,11 @@ FORM_CONFIG = {
         'name': 'Site',
         'field': SelectField,
         'kwargs': {
-            'choices': [("", ""), (1, 'Pixiv'), (3, 'Twitter')],
+            'choices': [
+                ("", ""),
+                (SiteDescriptor.PIXIV.value, SiteDescriptor.PIXIV.name.title()),
+                (SiteDescriptor.TWITTER.value, SiteDescriptor.TWITTER.name.title()),
+            ],
             'validators': [DataRequired()],
             'coerce': int_or_blank,
         },
