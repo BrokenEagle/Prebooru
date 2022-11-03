@@ -8,7 +8,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Artist, ArtistUrl, Label, Description
+from ...models import Artist, ArtistUrl, Booru, Label, Description
 from ..utility import set_error
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
     set_timesvalue, set_association_attributes
@@ -28,10 +28,10 @@ CREATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account'
 UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active',
                              '_site_accounts', '_names', '_profiles']
 
-BOORU_PRIMARYJOIN = Artist.boorus.property.primaryjoin
 BOORU_SUBQUERY = Artist.query\
-    .join(BOORU_PRIMARYJOIN.right.table, BOORU_PRIMARYJOIN.left == BOORU_PRIMARYJOIN.right)\
-    .filter(BOORU_PRIMARYJOIN.left == BOORU_PRIMARYJOIN.right).with_entities(Artist.id)
+    .join(Booru, Artist.boorus)\
+    .filter(Booru.deleted.is_(False))\
+    .with_entities(Artist.id)
 BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 
 
