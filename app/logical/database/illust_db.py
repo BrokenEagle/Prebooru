@@ -81,7 +81,7 @@ def create_illust_from_parameters(createparams):
     update_relationship_collections(illust, create_relationships, createparams)
     append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     append_relationship_collections(illust, append_relationships, createparams)
-    update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id, createparams)
+    update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id.name, createparams)
     if 'illust_urls' in createparams:
         update_illust_urls(illust, createparams['illust_urls'])
     print("[%s]: created" % illust.shortlink)
@@ -96,7 +96,7 @@ def create_illust_from_raw_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(NORMALIZED_ASSOCIATION_ATTRIBUTES)
     create_relationships = [rel for rel in RECREATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_relationship_collections(illust, create_relationships, createparams)
-    update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id, createparams)
+    update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id.name, createparams)
     if 'illust_urls' in createparams:
         update_illust_urls(illust, createparams['illust_urls'])
     print("[%s]: created" % illust.shortlink)
@@ -116,7 +116,8 @@ def update_illust_from_parameters(illust, updateparams):
     update_results.append(update_relationship_collections(illust, update_relationships, updateparams))
     append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_results.append(append_relationship_collections(illust, append_relationships, updateparams))
-    update_results.append(update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id, updateparams))
+    update_results.append(update_site_data_from_parameters(illust.site_data, illust.id,
+                                                           illust.site_id.name, updateparams))
     if 'illust_urls' in updateparams:
         update_results.append(update_illust_urls(illust, updateparams['illust_urls']))
     if any(update_results):

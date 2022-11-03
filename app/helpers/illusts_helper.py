@@ -11,9 +11,6 @@ from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from ..logical.sites import get_site_key
-from ..logical.sources import SOURCEDICT
-from ..logical.sources.base import get_source_by_id
 from .base_helper import external_link, general_link
 
 
@@ -57,18 +54,15 @@ def site_date_iterator(illust):
 # #### URL functions
 
 def site_short_link(illust):
-    site_key = get_site_key(illust.site_id)
-    return "%s #%d" % (site_key.lower(), illust.site_illust_id)
+    return "%s #%d" % (illust.site_id.name.lower(), illust.site_illust_id)
 
 
 def site_illust_url(illust):
-    site_key = get_site_key(illust.site_id)
-    source = SOURCEDICT[site_key]
-    return source.get_illust_url(illust.site_illust_id)
+    return illust.site_id.source.get_illust_url(illust.site_illust_id)
 
 
 def danbooru_batch_url(illust):
-    source = get_source_by_id(illust.site_id)
+    source = illust.site_id.source
     post_url = source.get_post_url(illust)
     query_string = urllib.parse.urlencode({'url': post_url})
     return DANBOORU_HOSTNAME + '/uploads/batch?' + query_string
@@ -133,7 +127,6 @@ def site_illust_link(illust):
 
 
 def alt_site_illust_link(illust):
-    site_key = get_site_key(illust.site_id)
-    source = SOURCEDICT[site_key]
+    source = illust.site_id.source
     post_url = source.get_post_url(illust)
     return external_link('»', post_url) if post_url != source.get_illust_url(illust.site_illust_id) else ""

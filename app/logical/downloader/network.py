@@ -39,7 +39,8 @@ def redownload_post(post, illust_url):
 
 # #### Auxiliary functions
 
-def get_media_extension(illust_url, source):
+def get_media_extension(illust_url):
+    source = illust_url.site_id.source
     full_url = source.get_full_url(illust_url)
     file_ext = source.get_media_extension(full_url)
     if file_ext not in ['jpg', 'png', 'mp4']:
@@ -50,7 +51,8 @@ def get_media_extension(illust_url, source):
 
 # #### Network functions
 
-def download_media(illust_url, source, record, sample):
+def download_media(illust_url, record, sample):
+    source = illust_url.site_id.source
     download_url = source.get_full_url(illust_url) if not sample else source.get_sample_url(illust_url, True)
     buffer = _download_media(download_url, source)
     if not is_error(buffer):
@@ -72,11 +74,10 @@ def download_media(illust_url, source, record, sample):
 
 def create_image_post(record, post_type):
     illust_url = record.illust_url
-    source = illust_url._source
-    file_ext = get_media_extension(illust_url, source)
+    file_ext = get_media_extension(illust_url)
     if is_error(file_ext):
         return [file_ext]
-    buffer = download_media(illust_url, source, record, False)
+    buffer = download_media(illust_url, record, False)
     if isinstance(buffer, list):
         return buffer
     md5 = check_existing(buffer, illust_url, record)
@@ -101,11 +102,10 @@ def create_image_post(record, post_type):
 
 def create_video_post(record, post_type):
     illust_url = record.illust_url
-    source = illust_url._source
-    file_ext = get_media_extension(illust_url, source)
+    file_ext = get_media_extension(illust_url)
     if is_error(file_ext):
         return [file_ext]
-    buffer = download_media(illust_url, source, record, False)
+    buffer = download_media(illust_url, record, False)
     if isinstance(buffer, list):
         return buffer
     md5 = check_existing(buffer, illust_url, record)
@@ -118,7 +118,7 @@ def create_video_post(record, post_type):
     if error is not None:
         return post_errors + [error]
     vinfo = check_video_info(temppost, illust_url, post_errors)
-    thumb_binary = download_media(illust_url, source, record, True)
+    thumb_binary = download_media(illust_url, record, True)
     if isinstance(thumb_binary, list):
         return post_errors + thumb_binary
     save_thumb(thumb_binary, temppost, post_errors)

@@ -249,7 +249,8 @@ def _archive_post_data(post, retdata, expires):
             'errors': [error.column_dict() for error in post.errors],
         },
         'links': {
-            'illusts': [{'url': illust_url.url, 'site_id': illust_url.site_id} for illust_url in post.illust_urls],
+            'illusts': [{'url': illust_url.url, 'site_id': illust_url.site_id.value}
+                        for illust_url in post.illust_urls],
         },
     }
     archive = get_archive('post', post.md5)
@@ -337,7 +338,7 @@ def _load_file(post):
 
 def _get_video_thumb_binary(post):
     for illust_url in post.illust_urls:
-        source = illust_url._source
+        source = illust_url.site_id.source
         download_url = source.get_sample_url(illust_url)
         print("Downloading", download_url)
         buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)

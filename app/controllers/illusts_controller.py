@@ -193,9 +193,9 @@ def get_illust_form(**kwargs):
 
 
 def uniqueness_check(dataparams, illust):
-    site_id = dataparams['site_id'] if 'site_id' in dataparams else illust.site_id
+    site_id = dataparams['site_id'] if 'site_id' in dataparams else illust.site_id.value
     site_illust_id = dataparams['site_illust_id'] if 'site_illust_id' in dataparams else illust.site_illust_id
-    if site_id != illust.site_id or site_illust_id != illust.site_illust_id:
+    if site_id != illust.site_id.value or site_illust_id != illust.site_illust_id:
         return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
 
 
@@ -369,7 +369,7 @@ def new_html():
             form.artist_id.data = None
         else:
             hide_input(form, 'artist_id', artist.id)
-            hide_input(form, 'site_id', artist.site_id)
+            hide_input(form, 'site_id', artist.site_id.value)
     return render_template("illusts/new.html", form=form, artist=artist, illust=Illust())
 
 
@@ -398,7 +398,7 @@ def edit_html(id):
     editparams.update({k: v for (k, v) in illust.site_data.to_json().items() if k not in ['id', 'illust_id', 'type']})
     form = get_illust_form(**editparams)
     hide_input(form, 'artist_id', illust.artist_id)
-    hide_input(form, 'site_id', illust.site_id)
+    hide_input(form, 'site_id', illust.site_id.value)
     return render_template("illusts/edit.html", form=form, illust=illust)
 
 
@@ -449,8 +449,7 @@ def query_create_html():
 @bp.route('/illusts/<int:id>/query_update', methods=['POST'])
 def query_update_html(id):
     illust = get_or_abort(Illust, id)
-    source = get_source_by_id(illust.site_id)
-    update_illust_from_source(illust, source)
+    update_illust_from_source(illust)
     flash("Illust updated.")
     return redirect(url_for('illust.show_html', id=id))
 

@@ -15,8 +15,6 @@ from ... import SESSION
 from ...models import Subscription, SubscriptionElement, Illust, IllustUrl
 from ..utility import SessionThread, SessionTimer
 from ..searchable import search_attributes
-from ..sites import get_site_key
-from ..sources import SOURCEDICT
 from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..downloader.network import convert_network_subscription
@@ -115,8 +113,7 @@ def process_subscription(subscription_id, job_id):
 def download_subscription_illusts(subscription, job_id=None):
     update_subscription_requery(subscription, hours_from_now(4))
     artist = subscription.artist
-    site_key = get_site_key(artist.site_id)
-    source = SOURCEDICT[site_key]
+    source = artist.site_id.source
     site_illust_ids = source.populate_all_artist_illusts(artist, subscription.last_id, job_id)
     if is_error(site_illust_ids):
         add_subscription_error(subscription, site_illust_ids)
@@ -134,7 +131,7 @@ def download_subscription_illusts(subscription, job_id=None):
             job_status['range'] = f"({first} - {last}) / {total}"
             update_job_status(job_id, job_status)
         data_params = source.get_illust_data(item_id)
-        illust = source.get_site_illust(item_id, artist.site_id)
+        illust = source.get_site_illust(item_id, artist.site_id.value)
         if illust is None:
             data_params['artist_id'] = artist.id
             create_illust_from_parameters(data_params)

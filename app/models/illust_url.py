@@ -8,10 +8,10 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import get_site_domain, get_site_key
+from ..logical.sites import Site
 from .upload_element import UploadElement
 from .subscription_element import SubscriptionElement
-from .base import JsonModel
+from .base import JsonModel, IntEnum
 
 
 # ## CLASSES
@@ -21,7 +21,7 @@ class IllustUrl(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(DB.Integer, nullable=False)
+    site_id = DB.Column(IntEnum(Site), nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
     sample_id = DB.Column(DB.Integer, nullable=True)
     sample = DB.Column(DB.String(255), nullable=True)
@@ -43,9 +43,9 @@ class IllustUrl(JsonModel):
 
     @memoized_property
     def type(self):
-        if self._source.video_url_mapper(self):
+        if self.site_id.source.video_url_mapper(self):
             return 'video'
-        elif self._source.image_url_mapper(self):
+        elif self.site_id.source.image_url_mapper(self):
             return 'image'
         else:
             return 'unknown'
@@ -53,29 +53,25 @@ class IllustUrl(JsonModel):
     @memoized_property
     def preview_url(self):
         if self.type == 'image':
-            return self._source.get_preview_url(self)
+            return self.site_id.source.get_preview_url(self)
         elif self.type == 'video':
             return self.sample_url
 
     @memoized_property
     def full_url(self):
-        return self._source.get_media_url(self)
+        return self.site_id.source.get_media_url(self)
 
     @memoized_property
     def sample_url(self):
-        return self._source.get_sample_url(self)
-
-    @memoized_property
-    def _source(self):
-        from ..logical.sources import SOURCEDICT
-        site_key = get_site_key(self.site_id)
-        return SOURCEDICT[site_key]
+        return self.site_id.source.get_sample_url(self)
 
     @property
     def site_domain(self):
-        return get_site_domain(self.site_id)
+        return self.site_id.domain
 
     # ## Class properties
+
+    site_id_enum = Site
 
     @classproperty(cached=True)
     def json_attributes(cls):

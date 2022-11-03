@@ -81,7 +81,8 @@ def create_artist_from_source(site_artist_id, source):
     return create_artist_from_parameters(params)
 
 
-def update_artist_from_source(artist, source):
+def update_artist_from_source(artist):
+    source = artist.site_id.source
     params = source.get_artist_data(artist.site_artist_id)
     if params['active']:
         # These are only removable through the HTML/JSON UPDATE routes
@@ -158,7 +159,7 @@ def _archive_artist_data(artist, retdata):
             'boorus': [booru.danbooru_id for booru in artist.boorus],
         },
     }
-    data_key = '%d-%d' % (artist.site_id, artist.site_artist_id)
+    data_key = '%d-%d' % (artist.site_id.value, artist.site_artist_id)
     archive = get_archive('artist', data_key)
     try:
         if archive is None:

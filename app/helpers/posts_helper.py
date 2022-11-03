@@ -13,7 +13,6 @@ from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from ..logical.sources.base import get_source_by_id
 from .base_helper import general_link, external_link, url_for_with_params, render_tag, get_preview_dimensions
 
 
@@ -52,7 +51,7 @@ def similar_search_links(post, format_url, proxy_url=None):
             else:
                 image_links.append('N/A')
             continue
-        source = get_source_by_id(illust_url.site_id)
+        source = illust.site_id.source
         media_url = source.get_media_url(illust_url)
         if source.is_video_url(media_url):
             small_url = source.get_sample_url(illust_url)
@@ -153,7 +152,7 @@ def danbooru_post_bookmarklet_links(post):
             url = DANBOORU_HOSTNAME + f'/uploads/new?prebooru_post_id={post.id}&prebooru_illust_id={illust.id}'
             image_links.append(external_link(f'file #{illust.id}', url))
             continue
-        source = get_source_by_id(illust_url.site_id)
+        source = illust.site_id.source
         media_url = source.get_media_url(illust_url)
         post_url = source.get_post_url(illust)
         query_string = urllib.parse.urlencode({'url': media_url, 'ref': post_url})

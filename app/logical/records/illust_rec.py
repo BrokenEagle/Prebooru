@@ -30,7 +30,8 @@ def create_illust_from_source(site_illust_id, source):
     return create_illust_from_parameters(createparams)
 
 
-def update_illust_from_source(illust, source):
+def update_illust_from_source(illust):
+    source = illust.site_id.source
     updateparams = source.get_illust_data(illust.site_illust_id)
     if updateparams['active']:
         # These are only removable through the HTML/JSON UPDATE routes
@@ -113,14 +114,14 @@ def _archive_illust_data(illust, retdata):
         },
         'links': {
             'artist': {
-                'site_id': illust.artist.site_id,
+                'site_id': illust.artist.site_id.value,
                 'site_artist_id': illust.artist.site_artist_id,
             },
-            'posts': [{'md5': illust_url.post.md5, 'url': illust_url.url, 'site_id': illust_url.site_id}
+            'posts': [{'md5': illust_url.post.md5, 'url': illust_url.url, 'site_id': illust_url.site_id.value}
                       for illust_url in illust.urls if illust_url.post is not None],
         },
     }
-    data_key = '%d-%d' % (illust.site_id, illust.site_illust_id)
+    data_key = '%d-%d' % (illust.site_id.value, illust.site_illust_id)
     archive = get_archive('illust', data_key)
     try:
         if archive is None:

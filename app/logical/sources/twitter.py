@@ -431,8 +431,8 @@ def normalized_image_url(image_url):
 
 
 def get_media_url(illust_url):
-    return illust_url.url if illust_url.site_id == 0\
-        else 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
+    return illust_url.url if illust_url.site_id.value == 0\
+        else 'https://' + illust_url.site_id.domain + illust_url.url
 
 
 def get_sample_url(illust_url, original=False):
@@ -1187,7 +1187,7 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
         # No tweet IDs means that no new results were found, but the timeline was not empty
         return tweet_ids
     # Update the artist current user account in case it has changed since creating the artist
-    update_artist_from_source(artist, SELF)
+    update_artist_from_source(artist)
     lowest_tweet_id = min(tweet_ids)
     timestamp = snowflake_to_epoch(lowest_tweet_id)
     timeval = datetime_from_epoch(timestamp)

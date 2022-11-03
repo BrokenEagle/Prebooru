@@ -12,7 +12,7 @@ from utility.uprint import buffered_print, print_warning
 from ... import SESSION
 from ...models import Upload, Illust
 from ..utility import unique_objects, SessionThread
-from ..sources.base import get_post_source, get_source_by_id
+from ..sources.base import get_post_source
 from ..records.artist_rec import update_artist_from_source, check_artists_for_boorus
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
 from ..records.post_rec import check_posts_for_danbooru_id
@@ -90,7 +90,7 @@ def populate_upload_elements(upload, illust=None):
         if illust is None:
             return
     else:
-        source = illust._source
+        source = illust.site_id.source
     all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
     upload_elements = list(upload.elements)
     for illust_url in illust.urls:
@@ -126,7 +126,7 @@ def populate_all_upload_elements(uploads):
     for upload in uploads:
         illust_params = illust_index[upload.id]
         illust = next((illust for illust in illusts
-                       if illust.site_id == illust_params['site_id']
+                       if illust.site_id.value == illust_params['site_id']
                        and illust.site_illust_id == illust_params['site_illust_id']), None)
         if illust is None:
             continue
@@ -154,10 +154,10 @@ def process_network_upload(upload):
             create_and_append_error('records.upload_rec.process_network_upload', msg, upload)
             return
     elif illust.updated < requery_time:
-        update_illust_from_source(illust, source)
+        update_illust_from_source(illust)
     # The artist will have already been created in the create illust step if it didn't exist
     if illust.artist.updated < requery_time:
-        update_artist_from_source(illust.artist, source)
+        update_artist_from_source(illust.artist)
     all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
     upload_elements = upload.elements
     for illust_url in illust.urls:
@@ -175,12 +175,11 @@ def process_network_upload(upload):
 
 def process_file_upload(upload):
     illust = upload.illust_url.illust
-    source = get_source_by_id(illust.site_id)
     requery_time = days_ago(1)
     if illust.updated < requery_time:
-        update_illust_from_source(illust, source)
+        update_illust_from_source(illust)
     if illust.artist.updated < requery_time:
-        update_artist_from_source(illust.artist, source)
+        update_artist_from_source(illust.artist)
     if convert_file_upload(upload):
         set_upload_status(upload, 'complete')
     else:

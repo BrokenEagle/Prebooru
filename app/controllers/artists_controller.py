@@ -140,9 +140,9 @@ def get_artist_form(**kwargs):
 
 
 def uniqueness_check(dataparams, artist):
-    site_id = dataparams['site_id'] if 'site_id' in dataparams else artist.site_id
+    site_id = dataparams['site_id'] if 'site_id' in dataparams else artist.site_id.value
     site_artist_id = dataparams['site_artist_id'] if 'site_artist_id' in dataparams else artist.site_artist_id
-    if site_id != artist.site_id or site_artist_id != artist.site_artist_id:
+    if site_id != artist.site_id.value or site_artist_id != artist.site_artist_id:
         return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).one_or_none()
 
 
@@ -231,7 +231,7 @@ def query_create():
 
 
 def query_booru(artist):
-    source = get_source_by_id(artist.site_id)
+    source = artist.site_id.source
     search_url = source.artist_booru_search_url(artist)
     artist_data = get_artists_by_url(search_url)
     if artist_data['error']:
@@ -390,8 +390,7 @@ def query_create_json():
 def query_update_html(id):
     """Query source and update artist."""
     artist = get_or_abort(Artist, id)
-    source = get_source_by_id(artist.site_id)
-    update_artist_from_source(artist, source)
+    update_artist_from_source(artist)
     flash("Artist updated.")
     return redirect(url_for('artist.show_html', id=id))
 

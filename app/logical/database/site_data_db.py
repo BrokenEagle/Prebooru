@@ -2,7 +2,6 @@
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..sites import Site, get_site_key
 from ...models import TwitterData, PixivData
 from .base_db import update_column_attributes
 
@@ -20,18 +19,17 @@ SITE_DATA_TYPE_DICT = {
 
 # ## FUNCTIONS
 
-def update_site_data_from_parameters(site_data, illust_id, site_id, params):
+def update_site_data_from_parameters(site_data, illust_id, site_name, params):
     if site_data is not None:
-        site_key = get_site_key(site_id)
-        expected_type = SITE_DATA_TYPE_DICT[site_key]
+        expected_type = SITE_DATA_TYPE_DICT[site_name]
         if site_data.type != expected_type:
             print("Deleting site data!")
             SESSION.delete(site_data)
             SESSION.commit()
             site_data = None
-    if site_id == Site.TWITTER.value:
+    if site_name == 'TWITTER':
         return update_twitter_site_data(site_data, illust_id, params)
-    if site_id == Site.PIXIV.value:
+    if site_name == 'PIXIV':
         return update_pixiv_site_data(site_data, illust_id, params)
 
 

@@ -9,7 +9,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import get_site_domain, get_site_key
+from ..logical.sites import Site
 from .artist_url import ArtistUrl
 from .illust import Illust
 from .label import Label
@@ -18,7 +18,7 @@ from .subscription import Subscription
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel, EpochTimestamp, secondarytable
+from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -56,7 +56,7 @@ class Artist(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(DB.Integer, nullable=False)
+    site_id = DB.Column(IntEnum(Site), nullable=False)
     site_artist_id = DB.Column(DB.Integer, nullable=False)
     current_site_account = DB.Column(DB.String(255), nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
@@ -105,13 +105,11 @@ class Artist(JsonModel):
 
     @property
     def site_domain(self):
-        if self.site_id == 0:
-            return
-        return get_site_domain(self.site_id)
+        return self.site_id.domain
 
     @property
     def booru_search_url(self):
-        return self._source.artist_booru_search_url(self)
+        return self.site_id.source.artist_booru_search_url(self)
 
     # ###### Private
 
@@ -129,12 +127,6 @@ class Artist(JsonModel):
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust)\
                    .filter(Illust.artist_id == self.id)
 
-    @memoized_property
-    def _source(self):
-        from ..logical.sources import SOURCEDICT
-        site_key = get_site_key(self.site_id)
-        return SOURCEDICT[site_key]
-
     __table_args__ = (DB.UniqueConstraint('site_id', 'site_artist_id'),)
 
     # ## Methods
@@ -147,6 +139,8 @@ class Artist(JsonModel):
         DB.session.commit()
 
     # ## Class properties
+
+    site_id_enum = Site
 
     @classproperty(cached=True)
     def json_attributes(cls):

@@ -9,14 +9,14 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import get_site_domain, get_site_key
+from ..logical.sites import Site
 from .tag import SiteTag
 from .illust_url import IllustUrl
 from .site_data import SiteData
 from .description import Description
 from .notation import Notation
 from .pool_element import PoolIllust
-from .base import JsonModel, EpochTimestamp, secondarytable, polymorphic_accessor_factory
+from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, polymorphic_accessor_factory
 
 
 # ## GLOBAL VARIABLES
@@ -50,7 +50,7 @@ class Illust(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(DB.Integer, nullable=False)
+    site_id = DB.Column(IntEnum(Site), nullable=False)
     site_illust_id = DB.Column(DB.Integer, nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
@@ -99,24 +99,18 @@ class Illust(JsonModel):
 
     @property
     def site_domain(self):
-        return get_site_domain(self.site_id)
+        return self.site_id.domain
 
     @memoized_property
     def type(self):
-        if self._source.illust_has_videos(self):
+        if self.site_id.source.illust_has_videos(self):
             return 'video'
-        elif self._source.illust_has_images(self):
+        elif self.site_id.source.illust_has_images(self):
             return 'image'
         else:
             return 'unknown'
 
     # ###### Private
-
-    @memoized_property
-    def _source(self):
-        from ..logical.sources import SOURCEDICT
-        site_key = get_site_key(self.site_id)
-        return SOURCEDICT[site_key]
 
     __table_args__ = (DB.UniqueConstraint('site_id', 'site_illust_id'),)
 
@@ -132,6 +126,8 @@ class Illust(JsonModel):
             DB.session.commit()
 
     # ## Class properties
+
+    site_id_enum = Site
 
     @classproperty(cached=True)
     def json_attributes(cls):

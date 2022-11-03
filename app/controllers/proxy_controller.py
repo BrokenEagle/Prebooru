@@ -13,7 +13,6 @@ from utility.file import put_get_raw
 
 # ## LOCAL IMPORTS
 from ..models import Post
-from ..logical.sources.base import get_source_by_id
 from ..logical.sources.danbooru import get_uploads_by_md5, create_upload_from_buffer
 
 
@@ -77,7 +76,7 @@ def danbooru_upload_data():
             return error_resp("Illust #%d not on post #%d." % (post_id, illust_id))
     else:
         illust = post.illusts[0]
-    source = get_source_by_id(illust.site_id)
+    source = illust.site_id.source
     post_url = source.get_post_url(illust)
     profile_urls = source.artist_profile_urls(illust.artist)
     illust_commentaries = source.illust_commentaries_dtext(illust)

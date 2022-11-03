@@ -19,7 +19,7 @@ from utility.uprint import print_info
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, get_api_data, save_api_data
 from ..database.server_info_db import get_next_wait, update_next_wait
-from ..sites import Site, get_site_domain, get_site_id
+from ..sites import Site, get_site_id
 
 
 # ### GLOBAL VARIABLES
@@ -144,9 +144,9 @@ def is_post_url(url):
 
 
 def get_media_url(illust_url):
-    if illust_url.site_id == 0:
+    if illust_url.site_id.value == 0:
         return illust_url.url
-    return 'https://' + get_site_domain(illust_url.site_id) + illust_url.url
+    return 'https://' + illust_url.site_id.domain + illust_url.url
 
 
 def get_post_url(illust):
