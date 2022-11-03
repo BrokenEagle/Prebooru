@@ -79,8 +79,9 @@ class Subscription(JsonModel):
         return q.all()
 
     @memoized_property
-    def active_elements(self):
-        return self._element_query.filter_by(status='active').all()
+    def undecided_elements(self):
+        return self._element_query.filter(SubscriptionElement.status == 'active',
+                                          SubscriptionElement.keep.is_(None)).all()
 
     @memoized_property
     def average_interval(self):

@@ -115,9 +115,7 @@ def add_subscription_error(subscription, error):
 
 def delay_subscription_elements(subscription, delay_days):
     current_time = get_current_time()
-    for element in subscription.active_elements:
-        if element.keep and element.keep.name == 'maybe':
-            continue
+    for element in subscription.undecided_elements:
         if delay_days == 0:
             element.expires = None
         else:
