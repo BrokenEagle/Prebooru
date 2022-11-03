@@ -25,12 +25,6 @@ from .. import DB, SESSION, SERVER_INFO
 
 # ## FUNCTIONS
 
-# #### Helper functions
-
-def date_time_or_null(value):
-    return value if value is None else datetime.datetime.isoformat(value)
-
-
 def get_column_for_serialize(obj, column):
     value = getattr(obj, column)
     if isinstance(value, enum.Enum):
@@ -86,12 +80,6 @@ def relation_property_factory(model_key, table_name, relation_key):
         return Markup('<a href="%s">%s</a>' % (show_url, shortlink)) if value is not None else None
 
     return _shortlink, _show_url, _show_link
-
-
-def instance_bind(instance, method):
-    def binding_scope_fn(*args, **kwargs):
-        return method(instance, *args, **kwargs)
-    return binding_scope_fn
 
 
 def secondarytable(*args):
@@ -384,7 +372,7 @@ class JsonModel(DB.Model):
         for attr in attributes:
             value = getattr(self, attr)
             if type(value) is datetime.datetime:
-                data[attr] = date_time_or_null(value)
+                data[attr] = value if value is None else datetime.datetime.isoformat(value)
             elif type(value) is bytes:
                 data[attr] = value.hex()
             elif isinstance(value, enum.Enum):
