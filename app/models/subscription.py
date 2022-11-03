@@ -8,6 +8,7 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.time import average_timedelta, days_ago, get_current_time
+from utility.obj import AttrEnum
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -16,7 +17,7 @@ from .illust import IllustUrl
 from .post import Post
 from .error import Error
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, ModelEnum, IntEnum, EpochTimestamp, secondarytable
+from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -33,7 +34,7 @@ SubscriptionErrors = secondarytable(
 
 # ## CLASSES
 
-class SubscriptionStatus(ModelEnum):
+class SubscriptionStatus(AttrEnum):
     idle = enum.auto()
     manual = enum.auto()
     automatic = enum.auto()

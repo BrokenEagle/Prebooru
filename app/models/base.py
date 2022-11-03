@@ -17,6 +17,7 @@ from sqlalchemy.ext.associationproxy import _AssociationList
 # ## PACKAGE IMPORTS
 from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 from utility.time import process_utc_timestring, datetime_from_epoch, datetime_to_epoch
+from utility.obj import classproperty, StaticProperty
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION, SERVER_INFO
@@ -87,12 +88,6 @@ def relation_property_factory(model_key, table_name, relation_key):
     return _shortlink, _show_url, _show_link
 
 
-def classproperty(cached=False):
-    def _decorator(function):
-        return CacheClassProperty(function, cached)
-    return _decorator
-
-
 def instance_bind(instance, method):
     def binding_scope_fn(*args, **kwargs):
         return method(instance, *args, **kwargs)
@@ -110,61 +105,6 @@ def secondarytable(*args):
 
 
 # ## CLASSES
-
-class CacheClassProperty:
-    """Decorator for a Class property with optional caching.
-       Must be used with classproperty if the cached is used.
-    """
-    def __init__(self, func, cached=False):
-        self.func = func
-        self.cached = cached
-
-    def __get__(self, owner_self, owner_cls):
-        if self.cached:
-            keyname = '_' + owner_cls.__name__ + '_' + self.func.__name__
-            if not hasattr(owner_cls, keyname):
-                val = self.func(owner_cls)
-                setattr(owner_cls, keyname, val)
-            return getattr(owner_cls, keyname)
-        else:
-            return self.func(owner_cls)
-
-
-class StaticProperty:
-    """Decorator for a static property.
-    """
-    def __init__(self, fget=None, fset=None, fdel=None):
-        self.fget = fget
-        self.fset = fset
-        self.fdel = fdel
-
-    def setter(self, fset):
-        self.fset = fset
-        return self
-
-    def deleter(self, fdel):
-        self.fdel = fdel
-        return self
-
-    def __get__(self, instance, owner=None):
-        return self.fget()
-
-    def __set__(self, instance, value):
-        return self.fset(value)
-
-    def __delete__(self, instance):
-        return self.fdel()
-
-
-class ModelEnum(enum.Enum):
-    @classproperty(cached=False)
-    def names(cls):
-        return [e.name for e in cls]
-
-    @classproperty(cached=False)
-    def values(cls):
-        return [e.value for e in cls]
-
 
 class NormalizedDatetime(DATETIME):
     def __init__(self, *args, **kwargs):

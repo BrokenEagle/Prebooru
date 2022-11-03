@@ -3,10 +3,13 @@
 # ## PYTHON IMPORTS
 import enum
 
+# ## PACKAGE IMPORTS
+from utility.obj import AttrEnum
+
 # ## LOCAL IMPORTS
 from .. import DB
 from .error import Error
-from .base import JsonModel, ModelEnum, IntEnum, BlobMD5, secondarytable
+from .base import JsonModel, IntEnum, BlobMD5, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -23,7 +26,7 @@ UploadElementErrors = secondarytable(
 
 # ## CLASSES
 
-class UploadElementStatus(ModelEnum):
+class UploadElementStatus(AttrEnum):
     unknown = -1
     complete = 0
     duplicate = enum.auto()

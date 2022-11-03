@@ -9,10 +9,11 @@ from flask import url_for
 
 # ## PACKAGE IMPORTS
 from config import DEFAULT_PAGINATE_LIMIT
+from utility.obj import AttrEnum
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
-from .base import JsonModel, ModelEnum, IntEnum
+from .base import JsonModel, IntEnum
 
 
 # ## FUNCTIONS
@@ -42,7 +43,7 @@ def pool_element_delete(pool_id, item):
 
 # ## CLASSES
 
-class PoolElementType(ModelEnum):
+class PoolElementType(AttrEnum):
     pool_element = -1  # This should never actually be set
     pool_post = enum.auto()
     pool_illust = enum.auto()

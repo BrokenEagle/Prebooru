@@ -13,6 +13,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, ALTERNATE_MEDIA_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
+from utility.obj import AttrEnum, classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -25,8 +26,7 @@ from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
-from .base import JsonModel, ModelEnum, EpochTimestamp, IntEnum, secondarytable, image_server_url, classproperty,\
-    BlobMD5
+from .base import JsonModel, EpochTimestamp, IntEnum, secondarytable, image_server_url, BlobMD5
 
 
 # ## GLOBAL VARIABLES
@@ -63,7 +63,7 @@ PostTags = secondarytable(
 
 # ## CLASSES
 
-class PostType(ModelEnum):
+class PostType(AttrEnum):
     user = enum.auto()
     subscription = enum.auto()
 

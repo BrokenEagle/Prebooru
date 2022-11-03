@@ -3,14 +3,17 @@
 # ## PYTHON IMPORTS
 import enum
 
+# ## PACKAGE IMPORTS
+from utility.obj import AttrEnum, classproperty
+
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, ModelEnum, IntEnum, CompressedJSON, EpochTimestamp, classproperty
+from .base import JsonModel, IntEnum, CompressedJSON, EpochTimestamp
 
 
 # ## CLASSES
 
-class ApiDataType(ModelEnum):
+class ApiDataType(AttrEnum):
     illust = enum.auto()
     artist = enum.auto()
     profile = enum.auto()

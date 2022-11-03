@@ -6,14 +6,17 @@ import enum
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import declared_attr
 
+# ## PACKAGE IMPORTS
+from utility.obj import AttrEnum
+
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, ModelEnum, IntEnum, EpochTimestamp
+from .base import JsonModel, IntEnum, EpochTimestamp
 
 
 # ## CLASSES
 
-class SiteDataType(ModelEnum):
+class SiteDataType(AttrEnum):
     site_data = -1  # This should never actually be set
     pixiv_data = enum.auto()
     twitter_data = enum.auto()

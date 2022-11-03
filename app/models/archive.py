@@ -9,15 +9,16 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS
+from utility.obj import AttrEnum, classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, ModelEnum, IntEnum, EpochTimestamp, image_server_url, classproperty
+from .base import JsonModel, IntEnum, EpochTimestamp, image_server_url
 
 
 # ## CLASSES
 
-class ArchiveType(ModelEnum):
+class ArchiveType(AttrEnum):
     post = enum.auto()
     illust = enum.auto()
     artist = enum.auto()

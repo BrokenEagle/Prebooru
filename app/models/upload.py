@@ -7,13 +7,16 @@ import enum
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
+# ## PACKAGE IMPORTS
+from utility.obj import AttrEnum, classproperty
+
 # ## LOCAL IMPORTS
 from .. import DB
 from ..logical.utility import unique_objects
 from .upload_url import UploadUrl
 from .upload_element import UploadElement
 from .error import Error
-from .base import JsonModel, ModelEnum, IntEnum, EpochTimestamp, secondarytable, classproperty
+from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable
 
 
 # ## GLOBAL VARIABLES
@@ -35,7 +38,7 @@ UploadErrors = secondarytable(
 
 # ## CLASSES
 
-class UploadStatus(ModelEnum):
+class UploadStatus(AttrEnum):
     complete = enum.auto()
     pending = enum.auto()
     processing = enum.auto()

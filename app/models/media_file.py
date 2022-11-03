@@ -5,10 +5,11 @@ import os
 
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY
+from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, BlobMD5, EpochTimestamp, image_server_url, classproperty
+from .base import JsonModel, BlobMD5, EpochTimestamp, image_server_url
 
 
 # ## GLOBAL VARIABLES

@@ -3,12 +3,15 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
+# ## PACKAGE IMPORTS
+from utility.obj import classproperty
+
 # ## LOCAL IMPORTS
 from .. import DB
 from ..logical.sites import get_site_domain, get_site_key
 from .upload_element import UploadElement
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, classproperty
+from .base import JsonModel
 
 
 # ## CLASSES

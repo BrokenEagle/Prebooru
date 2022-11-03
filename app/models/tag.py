@@ -7,14 +7,17 @@ import enum
 from flask import Markup
 from sqlalchemy.util import memoized_property
 
+# ## PACKAGE IMPORTS
+from utility.obj import AttrEnum
+
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, ModelEnum, IntEnum
+from .base import JsonModel, IntEnum
 
 
 # ## CLASSES
 
-class TagType(ModelEnum):
+class TagType(AttrEnum):
     tag = -1  # This should never actually be set
     site_tag = enum.auto()
     user_tag = enum.auto()

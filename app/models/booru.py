@@ -4,6 +4,9 @@
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
+# ## PACKAGE IMPORTS
+from utility.obj import classproperty
+
 # ## LOCAL IMPORTS
 from .. import DB
 from .artist import Artist
@@ -11,7 +14,7 @@ from .illust import Illust
 from .illust_url import IllustUrl
 from .post import Post
 from .label import Label
-from .base import JsonModel, EpochTimestamp, secondarytable, classproperty
+from .base import JsonModel, EpochTimestamp, secondarytable
 
 
 # ## GLOBAL VARIABLES
