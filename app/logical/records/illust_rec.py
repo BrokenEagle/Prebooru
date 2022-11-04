@@ -31,7 +31,7 @@ def create_illust_from_source(site_illust_id, source):
 
 
 def update_illust_from_source(illust):
-    source = illust.site_id.source
+    source = illust.site.source
     updateparams = source.get_illust_data(illust.site_illust_id)
     if updateparams['active']:
         # These are only removable through the HTML/JSON UPDATE routes
@@ -57,10 +57,10 @@ def archive_illust_for_deletion(illust):
 def recreate_archived_illust(data):
     retdata = {'error': False}
     illust_data = data['body']
-    illust = get_site_illust(illust_data['site_illust_id'], illust_data['site_id'])
+    illust = get_site_illust(illust_data['site_illust_id'], illust_data['site'])
     if illust is not None:
         return set_error(retdata, "Illust already exists: illust #%d" % illust.id)
-    artist = get_site_artist(data['links']['artist']['site_artist_id'], data['links']['artist']['site_id'])
+    artist = get_site_artist(data['links']['artist']['site_artist_id'], data['links']['artist']['site'])
     if artist is None:
         return set_error(retdata, "Artist for illust does not exist.")
     illust_data['artist_id'] = artist.id
@@ -86,11 +86,11 @@ def recreate_archived_illust(data):
 
 def relink_archived_illust(data, illust=None):
     if illust is None:
-        illust = get_site_illust(data['body']['site_illust_id'], data['body']['site_id'])
+        illust = get_site_illust(data['body']['site_illust_id'], data['body']['site'])
         if illust is None:
             return "No illust found with site ID %d" % data['body']['site_illust_id']
     for link_data in data['links']['posts']:
-        illust_url = get_illust_url_by_url(site_id=link_data['site_id'], partial_url=link_data['url'])
+        illust_url = get_illust_url_by_url(site=link_data['site'], partial_url=link_data['url'])
         if illust_url is None:
             return
         post = get_post_by_md5(link_data['md5'])
@@ -114,14 +114,14 @@ def _archive_illust_data(illust, retdata):
         },
         'links': {
             'artist': {
-                'site_id': illust.artist.site_id.value,
+                'site': illust.artist.site,
                 'site_artist_id': illust.artist.site_artist_id,
             },
-            'posts': [{'md5': illust_url.post.md5, 'url': illust_url.url, 'site_id': illust_url.site_id.value}
+            'posts': [{'md5': illust_url.post.md5, 'url': illust_url.url, 'site': illust_url.site}
                       for illust_url in illust.urls if illust_url.post is not None],
         },
     }
-    data_key = '%d-%d' % (illust.site_id.value, illust.site_illust_id)
+    data_key = '%d-%d' % (illust.site, illust.site_illust_id)
     archive = get_archive('illust', data_key)
     try:
         if archive is None:

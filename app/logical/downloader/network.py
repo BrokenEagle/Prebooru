@@ -40,7 +40,7 @@ def redownload_post(post, illust_url):
 # #### Auxiliary functions
 
 def get_media_extension(illust_url):
-    source = illust_url.site_id.source
+    source = illust_url.site.source
     full_url = source.get_full_url(illust_url)
     file_ext = source.get_media_extension(full_url)
     if file_ext not in ['jpg', 'png', 'mp4']:
@@ -52,7 +52,7 @@ def get_media_extension(illust_url):
 # #### Network functions
 
 def download_media(illust_url, record, sample):
-    source = illust_url.site_id.source
+    source = illust_url.site.source
     download_url = source.get_full_url(illust_url) if not sample else source.get_sample_url(illust_url, True)
     buffer = _download_media(download_url, source)
     if not is_error(buffer):

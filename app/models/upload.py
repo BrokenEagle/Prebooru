@@ -82,8 +82,8 @@ class Upload(JsonModel):
         return [post.id for post in self.posts]
 
     @property
-    def site_id(self):
-        return self._source.SITE_ID
+    def site(self):
+        return self._source.SITE
 
     @memoized_property
     def site_illust_id(self):
@@ -98,7 +98,7 @@ class Upload(JsonModel):
         if len(self.posts) == 0:
             return None
         illusts = unique_objects(sum([post.illusts for post in self.posts], []))
-        return next(filter(lambda x: (x.site_id.value == self.site_id) and (x.site_illust_id == self.site_illust_id),
+        return next(filter(lambda x: (x.site == self.site) and (x.site_illust_id == self.site_illust_id),
                            illusts), None)
 
     @memoized_property
@@ -113,7 +113,7 @@ class Upload(JsonModel):
         if self.request_url:
             return get_post_source(self.request_url)
         elif self.illust_url_id:
-            return self.illust_url.site_id.source
+            return self.illust_url.site.source
         raise Exception("Unable to find source for upload #%d" % self.id)
 
     # ## Class properties

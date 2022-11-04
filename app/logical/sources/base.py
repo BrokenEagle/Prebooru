@@ -7,7 +7,7 @@ import urllib
 from utility.file import get_http_filename, get_file_extension
 
 # ## LOCAL IMPORTS
-from ..sites import get_site_key, get_site_id, get_site_domain
+from ..sites import get_site_key, get_site_from_domain, get_site_domain
 from ..utility import set_error
 from ..database.error_db import is_error
 
@@ -44,9 +44,9 @@ class NoSource():
 
 # #### Utility functions
 
-def get_image_site_id(url):
+def get_image_site(url):
     parse = urllib.parse.urlparse(url)
-    return get_site_id(parse.netloc)
+    return get_site_from_domain(parse.netloc)
 
 
 # #### Source lookup functions
@@ -93,7 +93,7 @@ def get_artist_required_params(url):
     source = get_artist_source(url)
     if source is None:
         return set_error(retdata, "Not a valid artist URL.")
-    retdata['site_id'] = source.SITE_ID
+    retdata['site'] = source.SITE
     ret = source.get_artist_id(url)
     if ret is None:
         return set_error(retdata, "Unable to find site artist ID with URL.")
@@ -108,7 +108,7 @@ def get_illust_required_params(url):
     source = get_illust_source(url)
     if source is None:
         return set_error(retdata, "Not a valid illust URL.")
-    retdata['site_id'] = source.SITE_ID
+    retdata['site'] = source.SITE
     ret = source.get_illust_id(url)
     if ret is None:
         return set_error(retdata, "Unable to find site illust ID with URL.")
@@ -120,20 +120,20 @@ def get_illust_required_params(url):
 
 def get_illust_url_params(media_url):
     source = get_media_source(media_url)
-    site_id = get_image_site_id(media_url)
+    site = get_image_site(media_url)
     partial_url = source.partial_media_url(media_url)
-    return site_id, partial_url
+    return site, partial_url
 
 
 # #### Other
 
-def get_preview_url(url, site_id):
-    return url if site_id == 0 else 'https://' + get_site_domain(site_id) + url
+def get_preview_url(url, site):
+    return url if site == 0 else 'https://' + get_site_domain(site) + url
 
 
-def get_source_by_id(site_id):
+def get_source_by_id(site):
     _import_package()
-    site_key = get_site_key(site_id)
+    site_key = get_site_key(site)
     return SOURCEDICT[site_key]
 
 

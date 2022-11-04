@@ -113,7 +113,7 @@ def process_subscription(subscription_id, job_id):
 def download_subscription_illusts(subscription, job_id=None):
     update_subscription_requery(subscription, hours_from_now(4))
     artist = subscription.artist
-    source = artist.site_id.source
+    source = artist.site.source
     site_illust_ids = source.populate_all_artist_illusts(artist, subscription.last_id, job_id)
     if is_error(site_illust_ids):
         add_subscription_error(subscription, site_illust_ids)
@@ -131,7 +131,7 @@ def download_subscription_illusts(subscription, job_id=None):
             job_status['range'] = f"({first} - {last}) / {total}"
             update_job_status(job_id, job_status)
         data_params = source.get_illust_data(item_id)
-        illust = source.get_site_illust(item_id, artist.site_id.value)
+        illust = source.get_site_illust(item_id, artist.site)
         if illust is None:
             data_params['artist_id'] = artist.id
             create_illust_from_parameters(data_params)

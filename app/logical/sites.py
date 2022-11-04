@@ -23,7 +23,7 @@ DOMAINS = {v: k for k, v in SITES.items()}
 
 # ## CLASSES
 
-class Site(AttrEnum):
+class SiteDescriptor(AttrEnum):
     CUSTOM = 0
     PIXIV = enum.auto()
     PXIMG = enum.auto()
@@ -43,16 +43,16 @@ class Site(AttrEnum):
 
 # ## FUNCTIONS
 
-def get_site_id(domain):
+def get_site_from_domain(domain):
     if domain in DOMAINS:
         s = DOMAINS[domain]
-        return Site[s].value
+        return SiteDescriptor[s].value
     return 0
 
 
-def get_site_domain(site_id):
-    return SITES[Site(site_id).name]
+def get_site_domain(site):
+    return SITES[SiteDescriptor(site).name]
 
 
-def get_site_key(site_id):
-    return Site(site_id).name
+def get_site_key(site):
+    return SiteDescriptor(site).name

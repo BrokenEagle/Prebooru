@@ -85,12 +85,11 @@ def populate_upload_elements(upload, illust=None):
     if illust is None:
         source = get_post_source(upload.request_url)
         site_illust_id = source.get_illust_id(upload.request_url)
-        site_id = source.SITE_ID
-        illust = get_site_illust(site_illust_id, site_id)
+        illust = get_site_illust(site_illust_id, source.site)
         if illust is None:
             return
     else:
-        source = illust.site_id.source
+        source = illust.site.source
     all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
     upload_elements = list(upload.elements)
     for illust_url in illust.urls:
@@ -117,16 +116,15 @@ def populate_all_upload_elements(uploads):
         else:
             print_warning(f"Unable to find an illust for {upload.shortlink}")
             continue
-        site_id = source.SITE_ID
-        add_dict_entry(illust_lookup, site_id, site_illust_id)
-        illust_index[upload.id] = {'site_id': site_id, 'site_illust_id': site_illust_id}
+        add_dict_entry(illust_lookup, source.SITE, site_illust_id)
+        illust_index[upload.id] = {'site': source.SITE, 'site_illust_id': site_illust_id}
     illusts = []
     for key in illust_lookup:
         illusts += get_site_illusts(key, illust_lookup[key], load_urls=True)
     for upload in uploads:
         illust_params = illust_index[upload.id]
         illust = next((illust for illust in illusts
-                       if illust.site_id.value == illust_params['site_id']
+                       if illust.site == illust_params['site']
                        and illust.site_illust_id == illust_params['site_illust_id']), None)
         if illust is None:
             continue
@@ -140,12 +138,11 @@ def process_network_upload(upload):
     # Request URL should have already been validated, so no null test needed
     source = get_post_source(upload.request_url)
     site_illust_id = source.get_illust_id(upload.request_url)
-    site_id = source.SITE_ID
     error = source.source_prework(site_illust_id)
     if error is not None:
         append_error(upload, error)
     requery_time = days_ago(1)
-    illust = Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
+    illust = Illust.query.filter_by(site=source.SITE, site_illust_id=site_illust_id).one_or_none()
     if illust is None:
         illust = create_illust_from_source(site_illust_id, source)
         if illust is None:

@@ -215,7 +215,7 @@ def relink_archived_post(archive, post=None):
         if post is None:
             return "No post found with MD5 %s" % archive.data['body']['md5']
     for link_data in archive.data['links']['illusts']:
-        illust_url = get_illust_url_by_url(site_id=link_data['site_id'], partial_url=link_data['url'])
+        illust_url = get_illust_url_by_url(site=link_data['site'], partial_url=link_data['url'])
         if illust_url is not None:
             post_append_illust_url(post, illust_url)
 
@@ -249,7 +249,7 @@ def _archive_post_data(post, retdata, expires):
             'errors': [error.column_dict() for error in post.errors],
         },
         'links': {
-            'illusts': [{'url': illust_url.url, 'site_id': illust_url.site_id.value}
+            'illusts': [{'url': illust_url.url, 'site': illust_url.site}
                         for illust_url in post.illust_urls],
         },
     }
@@ -338,7 +338,7 @@ def _load_file(post):
 
 def _get_video_thumb_binary(post):
     for illust_url in post.illust_urls:
-        source = illust_url.site_id.source
+        source = illust_url.site.source
         download_url = source.get_sample_url(illust_url)
         print("Downloading", download_url)
         buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)

@@ -8,7 +8,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import Site
+from ..logical.sites import SiteDescriptor
 from .upload_element import UploadElement
 from .subscription_element import SubscriptionElement
 from .base import JsonModel, IntEnum
@@ -21,10 +21,10 @@ class IllustUrl(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(IntEnum(Site), nullable=False)
+    site = DB.Column(IntEnum(SiteDescriptor), nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
-    sample_id = DB.Column(DB.Integer, nullable=True)
-    sample = DB.Column(DB.String(255), nullable=True)
+    sample_site = DB.Column(IntEnum(SiteDescriptor, nullable=True), nullable=True)
+    sample_url = DB.Column(DB.String(255), nullable=True)
     width = DB.Column(DB.Integer, nullable=False)
     height = DB.Column(DB.Integer, nullable=False)
     order = DB.Column(DB.Integer, nullable=False)
@@ -43,9 +43,9 @@ class IllustUrl(JsonModel):
 
     @memoized_property
     def type(self):
-        if self.site_id.source.video_url_mapper(self):
+        if self.site.source.video_url_mapper(self):
             return 'video'
-        elif self.site_id.source.image_url_mapper(self):
+        elif self.site.source.image_url_mapper(self):
             return 'image'
         else:
             return 'unknown'
@@ -53,25 +53,26 @@ class IllustUrl(JsonModel):
     @memoized_property
     def preview_url(self):
         if self.type == 'image':
-            return self.site_id.source.get_preview_url(self)
+            return self.site.source.get_preview_url(self)
         elif self.type == 'video':
-            return self.sample_url
+            return self.full_sample_url
 
     @memoized_property
     def full_url(self):
-        return self.site_id.source.get_media_url(self)
+        return self.site.source.get_media_url(self)
 
     @memoized_property
-    def sample_url(self):
-        return self.site_id.source.get_sample_url(self)
+    def full_sample_url(self):
+        return self.site.source.get_sample_url(self)
 
     @property
     def site_domain(self):
-        return self.site_id.domain
+        return self.site.domain
 
     # ## Class properties
 
-    site_id_enum = Site
+    site_enum = SiteDescriptor
+    sample_site_enum = SiteDescriptor
 
     @classproperty(cached=True)
     def json_attributes(cls):

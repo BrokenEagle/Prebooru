@@ -11,10 +11,10 @@ from ..utility import set_error
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'width', 'height', 'order', 'active']
+COLUMN_ATTRIBUTES = ['illust_id', 'site', 'url', 'width', 'height', 'order', 'active']
 
-CREATE_ALLOWED_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'width', 'height', 'order', 'active']
-UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'url', 'width', 'height', 'order', 'active']
+CREATE_ALLOWED_ATTRIBUTES = ['illust_id', 'site', 'url', 'width', 'height', 'order', 'active']
+UPDATE_ALLOWED_ATTRIBUTES = ['site', 'url', 'width', 'height', 'order', 'active']
 
 ID_MODEL_DICT = {
     'illust_id': Illust,

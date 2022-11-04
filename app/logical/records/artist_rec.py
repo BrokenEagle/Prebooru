@@ -68,7 +68,7 @@ def add_danbooru_artists(url, danbooru_artists, booru_dict, db_artists):
 
 
 def get_or_create_artist_from_source(site_artist_id, source):
-    artist = get_site_artist(site_artist_id, source.SITE_ID)
+    artist = get_site_artist(site_artist_id, source.SITE)
     if artist is None:
         artist = create_artist_from_source(site_artist_id, source)
     return artist
@@ -82,7 +82,7 @@ def create_artist_from_source(site_artist_id, source):
 
 
 def update_artist_from_source(artist):
-    source = artist.site_id.source
+    source = artist.site.source
     params = source.get_artist_data(artist.site_artist_id)
     if params['active']:
         # These are only removable through the HTML/JSON UPDATE routes
@@ -103,7 +103,7 @@ def archive_artist_for_deletion(artist):
 def recreate_archived_artist(data):
     retdata = {'error': False}
     artist_data = data['body']
-    artist = get_site_artist(artist_data['site_artist_id'], artist_data['site_id'])
+    artist = get_site_artist(artist_data['site_artist_id'], artist_data['site'])
     if artist is not None:
         return set_error(retdata, "Artist already exists: artist #%d" % artist.id)
     if len(data['scalars']['names']):
@@ -131,7 +131,7 @@ def recreate_archived_artist(data):
 
 def relink_archived_artist(data, artist=None):
     if artist is None:
-        artist = get_site_artist(data['body']['site_artist_id'], data['body']['site_id'])
+        artist = get_site_artist(data['body']['site_artist_id'], data['body']['site'])
         if artist is None:
             return "No artist found with site ID %d" % data['body']['site_artist_id']
     for danbooru_id in data['links']['boorus']:
@@ -159,7 +159,7 @@ def _archive_artist_data(artist, retdata):
             'boorus': [booru.danbooru_id for booru in artist.boorus],
         },
     }
-    data_key = '%d-%d' % (artist.site_id.value, artist.site_artist_id)
+    data_key = '%d-%d' % (artist.site, artist.site_artist_id)
     archive = get_archive('artist', data_key)
     try:
         if archive is None:

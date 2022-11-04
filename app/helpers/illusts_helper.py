@@ -32,7 +32,7 @@ def form_class(form):
         1: "pixiv-data",
         3: "twitter-data",
     }
-    return class_map[form.site_id.data]
+    return class_map[form.site.data]
 
 
 # #### Iterator functions
@@ -54,15 +54,15 @@ def site_date_iterator(illust):
 # #### URL functions
 
 def site_short_link(illust):
-    return "%s #%d" % (illust.site_id.name.lower(), illust.site_illust_id)
+    return "%s #%d" % (illust.site.name.lower(), illust.site_illust_id)
 
 
 def site_illust_url(illust):
-    return illust.site_id.source.get_illust_url(illust.site_illust_id)
+    return illust.site.source.get_illust_url(illust.site_illust_id)
 
 
 def danbooru_batch_url(illust):
-    source = illust.site_id.source
+    source = illust.site.source
     post_url = source.get_post_url(illust)
     query_string = urllib.parse.urlencode({'url': post_url})
     return DANBOORU_HOSTNAME + '/uploads/batch?' + query_string
@@ -127,6 +127,6 @@ def site_illust_link(illust):
 
 
 def alt_site_illust_link(illust):
-    source = illust.site_id.source
+    source = illust.site.source
     post_url = source.get_post_url(illust)
     return external_link('»', post_url) if post_url != source.get_illust_url(illust.site_illust_id) else ""

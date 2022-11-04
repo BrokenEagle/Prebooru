@@ -8,7 +8,7 @@ from utility.obj import AttrEnum, classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import Site
+from ..logical.sites import SiteDescriptor
 from .base import JsonModel, IntEnum, CompressedJSON, EpochTimestamp
 
 
@@ -27,7 +27,7 @@ class ApiData(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     type = DB.Column(IntEnum(ApiDataType), nullable=False)
-    site_id = DB.Column(IntEnum(Site), nullable=False)
+    site = DB.Column(IntEnum(SiteDescriptor), nullable=False)
     data_id = DB.Column(DB.Integer, nullable=False)
     data = DB.Column(CompressedJSON(), nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)
@@ -35,7 +35,7 @@ class ApiData(JsonModel):
     # ## Class properties
 
     type_enum = ApiDataType
-    site_id_enum = Site
+    site_enum = SiteDescriptor
 
     @classproperty(cached=True)
     def searchable_attributes(cls):

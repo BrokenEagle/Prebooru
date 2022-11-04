@@ -183,7 +183,7 @@ def upload_select():
     illust_data = source.get_illust_data(site_illust_id)
     media_batches = []
     for url_data in illust_data['illust_urls']:
-        full_url = get_preview_url(url_data['url'], url_data['site_id'])
+        full_url = get_preview_url(url_data['url'], url_data['site'])
         url_data['full_url'] = full_url
         url_data['preview_url'] = source.small_image_url(full_url)
         media_batches.append((url_data['preview_url'], source))

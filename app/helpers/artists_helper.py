@@ -5,6 +5,7 @@ from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
+from ..logical.sites import SiteDescriptor
 from .base_helper import general_link, external_link
 
 
@@ -13,11 +14,11 @@ from .base_helper import general_link, external_link
 # #### URL functions
 
 def site_short_link(artist):
-    return artist.site_id.source.ARTIST_SHORTLINK % artist.site_artist_id
+    return artist.site.source.ARTIST_SHORTLINK % artist.site_artist_id
 
 
 def href_url(artist):
-    return artist.site_id.source.ARTIST_HREFURL % artist.site_artist_id
+    return artist.site.source.ARTIST_HREFURL % artist.site_artist_id
 
 
 def post_search(artist):
@@ -52,8 +53,8 @@ def add_notation_link(artist):
     return general_link("Add notation", url_for('notation.new_html', artist_id=artist.id))
 
 
-def site_id_link(artist):
-    if artist.site_id.value == 0:
+def site_link(artist):
+    if artist.site == SiteDescriptor.CUSTOM:
         return Markup('Custom Site')
     return general_link(site_short_link(artist), href_url(artist))
 
@@ -70,15 +71,15 @@ def post_search_link(artist):
 
 
 def site_artist_link(artist):
-    if artist.site_id.value == 0:
+    if artist.site == SiteDescriptor.CUSTOM:
         return Markup('N/A')
     return external_link(site_short_link(artist), href_url(artist))
 
 
 def artist_links(artist):
-    if artist.site_id.value == 0:
+    if artist.site == SiteDescriptor.CUSTOM:
         return Markup('N/A')
-    source = artist.site_id.source
+    source = artist.site.source
     if not source.has_artist_urls(artist):
         return Markup('<em>N/A</em>')
     all_links = [external_link(name.title(), url) for (name, url) in source.artist_links(artist).items()]

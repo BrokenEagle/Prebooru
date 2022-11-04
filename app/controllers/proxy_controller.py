@@ -76,7 +76,7 @@ def danbooru_upload_data():
             return error_resp("Illust #%d not on post #%d." % (post_id, illust_id))
     else:
         illust = post.illusts[0]
-    source = illust.site_id.source
+    source = illust.site.source
     post_url = source.get_post_url(illust)
     profile_urls = source.artist_profile_urls(illust.artist)
     illust_commentaries = source.illust_commentaries_dtext(illust)

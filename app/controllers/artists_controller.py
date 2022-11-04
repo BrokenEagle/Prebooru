@@ -26,7 +26,7 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("artist", __name__)
 
-CREATE_REQUIRED_PARAMS = ['site_id', 'site_artist_id']
+CREATE_REQUIRED_PARAMS = ['site', 'site_artist_id']
 VALUES_MAP = {
     'site_accounts': 'site_accounts',
     'site_account_string': 'site_accounts',
@@ -68,8 +68,7 @@ JSON_OPTIONS = (
 # #### Form
 
 FORM_CONFIG = {
-    'site_id': {
-        'name': 'Site',
+    'site': {
         'field': SelectField,
         'kwargs': {
             'choices': [
@@ -140,10 +139,10 @@ def get_artist_form(**kwargs):
 
 
 def uniqueness_check(dataparams, artist):
-    site_id = dataparams['site_id'] if 'site_id' in dataparams else artist.site_id.value
+    site = dataparams['site'] if 'site' in dataparams else artist.site
     site_artist_id = dataparams['site_artist_id'] if 'site_artist_id' in dataparams else artist.site_artist_id
-    if site_id != artist.site_id.value or site_artist_id != artist.site_artist_id:
-        return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).one_or_none()
+    if site != artist.site or site_artist_id != artist.site_artist_id:
+        return Artist.query.filter_by(site=site, site_artist_id=site_artist_id).one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -221,7 +220,7 @@ def query_create():
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
         return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
-    source = get_source_by_id(retdata['site_id'])
+    source = get_source_by_id(retdata['site'])
     createparams = retdata['data'] = source.get_artist_data(retdata['site_artist_id'])
     if not createparams['active']:
         return set_error(retdata, "Artist account does not exist!")
@@ -231,7 +230,7 @@ def query_create():
 
 
 def query_booru(artist):
-    source = artist.site_id.source
+    source = artist.site.source
     search_url = source.artist_booru_search_url(artist)
     artist_data = get_artists_by_url(search_url)
     if artist_data['error']:
@@ -331,7 +330,7 @@ def edit_html(id):
     form = get_artist_form(**editparams)
     if artist.illust_count > 0:
         # Artists with illusts cannot have their critical identifiers changed
-        hide_input(form, 'site_id')
+        hide_input(form, 'site')
         hide_input(form, 'site_artist_id')
     return render_template("artists/edit.html", form=form, artist=artist)
 

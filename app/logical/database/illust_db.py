@@ -19,16 +19,16 @@ from .base_db import update_column_attributes, update_relationship_collections, 
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active']
+COLUMN_ATTRIBUTES = ['artist_id', 'site', 'site_illust_id', 'site_created', 'pages', 'score', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('_tags', 'name', SiteTag)]
 APPEND_SCALAR_RELATIONSHIPS = [('_commentaries', 'body', Description)]
 RECREATE_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['tags', 'commentaries']
 NORMALIZED_ASSOCIATION_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
 
-CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active',
+CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'site', 'site_illust_id', 'site_created', 'pages', 'score', 'active',
                              '_tags', '_commentaries']
-UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', '_tags',
+UPDATE_ALLOWED_ATTRIBUTES = ['site', 'site_illust_id', 'site_created', 'pages', 'score', 'active', '_tags',
                              '_commentaries']
 
 
@@ -81,7 +81,7 @@ def create_illust_from_parameters(createparams):
     update_relationship_collections(illust, create_relationships, createparams)
     append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     append_relationship_collections(illust, append_relationships, createparams)
-    update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id.name, createparams)
+    update_site_data_from_parameters(illust.site_data, illust.id, illust.site.name, createparams)
     if 'illust_urls' in createparams:
         update_illust_urls(illust, createparams['illust_urls'])
     print("[%s]: created" % illust.shortlink)
@@ -96,7 +96,7 @@ def create_illust_from_raw_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(NORMALIZED_ASSOCIATION_ATTRIBUTES)
     create_relationships = [rel for rel in RECREATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_relationship_collections(illust, create_relationships, createparams)
-    update_site_data_from_parameters(illust.site_data, illust.id, illust.site_id.name, createparams)
+    update_site_data_from_parameters(illust.site_data, illust.id, illust.site.name, createparams)
     if 'illust_urls' in createparams:
         update_illust_urls(illust, createparams['illust_urls'])
     print("[%s]: created" % illust.shortlink)
@@ -117,7 +117,7 @@ def update_illust_from_parameters(illust, updateparams):
     append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
     update_results.append(append_relationship_collections(illust, append_relationships, updateparams))
     update_results.append(update_site_data_from_parameters(illust.site_data, illust.id,
-                                                           illust.site_id.name, updateparams))
+                                                           illust.site.name, updateparams))
     if 'illust_urls' in updateparams:
         update_results.append(update_illust_urls(illust, updateparams['illust_urls']))
     if any(update_results):
@@ -156,12 +156,12 @@ def illust_delete_commentary(illust, description_id):
 
 # #### Query functions
 
-def get_site_illust(site_illust_id, site_id):
-    return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
+def get_site_illust(site_illust_id, site):
+    return Illust.query.filter_by(site=site, site_illust_id=site_illust_id).one_or_none()
 
 
-def get_site_illusts(site_id, site_illust_ids, load_urls=False):
+def get_site_illusts(site, site_illust_ids, load_urls=False):
     q = Illust.query
     if load_urls:
         q = q.options(selectinload(Illust.urls))
-    return q.filter(Illust.site_id == site_id, Illust.site_illust_id.in_(site_illust_ids)).all()
+    return q.filter(Illust.site == site, Illust.site_illust_id.in_(site_illust_ids)).all()

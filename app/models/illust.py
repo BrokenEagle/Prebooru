@@ -9,7 +9,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import Site
+from ..logical.sites import SiteDescriptor
 from .tag import SiteTag
 from .illust_url import IllustUrl
 from .site_data import SiteData
@@ -50,7 +50,7 @@ class Illust(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(IntEnum(Site), nullable=False)
+    site = DB.Column(IntEnum(SiteDescriptor), nullable=False)
     site_illust_id = DB.Column(DB.Integer, nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
@@ -99,20 +99,20 @@ class Illust(JsonModel):
 
     @property
     def site_domain(self):
-        return self.site_id.domain
+        return self.site.domain
 
     @memoized_property
     def type(self):
-        if self.site_id.source.illust_has_videos(self):
+        if self.site.source.illust_has_videos(self):
             return 'video'
-        elif self.site_id.source.illust_has_images(self):
+        elif self.site.source.illust_has_images(self):
             return 'image'
         else:
             return 'unknown'
 
     # ###### Private
 
-    __table_args__ = (DB.UniqueConstraint('site_id', 'site_illust_id'),)
+    __table_args__ = (DB.UniqueConstraint('site', 'site_illust_id'),)
 
     # ## methods
 
@@ -127,7 +127,7 @@ class Illust(JsonModel):
 
     # ## Class properties
 
-    site_id_enum = Site
+    site_enum = SiteDescriptor
 
     @classproperty(cached=True)
     def json_attributes(cls):

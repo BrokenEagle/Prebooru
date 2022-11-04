@@ -34,7 +34,7 @@ def post_search_link(tag, item_type):
 
 
 def tag_search_links(tag):
-    links = [external_link(source.NAME.title(), source.tag_search_url(tag))
+    links = [external_link(source.SITE.name.title(), source.tag_search_url(tag))
              for source in SOURCES if source.HAS_TAG_SEARCH]
     return Markup(' | ').join(links)
 

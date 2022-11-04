@@ -28,7 +28,7 @@ from .base_controller import get_params_value, process_request_values, show_json
 
 bp = Blueprint("illust", __name__)
 
-CREATE_REQUIRED_PARAMS = ['artist_id', 'site_id', 'site_illust_id']
+CREATE_REQUIRED_PARAMS = ['artist_id', 'site', 'site_illust_id']
 VALUES_MAP = {
     'illust_urls': 'illust_urls',
     'tags': 'tags',
@@ -84,8 +84,7 @@ FORM_CONFIG = {
             'validators': [DataRequired()],
         },
     },
-    'site_id': {
-        'name': 'Site',
+    'site': {
         'field': SelectField,
         'kwargs': {
             'choices': [
@@ -193,10 +192,10 @@ def get_illust_form(**kwargs):
 
 
 def uniqueness_check(dataparams, illust):
-    site_id = dataparams['site_id'] if 'site_id' in dataparams else illust.site_id.value
+    site = dataparams['site'] if 'site' in dataparams else illust.site
     site_illust_id = dataparams['site_illust_id'] if 'site_illust_id' in dataparams else illust.site_illust_id
-    if site_id != illust.site_id.value or site_illust_id != illust.site_illust_id:
-        return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
+    if site != illust.site or site_illust_id != illust.site_illust_id:
+        return Illust.query.filter_by(site=site, site_illust_id=site_illust_id).one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -286,14 +285,14 @@ def query_create():
     if check_illust is not None:
         retdata['item'] = check_illust.to_json()
         return set_error(retdata, "Illust already exists: %s" % check_illust.shortlink)
-    source = get_source_by_id(retdata['site_id'])
+    source = get_source_by_id(retdata['site'])
     createparams = retdata['data'] = source.get_illust_data(retdata['site_illust_id'])
     if not createparams['active']:
         return set_error(retdata, "Illust post does not exist!")
     site_artist_id = source.get_artist_id_by_illust_id(retdata['site_illust_id'])
     if site_artist_id is None:
         return set_error(retdata, "Unable to find site artist ID with URL.")
-    artist = Artist.query.filter_by(site_id=retdata['site_id'], site_artist_id=int(site_artist_id)).one_or_none()
+    artist = Artist.query.filter_by(site=retdata['site'], site_artist_id=int(site_artist_id)).one_or_none()
     if artist is None:
         return set_error(retdata, "Unable to find Prebooru artist... artist must exist before creating an illust.")
     createparams['artist_id'] = artist.id
@@ -369,7 +368,7 @@ def new_html():
             form.artist_id.data = None
         else:
             hide_input(form, 'artist_id', artist.id)
-            hide_input(form, 'site_id', artist.site_id.value)
+            hide_input(form, 'site', artist.site.value)
     return render_template("illusts/new.html", form=form, artist=artist, illust=Illust())
 
 
@@ -398,7 +397,7 @@ def edit_html(id):
     editparams.update({k: v for (k, v) in illust.site_data.to_json().items() if k not in ['id', 'illust_id', 'type']})
     form = get_illust_form(**editparams)
     hide_input(form, 'artist_id', illust.artist_id)
-    hide_input(form, 'site_id', illust.site_id.value)
+    hide_input(form, 'site', illust.site.value)
     return render_template("illusts/edit.html", form=form, illust=illust)
 
 
