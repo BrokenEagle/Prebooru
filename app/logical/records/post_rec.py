@@ -242,11 +242,11 @@ def relocate_old_posts_to_alternate(manual):
 
 def _archive_post_data(post, retdata, expires):
     data = {
-        'body': post.column_dict(),
+        'body': post.archive_dict(),
         'scalars': {},
         'relations': {
-            'notations': [notation.column_dict() for notation in post.notations],
-            'errors': [error.column_dict() for error in post.errors],
+            'notations': [notation.archive_dict() for notation in post.notations],
+            'errors': [error.archive_dict() for error in post.errors],
         },
         'links': {
             'illusts': [{'url': illust_url.url, 'site': illust_url.site}
