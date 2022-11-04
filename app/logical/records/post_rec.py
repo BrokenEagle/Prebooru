@@ -18,7 +18,7 @@ from ..media import load_image, create_sample, create_preview, create_video_scre
     convert_mp4_to_webm
 from ..database.post_db import create_post_from_raw_parameters, delete_post, post_append_illust_url, get_post_by_md5,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, set_post_alternate, alternate_posts_query,\
-    copy_post, get_all_posts_page
+    get_all_posts_page
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_raw_parameters
 from ..database.error_db import create_error_from_raw_parameters, create_error
@@ -85,7 +85,7 @@ def check_posts_for_valid_md5():
 
 
 def move_post_media_to_alternate(post, reverse=False):
-    temppost = copy_post(post)
+    temppost = post.copy()
     temppost.alternate = not reverse
     copy_file(post.file_path, temppost.file_path, True)
     if post.has_sample:
@@ -112,7 +112,7 @@ def move_post_media_to_alternate(post, reverse=False):
 def delete_post_and_media(post):
     """Hard delete. Continue as long as post record gets deleted."""
     retdata = {'error': False, 'is_deleted': False}
-    temppost = copy_post(post)
+    temppost = post.copy()
     retdata = _delete_post_data(post, retdata)
     if retdata['error']:
         print("delete_post_and_media-error:", retdata)
@@ -126,7 +126,7 @@ def delete_post_and_media(post):
 def archive_post_for_deletion(post, expires):
     """Soft delete. Preserve data at all costs."""
     retdata = {'error': False, 'is_deleted': False}
-    temppost = copy_post(post)
+    temppost = post.copy()
     retdata, archive = _archive_post_data(post, retdata, expires)
     if retdata['error']:
         return retdata

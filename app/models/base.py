@@ -270,6 +270,10 @@ class JsonModel(DB.Model):
     def to_json(self):
         return self._json(self.json_attributes)
 
+    def copy(self):
+        """Return an uncommitted copy of the record."""
+        return self.__class__(**self.column_dict())
+
     @classmethod
     def relations(cls):
         if not hasattr(cls, '_relation_keys'):
