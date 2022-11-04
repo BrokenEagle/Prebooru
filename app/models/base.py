@@ -25,14 +25,6 @@ from .. import DB, SESSION, SERVER_INFO
 
 # ## FUNCTIONS
 
-def get_column_for_serialize(obj, column):
-    value = getattr(obj, column)
-    if isinstance(value, enum.Enum):
-        return value.value
-    else:
-        return value
-
-
 # #### Network functions
 
 def _external_server_url(urlpath, subtype):
@@ -267,10 +259,10 @@ class JsonModel(DB.Model):
         return url_for(self.table_name + ".delete_html", id=self.id)
 
     def column_dict(self):
-        return {k: get_column_for_serialize(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
+        return {k: getattr(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
 
     def archive_dict(self):
-        return {k: get_column_for_serialize(self, k) for k in self.archive_columns if hasattr(self, k)}
+        return {k: getattr(self, k) for k in self.archive_columns if hasattr(self, k)}
 
     def basic_json(self):
         return self._json(self.basic_attributes)
@@ -363,7 +355,7 @@ class JsonModel(DB.Model):
             data[attr] = getattr(self, attr)
             if isinstance(data[attr], bytes):
                 data[attr] = f'blob({data[attr].hex()})'
-        inner_string = ', '.join(f"{k}={data[k]}" for k in self.repr_attributes)
+        inner_string = ', '.join(f"{k}={repr(data[k])}" for k in self.repr_attributes)
         model_name = self.__class__.__name__
         return f"{model_name}({inner_string})"
 

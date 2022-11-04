@@ -59,7 +59,7 @@ class StaticProperty:
         return self.fdel()
 
 
-class AttrEnum(enum.Enum):
+class AttrEnum(enum.IntEnum):
     @classproperty(cached=False)
     def names(cls):
         return [e.name for e in cls]
