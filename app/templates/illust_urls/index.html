@@ -1,6 +1,7 @@
 {% extends "illust_urls/_base.html" %}
 {% from "layouts/_macros.html" import page_navigation %}
 {% from "posts/_macros.html" import post_preview %}
+{% from "illust_urls/_macros.html" import illust_urls_preview %}
 
 {% block title %}
     Illust URLs
@@ -21,7 +22,13 @@
         <tbody>
             {% for illust_url in illust_urls.items %}
                 <tr id="illust-url-{{ illust_url.id }}">
-                    <td>{{ post_preview(illust_url.post, True) }}</td>
+                    <td>
+                        {% if illust_url.post is not none %}
+                            {{ post_preview(illust_url.post, True) }}
+                        {% else %}
+                            {{ illust_urls_preview([illust_url]) }}
+                        {% endif %}
+                    </td>
                     <td>
                         <span><strong>{{ illust_url.show_link }}</strong></span>
                         <br>
@@ -47,5 +54,5 @@
 {% endblock pages %}
 
 {% block pagescript %}
-    Prebooru.initializeLazyLoad('.post');
+    Prebooru.initializeLazyLoad('.post, .illust-urls-preview');
 {% endblock pagescript %}

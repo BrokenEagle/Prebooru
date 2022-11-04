@@ -170,22 +170,6 @@ div.simple-tags-container {
     max-width: 25vw;
 }
 
-div.illust-no-posts img {
-    height: auto;
-    text-indent: 5px;
-    width: auto;
-}
-
-div.illust-single-url img {
-    max-height: 300px;
-    max-width: 300px;
-}
-
-div.illust-multi-urls img {
-    max-height: 150px;
-    max-width: 150px;
-}
-
 div.illust-preview img {
     height: auto;
     max-height: 150px;
@@ -233,21 +217,4 @@ div.illust-preview > article.overflow > span {
 
 div.illust-preview > span.explanation {
     width: 150px;
-}
-
-div.illust-preview-container {
-    background-color: #e8e8e8;
-    border: 1px solid #d8d8d8;
-    margin: 5px;
-    padding: 5px;
-    text-align: center;
-}
-
-div.illust-no-posts {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-div.illust-preview-url {
-    padding: 2px;
 }

@@ -1,5 +1,40 @@
 /** APP/STATIC/STYLES/ILLUST_URLS.CSS **/
 
+/**** GENERAL ****/
+
+div.illust-urls-preview {
+    background-color: #e8e8e8;
+    border: 1px solid #d8d8d8;
+    margin: 5px;
+    padding: 5px;
+    text-align: center;
+}
+
+div.illust-urls {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+div.illust-preview-url {
+    padding: 2px;
+}
+
+div.illust-urls img {
+    height: auto;
+    text-indent: 5px;
+    width: auto;
+}
+
+div.illust-single-url img {
+    max-height: 300px;
+    max-width: 300px;
+}
+
+div.illust-multi-urls img {
+    max-height: 150px;
+    max-width: 150px;
+}
+
 /**** NEW/EDIT Page ****/
 div#illust-url-form-heading {
     font-size: 28px;

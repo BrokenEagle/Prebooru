@@ -1,5 +1,20 @@
 {% from "posts/_macros.html" import post_preview %}
 
+{% macro illust_urls_preview(illust_urls) -%}
+    <div class="illust-urls-preview">
+        {% if illust_urls | length > 0 %}
+            <span class="explanation">No posts.</span>
+            <br>
+            <br>
+            <div class="illust-urls {{ 'illust-multi-urls' if illust_urls | length > 1 else 'illust-single-url' }}">
+                {% for illust_url in illust_urls %}<div class="illust-preview-url">{{ helpers.illust_url.preview_link(illust_url, True) }}</div>{% endfor %}
+            </div>
+        {% else %}
+            <span class="explanation">No URLs.</span>
+        {% endif %}
+    </div>
+{%- endmacro %}
+
 {% macro media_urls_section(illust_urls, illust) -%}
     <section id="media-posts">
         <h3>Media URLs</h3>

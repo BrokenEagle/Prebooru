@@ -1,7 +1,13 @@
 {% extends "illusts/_base.html" %}
 {% from "layouts/_macros.html" import page_navigation %}
 {% from "posts/_macros.html" import multi_post_preview, post_preview %}
+{% from "illust_urls/_macros.html" import illust_urls_preview %}
 {% from "tags/_macros.html" import simple_tag_list %}
+
+{% block css %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/illust_urls.css') }}">
+{% endblock css %}
 
 {% block title %}
     Illusts
@@ -28,18 +34,7 @@
                         {% elif illust.posts | length == 1 %}
                             {{ post_preview(illust.posts[0], True) }}
                         {% else %}
-                            <div class="illust-preview-container">
-                                {% if illust.urls | length > 0 %}
-                                    <span class="explanation">No posts.</span>
-                                    <br>
-                                    <br>
-                                    <div class="illust-no-posts {{ 'illust-multi-urls' if illust.urls | length > 1 else 'illust-single-url' }}">
-                                        {% for illust_url in illust.urls %}<div class="illust-preview-url">{{ helpers.illust_url.preview_link(illust_url, True) }}</div>{% endfor %}
-                                    </div>
-                                {% else %}
-                                    <span class="explanation">No URLs.</span>
-                                {% endif %}
-                            </div>
+                            {{ illust_urls_preview(illust.urls) }}
                         {% endif %}
                     </td>
                     <td>
