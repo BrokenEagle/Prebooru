@@ -38,10 +38,10 @@ def create_post_from_parameters(createparams):
     return post
 
 
-def create_post_from_raw_parameters(createparams):
-    post = Post()
-    update_columns = set(createparams.keys()).intersection(Post.archive_columns)
-    update_column_attributes(post, update_columns, createparams)
+def create_post_from_json(data):
+    post = Post.loads(data)
+    SESSION.add(post)
+    SESSION.commit()
     print("[%s]: created" % post.shortlink)
     return post
 

@@ -22,7 +22,7 @@ from .base_db import update_column_attributes, update_relationship_collections, 
 COLUMN_ATTRIBUTES = ['artist_id', 'site', 'site_illust_id', 'site_created', 'pages', 'score', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('_tags', 'name', SiteTag)]
 APPEND_SCALAR_RELATIONSHIPS = [('_commentaries', 'body', Description)]
-RECREATE_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
+ALL_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['tags', 'commentaries']
 NORMALIZED_ASSOCIATION_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
 
@@ -72,33 +72,19 @@ def update_illust_urls(illust, params):
 def create_illust_from_parameters(createparams):
     current_time = get_current_time()
     set_timesvalues(createparams)
-    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
     illust = Illust(created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(illust, update_columns, createparams)
-    create_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    update_relationship_collections(illust, create_relationships, createparams)
-    append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    append_relationship_collections(illust, append_relationships, createparams)
-    update_site_data_from_parameters(illust.site_data, illust.id, illust.site.name, createparams)
-    if 'illust_urls' in createparams:
-        update_illust_urls(illust, createparams['illust_urls'])
+    _update_relations(illust, createparams, overwrite=True, create=True)
     print("[%s]: created" % illust.shortlink)
     return illust
 
 
-def create_illust_from_raw_parameters(createparams):
-    illust = Illust()
-    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
-    update_columns = set(createparams.keys()).intersection(Illust.all_columns)
-    update_column_attributes(illust, update_columns, createparams)
-    settable_keylist = set(createparams.keys()).intersection(NORMALIZED_ASSOCIATION_ATTRIBUTES)
-    create_relationships = [rel for rel in RECREATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    update_relationship_collections(illust, create_relationships, createparams)
-    update_site_data_from_parameters(illust.site_data, illust.id, illust.site.name, createparams)
-    if 'illust_urls' in createparams:
-        update_illust_urls(illust, createparams['illust_urls'])
+def create_illust_from_json(data):
+    illust = Illust.loads(data)
+    SESSION.add(illust)
+    SESSION.commit()
     print("[%s]: created" % illust.shortlink)
     return illust
 
@@ -112,18 +98,15 @@ def update_illust_from_parameters(illust, updateparams):
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(illust, update_columns, updateparams))
-    update_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    update_results.append(update_relationship_collections(illust, update_relationships, updateparams))
-    append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    update_results.append(append_relationship_collections(illust, append_relationships, updateparams))
-    update_results.append(update_site_data_from_parameters(illust.site_data, illust.id,
-                                                           illust.site.name, updateparams))
-    if 'illust_urls' in updateparams:
-        update_results.append(update_illust_urls(illust, updateparams['illust_urls']))
+    update_results.append(_update_relations(illust, updateparams, overwrite=False, create=False))
     if any(update_results):
         print("[%s]: updated" % illust.shortlink)
         illust.updated = get_current_time()
         SESSION.commit()
+
+
+def recreate_illust_relations(illust, updateparams):
+    _update_relations(illust, updateparams, overwrite=True, create=False)
 
 
 def set_illust_artist(illust, artist):
@@ -165,3 +148,22 @@ def get_site_illusts(site, site_illust_ids, load_urls=False):
     if load_urls:
         q = q.options(selectinload(Illust.urls))
     return q.filter(Illust.site == site, Illust.site_illust_id.in_(site_illust_ids)).all()
+
+
+# #### Private functions
+
+def _update_relations(illust, updateparams, overwrite=None, create=None):
+    update_results = []
+    set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
+    allowed_attributes = CREATE_ALLOWED_ATTRIBUTES if create else UPDATE_ALLOWED_ATTRIBUTES
+    settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)
+    relationship_list = ALL_SCALAR_RELATIONSHIPS if overwrite else UPDATE_SCALAR_RELATIONSHIPS
+    update_relationships = [rel for rel in relationship_list if rel[0] in settable_keylist]
+    update_results.append(update_relationship_collections(illust, update_relationships, updateparams))
+    update_results.append(update_site_data_from_parameters(illust, updateparams))
+    if not overwrite:
+        append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
+        update_results.append(append_relationship_collections(illust, append_relationships, updateparams))
+    if 'illust_urls' in updateparams:
+        update_results.append(update_illust_urls(illust, updateparams['illust_urls']))
+    return any(update_results)

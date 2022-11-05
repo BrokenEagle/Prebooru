@@ -16,14 +16,13 @@ from ..utility import set_error
 from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm
-from ..database.post_db import create_post_from_raw_parameters, delete_post, post_append_illust_url, get_post_by_md5,\
+from ..database.post_db import create_post_from_json, delete_post, post_append_illust_url, get_post_by_md5,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, set_post_alternate, alternate_posts_query,\
     get_all_posts_page
 from ..database.illust_url_db import get_illust_url_by_url
-from ..database.notation_db import create_notation_from_raw_parameters
-from ..database.error_db import create_error_from_raw_parameters, create_error
-from ..database.archive_db import get_archive, create_archive, update_archive, set_archive_temporary,\
-    process_archive_data
+from ..database.notation_db import create_notation_from_json
+from ..database.error_db import create_error_from_json, create_error
+from ..database.archive_db import get_archive, create_archive, update_archive, set_archive_temporary
 
 
 # ## GLOBAL VARIABLES
@@ -140,15 +139,12 @@ def archive_post_for_deletion(post, expires):
     return _delete_media_files(temppost, retdata)
 
 
-def reinstantiate_archived_post(archive, create_sample):
+def recreate_archived_post(archive, create_sample):
     retdata = {'error': False}
     post = get_post_by_md5(archive.data['body']['md5'])
     if post is not None:
         return set_error(retdata, "Post with MD5 %s already exists: post #%d" % (post.md5, post.id))
-    try:
-        post = create_post_from_raw_parameters(process_archive_data(archive.data['body']))
-    except Exception as e:
-        return set_error(retdata, "Error creating post: %s" % str(e))
+    post = create_post_from_json(archive.data['body'])
     retdata = _copy_media_files(post, archive, retdata, False, True)
     if retdata['error']:
         delete_post(post)
@@ -162,11 +158,11 @@ def reinstantiate_archived_post(archive, create_sample):
                                post.video_sample_path, create_sample)).start()
     relink_archived_post(archive, post)
     for notation_data in archive.data['relations']['notations']:
-        notation = create_notation_from_raw_parameters(notation_data)
+        notation = create_notation_from_json(notation_data)
         post.notations.append(notation)
         SESSION.commit()
     for error_data in archive.data['relations']['errors']:
-        error = create_error_from_raw_parameters(error_data)
+        error = create_error_from_json(error_data)
         post.errors.append(error)
         SESSION.commit()
     set_archive_temporary(archive, 7)

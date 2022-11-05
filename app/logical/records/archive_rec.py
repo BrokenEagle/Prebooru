@@ -10,8 +10,8 @@ from utility.file import delete_file
 
 # ## LOCAL IMPORTS
 from ..utility import set_error
-from ..database.archive_db import process_archive_data, ARCHIVE_DIRECTORY
-from .post_rec import reinstantiate_archived_post, relink_archived_post
+from ..database.archive_db import ARCHIVE_DIRECTORY
+from .post_rec import recreate_archived_post, relink_archived_post
 from .illust_rec import recreate_archived_illust, relink_archived_illust
 from .artist_rec import recreate_archived_artist, relink_archived_artist
 from .booru_rec import recreate_archived_booru
@@ -22,15 +22,14 @@ from .booru_rec import recreate_archived_booru
 def reinstantiate_archive_item(archive):
     # Make these switchers
     retdata = {'error': False}
-    data = process_archive_data(archive.data)
     if archive.type.name == 'post':
-        return reinstantiate_archived_post(archive, True)
+        return recreate_archived_post(archive, True)
     elif archive.type.name == 'illust':
-        return recreate_archived_illust(data)
+        return recreate_archived_illust(archive.data)
     elif archive.type.name == 'artist':
-        return recreate_archived_artist(data)
+        return recreate_archived_artist(archive.data)
     elif archive.type.name == 'booru':
-        return recreate_archived_booru(data)
+        return recreate_archived_booru(archive.data)
     else:
         return set_error(retdata, "Recreating %s not handled yet." % archive.type.name)
 

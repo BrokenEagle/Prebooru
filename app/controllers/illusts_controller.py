@@ -202,7 +202,6 @@ def convert_data_params(dataparams):
     params = get_illust_form(**dataparams).data
     params['tags'] = parse_array_parameter(dataparams, 'tags', 'tag_string', r'\s')
     params['active'] = parse_bool_parameter(dataparams, 'active')
-    params['commentaries'] = params['commentary']
     params = nullify_blanks(params)
     return params
 
@@ -216,6 +215,7 @@ def convert_create_params(dataparams):
         createparams['illust_urls'] = [v for v in dataparams['illust_urls'].values()]
         for url_data in createparams['illust_urls']:
             url_data['active'] = parse_bool_parameter(url_data, 'active')
+    createparams['commentaries'] = [dataparams['commentary']]
     return createparams
 
 
@@ -223,6 +223,7 @@ def convert_update_params(dataparams):
     updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
+    updateparams['commentaries'] = dataparams['commentary']
     return updateparams
 
 

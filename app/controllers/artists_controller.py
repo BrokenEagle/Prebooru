@@ -151,7 +151,6 @@ def convert_data_params(dataparams):
     params['names'] = parse_array_parameter(dataparams, 'names', 'name_string', r'\r?\n')
     params['webpages'] = parse_array_parameter(dataparams, 'webpages', 'webpage_string', r'\r?\n')
     params['active'] = parse_bool_parameter(dataparams, 'active')
-    params['profiles'] = params['profile']
     params = nullify_blanks(params)
     return params
 
@@ -159,6 +158,7 @@ def convert_data_params(dataparams):
 def convert_create_params(dataparams):
     createparams = convert_data_params(dataparams)
     set_default(createparams, 'active', True)
+    createparams['profiles'] = [dataparams['profile']]
     return createparams
 
 
@@ -166,6 +166,7 @@ def convert_update_params(dataparams):
     updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
+    updateparams['profiles'] = dataparams['profile']
     return updateparams
 
 

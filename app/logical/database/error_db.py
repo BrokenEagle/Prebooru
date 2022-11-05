@@ -32,10 +32,10 @@ def create_error_from_parameters(createparams):
     return error
 
 
-def create_error_from_raw_parameters(createparams):
-    error = Error()
-    update_columns = set(createparams.keys()).intersection(Error.archive_columns)
-    update_column_attributes(error, update_columns, createparams)
+def create_error_from_json(data):
+    error = Error.loads(data)
+    SESSION.add(error)
+    SESSION.commit()
     print("[%s]: created" % error.shortlink)
     return error
 

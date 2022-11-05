@@ -18,7 +18,7 @@ from ..searchable import search_attributes
 from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..downloader.network import convert_network_subscription
-from ..records.post_rec import reinstantiate_archived_post
+from ..records.post_rec import recreate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
     update_subscription_element_status, link_subscription_post
 from ..database.post_db import get_post_by_md5, get_posts_by_id
@@ -310,7 +310,7 @@ def reinstantiate_element(element):
         else:
             update_subscription_element_status(element, 'deleted')
         return {'error': True, 'message': f'Post archive with MD5 {element.md5} does not exist.'}
-    results = reinstantiate_archived_post(archive, False)
+    results = recreate_archived_post(archive, False)
     if not results['error']:
         relink_element(element)
     return {'error': False}

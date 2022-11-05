@@ -3,11 +3,10 @@
 # ## PYTHON IMPORTS
 import os
 import re
-import datetime
 
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY
-from utility.time import get_current_time, days_from_now, process_utc_timestring
+from utility.time import get_current_time, days_from_now
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -29,7 +28,7 @@ def create_archive(type, key, data, days):
     data = {
         'type': type,
         'key': key,
-        'data': _encode_json_data(data),
+        'data': data,
         'expires': days_from_now(days) if days is not None else None,
     }
     archive_item = Archive(**data)
@@ -41,7 +40,7 @@ def create_archive(type, key, data, days):
 # ###### UPDATE
 
 def update_archive(archive, data, days):
-    archive.data = _encode_json_data(data)
+    archive.data = data
     archive.expires = days_from_now(days) if days is not None else None
     SESSION.commit()
 
@@ -87,54 +86,3 @@ def get_archive_posts_by_md5s(data_keys):
 
 def expired_archive_count():
     return Archive.query.filter(Archive.expires < get_current_time()).get_count()
-
-
-# #### Misc functions
-
-def process_archive_data(data):
-    return _decode_json_data(data)
-
-
-# #### Private functions
-
-def _encode_json_data(data):
-    tempdata = {}
-    for key in list(data.keys()):
-        if type(data[key]) is dict:
-            tempdata[key] = _encode_json_data(data[key])
-        elif type(data[key]) is list:
-            tempdata[key] = []
-            for i in range(0, len(data[key])):
-                if type(data[key][i]) is dict:
-                    list_item = _encode_json_data(data[key][i])
-                else:
-                    list_item = data[key][i]
-                tempdata[key].append(list_item)
-        elif type(data[key]) is datetime.datetime:
-            tempdata[key] = datetime.datetime.isoformat(data[key])
-        else:
-            tempdata[key] = data[key]
-    return tempdata
-
-
-def _decode_json_data(data):
-    tempdata = {}
-    for key in list(data.keys()):
-        if type(data[key]) is dict:
-            tempdata[key] = _decode_json_data(data[key])
-        elif type(data[key]) is list:
-            tempdata[key] = []
-            for i in range(0, len(data[key])):
-                if type(data[key][i]) is dict:
-                    list_item = _decode_json_data(data[key][i])
-                else:
-                    list_item = data[key][i]
-                tempdata[key].append(list_item)
-        elif type(data[key]) is str and ISODATETIME_RG.match(data[key]):
-            date_item = process_utc_timestring(data[key])
-            if date_item is None:
-                raise Exception("Unable to decode timestring.")
-            tempdata[key] = date_item
-        else:
-            tempdata[key] = data[key]
-    return tempdata

@@ -3,16 +3,14 @@
 # ## PYTHON IMPORTS
 import itertools
 
-# ## PACKAGE IMPORTS
-from utility.uprint import exception_print
-
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, get_site_artist,\
-    create_artist_from_raw_parameters, artist_append_booru, delete_artist, get_artists_without_boorus_page
+    create_artist_from_json, artist_append_booru, delete_artist, get_artists_without_boorus_page,\
+    recreate_artist_relations
 from ..database.booru_db import get_booru, get_boorus, create_booru_from_parameters, booru_append_artist
-from ..database.notation_db import create_notation_from_raw_parameters
+from ..database.notation_db import create_notation_from_json
 from ..database.archive_db import get_archive, create_archive, update_archive
 
 
@@ -102,28 +100,25 @@ def archive_artist_for_deletion(artist):
 
 def recreate_archived_artist(data):
     retdata = {'error': False}
-    artist_data = data['body']
-    artist = get_site_artist(artist_data['site_artist_id'], artist_data['site'])
+    artist = get_site_artist(data['body']['site_artist_id'], data['body']['site'])
     if artist is not None:
         return set_error(retdata, "Artist already exists: artist #%d" % artist.id)
+    artist = create_artist_from_json(data['body'])
+    updateparams = {}
     if len(data['scalars']['names']):
-        artist_data['names'] = data['scalars']['names']
+        updateparams['names'] = data['scalars']['names']
     if len(data['scalars']['site_accounts']):
-        artist_data['site_accounts'] = data['scalars']['site_accounts']
+        updateparams['site_accounts'] = data['scalars']['site_accounts']
     if len(data['scalars']['profiles']):
-        artist_data['profiles'] = data['scalars']['profiles']
+        updateparams['profiles'] = data['scalars']['profiles']
     if len(data['relations']['webpages']):
-        artist_data['webpages'] = [('' if webpage['active'] else '-') + webpage['url']
-                                   for webpage in data['relations']['webpages']]
-    try:
-        artist = create_artist_from_raw_parameters(data['body'])
-    except Exception as e:
-        exception_print(e)
-        return set_error(retdata, "Error creating artist: %s" % repr(e))
+        updateparams['webpages'] = [('' if webpage['active'] else '-') + webpage['url']
+                                    for webpage in data['relations']['webpages']]
+    recreate_artist_relations(artist, updateparams)
     retdata['item'] = artist.to_json()
     relink_archived_artist(data, artist)
     for notation_data in data['relations']['notations']:
-        notation = create_notation_from_raw_parameters(notation_data)
+        notation = create_notation_from_json(notation_data)
         artist.notations.append(notation)
         SESSION.commit()
     return retdata

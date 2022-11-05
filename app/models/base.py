@@ -23,7 +23,29 @@ from utility.obj import classproperty, StaticProperty
 from .. import DB, SESSION, SERVER_INFO
 
 
+# ## GLOBAL VARIABLES
+
+ISODATETIME_RG = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
+
+
 # ## FUNCTIONS
+
+# #### JSON functions
+
+def json_serialize(record, attr):
+    value = getattr(record, attr)
+    if isinstance(value, datetime.datetime):
+        value = value.isoformat()
+    return value
+
+
+def json_deserialize(value):
+    if isinstance(value, str) and ISODATETIME_RG.match(value):
+        value = process_utc_timestring(value)
+        if value is None:
+            raise Exception("Unable to decode timestring.")
+    return value
+
 
 # #### Network functions
 
@@ -262,7 +284,7 @@ class JsonModel(DB.Model):
         return {k: getattr(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
 
     def archive_dict(self):
-        return {k: getattr(self, k) for k in self.archive_columns if hasattr(self, k)}
+        return {k: json_serialize(self, k) for k in self.archive_columns if hasattr(self, k)}
 
     def basic_json(self):
         return self._json(self.basic_attributes)
@@ -382,6 +404,10 @@ class JsonModel(DB.Model):
             else:
                 data[attr] = value
         return data
+
+    @classmethod
+    def loads(cls, data):
+        return cls(**{k: json_deserialize(v) for (k, v) in data.items()})
 
     @classmethod
     def _model_name(cls):

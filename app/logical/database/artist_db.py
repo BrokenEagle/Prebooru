@@ -19,7 +19,7 @@ from .base_db import update_column_attributes, update_relationship_collections, 
 COLUMN_ATTRIBUTES = ['site', 'site_artist_id', 'current_site_account', 'site_created', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('_site_accounts', 'name', Label), ('_names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = [('_profiles', 'body', Description)]
-RECREATE_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
+ALL_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['site_accounts', 'names', 'profiles']
 NORMALIZED_ASSOCIATE_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
 
@@ -54,37 +54,24 @@ def create_artist_from_parameters(createparams):
     current_time = get_current_time()
     set_timesvalue(createparams, 'site_created')
     set_all_site_accounts(createparams, None)
-    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
     artist = Artist(created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(artist, update_columns, createparams)
-    create_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    update_relationship_collections(artist, create_relationships, createparams)
-    append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    append_relationship_collections(artist, append_relationships, createparams)
-    if 'webpages' in createparams:
-        update_artist_webpages(artist, createparams['webpages'])
+    _update_relations(artist, createparams, overwrite=True, create=True)
     print("[%s]: created" % artist.shortlink)
     return artist
 
 
-def create_artist_from_raw_parameters(createparams):
-    artist = Artist()
-    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
-    update_columns = set(createparams.keys()).intersection(Artist.all_columns)
-    update_column_attributes(artist, update_columns, createparams)
-    settable_keylist = set(createparams.keys()).intersection(NORMALIZED_ASSOCIATE_ATTRIBUTES)
-    create_relationships = [rel for rel in RECREATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    update_relationship_collections(artist, create_relationships, createparams)
-    if 'webpages' in createparams:
-        update_artist_webpages(artist, createparams['webpages'])
+def create_artist_from_json(data):
+    artist = Artist.loads(data)
+    SESSION.add(artist)
+    SESSION.commit()
     print("[%s]: created" % artist.shortlink)
     return artist
 
 
 # ###### Update
-
 
 def update_artist_from_parameters(artist, updateparams):
     update_results = []
@@ -94,16 +81,15 @@ def update_artist_from_parameters(artist, updateparams):
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(artist, update_columns, updateparams))
-    update_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    update_results.append(update_relationship_collections(artist, update_relationships, updateparams))
-    append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    update_results.append(append_relationship_collections(artist, append_relationships, updateparams))
-    if 'webpages' in updateparams:
-        update_results.append(update_artist_webpages(artist, updateparams['webpages']))
+    update_results.append(_update_relations(artist, updateparams, overwrite=False, create=False))
     if any(update_results):
         print("[%s]: updated" % artist.shortlink)
         artist.updated = get_current_time()
         SESSION.commit()
+
+
+def recreate_artist_relations(artist, updateparams):
+    _update_relations(artist, updateparams, overwrite=True, create=False)
 
 
 def inactivate_artist(artist):
@@ -197,3 +183,21 @@ def get_site_artist(site_artist_id, site):
 
 def get_artists_without_boorus_page(limit):
     return Artist.query.filter(not_(BOORU_SUBCLAUSE)).limit_paginate(per_page=limit)
+
+
+# #### Private functions
+
+def _update_relations(artist, updateparams, overwrite=None, create=None):
+    update_results = []
+    set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
+    allowed_attributes = CREATE_ALLOWED_ATTRIBUTES if create else UPDATE_ALLOWED_ATTRIBUTES
+    settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)
+    relationship_list = ALL_SCALAR_RELATIONSHIPS if overwrite else UPDATE_SCALAR_RELATIONSHIPS
+    update_relationships = [rel for rel in relationship_list if rel[0] in settable_keylist]
+    update_results.append(update_relationship_collections(artist, update_relationships, updateparams))
+    if not overwrite:
+        append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
+        update_results.append(append_relationship_collections(artist, append_relationships, updateparams))
+    if 'webpages' in updateparams:
+        update_results.append(update_artist_webpages(artist, updateparams['webpages']))
+    return any(update_results)

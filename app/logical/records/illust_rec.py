@@ -1,7 +1,6 @@
 # APP/LOGICAL/RECORDS/ILLUST_REC.PY
 
 # ## PACKAGE IMPORTS
-from utility.data import merge_dicts
 from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
@@ -9,10 +8,10 @@ from ... import SESSION
 from ..utility import set_error
 from ..database.artist_db import get_site_artist, get_blank_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust,\
-    get_site_illust, create_illust_from_raw_parameters
+    get_site_illust, create_illust_from_json, recreate_illust_relations
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.post_db import post_append_illust_url, get_post_by_md5
-from ..database.notation_db import create_notation_from_raw_parameters
+from ..database.notation_db import create_notation_from_json
 from ..database.archive_db import get_archive, create_archive, update_archive
 from .artist_rec import get_or_create_artist_from_source
 
@@ -60,25 +59,24 @@ def recreate_archived_illust(data):
     illust = get_site_illust(illust_data['site_illust_id'], illust_data['site'])
     if illust is not None:
         return set_error(retdata, "Illust already exists: illust #%d" % illust.id)
-    artist = get_site_artist(data['links']['artist']['site_artist_id'], data['links']['artist']['site'])
+    artist_data = data['links']['artist']
+    artist = get_site_artist(artist_data['site_artist_id'], artist_data['site'])
     if artist is None:
         return set_error(retdata, "Artist for illust does not exist.")
     illust_data['artist_id'] = artist.id
-    merge_dicts(illust_data, data['relations']['site_data'])
+    illust = create_illust_from_json(illust_data)
+    updateparams = data['relations']['site_data'].copy()
     if len(data['scalars']['tags']):
-        illust_data['tags'] = data['scalars']['tags']
+        updateparams['tags'] = data['scalars']['tags']
     if len(data['scalars']['commentaries']):
-        illust_data['commentaries'] = data['scalars']['commentaries']
+        updateparams['commentaries'] = data['scalars']['commentaries']
     if len(data['relations']['illust_urls']):
-        illust_data['illust_urls'] = data['relations']['illust_urls']
-    try:
-        illust = create_illust_from_raw_parameters(data['body'])
-    except Exception as e:
-        return set_error(retdata, "Error creating illust: %s" % str(e))
+        updateparams['illust_urls'] = data['relations']['illust_urls']
+    recreate_illust_relations(illust, updateparams)
     retdata['item'] = illust.to_json()
     relink_archived_illust(data, illust)
     for notation_data in data['relations']['notations']:
-        notation = create_notation_from_raw_parameters(notation_data)
+        notation = create_notation_from_json(notation_data)
         illust.notations.append(notation)
         SESSION.commit()
     return retdata

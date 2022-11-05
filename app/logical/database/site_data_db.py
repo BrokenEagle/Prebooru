@@ -2,6 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ... import SESSION
+from ..sites import SiteDescriptor
 from ...models import TwitterData, PixivData
 from .base_db import update_column_attributes
 
@@ -19,33 +20,33 @@ SITE_DATA_TYPE_DICT = {
 
 # ## FUNCTIONS
 
-def update_site_data_from_parameters(site_data, illust_id, site_name, params):
-    if site_data is not None:
-        expected_type = SITE_DATA_TYPE_DICT[site_name]
-        if site_data.type != expected_type:
+def update_site_data_from_parameters(illust, params):
+    if illust.site_data is not None:
+        expected_type = SITE_DATA_TYPE_DICT[illust.site.name]
+        if illust.site_data.type != expected_type:
             print("Deleting site data!")
-            SESSION.delete(site_data)
+            SESSION.delete(illust.site_data)
             SESSION.commit()
-            site_data = None
-    if site_name == 'TWITTER':
-        return update_twitter_site_data(site_data, illust_id, params)
-    if site_name == 'PIXIV':
-        return update_pixiv_site_data(site_data, illust_id, params)
+            illust.site_data = None
+    if illust.site == SiteDescriptor.TWITTER:
+        return update_twitter_site_data(illust, params)
+    if illust.site == SiteDescriptor.PIXIV:
+        return update_pixiv_site_data(illust, params)
 
 
-def update_twitter_site_data(site_data, illust_id, params):
-    if site_data is None:
-        site_data = TwitterData(illust_id=illust_id)
-        SESSION.add(site_data)
+def update_twitter_site_data(illust, params):
+    if illust.site_data is None:
+        illust.site_data = TwitterData(illust_id=illust.id)
+        SESSION.add(illust.site_data)
         SESSION.commit()
     update_columns = set(params.keys()).intersection(TWITTER_COLUMN_ATTRIBUTES)
-    return update_column_attributes(site_data, update_columns, params)
+    return update_column_attributes(illust.site_data, update_columns, params)
 
 
-def update_pixiv_site_data(site_data, illust_id, params):
-    if site_data is None:
-        site_data = PixivData(illust_id=illust_id)
-        SESSION.add(site_data)
+def update_pixiv_site_data(illust, params):
+    if illust.site_data is None:
+        illust.site_data = PixivData(illust_id=illust.id)
+        SESSION.add(illust.site_data)
         SESSION.commit()
     update_columns = set(params.keys()).intersection(PIXIV_COLUMN_ATTRIBUTES)
-    return update_column_attributes(site_data, update_columns, params)
+    return update_column_attributes(illust.site_data, update_columns, params)

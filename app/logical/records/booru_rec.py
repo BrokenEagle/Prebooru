@@ -1,8 +1,5 @@
 # APP/LOGICAL/RECORDS/BOORU_REC.PY
 
-# ## PACKAGE IMPORTS
-from utility.uprint import exception_print
-
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
@@ -10,7 +7,7 @@ from ..sources.base import get_artist_id_source
 from ..sources.danbooru import get_artist_by_id, get_artists_by_ids
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
-    get_booru, create_booru_from_raw_parameters, delete_booru, get_all_boorus_page
+    get_booru, create_booru_from_json, delete_booru, get_all_boorus_page, recreate_booru_relations
 from ..database.archive_db import get_archive, create_archive, update_archive
 
 
@@ -97,17 +94,12 @@ def archive_booru_for_deletion(booru):
 
 def recreate_archived_booru(data):
     retdata = {'error': False}
-    booru_data = data['body']
-    booru = get_booru(booru_data['danbooru_id'])
+    booru = get_booru(data['body']['danbooru_id'])
     if booru is not None:
         return set_error(retdata, "Booru already exists: booru #%d" % booru.id)
+    booru = create_booru_from_json(data['body'])
     if len(data['scalars']['names']):
-        booru_data['names'] = data['scalars']['names']
-    try:
-        booru = create_booru_from_raw_parameters(data['body'])
-    except Exception as e:
-        exception_print(e)
-        return set_error(retdata, "Error creating booru: %s" % repr(e))
+        recreate_booru_relations(booru, {'names': data['scalars']['names']})
     retdata['item'] = booru.to_json()
     return retdata
 
