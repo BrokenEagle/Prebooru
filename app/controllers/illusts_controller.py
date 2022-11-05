@@ -393,7 +393,7 @@ def create_json():
 def edit_html(id):
     """HTML access point to update function."""
     illust = get_or_abort(Illust, id)
-    editparams = illust.to_json()
+    editparams = illust.basic_json(True)
     editparams['tag_string'] = '\r\n'.join(illust.tags)
     editparams.update({k: v for (k, v) in illust.site_data.to_json().items() if k not in ['id', 'illust_id', 'type']})
     form = get_illust_form(**editparams)

@@ -323,7 +323,7 @@ def create_json():
 def edit_html(id):
     """HTML access point to update function."""
     artist = get_or_abort(Artist, id)
-    editparams = artist.to_json()
+    editparams = artist.basic_json(True)
     editparams['site_account_string'] = '\r\n'.join(artist.site_accounts)
     editparams['name_string'] = '\r\n'.join(artist.names)
     marked_urls = ((('' if webpage.active else '-') + webpage.url) for webpage in artist.webpages)

@@ -286,11 +286,11 @@ class JsonModel(DB.Model):
     def archive_dict(self):
         return {k: json_serialize(self, k) for k in self.archive_columns if hasattr(self, k)}
 
-    def basic_json(self):
-        return self._json(self.basic_attributes)
+    def basic_json(self, id_enum=False):
+        return self._json(self.basic_attributes, id_enum)
 
-    def to_json(self):
-        return self._json(self.json_attributes)
+    def to_json(self, id_enum=False):
+        return self._json(self.json_attributes, id_enum)
 
     def copy(self):
         """Return an uncommitted copy of the record."""
@@ -385,7 +385,7 @@ class JsonModel(DB.Model):
         model_name = self.__class__.__name__
         return f"{model_name}({inner_string})"
 
-    def _json(self, attributes):
+    def _json(self, attributes, id_enum):
         data = {}
         for attr in attributes:
             value = getattr(self, attr)
@@ -394,7 +394,7 @@ class JsonModel(DB.Model):
             elif type(value) is bytes:
                 data[attr] = value.hex()
             elif isinstance(value, enum.Enum):
-                data[attr] = value.name
+                data[attr] = value.name if not id_enum else value.value
             elif type(value) is _AssociationList:
                 data[attr] = list(value)
             elif type(value) is InstrumentedList:
