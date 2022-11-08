@@ -38,12 +38,9 @@ def create_pool_element_from_parameters(pool, createparams):
 # ###### DELETE
 
 def delete_pool_element(pool_element):
+    pool_element.pool.element_count -= 1
     pool = pool_element.pool
     SESSION.delete(pool_element)
-    SESSION.flush()
-    pool._elements.reorder()
-    SESSION.flush()
-    pool.element_count = pool._get_element_count()
     SESSION.commit()
 
 
@@ -62,8 +59,7 @@ def create_pool_element_for_item(pool, id_key, dataparams):
         return set_error(retdata, "%s already added to %s." % (item.shortlink, pool.shortlink))
     pool.updated = get_current_time()
     pool.elements.append(item)
-    SESSION.flush()
-    pool.element_count = pool._get_element_count()
+    pool.element_count += 1
     SESSION.flush()
     pool_ids += [pool.id]
     pool_element_ids = [pool_element.id for pool_element in item._pools]
