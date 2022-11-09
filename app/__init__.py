@@ -26,7 +26,7 @@ from werkzeug.exceptions import HTTPException
 # ## PACKAGE IMPORTS
 from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION, DEBUG_LOG, LOGHANDLER
 from utility import RepeatTimer, is_interactive_shell
-from utility.uprint import buffered_print
+from utility.uprint import buffered_print, print_warning
 
 # ## LOCAL IMPORTS
 from .logical import query_extensions
@@ -90,8 +90,8 @@ def _fk_pragma_on_close(dbapi_connection, connection_record, database):
     cursor.execute('PRAGMA analysis_limit = 400')
     try:
         cursor.execute('PRAGMA optimize')
-    except sqlite3.OperationalError:
-        cursor.execute('ROLLBACK')
+    except sqlite3.OperationalError as e:
+        print_warning(f"Unable to optimize DB: {e}")
     cursor.close()
 
 
