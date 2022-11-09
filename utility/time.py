@@ -5,11 +5,18 @@ import time
 import logging
 import datetime
 
+# ## EXTERNAL IMPORTS
+import pytz
+
 # ## LOCAL IMPORTS
 from .data import set_precision
 
 
 # ## FUNCTIONS
+
+def local_timezone():
+    return pytz.timezone(_local_pytz_name())
+
 
 def local_datetime_utcoffset():
     return datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo.utcoffset(None)
@@ -71,7 +78,7 @@ def minutes_ago(minutes):
 
 
 def seconds_from_now_local(seconds):
-    return _normalize_time(datetime.datetime.now() + datetime.timedelta(seconds=seconds))
+    return _normalize_time(datetime.datetime.now(local_timezone()) + datetime.timedelta(seconds=seconds))
 
 
 def get_date(timeval):
@@ -129,3 +136,10 @@ def get_timer(name):
 
 def _normalize_time(timeval):
     return timeval - datetime.timedelta(microseconds=timeval.microsecond)
+
+
+def _local_pytz_name():
+    offset = local_datetime_utcoffset()
+    hours_ahead = int((offset.seconds // 3600) + (offset.days * 24))
+    sign = "+" if hours_ahead <= 0 else "-"
+    return 'Etc/GMT%s%d' % (sign, abs(hours_ahead))

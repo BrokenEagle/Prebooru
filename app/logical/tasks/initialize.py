@@ -9,7 +9,7 @@ import datetime
 
 # ## PACKAGE IMPORTS
 from utility import RepeatTimer
-from utility.time import time_ago, seconds_from_now_local, process_utc_timestring
+from utility.time import time_ago, seconds_from_now_local, process_utc_timestring, local_timezone
 from utility.uprint import buffered_print, print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
@@ -93,7 +93,7 @@ def recheck_schedule_interval(reschedule):
     SESSION.remove()
     # Save modifying the scheduler to last, to avoid committing early and causing a file deadlock
     for id in change_info:
-        SCHEDULER.modify_job(id, 'default', next_run_time=change_info[id])
+        SCHEDULER.modify_job(id, 'default', next_run_time=change_info[id].replace(tzinfo=local_timezone()))
 
 
 def reschedule_task(id, reschedule_soon):
@@ -107,13 +107,13 @@ def reschedule_task(id, reschedule_soon):
     update_job_by_id('job_time', id, {'time': next_run_time.timestamp()})
     SESSION.commit()
     SESSION.remove()
-    SCHEDULER.modify_job(id, 'default', next_run_time=next_run_time)
+    SCHEDULER.modify_job(id, 'default', next_run_time=next_run_time.replace(tzinfo=local_timezone()))
 
 
 def reschedule_from_child(id):
     """A child does not have access to the scheduler, so it must notify the parent."""
     next_run_time = _reschedule_soon_runtime(id)
-    data = {'next_run_time': next_run_time.isoformat(timespec='seconds')}
+    data = {'next_run_time': next_run_time.replace(tzinfo=local_timezone()).isoformat(timespec='seconds')}
     result = prebooru_json_request(f'/scheduler/jobs/{id}', 'patch', json=data)
     if not isinstance(result, dict):
         print_error(f'reschedule_from_child-{id}', result)
@@ -124,7 +124,7 @@ def reschedule_from_child(id):
 
 def schedule_from_child(id, func, args, next_run_time):
     """A child does not have access to the scheduler, so it must notify the parent."""
-    data = {'id': id, 'func': func, 'args': [args], 'next_run_time': next_run_time.isoformat(timespec='seconds')}
+    data = {'id': id, 'func': func, 'args': [args], 'next_run_time': next_run_time.replace(tzinfo=local_timezone()).isoformat(timespec='seconds')}
     result = prebooru_json_request('/scheduler/jobs', 'post', json=data)
     if not isinstance(result, dict):
         print_error(f'reschedule_from_child-{id}', result)
@@ -261,11 +261,11 @@ def _update_job_info():
         if key in info:
             task_config = JOB_CONFIG[key]['config']
             if info[key] > datetime.datetime.now():
-                task_config['next_run_time'] = info[key]
+                task_config['next_run_time'] = info[key].replace(tzinfo=local_timezone())
             else:
                 print_warning("Task Scheduler - Missed job:", key)
                 next_run_time = max(task_config['jitter'] * random.random(), JOB_CONFIG[key]['leeway'])
-                task_config['next_run_time'] = datetime.datetime.now() + datetime.timedelta(seconds=next_run_time)
+                task_config['next_run_time'] = datetime.datetime.now(local_timezone()) + datetime.timedelta(seconds=next_run_time)
 
 
 def _create_or_update_timevals():
