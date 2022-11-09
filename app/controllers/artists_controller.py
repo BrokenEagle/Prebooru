@@ -54,7 +54,6 @@ INDEX_HTML_OPTIONS = (
     selectinload(Artist._site_accounts),
     selectinload(Artist._names),
     selectinload(Artist.webpages),
-    selectinload(Artist.notations),
 )
 
 JSON_OPTIONS = (
