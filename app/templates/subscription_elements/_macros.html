@@ -62,6 +62,11 @@
                     <li>
                         <strong>{{ element.subscription_show_link }} {{ helpers.subscription.element_search_link(element) }}</strong>
                     </li>
+                    {% with artist = element.illust_url.illust.artist %}
+                        <li>
+                            <strong>{{ helpers.base.general_link("%s (%s)" | format(artist.shortlink, artist.current_site_account), artist.show_url) }}</strong>
+                        </li>
+                    {% endwith %}
                     <li>
                         <strong>{{ element.illust_url.illust_show_link }}</strong>
                     </li>
@@ -99,6 +104,11 @@
                 <strong>{{ element.subscription_show_link }}&ensp;{{ helpers.subscription.element_search_link(element) }}</strong>
             </li>
             {% if show_illust %}
+                {% with artist = element.illust_url.illust.artist %}
+                    <li>
+                        <strong>{{ helpers.base.general_link("%s (%s)" | format(artist.shortlink, artist.current_site_account), artist.show_url) }}</strong>
+                    </li>
+                {% endwith %}
                 <li>
                     <strong>{{ element.illust_url.illust_show_link }}</strong>
                 </li>

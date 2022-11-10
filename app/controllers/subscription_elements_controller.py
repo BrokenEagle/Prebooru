@@ -27,9 +27,10 @@ bp = Blueprint("subscription_element", __name__)
 # #### Load options
 
 INDEX_HTML_OPTIONS = (
-    selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust)
-                                                .selectinload(Illust.urls)
-                                                .lazyload('*'),
+    selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).options(
+        selectinload(Illust.artist).lazyload('*'),
+        selectinload(Illust.urls).lazyload('*'),
+    ),
     selectinload(SubscriptionElement.post).lazyload('*'),
     selectinload(SubscriptionElement.errors),
 )
