@@ -65,7 +65,7 @@ def recreate_archived_illust(data):
         return set_error(retdata, "Artist for illust does not exist.")
     illust_data['artist_id'] = artist.id
     illust = create_illust_from_json(illust_data)
-    updateparams = data['relations']['site_data'].copy()
+    updateparams = data['relations']['site_data'].copy() if 'site_data' in data['relations'] else {}
     if len(data['scalars']['tags']):
         updateparams['tags'] = data['scalars']['tags']
     if len(data['scalars']['commentaries']):
@@ -107,7 +107,7 @@ def _archive_illust_data(illust, retdata):
         },
         'relations': {
             'illust_urls': [illust_url.archive_dict() for illust_url in illust.urls],
-            'site_data': illust.site_data.archive_dict(),
+            'site_data': illust.site_data.archive_dict() if illust.site_data is not None else None,
             'notations': [notation.archive_dict() for notation in illust.notations],
         },
         'links': {

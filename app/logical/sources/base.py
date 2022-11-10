@@ -39,6 +39,14 @@ class NoSource():
     def artist_booru_search_url(url):
         return None
 
+    @staticmethod
+    def illust_has_images(illust):
+        return False
+
+    @staticmethod
+    def illust_has_videos(illust):
+        return False
+
 
 # ## FUNCTIONS
 

@@ -4,7 +4,13 @@
 import re
 import json
 import math
+import random
 import hashlib
+
+
+# ## GLOBAL VARIABLES
+
+MAX_INTEGER = (1 << 31) - 1  # Maximum positive integer for 32-bit twos complement
 
 
 # ## FUNCTIONS
@@ -94,6 +100,10 @@ def eval_bool_string(string):
 def set_precision(number, precision):
     placenum = 10**precision
     return (int(number * placenum)) / placenum
+
+
+def random_id():
+    return random.randint(0, MAX_INTEGER)
 
 
 # #### Dict functions

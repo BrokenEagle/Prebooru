@@ -6,6 +6,9 @@ from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, StringField
 from wtforms.validators import DataRequired
 
+# ## PACKAGE IMPORTS
+from utility.data import random_id
+
 # ## LOCAL IMPORTS
 from ..models import Artist, Booru
 from ..logical.utility import set_error
@@ -75,6 +78,7 @@ FORM_CONFIG = {
                 ("", ""),
                 (SiteDescriptor.PIXIV.value, SiteDescriptor.PIXIV.name.title()),
                 (SiteDescriptor.TWITTER.value, SiteDescriptor.TWITTER.name.title()),
+                (SiteDescriptor.CUSTOM.value, SiteDescriptor.CUSTOM.name.title()),
             ],
             'validators': [DataRequired()],
             'coerce': int_or_blank,
@@ -83,9 +87,6 @@ FORM_CONFIG = {
     'site_artist_id': {
         'name': 'Site Artist ID',
         'field': IntegerField,
-        'kwargs': {
-            'validators': [DataRequired()],
-        },
     },
     'current_site_account': {
         'field': StringField,
@@ -185,13 +186,21 @@ def create():
     dataparams = get_data_params(request, 'artist')
     createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
-    if len(errors) > 0:
-        return set_error(retdata, '\n'.join(errors))
-    check_artist = uniqueness_check(createparams, Artist())
-    if check_artist is not None:
-        retdata['item'] = check_artist.to_json()
-        return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
+    if createparams['site'] == SiteDescriptor.CUSTOM and createparams['site_artist_id'] is None:
+        for i in range(100):
+            createparams['site_artist_id'] = random_id()
+            if uniqueness_check(createparams, Artist()) is None:
+                break
+        else:
+            return set_error(retdata, "Unable to find available site artist ID... check the data or try again.")
+    else:
+        errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
+        if len(errors) > 0:
+            return set_error(retdata, '\n'.join(errors))
+        check_artist = uniqueness_check(createparams, Artist())
+        if check_artist is not None:
+            retdata['item'] = check_artist.to_json()
+            return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
     artist = create_artist_from_parameters(createparams)
     retdata['item'] = artist.to_json()
     return retdata

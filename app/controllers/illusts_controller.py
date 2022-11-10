@@ -8,7 +8,7 @@ from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, Stri
 from wtforms.validators import DataRequired
 
 # ## PACKAGE IMPORTS
-from utility.data import eval_bool_string, is_falsey
+from utility.data import eval_bool_string, is_falsey, random_id
 
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
@@ -28,7 +28,7 @@ from .base_controller import get_params_value, process_request_values, show_json
 
 bp = Blueprint("illust", __name__)
 
-CREATE_REQUIRED_PARAMS = ['artist_id', 'site', 'site_illust_id']
+CREATE_REQUIRED_PARAMS = ['site', 'site_illust_id']
 VALUES_MAP = {
     'illust_urls': 'illust_urls',
     'tags': 'tags',
@@ -91,6 +91,7 @@ FORM_CONFIG = {
                 ("", ""),
                 (SiteDescriptor.PIXIV.value, SiteDescriptor.PIXIV.name.title()),
                 (SiteDescriptor.TWITTER.value, SiteDescriptor.TWITTER.name.title()),
+                (SiteDescriptor.CUSTOM.value, SiteDescriptor.CUSTOM.name.title()),
             ],
             'validators': [DataRequired()],
             'coerce': int_or_blank,
@@ -99,9 +100,6 @@ FORM_CONFIG = {
     'site_illust_id': {
         'name': 'Site Illust ID',
         'field': IntegerField,
-        'kwargs': {
-            'validators': [DataRequired()],
-        },
     },
     'site_created': {
         'field': StringField,
@@ -208,6 +206,8 @@ def convert_data_params(dataparams):
 
 def convert_create_params(dataparams):
     createparams = convert_data_params(dataparams)
+    set_default(createparams, 'pages', 1)
+    set_default(createparams, 'score', 0)
     set_default(createparams, 'tags', [])
     createparams['commentaries'] = createparams['commentary']
     if 'illust_urls' in dataparams:
@@ -247,16 +247,24 @@ def create():
     dataparams = get_data_params(request, 'illust')
     createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
-    if len(errors) > 0:
-        return set_error(retdata, '\n'.join(errors))
-    illust = Artist.find(createparams['artist_id'])
-    if illust is None:
-        return set_error(retdata, "illust #%s not found." % dataparams['artist_id'])
-    check_illust = uniqueness_check(createparams, Illust())
-    if check_illust is not None:
-        retdata['item'] = check_illust.to_json()
-        return set_error(retdata, "Illust already exists: %s" % check_illust.shortlink)
+    check_artist = Artist.find(createparams['artist_id'])
+    if check_artist is None:
+        return set_error(retdata, "artist #%s not found." % dataparams['artist_id'])
+    if createparams['site'] == SiteDescriptor.CUSTOM and createparams['site_illust_id'] is None:
+        for i in range(100):
+            createparams['site_illust_id'] = random_id()
+            if uniqueness_check(createparams, Illust()) is None:
+                break
+        else:
+            return set_error(retdata, "Unable to find available site illust ID... check the data or try again.")
+    else:
+        errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
+        if len(errors) > 0:
+            return set_error(retdata, '\n'.join(errors))
+        check_illust = uniqueness_check(createparams, Illust())
+        if check_illust is not None:
+            retdata['item'] = check_illust.to_json()
+            return set_error(retdata, "Illust already exists: %s" % check_illust.shortlink)
     illust = create_illust_from_parameters(createparams)
     retdata['item'] = illust.to_json()
     return retdata
@@ -395,7 +403,8 @@ def edit_html(id):
     illust = get_or_abort(Illust, id)
     editparams = illust.basic_json(True)
     editparams['tag_string'] = '\r\n'.join(illust.tags)
-    editparams.update({k: v for (k, v) in illust.site_data.to_json().items() if k not in ['id', 'illust_id', 'type']})
+    if illust.site_data is not None:
+        editparams.update({k: v for (k, v) in illust.site_data.to_json().items() if k not in ['id', 'illust_id', 'type']})
     form = get_illust_form(**editparams)
     hide_input(form, 'artist_id', illust.artist_id)
     hide_input(form, 'site', illust.site.value)

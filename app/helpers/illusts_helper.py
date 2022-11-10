@@ -4,13 +4,14 @@
 import urllib.parse
 
 # ## EXTERNAL IMPORTS
-from flask import url_for
+from flask import url_for, Markup
 
 # ## PACKAGE IMPORTS
 from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
+from ..logical.sites import SiteDescriptor
 from .base_helper import external_link, general_link
 
 
@@ -31,6 +32,7 @@ def form_class(form):
         None: "",
         1: "pixiv-data",
         3: "twitter-data",
+        0: "custom",
     }
     return class_map[form.site.data]
 
@@ -38,6 +40,8 @@ def form_class(form):
 # #### Iterator functions
 
 def site_metric_iterator(illust):
+    if illust.site == SiteDescriptor.CUSTOM:
+        return
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
         if key in ['retweets', 'replies', 'quotes', 'bookmarks', 'views']:
@@ -45,6 +49,8 @@ def site_metric_iterator(illust):
 
 
 def site_date_iterator(illust):
+    if illust.site == SiteDescriptor.CUSTOM:
+        return
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
         if key in ['site_updated', 'site_uploaded']:
@@ -83,6 +89,8 @@ def illust_url_search_link(illust):
 # ###### SHOW
 
 def danbooru_upload_link(illust):
+    if illust.site == SiteDescriptor.CUSTOM:
+        return Markup("N/A")
     return external_link("Danbooru", danbooru_batch_url(illust))
 
 
@@ -123,10 +131,15 @@ def delete_commentary_link(illust, commentary):
 # ###### GENERAL
 
 def site_illust_link(illust):
+    if illust.site == SiteDescriptor.CUSTOM:
+        # Need to add a post_url for CustomData, a subclass for SiteData
+        return Markup("N/A")
     return external_link(site_short_link(illust), site_illust_url(illust))
 
 
 def alt_site_illust_link(illust):
+    if illust.site == SiteDescriptor.CUSTOM:
+        return ""
     source = illust.site.source
     post_url = source.get_post_url(illust)
     return external_link('»', post_url) if post_url != source.get_illust_url(illust.site_illust_id) else ""
