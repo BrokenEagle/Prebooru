@@ -13,6 +13,7 @@ from utility.obj import AttrEnum, classproperty
 # ## LOCAL IMPORTS
 from .. import DB
 from ..logical.utility import unique_objects
+from ..logical.batch_loader import selectinload_batch_primary, selectinload_batch_secondary
 from .upload_url import UploadUrl
 from .upload_element import UploadElement
 from .error import Error
@@ -68,22 +69,39 @@ class Upload(JsonModel):
     elements = DB.relationship(UploadElement, lazy=True, cascade='all,delete',
                                backref=DB.backref('upload', uselist=False, lazy=True))
 
-    # #### Association proxies
-    illust_urls = association_proxy('elements', 'illust_url')
-
     # ## Property methods
+
+    @memoized_property
+    def illust_urls(self):
+        self._populate_illust_urls()
+        return self._illust_urls
+
+    @memoized_property
+    def duplicate_illust_urls(self):
+        self._populate_illust_urls()
+        return self._duplicate_illust_urls
 
     @property
     def posts(self):
+        self._populate_posts()
         return [illust_url.post for illust_url in self.illust_urls if illust_url.post is not None]
+
+    @property
+    def duplicate_posts(self):
+        self._populate_posts()
+        return [illust_url.post for illust_url in self.duplicate_illust_urls if illust_url.post is not None]
 
     @property
     def post_ids(self):
         return [post.id for post in self.posts]
 
     @property
-    def site(self):
-        return self._source.SITE
+    def duplicate_post_ids(self):
+        return [post.id for post in self.duplicate_posts]
+
+    @property
+    def site_id(self):
+        return self._source.SITE_ID
 
     @memoized_property
     def site_illust_id(self):
@@ -98,7 +116,7 @@ class Upload(JsonModel):
         if len(self.posts) == 0:
             return None
         illusts = unique_objects(sum([post.illusts for post in self.posts], []))
-        return next(filter(lambda x: (x.site == self.site) and (x.site_illust_id == self.site_illust_id),
+        return next(filter(lambda x: (x.site_id == self.site_id) and (x.site_illust_id == self.site_illust_id),
                            illusts), None)
 
     @memoized_property
@@ -109,12 +127,25 @@ class Upload(JsonModel):
 
     @memoized_property
     def _source(self):
-        from ..logical.sources.base import get_post_source
+        from ..logical.sources.base import get_post_source, get_source_by_id
         if self.request_url:
             return get_post_source(self.request_url)
         elif self.illust_url_id:
-            return self.illust_url.site.source
+            return get_source_by_id(self.illust_url.site_id)
         raise Exception("Unable to find source for upload #%d" % self.id)
+
+    def _populate_illust_urls(self):
+        if len(self.elements):
+            selectinload_batch_primary(self.elements, 'illust_url')
+        self._illust_urls = [element.illust_url for element in self.elements]
+        self._duplicate_illust_urls = [element.illust_url for element in self.elements
+                                       if element.status.name == 'duplicate']
+        self._populate_illust_urls = lambda: None
+
+    def _populate_posts(self):
+        if len(self.illust_urls):
+            selectinload_batch_secondary(self.illust_urls, 'post')
+        self._populate_posts = lambda: None
 
     # ## Class properties
 
@@ -122,4 +153,4 @@ class Upload(JsonModel):
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['image_urls', 'post_ids', 'errors']
+        return super().json_attributes + ['image_urls', 'post_ids', 'duplicate_post_ids', 'errors']
