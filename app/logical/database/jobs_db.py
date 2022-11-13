@@ -85,7 +85,7 @@ def is_any_job_locked():
 
 
 def is_any_job_manual():
-    return JobManual.query.filter(JobManual.locked.is_(True)).first() is not None
+    return JobManual.query.filter(JobManual.manual.is_(True)).first() is not None
 
 
 def get_job_status_data(id):
