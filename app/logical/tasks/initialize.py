@@ -114,7 +114,7 @@ def reschedule_from_child(id):
     """A child does not have access to the scheduler, so it must notify the parent."""
     next_run_time = _reschedule_soon_runtime(id)
     data = {'next_run_time': next_run_time.replace(tzinfo=local_timezone()).isoformat(timespec='seconds')}
-    result = prebooru_json_request(f'/scheduler/jobs/{id}', 'patch', json=data)
+    result = prebooru_json_request(f'/jobs/{id}', 'put', json=data)
     if not isinstance(result, dict):
         print_error(f'reschedule_from_child-{id}', result)
         log_error('tasks.initialize.reschedule_from_child', f"Error rescheduling {id}:\n" + str(result))
@@ -125,7 +125,7 @@ def reschedule_from_child(id):
 def schedule_from_child(id, func, args, next_run_time):
     """A child does not have access to the scheduler, so it must notify the parent."""
     data = {'id': id, 'func': func, 'args': [args], 'next_run_time': next_run_time.replace(tzinfo=local_timezone()).isoformat(timespec='seconds')}
-    result = prebooru_json_request('/scheduler/jobs', 'post', json=data)
+    result = prebooru_json_request('/jobs', 'post', json=data)
     if not isinstance(result, dict):
         print_error(f'reschedule_from_child-{id}', result)
         log_error('tasks.initialize.schedule_from_child', f"Error rescheduling {id}:\n" + str(result))

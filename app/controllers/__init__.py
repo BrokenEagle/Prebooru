@@ -37,5 +37,6 @@ from . import similarity_matches_controller as similarity_match  # noqa: F401
 from . import proxy_controller as proxy  # noqa: F401
 from . import static_controller as static  # noqa: F401
 from . import tasks_controller as task  # noqa: F401
+from . import jobs_controller as job  # noqa: F401
 if not HAS_EXTERNAL_IMAGE_SERVER:
     from . import media_controller as media  # noqa: F401
