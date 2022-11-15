@@ -70,7 +70,7 @@ div#subscription-elements-container {
 }
 
 article.subscription-element {
-    height: 460px;
+    height: 485px;
     margin: 2em 1em 4em;
     width: 340px;
 }
@@ -222,10 +222,10 @@ article.subscription-element article.post {
 article.subscription-element.subscription-no-post {
     background: #f0f0f0;
     box-shadow: 0 0 0 2px #ddd;
-    max-height: 460px;
+    max-height: 470px;
     overflow-x: hidden;
     padding: 0.5em;
-    width: 325px;
+    width: 326px;
 }
 
 article.subscription-element.subscription-no-post > div.preview {

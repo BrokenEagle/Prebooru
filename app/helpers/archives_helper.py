@@ -5,6 +5,7 @@ from flask import url_for
 
 # ## PACKAGE IMPORTS
 from config import PREVIEW_DIMENSIONS
+from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
 from .base_helper import general_link, render_tag, get_preview_dimensions
@@ -12,15 +13,27 @@ from .base_helper import general_link, render_tag, get_preview_dimensions
 
 # ## FUNCTIONS
 
-def post_preview_link(archive):
+def archive_preview_link(archive, lazyload):
+    return render_tag('a', post_preview_link(archive, lazyload), {'href': archive.show_url})
+
+
+def post_preview_link(archive, lazyload=False):
     post_data = archive.data['body']
-    preview_width, preview_height = get_preview_dimensions(post_data['width'], post_data['height'], PREVIEW_DIMENSIONS)
+    width = archive.data['body']['width']
+    height = archive.data['body']['height']
+    preview_width, preview_height = get_preview_dimensions(width, height, PREVIEW_DIMENSIONS)
+    file_ext = archive.data['body']['file_ext']
+    size = archive.data['body']['size']
     addons = {
         'width': preview_width,
         'height': preview_height,
+        'title': f"( {width} x {height} ) : {file_ext.upper()} @ {readable_bytes(size)}",
         'alt': archive.shortlink,
-        'src': archive.preview_url,
+        'data-src': archive.preview_url,
+        'onerror': 'Prebooru.onImageError(this)',
     }
+    if not lazyload:
+        addons['src'] = preview_url
     return render_tag('img', None, addons)
 
 

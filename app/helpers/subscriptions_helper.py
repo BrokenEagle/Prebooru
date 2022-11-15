@@ -9,6 +9,7 @@ from utility.time import humanized_timedelta
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
+from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
 from .base_helper import general_link, url_for_with_params, val_or_none
 
@@ -103,16 +104,10 @@ def keep_element_val(subscription_element):
 def element_preview_link(element, lazyload):
     if element.post_match is not None:
         return post_preview_link(element.post_match, lazyload)
-    elif element.archive_match is not None:
-        preview_url = element.archive_match.preview_url
-        width = element.archive_match.data['body']['width']
-        height = element.archive_match.data['body']['height']
-        file_ext = element.archive_match.data['body']['file_ext']
-        size = element.archive_match.data['body']['size']
-        title = f"( {width} x {height} ) : {file_ext.upper()} @ {readable_bytes(size)}"
-    else:
-        preview_url = element.illust_url.preview_url
-        title = f"( {element.illust_url.width} x  {element.illust_url.height} )"
+    if element.archive_match is not None:
+        return archive_preview_link(element.archive_match, lazyload)
+    preview_url = element.illust_url.preview_url
+    title = f"( {element.illust_url.width} x  {element.illust_url.height} )"
     addons = {
         'data-src': preview_url,
         'onerror': 'Prebooru.onImageError(this)',
