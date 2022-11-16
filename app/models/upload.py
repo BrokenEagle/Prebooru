@@ -16,6 +16,7 @@ from ..logical.utility import unique_objects
 from ..logical.batch_loader import selectinload_batch_primary, selectinload_batch_secondary
 from .upload_url import UploadUrl
 from .upload_element import UploadElement
+from .illust_url import IllustUrl
 from .error import Error
 from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable
 
@@ -68,6 +69,8 @@ class Upload(JsonModel):
                              backref=DB.backref('upload', uselist=False, lazy=True))
     elements = DB.relationship(UploadElement, lazy=True, cascade='all,delete',
                                backref=DB.backref('upload', uselist=False, lazy=True))
+    file_illust_url = DB.relationship(IllustUrl, lazy=True, uselist=False, viewonly=True,
+                                      backref=DB.backref('upload', lazy=True, uselist=False))
 
     # ## Property methods
 
@@ -107,21 +110,20 @@ class Upload(JsonModel):
     def site_illust_id(self):
         if self.request_url:
             return self._source.get_illust_id(self.request_url)
-        elif self.illust_url.id:
+        elif self.illust is not None:
             return self.illust_url.illust.site_illust_id
-        raise Exception("Unable to find site illust ID for upload #%d" % self.id)
 
     @memoized_property
     def illust(self):
-        if len(self.posts) == 0:
-            return None
-        illusts = unique_objects(sum([post.illusts for post in self.posts], []))
-        return next(filter(lambda x: (x.site_id == self.site_id) and (x.site_illust_id == self.site_illust_id),
-                           illusts), None)
+        if self.illust_url_id is not None:
+            return self.file_illust_url.illust
+        if len(self.illust_urls):
+            return self.illust_urls[0].illust
 
     @memoized_property
     def artist(self):
-        return self.illust.artist if self.illust is not None else None
+        if self.illust is not None:
+            return self.illust.artist
 
     # #### Private
 
