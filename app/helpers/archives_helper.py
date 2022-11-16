@@ -33,7 +33,7 @@ def post_preview_link(archive, lazyload=False):
         'onerror': 'Prebooru.onImageError(this)',
     }
     if not lazyload:
-        addons['src'] = preview_url
+        addons['src'] = archive.preview_url
     return render_tag('img', None, addons)
 
 

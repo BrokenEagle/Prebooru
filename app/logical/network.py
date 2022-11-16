@@ -45,8 +45,8 @@ def prebooru_json_request(path, method, **args):
             data = json.loads(content)
         except Exception as e:
             return "Unable to read request [%s]: %s" % (str(e), content)
-        if 'error' in data:
-            return data['message'] if data['error'] else None
+        if data.get('error') is True:
+            return data['message']
         return data
     else:
         return "Unrecognized response."
