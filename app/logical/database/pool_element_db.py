@@ -39,7 +39,6 @@ def create_pool_element_from_parameters(pool, createparams):
 
 def delete_pool_element(pool_element):
     pool_element.pool.element_count -= 1
-    pool = pool_element.pool
     SESSION.delete(pool_element)
     SESSION.commit()
 

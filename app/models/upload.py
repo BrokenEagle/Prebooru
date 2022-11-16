@@ -5,14 +5,12 @@ import enum
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
-from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import AttrEnum, classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.utility import unique_objects
 from ..logical.batch_loader import selectinload_batch_primary, selectinload_batch_secondary
 from .upload_url import UploadUrl
 from .upload_element import UploadElement

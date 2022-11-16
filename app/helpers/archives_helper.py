@@ -19,11 +19,11 @@ def archive_preview_link(archive, lazyload):
 
 def post_preview_link(archive, lazyload=False):
     post_data = archive.data['body']
-    width = archive.data['body']['width']
-    height = archive.data['body']['height']
+    width = post_data['width']
+    height = post_data['height']
     preview_width, preview_height = get_preview_dimensions(width, height, PREVIEW_DIMENSIONS)
-    file_ext = archive.data['body']['file_ext']
-    size = archive.data['body']['size']
+    file_ext = post_data['file_ext']
+    size = post_data['size']
     addons = {
         'width': preview_width,
         'height': preview_height,
