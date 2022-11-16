@@ -8,7 +8,7 @@ from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
 from .. import SCHEDULER, SESSION
-from ..logical.tasks.initialize import reschedule_task
+from ..logical.tasks.reschedule import reschedule_task
 from ..logical.database.jobs_db import get_all_job_items, get_all_job_info, update_job_by_id
 
 

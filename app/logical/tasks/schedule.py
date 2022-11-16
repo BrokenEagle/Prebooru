@@ -30,7 +30,7 @@ from ..database.archive_db import expired_archive_count, delete_expired_archive
 from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id
 from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready,\
     update_subscriptions_ready
-from .initialize import reschedule_from_child, schedule_from_child
+from .reschedule import reschedule_from_child, schedule_from_child
 from . import JOB_CONFIG
 
 
