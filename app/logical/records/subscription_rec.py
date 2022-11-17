@@ -184,7 +184,7 @@ def download_missing_elements(manual=False):
             element_count += 1
         _process_image_matches(page.items)
         _process_videos(page.items)
-        if not page.has_prev or (not manual and max_pages):
+        if not page.has_next or page.page >= max_pages:
             return element_count
         page = page.prev()
 
