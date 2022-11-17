@@ -109,7 +109,7 @@ def _before_request():
     from app.logical.database.server_info_db import update_last_activity
     logger.info("Before request: Allow - %s, Active = %d\n", SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
     SERVER_INFO.active_requests += 1
-    if request.endpoint is not None and not re.match(r'^(?:shutdown|ping|scheduler|static|media)', request.endpoint):
+    if request.endpoint is not None and not re.match(r'^(?:shutdown|ping|scheduler|jobs|static|media)', request.endpoint):
         try:
             update_last_activity('user')
         except Exception as e:
