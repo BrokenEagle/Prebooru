@@ -51,6 +51,8 @@ def set_all_site_accounts(params, artist):
 # ###### Create
 
 def create_artist_from_parameters(createparams):
+    if type(createparams.get('profiles')) is str:
+        createparams['profiles'] = [createparams['profiles']]
     current_time = get_current_time()
     set_timesvalue(createparams, 'site_created')
     set_all_site_accounts(createparams, None)

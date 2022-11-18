@@ -234,8 +234,6 @@ def query_create():
     createparams = retdata['data'] = source.get_artist_data(retdata['site_artist_id'])
     if not createparams['active']:
         return set_error(retdata, "Artist account does not exist!")
-    if createparams['profiles'] is not None:
-        createparams['profiles'] = [createparams['profiles']]
     artist = create_artist_from_parameters(createparams)
     retdata['item'] = artist.to_json()
     return retdata

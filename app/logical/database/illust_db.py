@@ -70,6 +70,8 @@ def update_illust_urls(illust, params):
 # ###### CREATE
 
 def create_illust_from_parameters(createparams):
+    if type(createparams.get('commentaries')) is str:
+        createparams['commentaries'] = [createparams['commentaries']]
     current_time = get_current_time()
     set_timesvalues(createparams)
     illust = Illust(created=current_time, updated=current_time)

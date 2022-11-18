@@ -305,8 +305,6 @@ def query_create():
     if artist is None:
         return set_error(retdata, "Unable to find Prebooru artist... artist must exist before creating an illust.")
     createparams['artist_id'] = artist.id
-    if createparams['commentaries'] is not None:
-        createparams['commentaries'] = [createparams['commentaries']]
     illust = create_illust_from_parameters(createparams)
     retdata['item'] = illust.to_json()
     return retdata
