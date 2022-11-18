@@ -818,18 +818,12 @@ def get_twitter_illust_timeline(illust_id):
             return create_error('sources.twitter.get_twitter_illust_timeline', data['message'])
         found_tweets = get_graphql_timeline_entries(data['body'], [])
     except Exception as e:
-        if DEBUG_MODE:
-            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         msg = "Error parsing Twitter data: %s" % str(e)
         return create_error('sources.twitter.get_twitter_illust_timeline', msg)
     if len(found_tweets) == 0:
-        if DEBUG_MODE:
-            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         return create_error('sources.twitter.get_twitter_illust_timeline', "No tweets found in data.")
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
     if illust_id_str not in tweet_ids:
-        if DEBUG_MODE:
-            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         return create_error('sources.twitter.get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
     return found_tweets
 
@@ -902,12 +896,8 @@ def get_twitter_illust(illust_id):
                   '&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true'
     data = twitter_request(request_url)
     if data['error']:
-        if DEBUG_MODE:
-            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         return create_error('sources.twitter.get_twitter_illust', data['message'])
     if len(data['body']) == 0:
-        if DEBUG_MODE:
-            put_get_json(ERROR_TWEET_FILE, 'wb', data, unicode=True)
         return create_error('sources.twitter.get_twitter_illust', "Tweet not found: %d" % illust_id)
     return data['body'][0]
 
