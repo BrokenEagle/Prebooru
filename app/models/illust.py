@@ -46,9 +46,7 @@ IllustNotations = secondarytable(
 # ## CLASSES
 
 class Illust(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     site = DB.Column(IntEnum(SiteDescriptor), nullable=False)
     site_illust_id = DB.Column(DB.Integer, nullable=False)
@@ -60,20 +58,23 @@ class Illust(JsonModel):
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
-    # #### Relationships
-    _commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True,
-                                    backref=DB.backref('illusts', lazy=True))
-    _tags = DB.relationship(SiteTag, secondary=IllustTags, lazy=True, backref=DB.backref('illusts', lazy=True))
-    urls = DB.relationship(IllustUrl, backref=DB.backref('illust', lazy=True, uselist=False), lazy=True,
-                           cascade="all, delete")
-    site_data = DB.relationship(SiteData, lazy=True, uselist=False, cascade="all, delete")
-    notations = DB.relationship(Notation, secondary=IllustNotations, lazy=True,
-                                backref=DB.backref('illust', uselist=False, lazy=True), cascade='all,delete')
+    # ## Relationships
+    _commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True, uselist=True,
+                                    backref=DB.backref('illusts', lazy=True, uselist=True))
+    _tags = DB.relationship(SiteTag, secondary=IllustTags, lazy=True, uselist=True,
+                            backref=DB.backref('illusts', lazy=True, uselist=True))
+    urls = DB.relationship(IllustUrl, lazy=True, uselist=True, cascade="all, delete",
+                           backref=DB.backref('illust', lazy=True, uselist=False))
+    site_data = DB.relationship(SiteData, lazy=True, uselist=False, cascade="all, delete",
+                                backref=DB.backref('illust', lazy=True, uselist=False))
+    notations = DB.relationship(Notation, secondary=IllustNotations, lazy=True, uselist=True, cascade='all,delete',
+                                backref=DB.backref('illust', uselist=False, lazy=True))
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
-    _pools = DB.relationship(PoolIllust, lazy=True, backref=DB.backref('item', lazy=True, uselist=False))
-    # artist <- Artist (OtO)
+    _pools = DB.relationship(PoolIllust, lazy=True, uselist=True,
+                             backref=DB.backref('item', lazy=True, uselist=False))
+    # (OtO) artist [Artist]
 
-    # #### Association proxies
+    # ## Association proxies
     tags = association_proxy('_tags', 'name')
     commentaries = association_proxy('_commentaries', 'body')
     pools = association_proxy('_pools', 'pool')
@@ -87,7 +88,7 @@ class Illust(JsonModel):
     site_updated = association_proxy('site_data', 'site_updated', getset_factory=polymorphic_accessor_factory)
     site_uploaded = association_proxy('site_data', 'site_uploaded', getset_factory=polymorphic_accessor_factory)
 
-    # ## Property methods
+    # ## Instance properties
 
     @memoized_property
     def ordered_urls(self):
@@ -110,12 +111,6 @@ class Illust(JsonModel):
         else:
             return 'unknown'
 
-    # ###### Private
-
-    __table_args__ = (DB.UniqueConstraint('site', 'site_illust_id'),)
-
-    # ## methods
-
     def delete(self):
         pools = [pool for pool in self.pools]
         DB.session.delete(self)
@@ -132,6 +127,10 @@ class Illust(JsonModel):
     @classproperty(cached=True)
     def json_attributes(cls):
         return super().json_attributes + ['urls', 'tags', 'commentaries', 'site_data']
+
+    # ## Private
+
+    __table_args__ = (DB.UniqueConstraint('site', 'site_illust_id'),)
 
 
 # ## INITIALIZATION

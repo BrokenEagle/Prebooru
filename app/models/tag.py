@@ -24,18 +24,12 @@ class TagType(AttrEnum):
 
 
 class Tag(JsonModel):
-    # ## Declarations
-
-    # ## Class attributes
-
-    polymorphic_base = True
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
     type = DB.Column(IntEnum(TagType), nullable=False)
 
-    # ## Property methods
+    # ## Instance properties
 
     @property
     def name_link(self):
@@ -56,9 +50,10 @@ class Tag(JsonModel):
 
     # ## Class properties
 
+    polymorphic_base = True
     type_enum = TagType
 
-    # #### Private
+    # ## Private
 
     __mapper_args__ = {
         'polymorphic_identity': TagType.tag,
@@ -67,11 +62,10 @@ class Tag(JsonModel):
 
 
 class SiteTag(Tag):
-    # ## Class attributes
+    # ## Relations
+    # (MtM) illusts [Illust]
 
-    polymorphic_base = False
-
-    # ## Property methods
+    # ## Instance properties
 
     @memoized_property
     def illust_count(self):
@@ -81,7 +75,11 @@ class SiteTag(Tag):
     def post_count(self):
         return self._post_query.distinct().relation_count()
 
-    # #### Private
+    # ## Class properties
+
+    polymorphic_base = False
+
+    # ## Private
 
     @property
     def _illust_query(self):
@@ -102,11 +100,10 @@ class SiteTag(Tag):
 
 
 class UserTag(Tag):
-    # ## Class attributes
+    # ## Relations
+    # (MtM) posts [Post]
 
-    polymorphic_base = False
-
-    # ## Property methods
+    # ## Instance properties
 
     @memoized_property
     def illust_count(self):
@@ -115,6 +112,10 @@ class UserTag(Tag):
     @memoized_property
     def post_count(self):
         return self._post_query.get_count()
+
+    # ## Class properties
+
+    polymorphic_base = False
 
     # ## Private
 

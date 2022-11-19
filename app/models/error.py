@@ -11,13 +11,18 @@ from .base import JsonModel, EpochTimestamp
 # ## CLASSES
 
 class Error(JsonModel):
-    # ## Declarations
-
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     module = DB.Column(DB.String(255), nullable=False)
     message = DB.Column(DB.UnicodeText, nullable=False)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+
+    # ## Relations
+    # (OtO) post [Post]
+    # (OtO) subscription [Subscription]
+    # (OtO) subscription_element [SubscriptionElement]
+    # (OtO) upload [Upload]
+    # (OtO) upload_element [UploadElement]
 
     @memoized_property
     def append_item(self):

@@ -17,9 +17,7 @@ from .base import JsonModel, IntEnum
 # ## CLASSES
 
 class IllustUrl(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     site = DB.Column(IntEnum(SiteDescriptor), nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
@@ -32,14 +30,15 @@ class IllustUrl(JsonModel):
     active = DB.Column(DB.Boolean, nullable=False)
 
     # ## Relationships
-    upload_elements = DB.relationship(UploadElement, lazy=True, uselist=True,
-                                      backref=DB.backref('illust_url', lazy=True, uselist=False),
-                                      cascade="all, delete")
-    subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False,
-                                           backref=DB.backref('illust_url', lazy=True, uselist=False),
-                                           cascade="all, delete")
+    upload_elements = DB.relationship(UploadElement, lazy=True, uselist=True, cascade="all, delete",
+                                      backref=DB.backref('illust_url', lazy=True, uselist=False))
+    subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False, cascade="all, delete",
+                                           backref=DB.backref('illust_url', lazy=True, uselist=False))
+    # (MtO) illust [Illust]
+    # (MtO) post [Post]
+    # (OtO) upload [Upload]
 
-    # ## Property methods
+    # ## Instance properties
 
     @memoized_property
     def type(self):

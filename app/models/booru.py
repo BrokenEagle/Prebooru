@@ -35,9 +35,7 @@ BooruArtists = secondarytable(
 # ## CLASSES
 
 class Booru(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     danbooru_id = DB.Column(DB.Integer, unique=True, nullable=False)
     current_name = DB.Column(DB.String(255), nullable=False)
@@ -46,15 +44,17 @@ class Booru(JsonModel):
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
-    # #### Relationships
-    _names = DB.relationship(Label, secondary=BooruNames, lazy=True)
-    artists = DB.relationship(Artist, secondary=BooruArtists, lazy=True, backref=DB.backref('boorus', lazy=True))
+    # ## Relationships
+    _names = DB.relationship(Label, secondary=BooruNames, lazy=True, uselist=True,
+                             backref=DB.backref('boorus', lazy=True, uselist=True))
+    artists = DB.relationship(Artist, secondary=BooruArtists, lazy=True, uselist=True,
+                              backref=DB.backref('boorus', lazy=True))
 
-    # #### Association proxies
+    # ## Association proxies
     names = association_proxy('_names', 'name')
     artist_ids = association_proxy('artists', 'id')
 
-    # ## Property methods
+    # ## Instance properties
 
     @memoized_property
     def recent_posts(self):
@@ -80,8 +80,6 @@ class Booru(JsonModel):
     def _post_query(self):
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)\
                    .join(Booru, Artist.boorus).filter(Booru.id == self.id)
-
-    # ## Methods
 
     def delete(self):
         self._names.clear()

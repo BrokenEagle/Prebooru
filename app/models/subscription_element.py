@@ -44,9 +44,7 @@ class SubscriptionElementKeep(AttrEnum):
 
 
 class SubscriptionElement(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=False, index=True)
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
@@ -56,12 +54,14 @@ class SubscriptionElement(JsonModel):
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     status = DB.Column(IntEnum(SubscriptionElementStatus), nullable=False)
 
-    # #### Relationships
-    # subscription <- Susbscription (MtO)
-    errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, cascade='all,delete',
-                             backref=DB.backref('subscription_element', uselist=False, lazy=True))
+    # ## Relationships
+    errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, uselist=True, cascade='all,delete',
+                             backref=DB.backref('subscription_element', lazy=True, uselist=False))
+    # (MtO) subscription [Susbscription]
+    # (MtO) post [Post]
+    # (OtO) illust_url [IllustUrl]
 
-    # #### Instance properties
+    # ## Instance properties
 
     @property
     def duplicate_elements(self):
@@ -71,7 +71,7 @@ class SubscriptionElement(JsonModel):
     def duplicate_element_count(self):
         return self._duplicate_element_query.get_count()
 
-    # #### Class properties
+    # ## Class properties
 
     status_enum = SubscriptionElementStatus
     keep_enum = SubscriptionElementKeep

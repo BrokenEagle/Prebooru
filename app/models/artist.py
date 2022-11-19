@@ -52,9 +52,7 @@ ArtistNotations = secondarytable(
 # ## CLASSES
 
 class Artist(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     site = DB.Column(IntEnum(SiteDescriptor), nullable=False)
     site_artist_id = DB.Column(DB.Integer, nullable=False)
@@ -64,24 +62,29 @@ class Artist(JsonModel):
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
-    # #### Relationships
-    _site_accounts = DB.relationship(Label, secondary=ArtistSiteAccounts, lazy=True)
-    _names = DB.relationship(Label, secondary=ArtistNames, lazy=True)
-    _profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True)
-    illusts = DB.relationship(Illust, lazy=True, backref=DB.backref('artist', lazy=True), cascade="all, delete")
+    # ## Relationships
+    _site_accounts = DB.relationship(Label, secondary=ArtistSiteAccounts, lazy=True, uselist=True,
+                                     backref=DB.backref('site_account_artists', lazy=True, uselist=True))
+    _names = DB.relationship(Label, secondary=ArtistNames, lazy=True, uselist=True,
+                             backref=DB.backref('name_artists', lazy=True, uselist=True))
+    _profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True, uselist=True,
+                                backref=DB.backref('artists', lazy=True, uselist=True))
+    illusts = DB.relationship(Illust, lazy=True, uselist=True, cascade="all, delete",
+                              backref=DB.backref('artist', lazy=True, uselist=False))
     subscription = DB.relationship(Subscription, lazy=True, uselist=False, cascade="all, delete",
-                                   backref=DB.backref('artist', uselist=False, lazy=True))
-    webpages = DB.relationship(ArtistUrl, backref='artist', lazy=True, cascade="all, delete")
+                                   backref=DB.backref('artist', lazy=True, uselist=False))
+    webpages = DB.relationship(ArtistUrl, lazy=True, uselist=True, cascade="all, delete",
+                               backref=DB.backref('artist', lazy=True, uselist=False))
     notations = DB.relationship(Notation, secondary=ArtistNotations, lazy=True,
-                                backref=DB.backref('artist', uselist=False, lazy=True))
-    # boorus <- Booru (MtM)
+                                backref=DB.backref('artist', lazy=True, uselist=False))
+    # (MtM) boorus [Booru]
 
-    # #### Association proxies
+    # ## Association proxies
     site_accounts = association_proxy('_site_accounts', 'name')
     names = association_proxy('_names', 'name')
     profiles = association_proxy('_profiles', 'body')
 
-    # ## Property methods
+    # ## Instance properties
 
     @memoized_property
     def recent_posts(self):
@@ -111,7 +114,22 @@ class Artist(JsonModel):
     def booru_search_url(self):
         return self.site.source.artist_booru_search_url(self)
 
-    # ###### Private
+    def delete(self):
+        self._names.clear()
+        self._profiles.clear()
+        self._site_accounts.clear()
+        DB.session.delete(self)
+        DB.session.commit()
+
+    # ## Class properties
+
+    site_enum = SiteDescriptor
+
+    @classproperty(cached=True)
+    def json_attributes(cls):
+        return super().json_attributes + ['site_accounts', 'names', 'webpages', 'profiles']
+
+    # ## Private
 
     @property
     def _booru_query(self):
@@ -128,20 +146,3 @@ class Artist(JsonModel):
                    .filter(Illust.artist_id == self.id)
 
     __table_args__ = (DB.UniqueConstraint('site', 'site_artist_id'),)
-
-    # ## Methods
-
-    def delete(self):
-        self._names.clear()
-        self._profiles.clear()
-        self._site_accounts.clear()
-        DB.session.delete(self)
-        DB.session.commit()
-
-    # ## Class properties
-
-    site_enum = SiteDescriptor
-
-    @classproperty(cached=True)
-    def json_attributes(cls):
-        return super().json_attributes + ['site_accounts', 'names', 'webpages', 'profiles']

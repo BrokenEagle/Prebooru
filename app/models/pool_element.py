@@ -51,13 +51,7 @@ class PoolElementType(AttrEnum):
 
 
 class PoolElement(JsonModel):
-    # ## Declarations
-
-    # ## Class attributes
-
-    polymorphic_base = True
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     pool_id = DB.Column(DB.Integer, DB.ForeignKey('pool.id'), nullable=False, index=True)
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
@@ -67,9 +61,9 @@ class PoolElement(JsonModel):
     type = DB.Column(IntEnum(PoolElementType), nullable=False)
 
     # ## Relationships
-    # pool <- Pool (MtO)
+    # (MtO) pool [Pool]
 
-    # ## Property methods
+    # ## Instance properties
 
     @property
     def position1(self):
@@ -83,9 +77,11 @@ class PoolElement(JsonModel):
 
     # ## Class properties
 
+    polymorphic_base = True
     type_enum = PoolElementType
 
-    # #### Private
+    # ## Private
+
     __mapper_args__ = {
         'polymorphic_identity': PoolElementType.pool_element,
         'polymorphic_on': type,
@@ -98,38 +94,35 @@ class PoolElement(JsonModel):
 
 
 class PoolPost(PoolElement):
-    # ## Declarations
-
-    # ## Class attributes
-
-    polymorphic_base = False
-
-    # #### Columns
+    # ## Columns
     illust_id = None
     notation_id = None
 
     # ## Relationships
-    # item <- Post (MtO)
+    # (MtO) item [Post]
+
+    # ## Class properties
+
+    polymorphic_base = False
 
     # #### Private
+
     __mapper_args__ = {
         'polymorphic_identity': PoolElementType.pool_post,
     }
 
 
 class PoolIllust(PoolElement):
-    # ## Declarations
-
-    # ## Class attributes
-
-    polymorphic_base = False
-
-    # #### Columns
+    # ## Columns
     post_id = None
     notation_id = None
 
     # ## Relationships
-    # item <- Illust (MtO)
+    # (MtO) item [Illust]
+
+    # ## Class properties
+
+    polymorphic_base = False
 
     # #### Private
     __mapper_args__ = {
@@ -138,20 +131,18 @@ class PoolIllust(PoolElement):
 
 
 class PoolNotation(PoolElement):
-    # ## Declarations
-
-    # ## Class attributes
-
-    polymorphic_base = False
-
-    # #### Columns
+    # ## Columns
     post_id = None
     illust_id = None
 
     # ## Relationships
-    # item <- Notation (OtO)
+    # (MtO) item [Notation]
 
-    # #### Private
+    # ## Class properties
+
+    polymorphic_base = False
+
+    # ## Private
     __mapper_args__ = {
         'polymorphic_identity': PoolElementType.pool_notation,
     }

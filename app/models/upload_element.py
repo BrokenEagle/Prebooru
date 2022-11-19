@@ -35,21 +35,20 @@ class UploadElementStatus(AttrEnum):
 
 
 class UploadElement(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     upload_id = DB.Column(DB.Integer, DB.ForeignKey('upload.id'), nullable=False, index=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
     status = DB.Column(IntEnum(UploadElementStatus), nullable=False)
 
-    # #### Relationships
-    # subscription <- Susbscription (MtO)
+    # ## Relationships
     errors = DB.relationship(Error, secondary=UploadElementErrors, lazy=True, cascade='all,delete',
                              backref=DB.backref('upload_element', uselist=False, lazy=True))
+    # (MtO) upload [Upload]
+    # (MtO) illust_url [IllustUrl]
 
-    # #### Instance properties
+    # ## Instance properties
 
     @property
     def duplicate_elements(self):
@@ -66,7 +65,7 @@ class UploadElement(JsonModel):
     def duplicate_post_count(self):
         return self._duplicate_post_query.get_count()
 
-    # #### Class properties
+    # ## Class properties
 
     status_enum = UploadElementStatus
 

@@ -47,9 +47,7 @@ class UploadStatus(AttrEnum):
 
 
 class Upload(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     request_url = DB.Column(DB.String(255), nullable=True)
     successes = DB.Column(DB.Integer, nullable=False)
@@ -60,7 +58,7 @@ class Upload(JsonModel):
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
-    # #### Relationships
+    # ## Relationships
     image_urls = DB.relationship(UploadUrl, secondary=UploadUrls, lazy=True, uselist=True, cascade='all,delete',
                                  backref=DB.backref('upload', lazy=True, uselist=False))
     errors = DB.relationship(Error, secondary=UploadErrors, lazy=True, cascade='all,delete',
@@ -70,7 +68,7 @@ class Upload(JsonModel):
     file_illust_url = DB.relationship(IllustUrl, lazy=True, uselist=False, viewonly=True,
                                       backref=DB.backref('upload', lazy=True, uselist=False))
 
-    # ## Property methods
+    # ## Instance properties
 
     @memoized_property
     def illust_urls(self):
@@ -123,7 +121,15 @@ class Upload(JsonModel):
         if self.illust is not None:
             return self.illust.artist
 
-    # #### Private
+    # ## Class properties
+
+    status_enum = UploadStatus
+
+    @classproperty(cached=True)
+    def json_attributes(cls):
+        return super().json_attributes + ['image_urls', 'post_ids', 'duplicate_post_ids', 'errors']
+
+    # ## Private
 
     @memoized_property
     def _source(self):
@@ -146,11 +152,3 @@ class Upload(JsonModel):
         if len(self.illust_urls):
             selectinload_batch_secondary(self.illust_urls, 'post')
         self._populate_posts = lambda: None
-
-    # ## Class properties
-
-    status_enum = UploadStatus
-
-    @classproperty(cached=True)
-    def json_attributes(cls):
-        return super().json_attributes + ['image_urls', 'post_ids', 'duplicate_post_ids', 'errors']

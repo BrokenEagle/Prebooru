@@ -11,7 +11,7 @@ from .base import JsonModel
 # ## CLASSES
 
 class JobBase(JsonModel):
-    # ## Public
+    # ## Properties
 
     @property
     def title(self):
@@ -29,12 +29,12 @@ class JobBase(JsonModel):
 
 
 class JobInfo(JobBase):
-    # ## Public
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.String(255), primary_key=True)
     _next_run_time = DB.Column('next_run_time', DB.Float(), nullable=True)
     job_state = DB.Column(DB.BLOB(), nullable=False)
+
+    # ## Properties
 
     @property
     def next_run_time(self):
@@ -46,40 +46,30 @@ class JobInfo(JobBase):
 
 
 class JobEnable(JobBase):
-    # ## Public
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.String(255), primary_key=True)
     enabled = DB.Column(DB.Boolean(), nullable=False)
 
 
 class JobManual(JobBase):
-    # ## Public
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.String(255), primary_key=True)
     manual = DB.Column(DB.Boolean(), nullable=False)
 
 
 class JobLock(JobBase):
-    # ## Public
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.String(255), primary_key=True)
     locked = DB.Column(DB.Boolean(), nullable=False)
 
 
 class JobTime(JobBase):
-    # ## Public
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.String(255), primary_key=True)
     time = DB.Column(DB.Float(), nullable=False)
 
 
 class JobStatus(JobBase):
-    # ## Public
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.String(255), primary_key=True)
     data = DB.Column(DB.JSON(), nullable=False)

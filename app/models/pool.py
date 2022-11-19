@@ -28,9 +28,7 @@ SHOW_PAGINATE_LIMIT = min(100, MAXIMUM_PAGINATE_LIMIT)
 # ## CLASSES
 
 class Pool(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.String(255), nullable=False)
     element_count = DB.Column(DB.Integer, nullable=False)
@@ -38,26 +36,15 @@ class Pool(JsonModel):
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
-    # #### Relationships
-    _elements = DB.relationship(PoolElement, backref='pool', order_by=PoolElement.position, lazy=True,
-                                collection_class=ordering_list('position'), cascade='all,delete')
+    # ## Relationships
+    _elements = DB.relationship(PoolElement, order_by=PoolElement.position, lazy=True, uselist=True,
+                                backref=DB.backref('pool', lazy=True, uselist=False), cascade='all,delete',
+                                collection_class=ordering_list('position'))
 
-    # #### Association proxies
+    # ## Association proxies
     elements = association_proxy('_elements', 'item', creator=lambda item: pool_element_create(item))
 
-    # ## Property methods
-
-    # #### Private
-
-    @property
-    def name_link(self):
-        return Markup('<a href="%s">%s</a>' % (self.show_url, self.name))
-
-    @property
-    def _element_query(self):
-        return PoolElement.query.filter_by(pool_id=self.id)
-
-    # ## Methods
+    # ## Instance properties
 
     def remove(self, item):
         pool_element_delete(self.id, item)
@@ -102,7 +89,15 @@ class Pool(JsonModel):
                 raise Exception("Missing pool element item: %s" % repr(page_item))
         return page
 
-    # #### Private
+    # ## Private
+
+    @property
+    def name_link(self):
+        return Markup('<a href="%s">%s</a>' % (self.show_url, self.name))
+
+    @property
+    def _element_query(self):
+        return PoolElement.query.filter_by(pool_id=self.id)
 
     def _get_element_count(self):
         return self._element_query.get_count()

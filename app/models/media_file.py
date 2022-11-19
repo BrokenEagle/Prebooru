@@ -20,16 +20,14 @@ CACHE_DATA_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'cache')
 # ## CLASSES
 
 class MediaFile(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     md5 = DB.Column(BlobMD5(nullable=False), nullable=False)
     file_ext = DB.Column(DB.String(255), nullable=False)
     media_url = DB.Column(DB.String(255), nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
-    # ## Property methods
+    # ## Instance properties
 
     @property
     def file_url(self):

@@ -69,9 +69,7 @@ class PostType(AttrEnum):
 
 
 class Post(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     width = DB.Column(DB.Integer, nullable=False)
     height = DB.Column(DB.Integer, nullable=False)
@@ -86,7 +84,7 @@ class Post(JsonModel):
     duration = DB.Column(DB.Float, nullable=True)
     audio = DB.Column(DB.Boolean, nullable=True)
 
-    # #### Relationships
+    # ## Relationships
     illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True,
                                   backref=DB.backref('post', uselist=False, lazy=True))
     errors = DB.relationship(Error, secondary=PostErrors, lazy=True, cascade='all,delete',
@@ -107,13 +105,12 @@ class Post(JsonModel):
     similarity_matches_reverse = DB.relationship(SimilarityMatch, lazy=True, cascade='all,delete',
                                                  backref=DB.backref('reverse_post', lazy=True, uselist=False),
                                                  foreign_keys=[SimilarityMatch.reverse_id])
-    # uploads <- Upload (MtM)
 
-    # #### Association proxies
+    # ## Association proxies
     tags = association_proxy('_tags', 'name')
     pools = association_proxy('_pools', 'pool')
 
-    # ## Property methods
+    # ## Instance properties
 
     @property
     def is_video(self):
@@ -237,27 +234,6 @@ class Post(JsonModel):
                                SimilarityMatch.reverse_id.desc())
         return query.limit(10).all()
 
-    # ###### Private
-
-    @memoized_property
-    def _partial_network_path(self):
-        return '/%s/%s/%s.' % (self.md5[0:2], self.md5[2:4], self.md5)
-
-    @memoized_property
-    def _partial_file_path(self):
-        return os.path.join(self.md5[0:2], self.md5[2:4], self._file_name)
-
-    @memoized_property
-    def _file_name(self):
-        return '%s.' % (self.md5)
-
-    @property
-    def _similar_match_query(self):
-        clause = or_(SimilarityMatch.forward_id == self.id, SimilarityMatch.reverse_id == self.id)
-        return SimilarityMatch.query.filter(clause)
-
-    # ## Methods
-
     def delete_pool(self, pool_id):
         pool_element_delete(pool_id, self)
 
@@ -277,3 +253,22 @@ class Post(JsonModel):
     @classproperty(cached=True)
     def json_attributes(cls):
         return super().json_attributes + ['preview_url', 'sample_url', 'file_url', 'illust_urls', 'errors']
+
+    # ## Private
+
+    @memoized_property
+    def _partial_network_path(self):
+        return '/%s/%s/%s.' % (self.md5[0:2], self.md5[2:4], self.md5)
+
+    @memoized_property
+    def _partial_file_path(self):
+        return os.path.join(self.md5[0:2], self.md5[2:4], self._file_name)
+
+    @memoized_property
+    def _file_name(self):
+        return '%s.' % (self.md5)
+
+    @property
+    def _similar_match_query(self):
+        clause = or_(SimilarityMatch.forward_id == self.id, SimilarityMatch.reverse_id == self.id)
+        return SimilarityMatch.query.filter(clause)

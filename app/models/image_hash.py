@@ -42,14 +42,15 @@ def hex_chunk(hashstr, index):
 # ## CLASSES
 
 class ImageHash(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, index=True)
     ratio = DB.Column(DB.Float, nullable=False)
 
-    # ## Property methods
+    # ## Relations
+    # (OtO) post [Post]
+
+    # ## Instance properties
 
     @property
     def hash(self):
@@ -66,7 +67,7 @@ class ImageHash(JsonModel):
         for i in range(0, NUM_CHUNKS):
             setattr(self, chunk_key(i), hex_chunk(image_hash, i))
 
-    # ## Class methods
+    # ## Class properties
 
     @classmethod
     def ratio_clause(cls, ratio):
@@ -146,8 +147,6 @@ class ImageHash(JsonModel):
             groupclause = subclause.self_group()
             clause = clause | groupclause if clause is not None else groupclause
         return clause
-
-    # ## Class properties
 
     basic_attributes = ['id', 'post_id', 'ratio']
     json_attributes = basic_attributes + ['hash']

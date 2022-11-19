@@ -23,19 +23,17 @@ class SiteDataType(AttrEnum):
 
 
 class SiteData(JsonModel):
-    # ## Declarations
-
-    # ## Class attributes
-
-    polymorphic_base = True
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False, index=True)
     type = DB.Column(IntEnum(SiteDataType), nullable=False)
 
+    # ## Relations
+    # (OtO) illust [Illust]
+
     # ## Class properties
 
+    polymorphic_base = True
     type_enum = SiteDataType
 
     # ## Private
@@ -47,25 +45,23 @@ class SiteData(JsonModel):
 
 
 class PixivData(SiteData):
-    # ## Declarations
-
-    # ## Class attributes
-
-    polymorphic_base = False
-
-    # #### Columns
+    # ## Columns
     site_uploaded = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     site_updated = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     title = DB.Column(DB.UnicodeText, nullable=True)
     bookmarks = DB.Column(DB.Integer, nullable=True)
     views = DB.Column(DB.Integer, nullable=True)
 
-    # #### Declared columns
+    # ## Declared columns
     #
     # Polymorphic models with columns that conflict must be declared like this
     @declared_attr
     def replies(self):
         return SiteData.__table__.c.get('replies', DB.Column(DB.Integer, nullable=True))
+
+    # ## Class properties
+
+    polymorphic_base = False
 
     # ## Private
 
@@ -75,22 +71,20 @@ class PixivData(SiteData):
 
 
 class TwitterData(SiteData):
-    # ## Declarations
-
-    # ## Class attributes
-
-    polymorphic_base = False
-
-    # #### Columns
+    # ## Columns
     retweets = DB.Column(DB.Integer, nullable=True)
     quotes = DB.Column(DB.Integer, nullable=True)
 
-    # #### Declared columns
+    # ## Declared columns
     #
     # Polymorphic models with columns that conflict must be declared like this
     @declared_attr
     def replies(self):
         return SiteData.__table__.c.get('replies', DB.Column(DB.Integer, nullable=True))
+
+    # ## Class properties
+
+    polymorphic_base = False
 
     # ## Private
 

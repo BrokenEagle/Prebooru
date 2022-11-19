@@ -42,9 +42,7 @@ class SubscriptionStatus(AttrEnum):
 
 
 class Subscription(JsonModel):
-    # ## Declarations
-
-    # #### Columns
+    # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
     interval = DB.Column(DB.Float, nullable=False)
@@ -57,13 +55,14 @@ class Subscription(JsonModel):
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)
 
-    # #### Relationships
-    elements = DB.relationship(SubscriptionElement, lazy=True, cascade="all, delete",
+    # ## Relationships
+    elements = DB.relationship(SubscriptionElement, lazy=True, uselist=True, cascade="all, delete",
                                backref=DB.backref('subscription', lazy=True, uselist=False))
-    errors = DB.relationship(Error, secondary=SubscriptionErrors, lazy=True, cascade='all,delete',
+    errors = DB.relationship(Error, secondary=SubscriptionErrors, lazy=True, uselist=True, cascade='all,delete',
                              backref=DB.backref('subscription', uselist=False, lazy=True))
+    # (OtO) artist [Artist]
 
-    # ## Property methods
+    # ## Instance properties
 
     @memoized_property
     def posts(self):
@@ -125,9 +124,10 @@ class Subscription(JsonModel):
         return self._post_query.distinct().relation_count()
 
     # ## Class properties
+
     status_enum = SubscriptionStatus
 
-    # ## Private methods
+    # ## Private
 
     @property
     def _element_query(self):

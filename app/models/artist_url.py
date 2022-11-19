@@ -8,13 +8,14 @@ from .base import JsonModel
 # ## CLASSES
 
 class ArtistUrl(JsonModel):
-    # ## Declarations
-
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
     url = DB.Column(DB.String(255), nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)
+
+    # ## Relations
+    # (MtO) artist [artist]
 
 
 # ## INITIALIZATION
