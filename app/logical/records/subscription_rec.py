@@ -7,6 +7,9 @@ import threading
 from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
+from config import POPULATE_ELEMENTS_PER_PAGE, SYNC_MISSING_ILLUSTS_PER_PAGE, DOWNLOAD_POSTS_PER_PAGE,\
+    UNLINK_ELEMENTS_PER_PAGE, DELETE_ELEMENTS_PER_PAGE, ARCHIVE_ELEMENTS_PER_PAGE,\
+    DOWNLOAD_POSTS_PAGE_LIMIT, EXPIRE_ELEMENTS_PAGE_LIMIT
 from utility.time import days_from_now, hours_from_now
 from utility.uprint import buffered_print, print_info
 
@@ -36,12 +39,6 @@ from .image_hash_rec import generate_post_image_hashes
 
 # ## GLOBAL VARIABLES
 
-ILLUST_URL_PAGE_LIMIT = 50
-ILLUST_PAGE_LIMIT = 10
-POST_PAGE_LIMIT = 5
-DOWNLOAD_PAGE_LIMIT = 10
-EXPIRE_PAGE_LIMIT = 20
-
 IMAGEMATCH_SEMAPHORE = threading.Semaphore(2)
 VIDEO_SEMAPHORE = threading.Semaphore(1)
 
@@ -55,7 +52,7 @@ WAITING_THREADS = {
 
 # #### Primary task functions
 
-def process_subscription(subscription_id, job_id):
+def process_subscription_manual(subscription_id, job_id):
     printer = buffered_print("Process Subscription")
     subscription = None
     start_illusts = 0
@@ -70,9 +67,10 @@ def process_subscription(subscription_id, job_id):
         start_posts = subscription.artist.post_count
         start_elements = subscription.element_count
         starting_post_ids = [post.id for post in subscription.posts]
-        update_job_by_id('job_lock', 'process_subscription', {'locked': True})
+        update_job_by_id('job_lock', 'process_subscription_manual', {'locked': True})
         SESSION.commit()
-        download_subscription_illusts(subscription, job_id)
+        sync_missing_subscription_illusts(subscription, job_id)
+        populate_subscription_elements(subscription, job_id)
         download_subscription_elements(subscription, job_id)
         job_status = get_job_status_data(job_id)
         job_status['stage'] = 'done'
@@ -97,10 +95,10 @@ def process_subscription(subscription_id, job_id):
 
     def _query_unlock():
         if not check_processing_subscriptions():
-            update_job_by_id('job_lock', 'process_subscription', {'locked': False})
+            update_job_by_id('job_lock', 'process_subscription_manual', {'locked': False})
             SESSION.commit()
 
-    safe_db_execute('process_subscription', 'records.subscription_rec',
+    safe_db_execute('process_subscription_manual', 'records.subscription_rec',
                     try_func=try_func, msg_func=msg_func, printer=printer,
                     error_func=error_func, finally_func=finally_func)
     printer("Added illusts:", subscription.artist.illust_count - start_illusts)
@@ -110,7 +108,7 @@ def process_subscription(subscription_id, job_id):
     SESSION.remove()
 
 
-def download_subscription_illusts(subscription, job_id=None):
+def sync_missing_subscription_illusts(subscription, job_id=None):
     update_subscription_requery(subscription, hours_from_now(4))
     artist = subscription.artist
     source = artist.site.source
@@ -122,12 +120,12 @@ def download_subscription_illusts(subscription, job_id=None):
     job_status = get_job_status_data(job_id) or {'illusts': 0}
     job_status['stage'] = 'illusts'
     job_status['records'] = len(site_illust_ids)
-    print(f"download_subscription_illusts [{subscription.id}]: Total({len(site_illust_ids)})")
+    print(f"sync_missing_subscription_illusts [{subscription.id}]: Total({len(site_illust_ids)})")
     for (i, item_id) in enumerate(site_illust_ids):
-        if (i % ILLUST_PAGE_LIMIT) == 0:
+        if (i % SYNC_MISSING_ILLUSTS_PER_PAGE) == 0:
             total = len(site_illust_ids)
             first = i
-            last = min(i + ILLUST_PAGE_LIMIT, total)
+            last = min(i + SYNC_MISSING_ILLUSTS_PER_PAGE, total)
             job_status['range'] = f"({first} - {last}) / {total}"
             update_job_status(job_id, job_status)
         data_params = source.get_illust_data(item_id)
@@ -142,7 +140,6 @@ def download_subscription_illusts(subscription, job_id=None):
     if len(site_illust_ids):
         update_subscription_last_info(subscription, max(site_illust_ids))
     update_subscription_requery(subscription, hours_from_now(subscription.interval))
-    update_subscription_elements(subscription, job_id)
 
 
 def download_subscription_elements(subscription, job_id=None):
@@ -151,7 +148,7 @@ def download_subscription_elements(subscription, job_id=None):
     q = SubscriptionElement.query.filter_by(subscription_id=subscription.id, post_id=None, status='active')
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
-    page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
+    page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
     while True:
         print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
         job_status['range'] = f"({page.first} - {page.last}) / {page.count}"
@@ -168,14 +165,14 @@ def download_subscription_elements(subscription, job_id=None):
 
 
 def download_missing_elements(manual=False):
-    max_pages = DOWNLOAD_PAGE_LIMIT if not manual else float('inf')
+    max_pages = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
     q = SubscriptionElement.query.join(Subscription)\
                                  .filter(SubscriptionElement.post_id.is_(None),
                                          SubscriptionElement.status == 'active',
                                          Subscription.status == 'idle')
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
-    page = q.limit_paginate(per_page=POST_PAGE_LIMIT)
+    page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
     element_count = 0
     while True:
         print(f"download_missing_elements: {page.first} - {page.last} / Total({page.count})")
@@ -191,10 +188,10 @@ def download_missing_elements(manual=False):
 
 def unlink_expired_subscription_elements(manual):
     unlink_count = 0
-    max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
+    max_pages = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
     q = expired_subscription_elements('unlink')
     q = q.order_by(SubscriptionElement.id.desc())
-    page = q.limit_paginate(per_page=50)
+    page = q.limit_paginate(per_page=UNLINK_ELEMENTS_PER_PAGE)
     while True:
         print(f"\nunlink_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
@@ -209,10 +206,10 @@ def unlink_expired_subscription_elements(manual):
 
 def delete_expired_subscription_elements(manual):
     delete_count = 0
-    max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
+    max_pages = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
     q = expired_subscription_elements('delete')
     q = q.order_by(SubscriptionElement.id.desc())
-    page = q.limit_paginate(per_page=10)
+    page = q.limit_paginate(per_page=DELETE_ELEMENTS_PER_PAGE)
     while True:
         print(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
@@ -227,10 +224,10 @@ def delete_expired_subscription_elements(manual):
 
 def archive_expired_subscription_elements(manual):
     archive_count = 0
-    max_pages = EXPIRE_PAGE_LIMIT if not manual else float('inf')
+    max_pages = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
     q = expired_subscription_elements('archive')
     q = q.order_by(SubscriptionElement.id.desc())
-    page = q.limit_paginate(per_page=10)
+    page = q.limit_paginate(per_page=ARCHIVE_ELEMENTS_PER_PAGE)
     while True:
         print(f"\nexpire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
@@ -243,7 +240,7 @@ def archive_expired_subscription_elements(manual):
     return archive_count
 
 
-def update_subscription_elements(subscription, job_id=None):
+def populate_subscription_elements(subscription, job_id=None):
     job_status = get_job_status_data(job_id) or {'elements': 0}
     q = IllustUrl.query.join(Illust).filter(Illust.artist_id == subscription.artist_id)
     q = search_attributes(q, IllustUrl, {'has_post': 'false', 'subscription_element_exists': 'false'})
@@ -252,14 +249,14 @@ def update_subscription_elements(subscription, job_id=None):
     page = 1
     job_status['stage'] = 'elements'
     while True:
-        page_items = q.limit(ILLUST_URL_PAGE_LIMIT).all()
+        page_items = q.limit(POPULATE_ELEMENTS_PER_PAGE).all()
         if len(page_items) == 0:
             break
-        page_border = (page - 1) * ILLUST_URL_PAGE_LIMIT
+        page_border = (page - 1) * POPULATE_ELEMENTS_PER_PAGE
         first = min(1, len(page_items)) + page_border
         last = page_border + len(page_items)
         job_status['range'] = f"({first} - {last}) / {total}"
-        print('update_subscription_elements:', job_status['range'])
+        print('populate_subscription_elements:', job_status['range'])
         update_job_status(job_id, job_status)
         for illust_url in page_items:
             createparams = {

@@ -18,8 +18,9 @@ from ..records.post_rec import relocate_old_posts_to_alternate, check_all_posts_
 from ..records.artist_rec import check_all_artists_for_boorus
 from ..records.booru_rec import check_all_boorus
 from ..records.media_file_rec import batch_delete_media
-from ..records.subscription_rec import download_subscription_illusts, download_missing_elements,\
-    unlink_expired_subscription_elements, delete_expired_subscription_elements, archive_expired_subscription_elements
+from ..records.subscription_rec import sync_missing_subscription_illusts, populate_subscription_elements,\
+    download_missing_elements, unlink_expired_subscription_elements, delete_expired_subscription_elements,\
+    archive_expired_subscription_elements
 from ..database.base_db import safe_db_execute
 from ..database.subscription_db import get_available_subscription, update_subscription_status,\
     update_subscription_active, get_busy_subscriptions, get_subscription_by_ids
@@ -298,7 +299,8 @@ def _subscriptions_check():
 def _process_pending_subscription(subscription, printer):
     def try_func(scope_vars):
         nonlocal subscription
-        download_subscription_illusts(subscription)
+        sync_missing_subscription_illusts(subscription)
+        populate_subscription_elements(subscription)
 
     def msg_func(scope_vars, error):
         nonlocal subscription

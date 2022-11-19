@@ -72,6 +72,24 @@ IMAGE_PORT = 1234
 
 HAS_EXTERNAL_IMAGE_SERVER = False
 
+# ## SUBSCRIPTION VARIABLES
+
+# #### How many items are processed per batch
+POPULATE_ELEMENTS_PER_PAGE = 50
+SYNC_MISSING_ILLUSTS_PER_PAGE = 10
+DOWNLOAD_POSTS_PER_PAGE = 5
+UNLINK_ELEMENTS_PER_PAGE = 50
+DELETE_ELEMENTS_PER_PAGE = 10
+ARCHIVE_ELEMENTS_PER_PAGE = 10
+
+# #### How many pages to process with automatic tasks
+DOWNLOAD_POSTS_PAGE_LIMIT = 20
+EXPIRE_ELEMENTS_PAGE_LIMIT = 20  # unlink, delete, archive
+
+"""
+Note: The combination of per page and page limit for downloading posts and expiring subscription elements will control
+how many items get processed in total, thus controlling roughly how long a task will take when processed automatically.
+"""
 
 # ## WATCHDOG VARIABLES
 

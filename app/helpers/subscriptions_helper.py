@@ -59,7 +59,7 @@ def delay_subscription_link(subscription):
 
 
 def get_last_job_status_link(subscription):
-    job_id = "process_subscription-%d" % subscription.id
+    job_id = "process_subscription_manual-%d" % subscription.id
     url = url_for('subscription.show_html', id=subscription.id, job=job_id)
     return general_link("Get last job status", url)
 

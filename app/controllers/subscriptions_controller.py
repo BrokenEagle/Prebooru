@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired
 from .. import SCHEDULER, SESSION
 from ..models import Subscription, Artist
 from ..logical.utility import set_error
-from ..logical.records.subscription_rec import process_subscription
+from ..logical.records.subscription_rec import process_subscription_manual
 from ..logical.database.subscription_db import create_subscription_from_parameters,\
     update_subscription_from_parameters, update_subscription_status, delay_subscription_elements,\
     delete_subscription
@@ -268,7 +268,7 @@ def process_html(id):
         flash("Subscription currently processing.", 'error')
         return redirect(request.referrer)
     update_subscription_status(subscription, 'manual')
-    job_id = "process_subscription-%d" % subscription.id
+    job_id = "process_subscription_manual-%d" % subscription.id
     job_status = {
         'stage': None,
         'range': None,
@@ -279,7 +279,7 @@ def process_html(id):
     }
     create_or_update_job_status(job_id, job_status)
     SESSION.commit()
-    SCHEDULER.add_job(job_id, process_subscription, args=(subscription.id, job_id))
+    SCHEDULER.add_job(job_id, process_subscription_manual, args=(subscription.id, job_id))
     flash("Subscription started.")
     return redirect(url_for('subscription.show_html', id=subscription.id, job=job_id))
 

@@ -4,7 +4,7 @@
 
 # WORKER CONFIG
 
-WORKER_LOCKS = ['process_subscription']
+WORKER_LOCKS = ['process_subscription_manual']
 
 # SCHEDULE_CONFIG
 
