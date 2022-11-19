@@ -82,9 +82,7 @@ class IllustUrl(JsonModel):
 # ## INITIALIZATION
 
 def initialize():
-    from .upload import Upload
     from .illust import Illust
-    IllustUrl.uploads = DB.relationship(Upload, backref=DB.backref('illust_url', lazy=True), lazy=True)
     # Access the opposite side of the relationship to force the back reference to be generated
     Illust.urls.property._configure_started
     IllustUrl.set_relation_properties()
