@@ -22,6 +22,7 @@ from ..records.subscription_rec import sync_missing_subscription_illusts, popula
     download_missing_elements, unlink_expired_subscription_elements, delete_expired_subscription_elements,\
     archive_expired_subscription_elements
 from ..database.base_db import safe_db_execute
+from ..database.pool_db import get_all_recheck_pools, update_pool_positions
 from ..database.subscription_db import get_available_subscription, update_subscription_status,\
     update_subscription_active, get_busy_subscriptions, get_subscription_by_ids
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
@@ -167,6 +168,15 @@ def archive_expired_subscription_elements_task():
             printer("No subscriptions elements to process.")
 
     _execute_scheduled_task(_task, 'archive_expired_subscription_elements', True, True)
+
+
+@SCHEDULER.task('interval', **JOB_CONFIG['recalculate_pool_positions']['config'])
+def recalculate_pool_positions_task():
+    def _task(printer):
+        for pool in get_all_recheck_pools():
+            update_pool_positions(pool)
+
+    _execute_scheduled_task(_task, 'recalculate_pool_positions', True, True)
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['relocate_old_posts']['config'])

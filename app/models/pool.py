@@ -33,6 +33,7 @@ class Pool(JsonModel):
     name = DB.Column(DB.String(255), nullable=False)
     element_count = DB.Column(DB.Integer, nullable=False)
     series = DB.Column(DB.Boolean, nullable=False)
+    checked = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 

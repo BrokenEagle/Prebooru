@@ -44,3 +44,16 @@ def update_pool_from_parameters(pool, updateparams):
         print("[%s]: updated" % pool.shortlink)
         pool.updated = get_current_time()
         SESSION.commit()
+
+
+def update_pool_positions(pool):
+    pool._elements.reorder()
+    pool.element_count = pool._get_element_count()
+    pool.checked = get_current_time()
+    SESSION.commit()
+
+
+# #### Query
+
+def get_all_recheck_pools():
+    return Pool.query.filter(or_(Pool.checked.is_(None), Pool.checked < Pool.updated)).all()
