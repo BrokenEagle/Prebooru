@@ -38,7 +38,10 @@ def create_pool_element_from_parameters(pool, createparams):
 # ###### DELETE
 
 def delete_pool_element(pool_element):
-    pool_element.pool.element_count -= 1
+    if pool_element.position >= (pool_element.pool.element_count - 1):
+        # Only decrement the pool element count if the element is the last one. This will leave holes, which will be
+        # fixed with a scheduled task, but will at least leave an elements position within range of the element count.
+        pool_element.pool.element_count -= 1
     SESSION.delete(pool_element)
     SESSION.commit()
 

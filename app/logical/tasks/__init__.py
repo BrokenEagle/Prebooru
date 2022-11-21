@@ -89,6 +89,14 @@ JOB_CONFIG = {
         },
         'leeway': 600,
     },
+    'recalculate_pool_positions': {
+        'config': {
+            'id': 'recalculate_pool_positions',
+            'days': 1,
+            'jitter': 3600,
+        },
+        'leeway': 600,
+    },
     'relocate_old_posts': {
         'config': {
             'id': 'relocate_old_posts',
