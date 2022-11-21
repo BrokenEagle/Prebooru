@@ -18,9 +18,10 @@ PREBOORU_ERROR = 0
 
 def initialize_server():
     global PREBOORU_APP, SCHEDULER, load_default, put_get_json, validate_version, validate_integrity,\
-        validate_foreign_keys
+        validate_foreign_keys, validate_alembic_table
     from app import PREBOORU_APP, SCHEDULER
-    from app.logical.validate import validate_version, validate_integrity, validate_foreign_keys
+    from app.logical.validate import validate_version, validate_integrity, validate_foreign_keys,\
+        validate_alembic_table
     initialize_environment()
     initialize_controllers()
     initialize_helpers()
@@ -203,6 +204,7 @@ def start_server(args):
             validate_version(conn)
             validate_integrity(conn)
             validate_foreign_keys(conn)
+            validate_alembic_table(conn)
         print("\n========== Starting server - Prebooru-%s ==========" % VERSION)
         SERVER_PID = os.getpid()
         put_get_json(SERVER_PID_FILE, 'w', [SERVER_PID])

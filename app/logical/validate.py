@@ -18,6 +18,12 @@ from utility.uprint import print_info, print_warning, print_error
 
 ALEMBIC_SCRIPT_FILE = os.path.join(os.getcwd(), 'migrations', 'alembic.ini')
 
+ALEMBIC_VERSION_TABLE = """
+CREATE TABLE alembic_version_temp (
+    version_num VARCHAR(32) NOT NULL,
+    CONSTRAINT alembic_version_pkc PRIMARY KEY(version_num)
+) WITHOUT ROWID
+"""
 
 # ## FUNCTIONS
 
@@ -76,3 +82,16 @@ def validate_foreign_keys(conn):
         exit(-1)
     else:
         print_info("\nForeign Keys: OK\n")
+
+
+def validate_alembic_table(conn):
+    table_info = conn.execute("PRAGMA table_list(alembic_version)").fetchone()
+    if table_info[4] == 1:
+        print_info("\nAlembic Version table: OK\n")
+        return
+    conn.execute(ALEMBIC_VERSION_TABLE.strip())
+    conn.execute("INSERT INTO alembic_version_temp SELECT * FROM alembic_version")
+    conn.execute("DROP TABLE alembic_version")
+    conn.execute("ALTER TABLE alembic_version_temp RENAME TO alembic_version")
+    conn.execute("COMMIT")
+    print_warning("\nAlembic Version table: MODIFIED\n")
