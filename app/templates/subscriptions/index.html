@@ -6,15 +6,14 @@
 {% endblock title %}
 
 {% block content %}
-    <table id="subscriptions-table" class="striped" width="75%">
+    <table id="subscriptions-table" class="striped" width="85%">
         <thead>
             <tr>
-                <th width="15%">ID</th>
-                <th width="10%">Artist</th>
+                <th width="12%">ID</th>
+                <th width="22%">Artist</th>
                 <th>Info</th>
                 <th width="15%">Settings</th>
-                <th width="5%">Active</th>
-                <th width="15%">Requery</th>
+                <th width="20%">Processed</th>
                 <th width="15%">Created</th>
             </tr>
         </thead>
@@ -22,19 +21,28 @@
             {% for subscription in subscriptions.items %}
                 <tr id="subscription-{{ subscription.id }}">
                     <td>{{ subscription.show_link }}</td>
-                    <td>{{ subscription.artist_show_link }}</td>
+                    <td>
+                        <strong>{{ subscription.artist.show_link }}</strong>
+                        <br>
+                        <strong>Account:</strong> {{ subscription.artist.current_site_account }}
+                        <br>
+                        <strong>Domain:</strong> {{ subscription.artist.site_domain }}
+                    </td>
                     <td>
                         <strong>Status:</strong> {{ subscription.status.name }}
                         <br>
-                        <strong>Checked:</strong> {{ helpers.base.format_time_ago(subscription.checked) }}
+                        <strong>Active:</strong> {{ subscription.active | tojson }}
                     </td>
                     <td>
                         <strong>Interval:</strong> {{ subscription.interval }}
                         <br>
                         <strong>Expiration:</strong> {{ subscription.expiration }}
                     </td>
-                    <td>{{ subscription.active | tojson }}</td>
-                    <td>{{ helpers.base.format_expires(subscription.requery) }}</td>
+                    <td>
+                        <strong>Requery:</strong> {{ helpers.base.format_expires(subscription.requery) }}
+                        <br>
+                        <strong>Checked:</strong> {{ helpers.base.format_time_ago(subscription.checked) }}
+                    </td>
                     <td>{{ helpers.base.humanized_timestamp_difference(subscription) }}</td>
                 </tr>
             {% endfor %}

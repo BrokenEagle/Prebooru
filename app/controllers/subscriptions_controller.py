@@ -1,6 +1,7 @@
 # APP/CONTROLLERS/SUBSCRIPTIONS_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
+from sqlalchemy.orm import selectinload
 from flask import Blueprint, request, render_template, abort, url_for, flash, redirect
 from wtforms import BooleanField, FloatField, IntegerField
 from wtforms.validators import DataRequired
@@ -177,6 +178,7 @@ def index_json():
 @bp.route('/subscriptions', methods=['GET'])
 def index_html():
     q = index()
+    q = q.options(selectinload(Subscription.artist))
     subscriptions = paginate(q, request)
     return render_template("subscriptions/index.html", subscriptions=subscriptions,
                            subscription=Subscription())
