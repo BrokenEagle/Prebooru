@@ -13,6 +13,11 @@ from .. import DB
 
 # ## COLLATION IMPORTS
 
+# #### Enum data
+from .model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
+    SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType,\
+    SiteDataType, TagType  # noqa: F401
+
 # #### Site data
 from .tag import Tag, SiteTag, UserTag  # noqa: F401
 from .label import Label  # noqa: F401
@@ -73,6 +78,8 @@ def initialize():
 
     models =\
         [
+            SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,
+            SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,
             Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,
             IllustCommentaries, IllustNotations, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
             ArtistNotations, Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations,

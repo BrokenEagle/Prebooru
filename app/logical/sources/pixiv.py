@@ -19,7 +19,7 @@ from utility.uprint import print_info
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, get_api_data, save_api_data
 from ..database.server_info_db import get_next_wait, update_next_wait
-from ..sites import SiteDescriptor, get_site_from_domain
+from ..sites import SiteDescriptorEnum, get_site_from_domain
 
 
 # ### GLOBAL VARIABLES
@@ -39,7 +39,7 @@ ILLUST_HREFURL = 'https://www.pixiv.net/artworks/%d'
 ARTIST_HREFURL = 'https://www.pixiv.net/users/%d'
 TAG_SEARCH_HREFURL = 'https://www.pixiv.net/tags/%s/artworks'
 
-SITE = SiteDescriptor.PIXIV
+SITE = SiteDescriptorEnum.pixiv
 
 HAS_TAG_SEARCH = True
 
@@ -142,7 +142,7 @@ def is_post_url(url):
 
 
 def get_media_url(illust_url):
-    if illust_url.site == SiteDescriptor.CUSTOM:
+    if illust_url.site == SiteDescriptorEnum.custom:
         return illust_url.url
     return 'https://' + illust_url.site.domain + illust_url.url
 

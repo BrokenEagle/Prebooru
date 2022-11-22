@@ -18,7 +18,7 @@ from .base import JsonModel, IntEnum, EpochTimestamp, image_server_url
 
 # ## CLASSES
 
-class ArchiveType(AttrEnum):
+class ArchiveTypeEnum(AttrEnum):
     post = enum.auto()
     illust = enum.auto()
     artist = enum.auto()
@@ -30,27 +30,27 @@ class Archive(JsonModel):
 
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    type = DB.Column(IntEnum(ArchiveType), nullable=False)
+    type = DB.Column(IntEnum(ArchiveTypeEnum), nullable=False)
     key = DB.Column(DB.String(255), nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
 
     @property
     def has_preview(self):
-        if self.type != ArchiveType.post:
+        if self.type != ArchiveTypeEnum.post:
             return
         return self.data['body']['width'] > PREVIEW_DIMENSIONS[0] or\
             self.data['body']['height'] > PREVIEW_DIMENSIONS[1]
 
     @property
     def file_url(self):
-        if self.type != ArchiveType.post:
+        if self.type != ArchiveTypeEnum.post:
             return
         return image_server_url('archive' + self._partial_network_path + self.data['body']['file_ext'], 'main')
 
     @property
     def preview_url(self):
-        if self.type != ArchiveType.post:
+        if self.type != ArchiveTypeEnum.post:
             return
         if not self.has_preview:
             return self.file_url
@@ -58,19 +58,19 @@ class Archive(JsonModel):
 
     @property
     def file_path(self):
-        if self.type != ArchiveType.post:
+        if self.type != ArchiveTypeEnum.post:
             return
         return os.path.join(MEDIA_DIRECTORY, 'archive', self._partial_file_path + self.data['body']['file_ext'])
 
     @property
     def preview_path(self):
-        if self.type != ArchiveType.post or not self.has_preview:
+        if self.type != ArchiveTypeEnum.post or not self.has_preview:
             return
         return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')
 
     # ## Class properties
 
-    type_enum = ArchiveType
+    type_enum = ArchiveTypeEnum
 
     @classproperty(cached=True)
     def searchable_attributes(cls):

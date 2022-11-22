@@ -5,7 +5,7 @@ from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from ..logical.sites import SiteDescriptor
+from ..logical.sites import SiteDescriptorEnum
 from .base_helper import general_link, external_link
 
 
@@ -65,13 +65,13 @@ def post_search_link(artist):
 
 
 def site_artist_link(artist):
-    if artist.site == SiteDescriptor.CUSTOM:
+    if artist.site == SiteDescriptorEnum.custom:
         return Markup('N/A')
     return external_link(site_short_link(artist), href_url(artist))
 
 
 def artist_links(artist):
-    if artist.site == SiteDescriptor.CUSTOM:
+    if artist.site == SiteDescriptorEnum.custom:
         return Markup('N/A')
     source = artist.site.source
     if not source.has_artist_urls(artist):

@@ -8,13 +8,13 @@ from utility.obj import AttrEnum, classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import SiteDescriptor
+from ..logical.sites import SiteDescriptorEnum
 from .base import JsonModel, IntEnum, CompressedJSON, EpochTimestamp
 
 
 # ## CLASSES
 
-class ApiDataType(AttrEnum):
+class ApiDataTypeEnum(AttrEnum):
     illust = enum.auto()
     artist = enum.auto()
     profile = enum.auto()
@@ -22,20 +22,18 @@ class ApiDataType(AttrEnum):
 
 
 class ApiData(JsonModel):
-    # ## Declarations
-
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    type = DB.Column(IntEnum(ApiDataType), nullable=False)
-    site = DB.Column(IntEnum(SiteDescriptor), nullable=False)
+    type = DB.Column(IntEnum(ApiDataTypeEnum), nullable=False)
+    site = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
     data_id = DB.Column(DB.Integer, nullable=False)
     data = DB.Column(CompressedJSON(), nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # ## Class properties
 
-    type_enum = ApiDataType
-    site_enum = SiteDescriptor
+    type_enum = ApiDataTypeEnum
+    site_enum = SiteDescriptorEnum
 
     @classproperty(cached=True)
     def searchable_attributes(cls):

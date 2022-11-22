@@ -28,7 +28,7 @@ from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
 from ..records.artist_rec import update_artist_from_source
-from ..sites import SiteDescriptor, get_site_from_domain
+from ..sites import SiteDescriptorEnum, get_site_from_domain
 
 
 # ## GLOBAL VARIABLES
@@ -48,7 +48,7 @@ ILLUST_HREFURL = 'https://twitter.com/i/web/status/%d'
 ARTIST_HREFURL = 'https://twitter.com/i/user/%d'
 TAG_SEARCH_HREFURL = 'https://twitter.com/hashtag/%s?src=hashtag_click&f=live'
 
-SITE = SiteDescriptor.TWITTER
+SITE = SiteDescriptorEnum.twitter
 
 HAS_TAG_SEARCH = True
 
@@ -429,13 +429,13 @@ def normalized_image_url(image_url):
 
 
 def get_media_url(illust_url):
-    return illust_url.url if illust_url.site == SiteDescriptor.CUSTOM\
+    return illust_url.url if illust_url.site == SiteDescriptorEnum.custom\
         else 'https://' + illust_url.site.domain + illust_url.url
 
 
 def get_sample_url(illust_url, original=False):
     addon = ':orig' if original else ""
-    return illust_url.sample_url if illust_url.sample_site == SiteDescriptor.CUSTOM\
+    return illust_url.sample_url if illust_url.sample_site == SiteDescriptorEnum.custom\
         else 'https://' + illust_url.sample_site.domain + illust_url.sample_url + addon
 
 

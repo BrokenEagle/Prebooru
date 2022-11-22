@@ -16,7 +16,7 @@ from .base import JsonModel, IntEnum, EpochTimestamp
 
 # ## CLASSES
 
-class SiteDataType(AttrEnum):
+class SiteDataTypeEnum(AttrEnum):
     site_data = -1  # This should never actually be set
     pixiv_data = enum.auto()
     twitter_data = enum.auto()
@@ -26,7 +26,7 @@ class SiteData(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False, index=True)
-    type = DB.Column(IntEnum(SiteDataType), nullable=False)
+    type = DB.Column(IntEnum(SiteDataTypeEnum), nullable=False)
 
     # ## Relations
     # (OtO) illust [Illust]
@@ -34,12 +34,12 @@ class SiteData(JsonModel):
     # ## Class properties
 
     polymorphic_base = True
-    type_enum = SiteDataType
+    type_enum = SiteDataTypeEnum
 
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': SiteDataType.site_data,
+        'polymorphic_identity': SiteDataTypeEnum.site_data,
         'polymorphic_on': type,
     }
 
@@ -66,7 +66,7 @@ class PixivData(SiteData):
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': SiteDataType.pixiv_data,
+        'polymorphic_identity': SiteDataTypeEnum.pixiv_data,
     }
 
 
@@ -89,7 +89,7 @@ class TwitterData(SiteData):
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': SiteDataType.twitter_data,
+        'polymorphic_identity': SiteDataTypeEnum.twitter_data,
     }
 
 

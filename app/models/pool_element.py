@@ -43,7 +43,7 @@ def pool_element_delete(pool_id, item):
 
 # ## CLASSES
 
-class PoolElementType(AttrEnum):
+class PoolElementTypeEnum(AttrEnum):
     pool_element = -1  # This should never actually be set
     pool_post = enum.auto()
     pool_illust = enum.auto()
@@ -58,7 +58,7 @@ class PoolElement(JsonModel):
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
     notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
     position = DB.Column(DB.Integer, nullable=False)
-    type = DB.Column(IntEnum(PoolElementType), nullable=False)
+    type = DB.Column(IntEnum(PoolElementTypeEnum), nullable=False)
 
     # ## Relationships
     # (MtO) pool [Pool]
@@ -78,12 +78,12 @@ class PoolElement(JsonModel):
     # ## Class properties
 
     polymorphic_base = True
-    type_enum = PoolElementType
+    type_enum = PoolElementTypeEnum
 
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': PoolElementType.pool_element,
+        'polymorphic_identity': PoolElementTypeEnum.pool_element,
         'polymorphic_on': type,
     }
     __table_args__ = (
@@ -108,7 +108,7 @@ class PoolPost(PoolElement):
     # #### Private
 
     __mapper_args__ = {
-        'polymorphic_identity': PoolElementType.pool_post,
+        'polymorphic_identity': PoolElementTypeEnum.pool_post,
     }
 
 
@@ -126,7 +126,7 @@ class PoolIllust(PoolElement):
 
     # #### Private
     __mapper_args__ = {
-        'polymorphic_identity': PoolElementType.pool_illust,
+        'polymorphic_identity': PoolElementTypeEnum.pool_illust,
     }
 
 
@@ -144,7 +144,7 @@ class PoolNotation(PoolElement):
 
     # ## Private
     __mapper_args__ = {
-        'polymorphic_identity': PoolElementType.pool_notation,
+        'polymorphic_identity': PoolElementTypeEnum.pool_notation,
     }
 
 

@@ -63,7 +63,7 @@ PostTags = secondarytable(
 
 # ## CLASSES
 
-class PostType(AttrEnum):
+class PostTypeEnum(AttrEnum):
     user = enum.auto()
     subscription = enum.auto()
 
@@ -78,7 +78,7 @@ class Post(JsonModel):
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    type = DB.Column(IntEnum(PostType), nullable=False)
+    type = DB.Column(IntEnum(PostTypeEnum), nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
     pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
     duration = DB.Column(DB.Float, nullable=True)
@@ -248,7 +248,7 @@ class Post(JsonModel):
 
     # ## Class properties
 
-    type_enum = PostType
+    type_enum = PostTypeEnum
 
     @classproperty(cached=True)
     def json_attributes(cls):

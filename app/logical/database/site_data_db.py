@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..sites import SiteDescriptor
+from ..sites import SiteDescriptorEnum
 from ...models import TwitterData, PixivData
 from .base_db import update_column_attributes
 
@@ -13,8 +13,8 @@ TWITTER_COLUMN_ATTRIBUTES = ['retweets', 'replies', 'quotes']
 PIXIV_COLUMN_ATTRIBUTES = ['title', 'bookmarks', 'replies', 'views', 'site_updated', 'site_uploaded']
 
 SITE_DATA_TYPE_DICT = {
-    'TWITTER': 'twitter_data',
-    'PIXIV': 'pixiv_data',
+    'twitter': 'twitter_data',
+    'pixiv': 'pixiv_data',
 }
 
 
@@ -28,9 +28,9 @@ def update_site_data_from_parameters(illust, params):
             SESSION.delete(illust.site_data)
             SESSION.commit()
             illust.site_data = None
-    if illust.site == SiteDescriptor.TWITTER:
+    if illust.site == SiteDescriptorEnum.twitter:
         return update_twitter_site_data(illust, params)
-    if illust.site == SiteDescriptor.PIXIV:
+    if illust.site == SiteDescriptorEnum.pixiv:
         return update_pixiv_site_data(illust, params)
 
 

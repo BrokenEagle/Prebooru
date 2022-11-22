@@ -10,12 +10,12 @@ from utility.obj import AttrEnum
 # ## GLOBAL VARIABLES
 
 SITES = {
-    'CUSTOM': None,
-    'PIXIV': 'www.pixiv.net',
-    'PXIMG': 'i.pximg.net',
-    'TWITTER': 'twitter.com',
-    'TWIMG': 'pbs.twimg.com',
-    'TWVIDEO': 'video.twimg.com',
+    'custom': None,
+    'pixiv': 'www.pixiv.net',
+    'pximg': 'i.pximg.net',
+    'twitter': 'twitter.com',
+    'twimg': 'pbs.twimg.com',
+    'twvideo': 'video.twimg.com',
 }
 
 DOMAINS = {v: k for k, v in SITES.items()}
@@ -23,13 +23,13 @@ DOMAINS = {v: k for k, v in SITES.items()}
 
 # ## CLASSES
 
-class SiteDescriptor(AttrEnum):
-    CUSTOM = 0
-    PIXIV = enum.auto()
-    PXIMG = enum.auto()
-    TWITTER = enum.auto()
-    TWIMG = enum.auto()
-    TWVIDEO = enum.auto()
+class SiteDescriptorEnum(AttrEnum):
+    custom = 0
+    pixiv = enum.auto()
+    pximg = enum.auto()
+    twitter = enum.auto()
+    twimg = enum.auto()
+    twvideo = enum.auto()
 
     @property
     def source(self):
@@ -46,13 +46,13 @@ class SiteDescriptor(AttrEnum):
 def get_site_from_domain(domain):
     if domain in DOMAINS:
         s = DOMAINS[domain]
-        return SiteDescriptor[s].value
+        return SiteDescriptorEnum[s].value
     return 0
 
 
 def get_site_domain(site):
-    return SITES[SiteDescriptor(site).name]
+    return SITES[SiteDescriptorEnum(site).name]
 
 
 def get_site_key(site):
-    return SiteDescriptor(site).name
+    return SiteDescriptorEnum(site).name

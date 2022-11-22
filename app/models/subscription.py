@@ -34,7 +34,7 @@ SubscriptionErrors = secondarytable(
 
 # ## CLASSES
 
-class SubscriptionStatus(AttrEnum):
+class SubscriptionStatusEnum(AttrEnum):
     idle = enum.auto()
     manual = enum.auto()
     automatic = enum.auto()
@@ -47,7 +47,7 @@ class Subscription(JsonModel):
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
     interval = DB.Column(DB.Float, nullable=False)
     expiration = DB.Column(DB.Float, nullable=True)
-    status = DB.Column(IntEnum(SubscriptionStatus), nullable=False)
+    status = DB.Column(IntEnum(SubscriptionStatusEnum), nullable=False)
     last_id = DB.Column(DB.Integer, nullable=True)
     requery = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     checked = DB.Column(EpochTimestamp(nullable=True), nullable=True)
@@ -125,7 +125,7 @@ class Subscription(JsonModel):
 
     # ## Class properties
 
-    status_enum = SubscriptionStatus
+    status_enum = SubscriptionStatusEnum
 
     # ## Private
 

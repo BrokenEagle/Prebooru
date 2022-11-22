@@ -38,7 +38,7 @@ UploadErrors = secondarytable(
 
 # ## CLASSES
 
-class UploadStatus(AttrEnum):
+class UploadStatusEnum(AttrEnum):
     complete = enum.auto()
     pending = enum.auto()
     processing = enum.auto()
@@ -52,7 +52,7 @@ class Upload(JsonModel):
     request_url = DB.Column(DB.String(255), nullable=True)
     successes = DB.Column(DB.Integer, nullable=False)
     failures = DB.Column(DB.Integer, nullable=False)
-    status = DB.Column(IntEnum(UploadStatus), nullable=False)
+    status = DB.Column(IntEnum(UploadStatusEnum), nullable=False)
     media_filepath = DB.Column(DB.String(255), nullable=True)
     sample_filepath = DB.Column(DB.String(255), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=True)
@@ -123,7 +123,7 @@ class Upload(JsonModel):
 
     # ## Class properties
 
-    status_enum = UploadStatus
+    status_enum = UploadStatusEnum
 
     @classproperty(cached=True)
     def json_attributes(cls):

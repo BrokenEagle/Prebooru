@@ -12,10 +12,10 @@ from .base import NoSource
 
 SOURCES = [pixiv, twitter]
 SOURCEDICT = {
-    'CUSTOM': NoSource,
-    'PIXIV': pixiv,
-    'PXIMG': pixiv,
-    'TWITTER': twitter,
-    'TWIMG': twitter,
-    'TWVIDEO': twitter,
+    'custom': NoSource,
+    'pixiv': pixiv,
+    'pximg': pixiv,
+    'twitter': twitter,
+    'twimg': twitter,
+    'twvideo': twitter,
 }

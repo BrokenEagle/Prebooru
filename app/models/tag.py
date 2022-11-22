@@ -17,7 +17,7 @@ from .base import JsonModel, IntEnum
 
 # ## CLASSES
 
-class TagType(AttrEnum):
+class TagTypeEnum(AttrEnum):
     tag = -1  # This should never actually be set
     site_tag = enum.auto()
     user_tag = enum.auto()
@@ -27,7 +27,7 @@ class Tag(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
-    type = DB.Column(IntEnum(TagType), nullable=False)
+    type = DB.Column(IntEnum(TagTypeEnum), nullable=False)
 
     # ## Instance properties
 
@@ -51,12 +51,12 @@ class Tag(JsonModel):
     # ## Class properties
 
     polymorphic_base = True
-    type_enum = TagType
+    type_enum = TagTypeEnum
 
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': TagType.tag,
+        'polymorphic_identity': TagTypeEnum.tag,
         'polymorphic_on': type,
     }
 
@@ -95,7 +95,7 @@ class SiteTag(Tag):
                    .filter(Tag.id == self.id)
 
     __mapper_args__ = {
-        'polymorphic_identity': TagType.site_tag,
+        'polymorphic_identity': TagTypeEnum.site_tag,
     }
 
 
@@ -133,7 +133,7 @@ class UserTag(Tag):
         return Post.query.join(UserTag, Post._tags).filter(UserTag.id == self.id)
 
     __mapper_args__ = {
-        'polymorphic_identity': TagType.user_tag,
+        'polymorphic_identity': TagTypeEnum.user_tag,
     }
 
 

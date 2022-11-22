@@ -12,7 +12,7 @@ from utility.data import random_id
 # ## LOCAL IMPORTS
 from ..models import Artist, Booru
 from ..logical.utility import set_error
-from ..logical.sites import SiteDescriptor
+from ..logical.sites import SiteDescriptorEnum
 from ..logical.sources.base import get_source_by_id, get_artist_required_params
 from ..logical.sources.danbooru import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion
@@ -76,9 +76,9 @@ FORM_CONFIG = {
         'kwargs': {
             'choices': [
                 ("", ""),
-                (SiteDescriptor.PIXIV.value, SiteDescriptor.PIXIV.name.title()),
-                (SiteDescriptor.TWITTER.value, SiteDescriptor.TWITTER.name.title()),
-                (SiteDescriptor.CUSTOM.value, SiteDescriptor.CUSTOM.name.title()),
+                (SiteDescriptorEnum.pixiv.value, SiteDescriptorEnum.pixiv.name.title()),
+                (SiteDescriptorEnum.twitter.value, SiteDescriptorEnum.twitter.name.title()),
+                (SiteDescriptorEnum.custom.value, SiteDescriptorEnum.custom.name.title()),
             ],
             'validators': [DataRequired()],
             'coerce': int_or_blank,
@@ -186,7 +186,7 @@ def create():
     dataparams = get_data_params(request, 'artist')
     createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    if createparams['site'] == SiteDescriptor.CUSTOM and createparams['site_artist_id'] is None:
+    if createparams['site'] == SiteDescriptorEnum.custom and createparams['site_artist_id'] is None:
         for i in range(100):
             createparams['site_artist_id'] = random_id()
             if uniqueness_check(createparams, Artist()) is None:

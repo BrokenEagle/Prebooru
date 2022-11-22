@@ -27,7 +27,7 @@ SubscriptionElementErrors = secondarytable(
 
 # ## CLASSES
 
-class SubscriptionElementStatus(AttrEnum):
+class SubscriptionElementStatusEnum(AttrEnum):
     active = enum.auto()
     unlinked = enum.auto()
     deleted = enum.auto()
@@ -36,7 +36,7 @@ class SubscriptionElementStatus(AttrEnum):
     duplicate = enum.auto()
 
 
-class SubscriptionElementKeep(AttrEnum):
+class SubscriptionElementKeepEnum(AttrEnum):
     yes = enum.auto()
     no = enum.auto()
     maybe = enum.auto()
@@ -50,9 +50,9 @@ class SubscriptionElement(JsonModel):
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    keep = DB.Column(IntEnum(SubscriptionElementKeep, nullable=True), nullable=True)
+    keep = DB.Column(IntEnum(SubscriptionElementKeepEnum, nullable=True), nullable=True)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    status = DB.Column(IntEnum(SubscriptionElementStatus), nullable=False)
+    status = DB.Column(IntEnum(SubscriptionElementStatusEnum), nullable=False)
 
     # ## Relationships
     errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, uselist=True, cascade='all,delete',
@@ -73,8 +73,8 @@ class SubscriptionElement(JsonModel):
 
     # ## Class properties
 
-    status_enum = SubscriptionElementStatus
-    keep_enum = SubscriptionElementKeep
+    status_enum = SubscriptionElementStatusEnum
+    keep_enum = SubscriptionElementKeepEnum
 
     # ## Private
 

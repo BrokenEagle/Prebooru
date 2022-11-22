@@ -26,7 +26,7 @@ UploadElementErrors = secondarytable(
 
 # ## CLASSES
 
-class UploadElementStatus(AttrEnum):
+class UploadElementStatusEnum(AttrEnum):
     unknown = -1
     complete = 0
     duplicate = enum.auto()
@@ -40,7 +40,7 @@ class UploadElement(JsonModel):
     upload_id = DB.Column(DB.Integer, DB.ForeignKey('upload.id'), nullable=False, index=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    status = DB.Column(IntEnum(UploadElementStatus), nullable=False)
+    status = DB.Column(IntEnum(UploadElementStatusEnum), nullable=False)
 
     # ## Relationships
     errors = DB.relationship(Error, secondary=UploadElementErrors, lazy=True, cascade='all,delete',
@@ -67,7 +67,7 @@ class UploadElement(JsonModel):
 
     # ## Class properties
 
-    status_enum = UploadElementStatus
+    status_enum = UploadElementStatusEnum
 
     # ## Private
 

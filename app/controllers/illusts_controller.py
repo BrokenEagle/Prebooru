@@ -13,7 +13,7 @@ from utility.data import eval_bool_string, is_falsey, random_id
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
 from ..logical.utility import set_error
-from ..logical.sites import SiteDescriptor
+from ..logical.sites import SiteDescriptorEnum
 from ..logical.sources.base import get_source_by_id, get_illust_required_params
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
@@ -89,9 +89,9 @@ FORM_CONFIG = {
         'kwargs': {
             'choices': [
                 ("", ""),
-                (SiteDescriptor.PIXIV.value, SiteDescriptor.PIXIV.name.title()),
-                (SiteDescriptor.TWITTER.value, SiteDescriptor.TWITTER.name.title()),
-                (SiteDescriptor.CUSTOM.value, SiteDescriptor.CUSTOM.name.title()),
+                (SiteDescriptorEnum.pixiv.value, SiteDescriptorEnum.pixiv.name.title()),
+                (SiteDescriptorEnum.twitter.value, SiteDescriptorEnum.twitter.name.title()),
+                (SiteDescriptorEnum.custom.value, SiteDescriptorEnum.custom.name.title()),
             ],
             'validators': [DataRequired()],
             'coerce': int_or_blank,
@@ -250,7 +250,7 @@ def create():
     check_artist = Artist.find(createparams['artist_id'])
     if check_artist is None:
         return set_error(retdata, "artist #%s not found." % dataparams['artist_id'])
-    if createparams['site'] == SiteDescriptor.CUSTOM and createparams['site_illust_id'] is None:
+    if createparams['site'] == SiteDescriptorEnum.custom and createparams['site_illust_id'] is None:
         for i in range(100):
             createparams['site_illust_id'] = random_id()
             if uniqueness_check(createparams, Illust()) is None:

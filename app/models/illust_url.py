@@ -8,7 +8,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import SiteDescriptor
+from ..logical.sites import SiteDescriptorEnum
 from .upload_element import UploadElement
 from .subscription_element import SubscriptionElement
 from .base import JsonModel, IntEnum
@@ -19,9 +19,9 @@ from .base import JsonModel, IntEnum
 class IllustUrl(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site = DB.Column(IntEnum(SiteDescriptor), nullable=False)
+    site = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
-    sample_site = DB.Column(IntEnum(SiteDescriptor, nullable=True), nullable=True)
+    sample_site = DB.Column(IntEnum(SiteDescriptorEnum, nullable=True), nullable=True)
     sample_url = DB.Column(DB.String(255), nullable=True)
     width = DB.Column(DB.Integer, nullable=False)
     height = DB.Column(DB.Integer, nullable=False)
@@ -70,8 +70,8 @@ class IllustUrl(JsonModel):
 
     # ## Class properties
 
-    site_enum = SiteDescriptor
-    sample_site_enum = SiteDescriptor
+    site_enum = SiteDescriptorEnum
+    sample_site_enum = SiteDescriptorEnum
 
     @classproperty(cached=True)
     def json_attributes(cls):

@@ -11,7 +11,7 @@ from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from ..logical.sites import SiteDescriptor
+from ..logical.sites import SiteDescriptorEnum
 from .base_helper import external_link, general_link
 
 
@@ -40,7 +40,7 @@ def form_class(form):
 # #### Iterator functions
 
 def site_metric_iterator(illust):
-    if illust.site == SiteDescriptor.CUSTOM:
+    if illust.site == SiteDescriptorEnum.custom:
         return
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
@@ -49,7 +49,7 @@ def site_metric_iterator(illust):
 
 
 def site_date_iterator(illust):
-    if illust.site == SiteDescriptor.CUSTOM:
+    if illust.site == SiteDescriptorEnum.custom:
         return
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
@@ -89,7 +89,7 @@ def illust_url_search_link(illust):
 # ###### SHOW
 
 def danbooru_upload_link(illust):
-    if illust.site == SiteDescriptor.CUSTOM:
+    if illust.site == SiteDescriptorEnum.custom:
         return Markup("N/A")
     return external_link("Danbooru", danbooru_batch_url(illust))
 
@@ -131,14 +131,14 @@ def delete_commentary_link(illust, commentary):
 # ###### GENERAL
 
 def site_illust_link(illust):
-    if illust.site == SiteDescriptor.CUSTOM:
+    if illust.site == SiteDescriptorEnum.custom:
         # Need to add a post_url for CustomData, a subclass for SiteData
         return Markup("N/A")
     return external_link(site_short_link(illust), site_illust_url(illust))
 
 
 def alt_site_illust_link(illust):
-    if illust.site == SiteDescriptor.CUSTOM:
+    if illust.site == SiteDescriptorEnum.custom:
         return ""
     source = illust.site.source
     post_url = source.get_post_url(illust)
