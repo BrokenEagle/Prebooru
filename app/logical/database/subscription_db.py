@@ -1,11 +1,14 @@
 # APP/LOGICAL/DATABASE/SUBSCRIPTION_DB.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy import func
+
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time, hours_from_now, add_days
+from utility.time import get_current_time, hours_from_now, add_days, days_ago
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Subscription
+from ...models import Subscription, SubscriptionElement, IllustUrl, Illust
 from .base_db import update_column_attributes
 
 
@@ -17,6 +20,8 @@ CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'active']
 UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration', 'active']
 
 MAXIMUM_PROCESS_SUBSCRIPTIONS = 10
+
+AVERAGE_INTERVAL_CLAUSE = (func.max(Illust.site_created) - func.min(Illust.site_created)) / (func.count(Illust.id) - 1)
 
 
 # ## FUNCTIONS
@@ -122,3 +127,15 @@ def delay_subscription_elements(subscription, delay_days):
         else:
             element.expires = add_days(max(element.expires or current_time, current_time), delay_days)
     SESSION.commit()
+
+
+def get_average_interval_for_subscriptions(subscriptions, days):
+    return SubscriptionElement.query\
+                              .join(IllustUrl).join(Illust)\
+                              .with_entities(SubscriptionElement.subscription_id, AVERAGE_INTERVAL_CLAUSE)\
+                              .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
+                                      Illust.site_created > days_ago(days),
+                                      SubscriptionElement.keep == 'yes',
+                               )\
+                              .group_by(SubscriptionElement.subscription_id)\
+                              .having(func.count(Illust.id) > 1).all()

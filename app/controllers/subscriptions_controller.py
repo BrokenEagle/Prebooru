@@ -6,6 +6,8 @@ from flask import Blueprint, request, render_template, abort, url_for, flash, re
 from wtforms import BooleanField, FloatField, IntegerField
 from wtforms.validators import DataRequired
 
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
 from .. import SCHEDULER, SESSION
@@ -14,7 +16,7 @@ from ..logical.utility import set_error
 from ..logical.records.subscription_rec import process_subscription_manual
 from ..logical.database.subscription_db import create_subscription_from_parameters,\
     update_subscription_from_parameters, update_subscription_status, delay_subscription_elements,\
-    delete_subscription
+    delete_subscription, get_average_interval_for_subscriptions
 from ..logical.database.jobs_db import get_job_status_data, create_or_update_job_status
 from ..logical.database.server_info_db import get_subscriptions_ready
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -180,8 +182,12 @@ def index_html():
     q = index()
     q = q.options(selectinload(Subscription.artist))
     subscriptions = paginate(q, request)
+    if request.args.get('show_interval', type=eval_bool_string):
+        average_intervals = get_average_interval_for_subscriptions(subscriptions.items, 365)
+    else:
+        average_intervals = None
     return render_template("subscriptions/index.html", subscriptions=subscriptions,
-                           subscription=Subscription())
+                           subscription=Subscription(), average_intervals=average_intervals)
 
 
 # ###### CREATE

@@ -9,6 +9,7 @@ from utility.time import humanized_timedelta
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
+from ..logical.database.subscription_db import get_average_interval_for_subscriptions
 from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
 from .base_helper import general_link, url_for_with_params, val_or_none
@@ -73,11 +74,18 @@ def status_link(subscription):
 
 # ###### Other functions
 
-def average_interval(subscription):
-    if subscription.element_count == 0:
+def average_interval_lookup(subscription, average_intervals):
+    interval = next((interval for interval in average_intervals if interval[0] == subscription.id), None)
+    if interval is None:
         return Markup('<em>N/A</em>')
-    humanized_average_interval = subscription.average_interval and humanized_timedelta(subscription.average_interval)
-    return val_or_none(humanized_average_interval)
+    return "%0.2f" % (interval[1] / 3600)
+
+
+def average_interval(subscription):
+    interval = get_average_interval_for_subscriptions([subscription], 365)
+    if len(interval) == 0:
+        return Markup('<em>N/A</em>')
+    return "%0.2f" % (interval[0][1] / 3600)
 
 
 def storage_bytes(subscription, type=None):

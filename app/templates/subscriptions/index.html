@@ -32,6 +32,10 @@
                         <strong>Status:</strong> {{ subscription.status.name }}
                         <br>
                         <strong>Active:</strong> {{ subscription.active | tojson }}
+                        {% if average_intervals is not none %}
+                            <br>
+                            <strong>Average Interval:</strong> {{ helpers.subscription.average_interval_lookup(subscription, average_intervals) }}
+                        {% endif %}
                     </td>
                     <td>
                         <strong>Interval:</strong> {{ subscription.interval }}
