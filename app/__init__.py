@@ -107,7 +107,7 @@ def _fk_open_connections():
 
 def _before_request():
     from app.logical.database.server_info_db import update_last_activity
-    logger.info("Before request: Allow - %s, Active = %d\n", SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
+    logger.info("Before request: Endpoint - %s, Allow - %s, Active = %d\n", request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
     SERVER_INFO.active_requests += 1
     if request.endpoint is not None and not re.match(r'^(?:shutdown|ping|scheduler|job|static|media)', request.endpoint):
         try:
@@ -124,7 +124,7 @@ def _before_request():
 def _teardown_request(error=None):
     if error is not None:
         logger.warning(f"\nRequest error: {error}\n")
-    logger.info("After request: Allow - %s, Active = %d\n", SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
+    logger.info("After request: Endpoint - %s, Allow - %s, Active = %d\n", request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
     SERVER_INFO.active_requests = max(SERVER_INFO.active_requests - 1, 0)
 
 
