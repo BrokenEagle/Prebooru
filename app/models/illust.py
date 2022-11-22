@@ -130,7 +130,7 @@ class Illust(JsonModel):
 
     # ## Private
 
-    __table_args__ = (DB.UniqueConstraint('site', 'site_illust_id'),)
+    __table_args__ = (DB.UniqueConstraint('site_illust_id', 'site'),)
 
 
 # ## INITIALIZATION
