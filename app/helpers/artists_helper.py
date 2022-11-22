@@ -53,12 +53,6 @@ def add_notation_link(artist):
     return general_link("Add notation", url_for('notation.new_html', artist_id=artist.id))
 
 
-def site_link(artist):
-    if artist.site == SiteDescriptor.CUSTOM:
-        return Markup('Custom Site')
-    return general_link(site_short_link(artist), href_url(artist))
-
-
 def delete_profile_link(artist, profile):
     return general_link("remove", url_for('artist.delete_profile_html', id=artist.id, description_id=profile.id),
                         method="DELETE", **{'class': 'warning-link'})
