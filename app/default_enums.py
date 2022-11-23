@@ -6,91 +6,98 @@ from utility.obj import AttrEnum
 
 # ## CLASSES
 
-# #### Column enums
-
-class SiteDescriptorEnum(AttrEnum):
-    custom = 0
-    pixiv = 1
-    pximg = 2
-    twitter = 3
-    twimg = 4
-    twvideo = 5
-
+# #### Rendered enums
 
 class ApiDataTypeEnum(AttrEnum):
-    illust = 1
-    artist = 2
-    profile = 3
-    page = 4
+    illust = 0
+    artist = 1
+    profile = 2
+    page = 3
+    unknown = 127
 
 
 class ArchiveTypeEnum(AttrEnum):
-    post = 1
-    illust = 2
-    artist = 3
-    booru = 4
+    post = 0
+    illust = 1
+    artist = 2
+    booru = 3
+    unknown = 127
 
 
 class PostTypeEnum(AttrEnum):
-    user = 1
-    subscription = 2
+    user = 0
+    subscription = 1
+    unknown = 127
 
 
 class SubscriptionStatusEnum(AttrEnum):
-    idle = 1
-    manual = 2
-    automatic = 3
-    error = 4
+    idle = 0
+    retired = 1
+    automatic = 2
+    manual = 3
+    error = 126
+    unknown = 127
 
 
 class SubscriptionElementStatusEnum(AttrEnum):
-    active = 1
-    unlinked = 2
-    deleted = 3
-    archived = 4
-    error = 5
-    duplicate = 6
+    unlinked = 0
+    deleted = 1
+    active = 2
+    archived = 3
+    duplicate = 4
+    error = 126
+    unknown = 127
 
 
 class SubscriptionElementKeepEnum(AttrEnum):
-    yes = 1
-    no = 2
-    maybe = 3
-    archive = 4
+    yes = 0
+    no = 1
+    maybe = 2
+    archive = 3
+    unknown = 127
 
 
 class UploadStatusEnum(AttrEnum):
-    complete = 1
-    pending = 2
-    processing = 3
-    duplicate = 4
-    error = 5
-
-
-class UploadElementStatusEnum(AttrEnum):
-    unknown = -1
     complete = 0
     duplicate = 1
     pending = 2
-    error = 3
+    processing = 3
+    error = 126
+    unknown = 127
 
 
-# ## Polymorphic enums
+class UploadElementStatusEnum(AttrEnum):
+    complete = 0
+    duplicate = 1
+    pending = 2
+    error = 126
+    unknown = 127
+
 
 class PoolElementTypeEnum(AttrEnum):
-    pool_element = -1
     pool_post = 0
     pool_illust = 1
     pool_notation = 2
+    pool_element = 127
 
 
 class SiteDataTypeEnum(AttrEnum):
-    site_data = -1
-    pixiv_data = 0
-    twitter_data = 1
+    twitter_data = 0
+    pixiv_data = 1
+    site_data = 127
 
 
 class TagTypeEnum(AttrEnum):
-    tag = -1
     site_tag = 0
     user_tag = 1
+    tag = 127
+
+
+class SiteDescriptorEnum(AttrEnum):
+    pixiv = 0
+    pximg = 1
+    twitter = 2
+    twimg = 3
+    twvideo = 4
+    custom = 126
+    unknown = 127

@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 # ## EXTERNAL IMPORTS
 from sqlalchemy import text
 from sqlalchemy.sql.expression import case
+from mako.template import Template
 
 
 # ## FUNCTIONS
@@ -16,14 +17,14 @@ from sqlalchemy.sql.expression import case
 # #### Auxiliary functions
 
 def initialize(args):
-    global SESSION, ENUMS_CONFIG, Version, create_directory, get_directory_listing, put_get_json
+    global SESSION, ENUMS_CONFIG, Version, create_directory, get_directory_listing, put_get_json, put_get_raw
     sys.path.append(os.path.abspath('.'))
     from app import SESSION
     if args.local:
         from app import local_enums as enums
     else:
         from app import default_enums as enums
-    from utility.file import create_directory, get_directory_listing, put_get_json
+    from utility.file import create_directory, get_directory_listing, put_get_json, put_get_raw
     from app.models.model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
         SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType,\
         SiteDataType, TagType
@@ -130,6 +131,16 @@ def initialize(args):
     ]
 
 
+def reorganize_default_enums(config, model_enums):
+    model = config['model']
+    enum = config['enum']
+    model_enums[enum.__name__] = template_dict = {}
+    for key in model.__initial_mapping__:
+        template_dict[key] = model.__initial_mapping__[key]
+    for key in model.__mandatory_mapping__:
+        template_dict[key] = model.__mandatory_mapping__[key]
+
+
 # #### File functions
 
 def get_migrations(is_local):
@@ -167,6 +178,26 @@ def upgrade_tables(next_migration, prev_migration):
         model.query.delete()
         for row in next_values:
             SESSION.add(model(**row))
+        if prev_migration is None or model_name not in prev_migration['tables']:
+            continue
+        prev_values = prev_migration['tables'][model_name]
+        mapping = {}
+        unknown_val = None
+        for next_item in next_values:
+            prev_item = next((t for t in prev_values if t['name'] == next_item['name']), None)
+            if prev_item is None:
+                continue
+            mapping[prev_item['id']] = next_item['id']
+            if next_item['name'] == 'unknown':
+                unknown_val = next_item['id']
+        case_kw = {}
+        if len(set(k['name'] for k in prev_values).difference(k['name'] for k in next_values)) > 0:
+            case_kw['else_'] = unknown_val
+        for table_info in config['tables']:
+            table = table_info['table']
+            field = table_info['field']
+            field_attr = getattr(table, field)
+            table.query.update({field: case(mapping, value=field_attr, **case_kw)})
 
 
 def stamp_version(next_migration, current_revision):
@@ -227,19 +258,37 @@ def upgrade_revision(args):
     SESSION.remove()
 
 
+def render_enums_file(args):
+    enums_type = 'local' if args.local else 'default'
+    model_enums = {}
+    for config in ENUMS_CONFIG:
+        if args.local:
+            pass
+        else:
+            reorganize_default_enums(config, model_enums)
+    template = Template(filename=os.path.join(os.getcwd(), 'migrations', 'enums.py.mako'))
+    template_output = template.render_unicode(enums_type=enums_type, model_enums=model_enums)
+    template_output = template_output.replace('\r\n', '\n').strip('\n') + '\n'
+    enums_filepath = os.path.join(os.getcwd(), 'app', f'{enums_type}_enums.py')
+    print(f"Writing {enums_type} enums module.")
+    put_get_raw(enums_filepath, 'w', template_output)
+
+
 def main(args):
     initialize(args)
     if args.action == 'generate':
         generate_revision(args)
     elif args.action == 'upgrade':
         upgrade_revision(args)
+    elif args.action == 'render':
+        render_enums_file(args)
 
 
 # ##EXECUTION START
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Fix script to load/modify enum and dependant tables.")
-    parser.add_argument('action', choices=['generate', 'upgrade'], help="Choose which action to perform.")
+    parser.add_argument('action', choices=['generate', 'upgrade', 'render'], help="Choose which action to perform.")
     parser.add_argument('--local', required=False, action="store_true", default=False)
     args = parser.parse_args()
 
