@@ -54,6 +54,7 @@ from .domain import Domain  # noqa: F401
 # #### Server data
 
 from .server_info import ServerInfo
+from .version import Version
 
 # #### Job data
 from .jobs import JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
@@ -88,7 +89,7 @@ def initialize():
             SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,
             UploadElement, UploadElementErrors,
             MediaFile, Domain,
-            ServerInfo,
+            ServerInfo, Version,
             JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus,
         ]
     for model in models:
