@@ -1,13 +1,8 @@
 # APP/MODELS/SUBSCRIPTION_ELEMENT.PY
 
-# ## PYTHON IMPORTS
-import enum
-
-# ## PACKAGE IMPORTS
-from utility.obj import AttrEnum
-
 # ## LOCAL IMPORTS
 from .. import DB
+from ..enums import UploadElementStatusEnum
 from .error import Error
 from .base import JsonModel, IntEnum, BlobMD5, secondarytable
 
@@ -25,14 +20,6 @@ UploadElementErrors = secondarytable(
 
 
 # ## CLASSES
-
-class UploadElementStatusEnum(AttrEnum):
-    unknown = -1
-    complete = 0
-    duplicate = enum.auto()
-    pending = enum.auto()
-    error = enum.auto()
-
 
 class UploadElement(JsonModel):
     # ## Columns

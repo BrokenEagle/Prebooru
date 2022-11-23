@@ -2,7 +2,6 @@
 
 # ## PYTHON IMPORTS
 import os
-import enum
 import itertools
 
 # ## EXTERNAL IMPORTS
@@ -13,10 +12,11 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, ALTERNATE_MEDIA_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
-from utility.obj import AttrEnum, classproperty
+from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
+from ..enums import PostTypeEnum
 from ..logical.utility import unique_objects
 from .error import Error
 from .illust_url import IllustUrl
@@ -62,11 +62,6 @@ PostTags = secondarytable(
 
 
 # ## CLASSES
-
-class PostTypeEnum(AttrEnum):
-    user = enum.auto()
-    subscription = enum.auto()
-
 
 class Post(JsonModel):
     # ## Columns

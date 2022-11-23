@@ -1,10 +1,7 @@
 # APP/LOGICAL/SITES.PY
 
-# ## PYTHON IMPORTS
-import enum
-
-# ## PACKAGE IMPORTS
-from utility.obj import AttrEnum
+# ## LOCAL IMPORTS
+from ..enums import SiteDescriptorEnum
 
 
 # ## GLOBAL VARIABLES
@@ -21,27 +18,18 @@ SITES = {
 DOMAINS = {v: k for k, v in SITES.items()}
 
 
-# ## CLASSES
-
-class SiteDescriptorEnum(AttrEnum):
-    custom = 0
-    pixiv = enum.auto()
-    pximg = enum.auto()
-    twitter = enum.auto()
-    twimg = enum.auto()
-    twvideo = enum.auto()
-
-    @property
-    def source(self):
-        from .sources import SOURCEDICT
-        return SOURCEDICT[self.name]
-
-    @property
-    def domain(self):
-        return SITES[self.name]
-
-
 # ## FUNCTIONS
+
+@property
+def source(self):
+    from .sources import SOURCEDICT
+    return SOURCEDICT[self.name]
+
+
+@property
+def domain(self):
+    return SITES[self.name]
+
 
 def get_site_from_domain(domain):
     if domain in DOMAINS:
@@ -56,3 +44,9 @@ def get_site_domain(site):
 
 def get_site_key(site):
     return SiteDescriptorEnum(site).name
+
+
+# ## Initialization
+
+SiteDescriptorEnum.source = source
+SiteDescriptorEnum.domain = domain

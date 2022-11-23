@@ -2,28 +2,21 @@
 
 # ## PYTHON IMPORTS
 import os
-import enum
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS
-from utility.obj import AttrEnum, classproperty
+from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
+from ..enums import ArchiveTypeEnum
 from .base import JsonModel, IntEnum, EpochTimestamp, image_server_url
 
 
 # ## CLASSES
-
-class ArchiveTypeEnum(AttrEnum):
-    post = enum.auto()
-    illust = enum.auto()
-    artist = enum.auto()
-    booru = enum.auto()
-
 
 class Archive(JsonModel):
     # ## Declarations

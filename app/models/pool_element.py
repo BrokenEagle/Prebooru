@@ -2,17 +2,16 @@
 
 # ## PYTHON IMPORTS
 import math
-import enum
 
 # ## EXTERNAL IMPORTS
 from flask import url_for
 
 # ## PACKAGE IMPORTS
 from config import DEFAULT_PAGINATE_LIMIT
-from utility.obj import AttrEnum
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
+from ..enums import PoolElementTypeEnum
 from .base import JsonModel, IntEnum
 
 
@@ -42,13 +41,6 @@ def pool_element_delete(pool_id, item):
 
 
 # ## CLASSES
-
-class PoolElementTypeEnum(AttrEnum):
-    pool_element = -1  # This should never actually be set
-    pool_post = enum.auto()
-    pool_illust = enum.auto()
-    pool_notation = enum.auto()
-
 
 class PoolElement(JsonModel):
     # ## Columns

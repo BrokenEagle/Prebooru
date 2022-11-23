@@ -1,17 +1,14 @@
 # APP/MODELS/SUBSCRIPTION.PY
 
-# ## PYTHON IMPORTS
-import enum
-
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.time import average_timedelta, days_ago, get_current_time
-from utility.obj import AttrEnum
 
 # ## LOCAL IMPORTS
 from .. import DB
+from ..enums import SubscriptionStatusEnum
 from .illust import Illust
 from .illust import IllustUrl
 from .post import Post
@@ -33,13 +30,6 @@ SubscriptionErrors = secondarytable(
 
 
 # ## CLASSES
-
-class SubscriptionStatusEnum(AttrEnum):
-    idle = enum.auto()
-    manual = enum.auto()
-    automatic = enum.auto()
-    error = enum.auto()
-
 
 class Subscription(JsonModel):
     # ## Columns

@@ -1,13 +1,8 @@
 # APP/MODELS/SUBSCRIPTION_ELEMENT.PY
 
-# ## PYTHON IMPORTS
-import enum
-
-# ## PACKAGE IMPORTS
-from utility.obj import AttrEnum
-
 # ## LOCAL IMPORTS
 from .. import DB
+from ..enums import SubscriptionElementStatusEnum, SubscriptionElementKeepEnum
 from .error import Error
 from .base import JsonModel, IntEnum, BlobMD5, EpochTimestamp, secondarytable
 
@@ -26,22 +21,6 @@ SubscriptionElementErrors = secondarytable(
 
 
 # ## CLASSES
-
-class SubscriptionElementStatusEnum(AttrEnum):
-    active = enum.auto()
-    unlinked = enum.auto()
-    deleted = enum.auto()
-    archived = enum.auto()
-    error = enum.auto()
-    duplicate = enum.auto()
-
-
-class SubscriptionElementKeepEnum(AttrEnum):
-    yes = enum.auto()
-    no = enum.auto()
-    maybe = enum.auto()
-    archive = enum.auto()
-
 
 class SubscriptionElement(JsonModel):
     # ## Columns

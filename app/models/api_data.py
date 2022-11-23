@@ -1,25 +1,16 @@
 # APP/MODELS/API_DATA.PY
 
-# ## PYTHON IMPORTS
-import enum
-
 # ## PACKAGE IMPORTS
-from utility.obj import AttrEnum, classproperty
+from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
+from ..enums import ApiDataTypeEnum
 from ..logical.sites import SiteDescriptorEnum
 from .base import JsonModel, IntEnum, CompressedJSON, EpochTimestamp
 
 
 # ## CLASSES
-
-class ApiDataTypeEnum(AttrEnum):
-    illust = enum.auto()
-    artist = enum.auto()
-    profile = enum.auto()
-    page = enum.auto()
-
 
 class ApiData(JsonModel):
     # #### Columns

@@ -1,16 +1,14 @@
 # APP/MODELS/UPLOAD.PY
 
-# ## PYTHON IMPORTS
-import enum
-
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
-from utility.obj import AttrEnum, classproperty
+from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
+from ..enums import UploadStatusEnum
 from ..logical.batch_loader import selectinload_batch_primary, selectinload_batch_secondary
 from .upload_url import UploadUrl
 from .upload_element import UploadElement
@@ -37,14 +35,6 @@ UploadErrors = secondarytable(
 
 
 # ## CLASSES
-
-class UploadStatusEnum(AttrEnum):
-    complete = enum.auto()
-    pending = enum.auto()
-    processing = enum.auto()
-    duplicate = enum.auto()
-    error = enum.auto()
-
 
 class Upload(JsonModel):
     # ## Columns
