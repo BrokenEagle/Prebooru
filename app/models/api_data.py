@@ -5,8 +5,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enums import ApiDataTypeEnum
-from ..logical.sites import SiteDescriptorEnum
+from ..logical.enums import ApiDataTypeEnum, SiteDescriptorEnum
 from .base import JsonModel, IntEnum, CompressedJSON, EpochTimestamp
 
 

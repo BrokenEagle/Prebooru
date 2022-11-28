@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enums import SubscriptionElementStatusEnum, SubscriptionElementKeepEnum
+from ..logical.enums import SubscriptionElementStatusEnum, SubscriptionElementKeepEnum
 from .error import Error
 from .base import JsonModel, IntEnum, BlobMD5, EpochTimestamp, secondarytable
 

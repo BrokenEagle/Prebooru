@@ -12,7 +12,7 @@ from utility.data import random_id
 # ## LOCAL IMPORTS
 from ..models import Artist, Booru
 from ..logical.utility import set_error
-from ..logical.sites import SiteDescriptorEnum
+from ..logical.enums import SiteDescriptorEnum
 from ..logical.sources.base import get_source_by_id, get_artist_required_params
 from ..logical.sources.danbooru import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion

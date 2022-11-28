@@ -12,7 +12,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enums import ArchiveTypeEnum
+from ..logical.enums import ArchiveTypeEnum
 from .base import JsonModel, IntEnum, EpochTimestamp, image_server_url
 
 

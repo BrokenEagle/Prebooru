@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enums import UploadElementStatusEnum
+from ..logical.enums import UploadElementStatusEnum
 from .error import Error
 from .base import JsonModel, IntEnum, BlobMD5, secondarytable
 

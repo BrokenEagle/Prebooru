@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..sites import SiteDescriptorEnum
+from ..enums import SiteDescriptorEnum
 from ...models import TwitterData, PixivData
 from .base_db import update_column_attributes
 

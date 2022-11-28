@@ -1,6 +1,6 @@
-# APP/DEFAULT_ENUMS.PY
+# APP/LOGICAL/ENUMS/DEFAULT.PY
 
-# ## LOCAL IMPORTS
+# ## PACKAGE IMPORTS
 from utility.obj import AttrEnum
 
 

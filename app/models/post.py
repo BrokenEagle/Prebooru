@@ -16,7 +16,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enums import PostTypeEnum
+from ..logical.enums import PostTypeEnum
 from ..logical.utility import unique_objects
 from .error import Error
 from .illust_url import IllustUrl

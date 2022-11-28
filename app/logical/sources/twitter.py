@@ -28,7 +28,8 @@ from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
 from ..records.artist_rec import update_artist_from_source
-from ..sites import SiteDescriptorEnum, get_site_from_domain
+from ..sites import get_site_from_domain
+from ..enums import SiteDescriptorEnum
 
 
 # ## GLOBAL VARIABLES

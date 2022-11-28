@@ -11,7 +11,7 @@ from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from ..logical.sites import SiteDescriptorEnum
+from ..logical.enums import SiteDescriptorEnum
 from .base_helper import external_link, general_link
 
 

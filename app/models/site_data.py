@@ -5,7 +5,7 @@ from sqlalchemy.orm import declared_attr
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enums import SiteDataTypeEnum
+from ..logical.enums import SiteDataTypeEnum
 from .base import JsonModel, IntEnum, EpochTimestamp
 
 

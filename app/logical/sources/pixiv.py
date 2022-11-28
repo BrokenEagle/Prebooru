@@ -19,7 +19,8 @@ from utility.uprint import print_info
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, get_api_data, save_api_data
 from ..database.server_info_db import get_next_wait, update_next_wait
-from ..sites import SiteDescriptorEnum, get_site_from_domain
+from ..sites import get_site_from_domain
+from ..enums import SiteDescriptorEnum
 
 
 # ### GLOBAL VARIABLES

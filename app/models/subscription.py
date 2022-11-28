@@ -8,7 +8,7 @@ from utility.time import average_timedelta, days_ago, get_current_time
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enums import SubscriptionStatusEnum
+from ..logical.enums import SubscriptionStatusEnum
 from .illust import Illust
 from .illust import IllustUrl
 from .post import Post

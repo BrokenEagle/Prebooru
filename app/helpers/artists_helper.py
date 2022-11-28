@@ -5,7 +5,7 @@ from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from ..logical.sites import SiteDescriptorEnum
+from ..logical.enums import SiteDescriptorEnum
 from .base_helper import general_link, external_link
 
 

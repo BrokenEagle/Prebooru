@@ -9,7 +9,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import SiteDescriptorEnum
+from ..logical.enums import SiteDescriptorEnum
 from .artist_url import ArtistUrl
 from .illust import Illust
 from .label import Label

@@ -6,7 +6,7 @@ from sqlalchemy.util import memoized_property
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enums import TagTypeEnum
+from ..logical.enums import TagTypeEnum
 from .base import JsonModel, IntEnum
 
 

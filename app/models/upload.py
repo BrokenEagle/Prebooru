@@ -8,7 +8,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enums import UploadStatusEnum
+from ..logical.enums import UploadStatusEnum
 from ..logical.batch_loader import selectinload_batch_primary, selectinload_batch_secondary
 from .upload_url import UploadUrl
 from .upload_element import UploadElement

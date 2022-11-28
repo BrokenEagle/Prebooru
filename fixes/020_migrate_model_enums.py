@@ -21,9 +21,9 @@ def initialize(args):
     sys.path.append(os.path.abspath('.'))
     from app import SESSION
     if args.local:
-        from app import local_enums as enums
+        from app.logical.enums import local as enums
     else:
-        from app import default_enums as enums
+        from app.logical.enums import default as enums
     from utility.file import create_directory, get_directory_listing, put_get_json, put_get_raw
     from app.models.model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
         SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType,\
@@ -269,7 +269,7 @@ def render_enums_file(args):
     template = Template(filename=os.path.join(os.getcwd(), 'migrations', 'enums.py.mako'))
     template_output = template.render_unicode(enums_type=enums_type, model_enums=model_enums)
     template_output = template_output.replace('\r\n', '\n').strip('\n') + '\n'
-    enums_filepath = os.path.join(os.getcwd(), 'app', f'{enums_type}_enums.py')
+    enums_filepath = os.path.join(os.getcwd(), 'app', 'logical', 'enums', f'{enums_type}.py')
     print(f"Writing {enums_type} enums module.")
     put_get_raw(enums_filepath, 'w', template_output)
 

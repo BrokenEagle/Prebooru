@@ -11,7 +11,7 @@ from config import DEFAULT_PAGINATE_LIMIT
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
-from ..enums import PoolElementTypeEnum
+from ..logical.enums import PoolElementTypeEnum
 from .base import JsonModel, IntEnum
 
 

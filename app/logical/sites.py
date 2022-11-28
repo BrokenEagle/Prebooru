@@ -1,7 +1,6 @@
 # APP/LOGICAL/SITES.PY
 
-# ## LOCAL IMPORTS
-from ..enums import SiteDescriptorEnum
+from .enums import SiteDescriptorEnum
 
 
 # ## GLOBAL VARIABLES

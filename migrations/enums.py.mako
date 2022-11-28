@@ -1,7 +1,10 @@
-# APP/${enums_type.upper()}_ENUMS.PY
+# APP/LOGICAL/ENUMS/${enums_type.upper()}.PY
+
+# ## PACKAGE IMPORTS
+from utility.obj import AttrEnum
 
 # ## LOCAL IMPORTS
-from utility.obj import AttrEnum
+from .. import sites
 
 
 # ## CLASSES

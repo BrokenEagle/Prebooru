@@ -8,7 +8,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.sites import SiteDescriptorEnum
+from ..logical.enums import SiteDescriptorEnum
 from .upload_element import UploadElement
 from .subscription_element import SubscriptionElement
 from .base import JsonModel, IntEnum
