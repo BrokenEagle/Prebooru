@@ -128,7 +128,9 @@ class Illust(JsonModel):
 
     # ## Private
 
-    __table_args__ = (DB.UniqueConstraint('site_illust_id', 'site'),)
+    __table_args__ = (
+        DB.UniqueConstraint('site_illust_id', 'site_id'),
+    )
 
 
 # ## INITIALIZATION

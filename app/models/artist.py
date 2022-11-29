@@ -143,4 +143,6 @@ class Artist(JsonModel):
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust)\
                    .filter(Illust.artist_id == self.id)
 
-    __table_args__ = (DB.UniqueConstraint('site_artist_id', 'site'),)
+    __table_args__ = (
+        DB.UniqueConstraint('site_artist_id', 'site_id'),
+    )

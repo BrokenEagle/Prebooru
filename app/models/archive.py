@@ -84,5 +84,5 @@ class Archive(JsonModel):
         return '%s.' % (self.key)
 
     __table_args__ = (
-        DB.Index(None, 'type_id', 'key', unique=True),
+        DB.UniqueConstraint('key', 'type_id'),
     )
