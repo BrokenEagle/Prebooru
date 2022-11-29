@@ -1,15 +1,18 @@
 # APP/LOGICAL/QUERY_EXTENSIONS.PY
 
 # ## PYTHON IMPORTS
+from enum import Enum
 from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy import func
+from sqlalchemy.orm import RelationshipProperty
+from sqlalchemy.orm.strategy_options import loader_option, _UnboundLoad
 import sqlalchemy.orm
 import flask_sqlalchemy
 
 # ## PACKAGE IMPORTS
-from config import DEFAULT_PAGINATE_LIMIT
+from config import DEFAULT_PAGINATE_LIMIT, USE_ENUMS
 
 
 # ## GLOBAL VARIABLES
@@ -140,6 +143,8 @@ def initialize():
     if not INIT:
         sqlalchemy.orm.Query._has_entity = _has_entity
         sqlalchemy.orm.Query.unique_join = unique_join
+        sqlalchemy.orm.Query.enum_join = enum_join
+        sqlalchemy.orm.selectinload_enum = initialize_selectin_enum()._unbound_fn
         sqlalchemy.orm.Query.get_count = get_count
         sqlalchemy.orm.Query.relation_count = relation_count
         sqlalchemy.orm.Query.count_paginate = count_paginate
@@ -153,7 +158,27 @@ def initialize():
         INIT = True
 
 
+def initialize_selectin_enum():
+    @loader_option()
+    def selectinload_enum(loadopt, attr):
+        if not USE_ENUMS or not isinstance(attr.property, RelationshipProperty):
+            loadopt.set_relationship_strategy(attr, {"lazy": "selectin"})
+        return loadopt
+
+    @selectinload_enum._add_unbound_fn
+    def selectinload_enum(*keys):
+        return _UnboundLoad._from_keys(_UnboundLoad.selectinload_enum, keys, False, {})
+
+    return selectinload_enum
+
+
 # #### Extension functions
+
+def enum_join(self, model, *args, **kwargs):
+    if not USE_ENUMS or not issubclass(model, Enum):
+        self = self.unique_join(model, *args, **kwargs)
+    return self
+
 
 def unique_join(self, model, *args, **kwargs):
     if not self._has_entity(model):

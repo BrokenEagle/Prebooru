@@ -247,3 +247,9 @@ if DEBUG_LOG and not is_interactive_shell() and (not DEBUG_MODE or os.environ.ge
 
 # #### Extend Python imports
 query_extensions.initialize()
+
+# #### Load models
+
+from . import enum_imports
+from . import models
+models.initialize()
