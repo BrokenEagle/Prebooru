@@ -12,8 +12,8 @@ from utility.data import eval_bool_string, is_falsey, random_id
 
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
+from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
-from ..logical.enums import SiteDescriptorEnum
 from ..logical.sources.base import get_illust_required_params
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
@@ -89,9 +89,9 @@ FORM_CONFIG = {
         'kwargs': {
             'choices': [
                 ("", ""),
-                (SiteDescriptorEnum.pixiv.value, SiteDescriptorEnum.pixiv.name.title()),
-                (SiteDescriptorEnum.twitter.value, SiteDescriptorEnum.twitter.name.title()),
-                (SiteDescriptorEnum.custom.value, SiteDescriptorEnum.custom.name.title()),
+                (site_descriptor.pixiv.id, site_descriptor.pixiv.name.title()),
+                (site_descriptor.twitter.id, site_descriptor.twitter.name.title()),
+                (site_descriptor.custom.id, site_descriptor.custom.name.title()),
             ],
             'validators': [DataRequired()],
             'coerce': int_or_blank,
@@ -193,7 +193,9 @@ def uniqueness_check(dataparams, illust):
     site_id = dataparams['site_id'] if 'site_id' in dataparams else illust.site_id
     site_illust_id = dataparams['site_illust_id'] if 'site_illust_id' in dataparams else illust.site_illust_id
     if site_id != illust.site_id or site_illust_id != illust.site_illust_id:
-        return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
+        return Illust.query.enum_join(Illust.site_enum).filter(Illust.site_filter('id', '__eq__', site_id),
+                                                               Illust.site_illust_id == site_illust_id)\
+                                                       .one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -301,7 +303,10 @@ def query_create():
     site_artist_id = source.get_artist_id_by_illust_id(retdata['site_illust_id'])
     if site_artist_id is None:
         return set_error(retdata, "Unable to find site artist ID with URL.")
-    artist = Artist.query.filter_by(site=retdata['site'], site_artist_id=int(site_artist_id)).one_or_none()
+    artist = Artist.query.enum_join(Artist.site_enum)\
+                       .filter(Artist.site_filter('id', '__eq__', retdata['site_id']),
+                               Artist.site_artist_id == site_artist_id)\
+                       .one_or_none()
     if artist is None:
         return set_error(retdata, "Unable to find Prebooru artist... artist must exist before creating an illust.")
     createparams['artist_id'] = artist.id

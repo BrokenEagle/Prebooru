@@ -66,11 +66,9 @@ class Pool(JsonModel):
         q = q.order_by(PoolElement.position)
         per_page = min(per_page, SHOW_PAGINATE_LIMIT) if per_page is not None else DEFAULT_PAGINATE_LIMIT
         page = q.count_paginate(per_page=per_page, page=page)
-        post_ids = [element.post_id for element in page.items if element.type == element.type_enum.pool_post]
-        illust_ids = [element.illust_id for element in page.items if element.type == element.type_enum.pool_illust]
-        notation_ids = [element.notation_id
-                        for element in page.items
-                        if element.type == element.type_enum.pool_notation]
+        post_ids = [element.post_id for element in page.items if element.type.name == 'pool_post']
+        illust_ids = [element.illust_id for element in page.items if element.type.name == 'pool_illust']
+        notation_ids = [element.notation_id for element in page.items if element.type.name == 'pool_notation']
         posts = Post.query.options(*_get_options(post_options)).filter(Post.id.in_(post_ids))\
                     .all() if len(post_ids) else []
         illusts = Illust.query.options(*_get_options(illust_options)).filter(Illust.id.in_(illust_ids))\
@@ -79,11 +77,11 @@ class Pool(JsonModel):
                             .all() if len(notation_ids) else []
         for i in range(0, len(page.items)):
             page_item = page.items[i]
-            if page_item.type == page_item.type_enum.pool_post:
+            if page_item.type.name == 'pool_post':
                 page.items[i] = next(filter(lambda x: x.id == page_item.post_id, posts), None)
-            elif page_item.type == page_item.type_enum.pool_illust:
+            elif page_item.type.name == 'pool_illust':
                 page.items[i] = next(filter(lambda x: x.id == page_item.illust_id, illusts), None)
-            elif page_item.type == page_item.type_enum.pool_notation:
+            elif page_item.type.name == 'pool_notation':
                 page.items[i] = next(filter(lambda x: x.id == page_item.notation_id, notations), None)
             if page.items[i] is None:
                 raise Exception("Missing pool element item: %s" % repr(page_item))

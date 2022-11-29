@@ -3,8 +3,7 @@
 # ## PYTHON IMPORTS
 import re
 from sqlalchemy import and_, not_, func
-from sqlalchemy.orm import aliased, with_polymorphic
-from sqlalchemy.orm.relationships import RelationshipProperty
+from sqlalchemy.orm import aliased, with_polymorphic, ColumnProperty, RelationshipProperty
 from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance, ObjectAssociationProxyInstance,\
     AmbiguousAssociationProxyInstance
 import sqlalchemy.sql.sqltypes as sqltypes
@@ -75,7 +74,8 @@ def is_polymorphic(model, name):
 
 
 def is_column(model, columnname):
-    return columnname in model.__table__.c.keys()
+    prop = get_attribute_property(model, columnname)
+    return type(prop) is ColumnProperty
 
 
 def is_polymorphic_column(model, columnname):
@@ -108,17 +108,17 @@ def column_type(model, columnname):
         base.BlobMD5: 'STRING',
         base.EpochTimestamp: 'DATETIME',
         sqltypes.Integer: 'INTEGER',
+        sqltypes.INTEGER: 'INTEGER',
         sqltypes.Float: 'FLOAT',
         sqltypes.DateTime: 'DATETIME',
         sqltypes.Boolean: 'BOOLEAN',
         sqltypes.String: 'STRING',
         sqltypes.Text: 'TEXT',
+        sqltypes.TEXT: 'TEXT',
         sqltypes.Unicode: 'STRING',
         sqltypes.UnicodeText: 'TEXT',
     }
-    model_class = type(getattr(model.__table__.c, columnname).type)
-    super_classes = model_class.mro()
-    column_type = next((c for c in super_classes if c in switcher.keys()), None)
+    column_type = type(getattr(model, columnname).property.columns[0].type)
     if column_type is not None:
         return switcher[column_type]
     else:

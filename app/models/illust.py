@@ -9,14 +9,14 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import SiteDescriptorEnum
+from ..enum_imports import site_descriptor
 from .tag import SiteTag
 from .illust_url import IllustUrl
 from .site_data import SiteData
 from .description import Description
 from .notation import Notation
 from .pool_element import PoolIllust
-from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, polymorphic_accessor_factory
+from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, polymorphic_accessor_factory, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -48,7 +48,7 @@ IllustNotations = secondarytable(
 class Illust(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
+    site, site_id, site_enum, site_filter = get_relation_definitions(site_descriptor, 'site_id', 'site', 'id', 'illust', nullable=False)
     site_illust_id = DB.Column(DB.Integer, nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
@@ -121,8 +121,6 @@ class Illust(JsonModel):
             DB.session.commit()
 
     # ## Class properties
-
-    site_enum = SiteDescriptorEnum
 
     @classproperty(cached=True)
     def json_attributes(cls):

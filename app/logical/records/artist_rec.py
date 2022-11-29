@@ -66,7 +66,7 @@ def add_danbooru_artists(url, danbooru_artists, booru_dict, db_artists):
 
 
 def get_or_create_artist_from_source(site_artist_id, source):
-    artist = get_site_artist(site_artist_id, source.SITE.value)
+    artist = get_site_artist(site_artist_id, source.SITE.id)
     if artist is None:
         artist = create_artist_from_source(site_artist_id, source)
     return artist

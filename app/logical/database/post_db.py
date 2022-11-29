@@ -12,9 +12,9 @@ from .pool_element_db import delete_pool_element
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type', 'alternate',
+COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type_id', 'alternate',
                      'pixel_md5', 'duration', 'audio']
-CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type', 'pixel_md5', 'duration', 'audio']
+CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type_id', 'pixel_md5', 'duration', 'audio']
 UPDATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'duration', 'audio', 'danbooru_id']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
@@ -64,7 +64,7 @@ def set_post_alternate(post, alternate):
 
 
 def set_post_type(post, post_type):
-    post.type = post_type
+    post.type_id = Post.type_enum.by_name(post_type).id
     SESSION.commit()
 
 
@@ -86,7 +86,7 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, durati
         'file_ext': file_ext,
         'md5': md5,
         'size': size,
-        'type': Post.type_enum[post_type],
+        'type_id': Post.type_enum.by_name(post_type).id,
         'pixel_md5': pixel_md5,
         'duration': duration,
         'audio': has_audio,

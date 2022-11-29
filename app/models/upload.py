@@ -8,13 +8,13 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import UploadStatusEnum
+from ..enum_imports import upload_status
 from ..logical.batch_loader import selectinload_batch_primary, selectinload_batch_secondary
 from .upload_url import UploadUrl
 from .upload_element import UploadElement
 from .illust_url import IllustUrl
 from .error import Error
-from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable
+from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -42,7 +42,7 @@ class Upload(JsonModel):
     request_url = DB.Column(DB.String(255), nullable=True)
     successes = DB.Column(DB.Integer, nullable=False)
     failures = DB.Column(DB.Integer, nullable=False)
-    status_id = DB.Column(IntEnum(UploadStatusEnum), nullable=False)
+    status, status_id, status_enum, status_filter = get_relation_definitions(upload_status, 'status_id', 'status', 'id', 'upload', nullable=False)
     media_filepath = DB.Column(DB.String(255), nullable=True)
     sample_filepath = DB.Column(DB.String(255), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=True)
@@ -113,8 +113,6 @@ class Upload(JsonModel):
 
     # ## Class properties
 
-    status_enum = UploadStatusEnum
-
     @classproperty(cached=True)
     def json_attributes(cls):
         return super().json_attributes + ['image_urls', 'post_ids', 'duplicate_post_ids', 'errors']
@@ -123,11 +121,11 @@ class Upload(JsonModel):
 
     @memoized_property
     def _source(self):
-        from ..logical.sources.base import get_post_source, get_source_by_id
+        from ..logical.sources.base import get_post_source
         if self.request_url:
             return get_post_source(self.request_url)
         elif self.illust_url_id:
-            return get_source_by_id(self.illust_url.site_id)
+            return self.illust_url.site.source
         raise Exception("Unable to find source for upload #%d" % self.id)
 
     def _populate_illust_urls(self):

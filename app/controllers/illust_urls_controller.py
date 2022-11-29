@@ -8,8 +8,8 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl
+from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
-from ..logical.enums import SiteDescriptorEnum
 from ..logical.sources.base import get_media_source
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from ..logical.downloader.network import redownload_post
@@ -87,7 +87,11 @@ def uniqueness_check(dataparams, illust_url):
     site_id = dataparams['url'] if 'site_id' in dataparams else illust_url.site_id
     url = dataparams['url'] if 'url' in dataparams else illust_url.url
     if site_id != illust_url.site_id or url != illust_url.url:
-        return IllustUrl.query.filter_by(illust_id=illust_id, site_id=site_id, url=url).first()
+        return IllustUrl.query.enum_join(IllustUrl.site_enum, IllustUrl.site_id == IllustUrl.site_enum.id)\
+                              .filter(IllustUrl.site_filter('id', '__eq__', site_id),
+                                      IllustUrl.illust_id == illust_id,
+                                      IllustUrl.url == url)\
+                              .one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -111,9 +115,10 @@ def convert_update_params(dataparams):
 
 
 def set_url_site(dataparams, source):
-    dataparams['site'] = SiteDescriptorEnum.get_site_from_url(dataparams['url']).value
+    dataparams['site_id'] = site_descriptor.get_site_from_url(dataparams['url']).id
     dataparams['url'] = source.partial_media_url(dataparams['url'])
-    dataparams['sample_site'] = SiteDescriptorEnum.get_site_from_url(dataparams['sample']).value if dataparams['sample'] is not None else None
+    dataparams['sample_site_id'] = site_descriptor.get_site_from_url(dataparams['sample']).id\
+        if dataparams['sample'] is not None else None
     dataparams['sample_url'] = source.partial_media_url(dataparams['sample'])\
         if dataparams['sample'] is not None else None
 

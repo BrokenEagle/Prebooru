@@ -8,13 +8,13 @@ from utility.time import average_timedelta, days_ago, get_current_time
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import SubscriptionStatusEnum
+from ..enum_imports import subscription_status
 from .illust import Illust
 from .illust import IllustUrl
 from .post import Post
 from .error import Error
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable
+from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -37,7 +37,7 @@ class Subscription(JsonModel):
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
     interval = DB.Column(DB.Float, nullable=False)
     expiration = DB.Column(DB.Float, nullable=True)
-    status_id = DB.Column(IntEnum(SubscriptionStatusEnum), nullable=False)
+    status, status_id, status_enum, status_filter = get_relation_definitions(subscription_status, 'status_id', 'status', 'id', 'subscription', nullable=False)
     last_id = DB.Column(DB.Integer, nullable=True)
     requery = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     checked = DB.Column(EpochTimestamp(nullable=True), nullable=True)
@@ -70,13 +70,13 @@ class Subscription(JsonModel):
 
     @memoized_property
     def undecided_elements(self):
-        return self._element_query.filter(SubscriptionElement.status == 'active',
-                                          SubscriptionElement.keep.is_(None)).all()
+        return self._element_query.filter(SubscriptionElement.status_filter('name', '__eq__', 'active'),
+                                          SubscriptionElement.keep_filter('name', 'is_', None)).all()
 
     @memoized_property
     def average_interval(self):
         datetimes = self._illust_query.filter(Illust.site_created > days_ago(365),
-                                              SubscriptionElement.keep == 'yes')\
+                                              SubscriptionElement.keep_filter('name', '__eq__', 'yes'))\
                                       .order_by(Illust.site_illust_id.desc())\
                                       .with_entities(Illust.site_created)\
                                       .all()
@@ -113,10 +113,6 @@ class Subscription(JsonModel):
     def post_count(self):
         return self._post_query.distinct().relation_count()
 
-    # ## Class properties
-
-    status_enum = SubscriptionStatusEnum
-
     # ## Private
 
     @property
@@ -134,7 +130,7 @@ class Subscription(JsonModel):
         return Post.query.join(IllustUrl, Post.illust_urls)\
                          .join(Illust, IllustUrl.illust)\
                          .join(Artist, Illust.artist)\
-                         .filter(Artist.id == self.artist_id, Post.type == Post.type_enum.subscription)
+                         .filter(Artist.id == self.artist_id, Post.type_filter('name', '__eq__', 'subscription'))
 
     def _populate_storage_sizes(self):
         if hasattr(self, '_total_bytes'):

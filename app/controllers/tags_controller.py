@@ -26,7 +26,8 @@ POLYMORPHIC_TAG_TYPES = ['site_tag', 'user_tag']
 # #### Helper functions
 
 def uniqueness_check(dataparams):
-    return Tag.query.filter_by(name=dataparams['name'], type=dataparams['type']).first()
+    return Tag.query.enum_join(Tag.type_enum).filter(Tag.type_filter('name', '__eq__', dataparams['type']))\
+                    .filter_by(name=dataparams['name']).one_or_none()
 
 
 def validate_type(dataparams):
@@ -64,7 +65,7 @@ def create():
 
 def append_item(tag):
     retdata = {'error': False, 'item': tag.to_json()}
-    if tag.type_id.name == 'site_tag':
+    if tag.type.name == 'site_tag':
         return set_error(retdata, "Site tags cannot be appended.")
     dataparams = get_data_params(request, 'tag')
     dataparams.update({k: parse_type(dataparams, k, int) for (k, v) in dataparams.items() if k in APPEND_KEYS})
@@ -79,7 +80,7 @@ def append_item(tag):
 
 def remove_item(tag):
     retdata = {'error': False, 'item': tag.to_json()}
-    if tag.type_id.name == 'site_tag':
+    if tag.type.name == 'site_tag':
         return set_error(retdata, "Site tags cannot be removed.")
     dataparams = get_data_params(request, 'tag')
     dataparams.update({k: parse_type(dataparams, k, int) for (k, v) in dataparams.items() if k in APPEND_KEYS})
@@ -156,7 +157,7 @@ def append_item_show_html(id):
 @bp.route('/tags/append', methods=['POST'])
 def append_item_index_html():
     tag_name = request.values.get('tag[name]')
-    tag = Tag.query.filter_by(name=tag_name, type='user_tag').first()
+    tag = _get_user_tag(tag_name)
     if tag is None:
         flash("Tag with name %s not found." % tag_name, 'error')
         return redirect(request.referrer)
@@ -171,7 +172,7 @@ def append_item_index_html():
 @bp.route('/tags/append.json', methods=['POST'])
 def append_item_index_json():
     tag_name = request.values.get('tag[name]')
-    tag = Tag.query.filter_by(name=tag_name, type='user_tag').first()
+    tag = _get_user_tag(tag_name)
     if tag is None:
         return {'error': True, 'message': "Tag with name %s not found." % str(tag_name)}
     return append_item(tag)
@@ -188,3 +189,11 @@ def remove_item_show_html(id):
     else:
         flash("Tag removed.")
     return redirect(request.referrer)
+
+
+# #### Private
+
+def _get_user_tag(tag_name):
+    return Tag.query.enum_join(Tag.type_enum)\
+                    .filter(Tag.name == tag_name, Tag.type_filter('name', '__eq__', 'user_tag'))\
+                    .one_or_none()

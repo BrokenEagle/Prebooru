@@ -8,6 +8,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
+from ...enum_imports import upload_status
 from ...models import Upload, UploadUrl
 from .base_db import update_column_attributes, update_relationship_collections
 
@@ -31,7 +32,7 @@ def create_upload_from_parameters(createparams):
     data = {
         'successes': 0,
         'failures': 0,
-        'status_id': 'pending',
+        'status_id': upload_status.pending.id,
         'created': get_current_time(),
     }
     upload = Upload(**data)
@@ -51,7 +52,7 @@ def has_duplicate_posts(upload):
 
 
 def set_upload_status(upload, value):
-    upload.status_id = value
+    upload.status_id = upload_status.by_name(value).id
     SESSION.commit()
 
 

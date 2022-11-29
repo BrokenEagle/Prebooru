@@ -72,6 +72,8 @@ def update_illust_urls(illust, params):
 def create_illust_from_parameters(createparams):
     if type(createparams.get('commentaries')) is str:
         createparams['commentaries'] = [createparams['commentaries']]
+    if 'site' in createparams:
+        createparams['site_id'] = Illust.site_enum.by_name(createparams['site']).id
     current_time = get_current_time()
     set_timesvalues(createparams)
     illust = Illust(created=current_time, updated=current_time)
@@ -95,6 +97,8 @@ def create_illust_from_json(data):
 
 def update_illust_from_parameters(illust, updateparams):
     update_results = []
+    if 'site' in updateparams:
+        updateparams['site_id'] = Illust.site_enum.by_name(updateparams['site']).id
     set_timesvalues(updateparams)
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
@@ -142,14 +146,20 @@ def illust_delete_commentary(illust, description_id):
 # #### Query functions
 
 def get_site_illust(site_illust_id, site_id):
-    return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
+    return Illust.query.enum_join(Illust.site_enum)\
+                       .filter(Illust.site_filter('id', '__eq__', site_id),
+                               Illust.site_illust_id == site_illust_id)\
+                       .one_or_none()
 
 
 def get_site_illusts(site_id, site_illust_ids, load_urls=False):
     q = Illust.query
     if load_urls:
         q = q.options(selectinload(Illust.urls))
-    return q.filter(Illust.site_id == site_id, Illust.site_illust_id.in_(site_illust_ids)).all()
+    return q.enum_join(Illust.site_enum)\
+            .filter(Illust.site_filter('id', '__eq__', site_id),
+                    Illust.site_illust_id.in_(site_illust_ids))\
+            .all()
 
 
 # #### Private functions

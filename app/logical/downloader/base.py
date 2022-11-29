@@ -30,8 +30,8 @@ def record_outcome(post, record):
             update_subscription_element_status(record, 'error')
         return False
     if record.model_name == 'upload_element':
-        if post.type != post.type_enum.user:
-            set_post_type(post, post.type_enum.user)
+        if post.type.name != 'user':
+            set_post_type(post, 'user')
         update_upload_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
     elif record.model_name == 'subscription_element':
         link_subscription_post(record, post)

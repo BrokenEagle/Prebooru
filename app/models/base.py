@@ -10,12 +10,12 @@ import datetime
 # ## EXTERNAL IMPORTS
 from flask import url_for, Markup
 from sqlalchemy.dialects.sqlite import DATETIME
-from sqlalchemy.orm import RelationshipProperty
+from sqlalchemy.orm import RelationshipProperty, ColumnProperty
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.ext.associationproxy import _AssociationList
 
 # ## PACKAGE IMPORTS
-from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
+from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT, USE_ENUMS
 from utility.time import process_utc_timestring, datetime_from_epoch, datetime_to_epoch
 from utility.obj import classproperty, StaticProperty
 
@@ -94,6 +94,48 @@ def relation_property_factory(model_key, table_name, relation_key):
         return Markup('<a href="%s">%s</a>' % (show_url, shortlink)) if value is not None else None
 
     return _shortlink, _show_url, _show_link
+
+
+def get_relation_definitions(enum_or_rel, colname, relname, relcol, tblname, backname=None, nullable=None):
+    if USE_ENUMS:
+        baseval = DB.Column(colname, IntEnum(enum_or_rel, nullable=nullable, colname=colname, tblname=tblname), nullable=nullable)
+        @property
+        def idval(self):
+            attr = getattr(self, relname)
+            return attr.value if attr is not None else None
+        @idval.setter
+        def idval(self, value):
+            setattr(self, relname, enum_or_rel(value) if value is not None else None)
+        @classmethod
+        def filter(cls, relattr, op, *args):
+            enum_op = getattr(getattr(cls, relname), op)
+            if type(args[0]) in (set, list, tuple):
+                if relattr == 'id':
+                    arg = [enum_or_rel(a) for a in args[0]]
+                elif relattr == 'name':
+                    arg = [enum_or_rel[a] for a in args[0]]
+            elif args[0] is not None:
+                if relattr == 'id':
+                    arg = enum_or_rel(args[0])
+                elif relattr == 'name':
+                    arg = enum_or_rel[args[0]]
+            else:
+                arg = args[0]
+            return enum_op(arg, *args[1:])
+    else:
+        idval = DB.Column(DB.INTEGER, DB.ForeignKey(getattr(enum_or_rel, relcol)), nullable=nullable)
+        relation_kw = {
+            'lazy': True,
+            'foreign_keys': [idval],
+        }
+        if backname is not None:
+            relation_kw['backref'] = DB.backref(backname, lazy=True)
+        baseval = DB.relation(enum_or_rel, **relation_kw)
+        @classmethod
+        def filter(cls, relattr, op, *args):
+            enum_op = getattr(getattr(enum_or_rel, relattr), op)
+            return enum_op(*args)
+    return baseval, idval, enum_or_rel, filter
 
 
 def secondarytable(*args):
@@ -183,13 +225,15 @@ class IntEnum(DB.TypeDecorator):
     impl = DB.Integer
     cache_ok = True
 
-    def __init__(self, enumtype, nullable=False):
+    def __init__(self, enumtype, colname=None, tblname=None, nullable=False):
         super(IntEnum, self).__init__()
         self._enumtype = enumtype
         self._enumname = enumtype.__name__
         self._names = [e.name for e in self._enumtype]
-        self._values = [e.value for e in self._enumtype]
+        self._values = [e.id for e in self._enumtype]
         self._nullable = nullable
+        self._colname = colname
+        self._tblname = tblname
 
     def process_bind_param(self, value, dialect):
         if value in self._values:
@@ -197,17 +241,17 @@ class IntEnum(DB.TypeDecorator):
         if value in self._names:
             return self._enumtype[value].value
         if isinstance(value, self._enumtype):
-            return value.value
+            return value.id
         if value is None and self._nullable:
             return None
-        raise ValueError(f"Illegal value to bind for enum {self._enumname}.")
+        raise ValueError(f"Illegal value {repr(value)} to bind for enum {self._enumname} to {self._tblname}:{self._colname}.")
 
     def process_result_value(self, value, dialect):
         if value in self._values:
             return self._enumtype(value)
         if value is None and self._nullable:
             return None
-        raise ValueError(f"Illegal value in DB found for enum {self._enumname}.")
+        raise ValueError(f"Illegal value {repr(value)} found in DB for enum {self._enumname} on {self._tblname}:{self._colname}.")
 
 
 class CompressedJSON(DB.TypeDecorator):
@@ -296,23 +340,15 @@ class JsonModel(DB.Model):
         """Return an uncommitted copy of the record."""
         return self.__class__(**self.column_dict())
 
-    @classmethod
+    @classproperty(cached=False)
     def relations(cls):
-        if not hasattr(cls, '_relation_keys'):
-            primary_keys = [key for key in cls.__dict__.keys() if not (key.startswith('_') and key.endswith('_'))]
-            setattr(cls, '_relation_keys', [])
-            for key in primary_keys:
-                attr = getattr(cls, key)
-                if not hasattr(attr, 'property'):
-                    continue
-                if type(attr.property) is RelationshipProperty:
-                    cls._relation_keys.append(key)
-        return cls._relation_keys
+        cls._populate_attributes()
+        return getattr(cls, '__relations')
 
     @classmethod
     def fk_relations(cls):
         relations = []
-        for key in cls.relations():
+        for key in cls.relations:
             table = cls.__table__
             relation = getattr(cls, key)
             if relation.property.primaryjoin.right.table == table:
@@ -329,9 +365,14 @@ class JsonModel(DB.Model):
             setattr(cls, key + '_show_url', property(_show_url))
             setattr(cls, key + '_show_link', property(_show_link))
 
-    @classproperty(cached=False)
+    @classproperty(cached=True)
+    def primary_keys(cls):
+        pk_cols = [c for c in cls.__table__.primary_key.columns]
+        return [t.name for t in pk_cols]
+
+    @classmethod
     def columns(cls):
-        return cls.__table__.c
+        return [c for c in cls.__table__.columns]
 
     @classproperty(cached=True)
     def all_columns(cls):
@@ -351,11 +392,12 @@ class JsonModel(DB.Model):
 
     @classproperty(cached=True)
     def basic_attributes(cls):
-        return [attr for attr in cls.all_columns if (attr in dir(cls) and hasattr(getattr(cls, attr), 'property'))]
+        cls._populate_attributes()
+        return getattr(cls, '__all_columns')
 
     @classproperty(cached=True)
     def relation_attributes(cls):
-        return [relation.strip('_') for relation in cls.relations()]
+        return [relation.strip('_') for relation in cls.relations]
 
     @classproperty(cached=True)
     def searchable_attributes(cls):
@@ -394,7 +436,7 @@ class JsonModel(DB.Model):
             elif type(value) is bytes:
                 data[attr] = value.hex()
             elif isinstance(value, enum.Enum):
-                data[attr] = value.name if not id_enum else value.value
+                data[attr] = value.name if not id_enum else value.id
             elif type(value) is _AssociationList:
                 data[attr] = list(value)
             elif type(value) is InstrumentedList:
@@ -404,6 +446,30 @@ class JsonModel(DB.Model):
             else:
                 data[attr] = value
         return data
+
+    @classmethod
+    def _populate_attributes(cls):
+        if hasattr(cls, '__all_columns') and hasattr(cls, '__relations'):
+            return
+        class_attributes = set(dir(cls)).difference(dir(JsonModel))
+        columns = cls.columns()
+        basic_columns = []
+        column_positions = {}
+        relations = []
+        for attr in class_attributes:
+            if attr.startswith('_'):
+                continue
+            val = getattr(cls, attr)
+            if not hasattr(val, 'property'):
+                continue
+            if isinstance(val.property, ColumnProperty):
+                basic_columns.append(attr)
+                column_positions[attr] = columns.index(val.property.columns[0])
+            elif isinstance(val.property, RelationshipProperty):
+                relations.append(attr)
+        basic_columns.sort(key=lambda x: column_positions[x])
+        setattr(cls, '__all_columns', basic_columns)
+        setattr(cls, '__relations', relations)
 
     @classmethod
     def loads(cls, data):
@@ -421,3 +487,4 @@ class JsonModel(DB.Model):
         return cls.__table__.name
 
     _secondary_table = False
+    _enum_model = False

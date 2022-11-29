@@ -2,9 +2,9 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import UploadElementStatusEnum
+from ..enum_imports import upload_element_status
 from .error import Error
-from .base import JsonModel, IntEnum, BlobMD5, secondarytable
+from .base import JsonModel, IntEnum, BlobMD5, secondarytable, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -27,7 +27,7 @@ class UploadElement(JsonModel):
     upload_id = DB.Column(DB.Integer, DB.ForeignKey('upload.id'), nullable=False, index=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    status_id = DB.Column(IntEnum(UploadElementStatusEnum), nullable=False)
+    status, status_id, status_enum, status_filter = get_relation_definitions(upload_element_status, 'status_id', 'status', 'id', 'upload_element', nullable=False)
 
     # ## Relationships
     errors = DB.relationship(Error, secondary=UploadElementErrors, lazy=True, cascade='all,delete',
@@ -51,10 +51,6 @@ class UploadElement(JsonModel):
     @property
     def duplicate_post_count(self):
         return self._duplicate_post_query.get_count()
-
-    # ## Class properties
-
-    status_enum = UploadElementStatusEnum
 
     # ## Private
 

@@ -11,8 +11,8 @@ from utility.data import random_id
 
 # ## LOCAL IMPORTS
 from ..models import Artist, Booru
+from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
-from ..logical.enums import SiteDescriptorEnum
 from ..logical.sources.base import get_artist_required_params
 from ..logical.sources.danbooru import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion
@@ -76,9 +76,9 @@ FORM_CONFIG = {
         'kwargs': {
             'choices': [
                 ("", ""),
-                (SiteDescriptorEnum.pixiv.value, SiteDescriptorEnum.pixiv.name.title()),
-                (SiteDescriptorEnum.twitter.value, SiteDescriptorEnum.twitter.name.title()),
-                (SiteDescriptorEnum.custom.value, SiteDescriptorEnum.custom.name.title()),
+                (site_descriptor.pixiv.id, site_descriptor.pixiv.name.title()),
+                (site_descriptor.twitter.id, site_descriptor.twitter.name.title()),
+                (site_descriptor.custom.id, site_descriptor.custom.name.title()),
             ],
             'validators': [DataRequired()],
             'coerce': int_or_blank,
@@ -143,7 +143,10 @@ def uniqueness_check(dataparams, artist):
     site_id = dataparams['site_id'] if 'site_id' in dataparams else artist.site_id
     site_artist_id = dataparams['site_artist_id'] if 'site_artist_id' in dataparams else artist.site_artist_id
     if site_id != artist.site_id or site_artist_id != artist.site_artist_id:
-        return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).one_or_none()
+        return Artist.query.enum_join(Artist.site_enum)\
+                           .filter(Artist.site_filter('id', '__eq__', site_id),
+                                   Artist.site_artist_id == site_artist_id)\
+                           .one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -186,7 +189,7 @@ def create():
     dataparams = get_data_params(request, 'artist')
     createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    if createparams['site_id'] == SiteDescriptorEnum.custom.id and createparams['site_artist_id'] is None:
+    if createparams['site_id'] == site_descriptor.custom.id and createparams['site_artist_id'] is None:
         for i in range(100):
             createparams['site_artist_id'] = random_id()
             if uniqueness_check(createparams, Artist()) is None:

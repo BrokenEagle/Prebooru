@@ -80,15 +80,9 @@ def pool_filter(query, search):
 
 # #### Route auxiliary functions
 
-def index(is_html):
+def index():
     params = process_request_values(request.values)
     search = get_params_value(params, 'search', True)
-    if is_html and 'type' not in search:
-        post_type = request.args.get('type')
-        if post_type == 'all':
-            search.pop('type', None)
-        elif post_type in Post.type_enum.names:
-            search['type'] = post_type
     negative_search = get_params_value(params, 'not', True)
     q = Post.query
     q = search_filter(q, search, negative_search)
@@ -117,14 +111,18 @@ def show_html(id):
 
 @bp.route('/posts.json', methods=['GET'])
 def index_json():
-    q = index(False)
+    q = index()
     q = q.options(JSON_OPTIONS)
     return index_json_response(q, request)
 
 
 @bp.route('/posts', methods=['GET'])
 def index_html():
-    q = index(True)
+    q = index()
+    if request.args.get('search[type]') is None:
+        post_type = request.args.get('type')
+        if post_type in Post.type_enum.names:
+            q = q.enum_join(Post.type_enum).filter(Post.type_filter('name', '__eq__', post_type))
     q = q.options(INDEX_HTML_OPTIONS)
     posts = paginate(q, request, MAX_LIMIT_HTML)
     return render_template("posts/index.html", posts=posts, post=Post())

@@ -3,10 +3,13 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import declared_attr
 
+# ## PACKAGE IMPORTS
+from config import USE_ENUMS
+
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import SiteDataTypeEnum
-from .base import JsonModel, IntEnum, EpochTimestamp
+from ..enum_imports import site_data_type
+from .base import JsonModel, IntEnum, EpochTimestamp, get_relation_definitions
 
 
 # ## CLASSES
@@ -15,7 +18,7 @@ class SiteData(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False, index=True)
-    type_id = DB.Column(IntEnum(SiteDataTypeEnum), nullable=False)
+    type, type_id, type_enum, type_filter = get_relation_definitions(site_data_type, 'type_id', 'type', 'id', 'site_data', nullable=False)
 
     # ## Relations
     # (OtO) illust [Illust]
@@ -23,13 +26,12 @@ class SiteData(JsonModel):
     # ## Class properties
 
     polymorphic_base = True
-    type_enum = SiteDataTypeEnum
 
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': SiteDataTypeEnum.site_data,
-        'polymorphic_on': type,
+        'polymorphic_identity': site_data_type.site_data.id,
+        'polymorphic_on': type if USE_ENUMS else type_id,
     }
 
 
@@ -55,7 +57,7 @@ class PixivData(SiteData):
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': SiteDataTypeEnum.pixiv_data,
+        'polymorphic_identity': site_data_type.pixiv_data.id,
     }
 
 
@@ -78,7 +80,7 @@ class TwitterData(SiteData):
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': SiteDataTypeEnum.twitter_data,
+        'polymorphic_identity': site_data_type.twitter_data.id,
     }
 
 

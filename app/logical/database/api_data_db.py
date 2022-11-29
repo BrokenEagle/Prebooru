@@ -6,7 +6,7 @@ from utility.time import get_current_time, days_from_now
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import ApiData
-from ..enums import ApiDataTypeEnum
+from ...enum_imports import api_data_type
 
 
 # ## FUNCTIONS
@@ -15,12 +15,12 @@ from ..enums import ApiDataTypeEnum
 
 def save_api_data(network_data, id_key, site_id, type_id):
     data_ids = [int(data[id_key]) for data in network_data]
-    cache_data = get_api_data(data_ids, site, type)
+    cache_data = get_api_data(data_ids, site_id, type_id)
     for data_item in network_data:
         data_id = int(data_item[id_key])
         cache_item = next(filter(lambda x: x.data_id == data_id, cache_data), None)
         if not cache_item:
-            print("save_api_data - creating cache item:", type, data_id)
+            print("save_api_data - creating cache item:", type_id, data_id)
             data = {
                 'site_id': site_id,
                 'type_id': type_id,
@@ -29,7 +29,7 @@ def save_api_data(network_data, id_key, site_id, type_id):
             cache_item = ApiData(**data)
             SESSION.add(cache_item)
         else:
-            print("save_api_data - updating cache item:", type, data_id, cache_item.id)
+            print("save_api_data - updating cache item:", type_id, data_id, cache_item.id)
         cache_item.data = data_item
         cache_item.expires = days_from_now(1)
     SESSION.commit()
@@ -53,12 +53,12 @@ def get_api_data(data_ids, site_id, type_id):
 
 
 def get_api_artist(site_artist_id, site_id):
-    cache = get_api_data([site_artist_id], site_id, ApiDataTypeEnum.artist.id)
+    cache = get_api_data([site_artist_id], site_id, api_data_type.artist.id)
     return cache[0].data if len(cache) else None
 
 
 def get_api_illust(site_illust_id, site_id):
-    cache = get_api_data([site_illust_id], site_id, ApiDataTypeEnum.illust.id)
+    cache = get_api_data([site_illust_id], site_id, api_data_type.illust.id)
     return cache[0].data if len(cache) else None
 
 
@@ -69,9 +69,11 @@ def expired_api_data_count():
 # #### Private functions
 
 def _get_api_data(data_ids, site_id, type_id):
-    q = q.filter_by(site_id=site_id, type_id=type_id)
+    q = ApiData.query.enum_join(ApiData.site_enum).enum_join(ApiData.type_enum)\
+                     .filter(ApiData.site_filter('id', '__eq__', site_id),
+                             ApiData.type_filter('id', '__eq__', type_id))
     if len(data_ids) == 1:
-        q = q.filter_by(data_id=data_ids[0])
+        q = q.filter(ApiData.data_id == data_ids[0])
     else:
         q = q.filter(ApiData.data_id.in_(data_ids))
     q = q.filter(ApiData.expires > get_current_time())

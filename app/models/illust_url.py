@@ -8,10 +8,10 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import SiteDescriptorEnum
+from ..enum_imports import site_descriptor
 from .upload_element import UploadElement
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, IntEnum
+from .base import JsonModel, IntEnum, get_relation_definitions
 
 
 # ## CLASSES
@@ -19,9 +19,9 @@ from .base import JsonModel, IntEnum
 class IllustUrl(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
+    site, site_id, site_enum, site_filter = get_relation_definitions(site_descriptor, 'site_id', 'site', 'id', 'illust_url', nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
-    sample_site_id = DB.Column(IntEnum(SiteDescriptorEnum, nullable=True), nullable=True)
+    sample_site, sample_site_id, sample_site_enum, sample_site_filter = get_relation_definitions(site_descriptor, 'sample_site_id', 'sample_site', 'id', 'illust_url', nullable=True)
     sample_url = DB.Column(DB.String(255), nullable=True)
     width = DB.Column(DB.Integer, nullable=False)
     height = DB.Column(DB.Integer, nullable=False)
@@ -69,9 +69,6 @@ class IllustUrl(JsonModel):
         return self.site.domain
 
     # ## Class properties
-
-    site_enum = SiteDescriptorEnum
-    sample_site_enum = SiteDescriptorEnum
 
     @classproperty(cached=True)
     def json_attributes(cls):

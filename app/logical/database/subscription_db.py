@@ -8,6 +8,7 @@ from utility.time import get_current_time, hours_from_now, add_days, days_ago
 
 # ## LOCAL IMPORTS
 from ... import SESSION
+from ...enum_imports import subscription_status
 from ...models import Subscription, SubscriptionElement, IllustUrl, Illust
 from .base_db import update_column_attributes
 
@@ -31,8 +32,10 @@ AVERAGE_INTERVAL_CLAUSE = (func.max(Illust.site_created) - func.min(Illust.site_
 # ###### Create
 
 def create_subscription_from_parameters(createparams):
+    if 'status' in createparams:
+        createparams['status_id'] = Subscription.status_enum.by_name(createparams['status']).id
     current_time = get_current_time()
-    subscription = Subscription(status_id='idle', created=current_time, updated=current_time)
+    subscription = Subscription(status_id=subscription_status.idle.id, created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(subscription, update_columns, createparams)
@@ -43,6 +46,8 @@ def create_subscription_from_parameters(createparams):
 # ###### Update
 
 def update_subscription_from_parameters(subscription, updateparams):
+    if 'status' in updateparams:
+        updateparams['status_id'] = Subscription.status_enum.by_name(updateparams['status']).id
     update_results = []
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
@@ -56,7 +61,7 @@ def update_subscription_from_parameters(subscription, updateparams):
 
 
 def update_subscription_status(subscription, value):
-    subscription.status_id = value
+    subscription.status_id = subscription_status.by_name(value).id
     SESSION.commit()
 
 
@@ -87,21 +92,27 @@ def delete_subscription(subscription):
 
 def get_available_subscription(unlimited):
     # Return only subscriptions which have already been processed manually (requery is not None)
-    query = Subscription.query.filter(Subscription.requery < get_current_time(),
+    status_filter = Subscription.status_filter('name', 'not_in', ['manual', 'automatic'])
+    query = Subscription.query.enum_join(Subscription.status_enum)\
+                              .filter(Subscription.requery < get_current_time(),
                                       Subscription.last_id.is_not(None),
                                       Subscription.active.is_(True),
-                                      Subscription.status_id.not_in(['manual', 'automatic']))
+                                      status_filter)
     if not unlimited:
         query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
     return query.all()
 
 
 def get_busy_subscriptions():
-    return Subscription.query.filter(Subscription.status_id.in_(['manual', 'automatic'])).all()
+    return Subscription.query.enum_join(Subscription.status_enum)\
+                             .filter(Subscription.status_filter('name', 'in_', ['manual', 'automatic']))\
+                             .all()
 
 
 def check_processing_subscriptions():
-    return Subscription.query.filter_by(status_id='manual').get_count() > 0
+    return Subscription.query.enum_join(Subscription.status_enum)\
+                             .filter(Subscription.status_filter('name', '__eq__', 'manual'))\
+                             .get_count() > 0
 
 
 def get_subscription_by_ids(subscription_ids):
@@ -112,7 +123,7 @@ def get_subscription_by_ids(subscription_ids):
 
 def add_subscription_error(subscription, error):
     subscription.errors.append(error)
-    subscription.status_id = 'error'
+    subscription.status_id = subscription_status.error.id
     subscription.checked = get_current_time()
     subscription.requery = None
     subscription.active = False
@@ -130,12 +141,13 @@ def delay_subscription_elements(subscription, delay_days):
 
 
 def get_average_interval_for_subscriptions(subscriptions, days):
-    return SubscriptionElement.query\
+    keep_filter = SubscriptionElement.keep_filter('name', '__eq__', 'yes')
+    return SubscriptionElement.query.enum_join(SubscriptionElement.keep_enum)\
                               .join(IllustUrl).join(Illust)\
                               .with_entities(SubscriptionElement.subscription_id, AVERAGE_INTERVAL_CLAUSE)\
                               .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
                                       Illust.site_created > days_ago(days),
-                                      SubscriptionElement.keep_id == 'yes',
+                                      keep_filter,
                                )\
                               .group_by(SubscriptionElement.subscription_id)\
                               .having(func.count(Illust.id) > 1).all()

@@ -129,7 +129,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None):
             job_status['range'] = f"({first} - {last}) / {total}"
             update_job_status(job_id, job_status)
         data_params = source.get_illust_data(item_id)
-        illust = source.get_site_illust(item_id, artist.site)
+        illust = source.get_site_illust(item_id, artist.site_id)
         if illust is None:
             data_params['artist_id'] = artist.id
             create_illust_from_parameters(data_params)
@@ -145,7 +145,10 @@ def sync_missing_subscription_illusts(subscription, job_id=None):
 def download_subscription_elements(subscription, job_id=None):
     job_status = get_job_status_data(job_id) or {'downloads': 0}
     job_status['stage'] = 'downloads'
-    q = SubscriptionElement.query.filter_by(subscription_id=subscription.id, post_id=None, status='active')
+    q = SubscriptionElement.query.enum_join(SubscriptionElement.status_enum)\
+                                 .filter(SubscriptionElement.subscription_id == subscription.id,
+                                         SubscriptionElement.post_id.is_(None),
+                                         SubscriptionElement.status_filter('name', '__eq__', 'active'))
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
@@ -168,8 +171,8 @@ def download_missing_elements(manual=False):
     max_pages = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
     q = SubscriptionElement.query.join(Subscription)\
                                  .filter(SubscriptionElement.post_id.is_(None),
-                                         SubscriptionElement.status_id == 'active',
-                                         Subscription.status_id == 'idle')
+                                         SubscriptionElement.status_filter('name', '__eq__', 'active'),
+                                         Subscription.status_filter('name', '__eq__', 'idle'))
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
@@ -311,7 +314,7 @@ def reinstantiate_element(element):
     if results['error']:
         unlinked = SubscriptionElement.query.filter(SubscriptionElement.md5 == element.md5,
                                                     SubscriptionElement.id.is_not(element.id),
-                                                    SubscriptionElement.status_id == 'unlinked').first()
+                                                    SubscriptionElement.status_filter('name', '__eq__', 'unlinked')).first()
         if unlinked is not None:
             update_subscription_element_status(element, 'duplicate')
         return results

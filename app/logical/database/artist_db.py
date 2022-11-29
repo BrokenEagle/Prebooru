@@ -53,6 +53,8 @@ def set_all_site_accounts(params, artist):
 def create_artist_from_parameters(createparams):
     if type(createparams.get('profiles')) is str:
         createparams['profiles'] = [createparams['profiles']]
+    if 'site' in createparams:
+        createparams['site_id'] = Artist.site_enum.by_name(createparams['site']).id
     current_time = get_current_time()
     set_timesvalue(createparams, 'site_created')
     set_all_site_accounts(createparams, None)
@@ -77,6 +79,8 @@ def create_artist_from_json(data):
 
 def update_artist_from_parameters(artist, updateparams):
     update_results = []
+    if 'site' in updateparams:
+        updateparams['site_id'] = Artist.site_enum.by_name(updateparams['site']).id
     set_timesvalue(updateparams, 'site_created')
     set_all_site_accounts(updateparams, artist)
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
@@ -147,7 +151,10 @@ def delete_artist(artist):
 # ###### Misc
 
 def get_blank_artist():
-    artist = Artist.query.filter(site_id=0, site_artist_id=1).one_or_none()
+    artist = Artist.query.enum_join(Artist.site_enum)\
+                         .filter(Artist.site_filter('name', '__eq__', 'custom'),
+                                 Artist.site_artist_id == 1)\
+                         .one_or_none()
     if not artist:
         createparams = {
             'site': 0,
@@ -180,7 +187,10 @@ def artist_delete_profile(artist, description_id):
 # #### Query functions
 
 def get_site_artist(site_artist_id, site_id):
-    return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).one_or_none()
+    return Artist.query.enum_join(Artist.site_enum)\
+                       .filter(Artist.site_filter('id', '__eq__', site_id),
+                               Artist.site_artist_id == site_artist_id)\
+                       .one_or_none()
 
 
 def get_artists_without_boorus_page(limit):

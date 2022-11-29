@@ -16,7 +16,7 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import PostTypeEnum
+from ..enum_imports import post_type
 from ..logical.utility import unique_objects
 from .error import Error
 from .illust_url import IllustUrl
@@ -26,7 +26,7 @@ from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
-from .base import JsonModel, EpochTimestamp, IntEnum, secondarytable, image_server_url, BlobMD5
+from .base import JsonModel, EpochTimestamp, IntEnum, secondarytable, image_server_url, BlobMD5, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -73,7 +73,7 @@ class Post(JsonModel):
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    type_id = DB.Column(IntEnum(PostTypeEnum), nullable=False)
+    type, type_id, type_enum, type_filter = get_relation_definitions(post_type, 'type_id', 'type', 'id', 'post', nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
     pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
     duration = DB.Column(DB.Float, nullable=True)
@@ -242,8 +242,6 @@ class Post(JsonModel):
             DB.session.commit()
 
     # ## Class properties
-
-    type_enum = PostTypeEnum
 
     @classproperty(cached=True)
     def json_attributes(cls):

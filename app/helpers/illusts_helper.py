@@ -10,8 +10,8 @@ from flask import url_for, Markup
 from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
+from ..enum_imports import site_descriptor
 from ..logical.utility import search_url_for
-from ..logical.enums import SiteDescriptorEnum
 from .base_helper import external_link, general_link
 
 
@@ -30,17 +30,17 @@ SITE_DATA_LABELS = {
 def form_class(form):
     class_map = {
         None: "",
-        1: "pixiv-data",
-        3: "twitter-data",
-        0: "custom",
+        site_descriptor.pixiv.id: "pixiv-data",
+        site_descriptor.twitter.id: "twitter-data",
+        site_descriptor.custom.id: "custom",
     }
-    return class_map[form.site.data]
+    return class_map[form.site_id.data]
 
 
 # #### Iterator functions
 
 def site_metric_iterator(illust):
-    if illust.site == SiteDescriptorEnum.custom:
+    if illust.site_id == site_descriptor.custom.id:
         return
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
@@ -49,7 +49,7 @@ def site_metric_iterator(illust):
 
 
 def site_date_iterator(illust):
-    if illust.site == SiteDescriptorEnum.custom:
+    if illust.site_id == site_descriptor.custom.id:
         return
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
@@ -89,7 +89,7 @@ def illust_url_search_link(illust):
 # ###### SHOW
 
 def danbooru_upload_link(illust):
-    if illust.site == SiteDescriptorEnum.custom:
+    if illust.site_id == site_descriptor.custom.id:
         return Markup("N/A")
     return external_link("Danbooru", danbooru_batch_url(illust))
 
@@ -131,14 +131,14 @@ def delete_commentary_link(illust, commentary):
 # ###### GENERAL
 
 def site_illust_link(illust):
-    if illust.site == SiteDescriptorEnum.custom:
+    if illust.site_id == site_descriptor.custom.id:
         # Need to add a post_url for CustomData, a subclass for SiteData
         return Markup("N/A")
     return external_link(site_short_link(illust), site_illust_url(illust))
 
 
 def alt_site_illust_link(illust):
-    if illust.site == SiteDescriptorEnum.custom:
+    if illust.site_id == site_descriptor.custom.id:
         return ""
     source = illust.site.source
     post_url = source.get_post_url(illust)

@@ -2,9 +2,9 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import SubscriptionElementStatusEnum, SubscriptionElementKeepEnum
+from ..enum_imports import subscription_element_status, subscription_element_keep
 from .error import Error
-from .base import JsonModel, IntEnum, BlobMD5, EpochTimestamp, secondarytable
+from .base import JsonModel, IntEnum, BlobMD5, EpochTimestamp, secondarytable, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -29,9 +29,9 @@ class SubscriptionElement(JsonModel):
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    keep_id = DB.Column(IntEnum(SubscriptionElementKeepEnum, nullable=True), nullable=True)
+    keep, keep_id, keep_enum, keep_filter = get_relation_definitions(subscription_element_keep, 'keep_id', 'keep', 'id', 'subscription_element', nullable=True)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    status_id = DB.Column(IntEnum(SubscriptionElementStatusEnum), nullable=False)
+    status, status_id, status_enum, status_filter = get_relation_definitions(subscription_element_status, 'status_id', 'status', 'id', 'subscription_element', nullable=False)
 
     # ## Relationships
     errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, uselist=True, cascade='all,delete',
@@ -51,9 +51,6 @@ class SubscriptionElement(JsonModel):
         return self._duplicate_element_query.get_count()
 
     # ## Class properties
-
-    status_enum = SubscriptionElementStatusEnum
-    keep_enum = SubscriptionElementKeepEnum
 
     # ## Private
 

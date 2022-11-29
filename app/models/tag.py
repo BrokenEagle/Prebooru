@@ -4,10 +4,13 @@
 from flask import Markup
 from sqlalchemy.util import memoized_property
 
+# ## PACKAGE IMPORTS
+from config import USE_ENUMS
+
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import TagTypeEnum
-from .base import JsonModel, IntEnum
+from ..enum_imports import tag_type
+from .base import JsonModel, IntEnum, get_relation_definitions
 
 
 # ## CLASSES
@@ -16,7 +19,7 @@ class Tag(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
-    type_id = DB.Column(IntEnum(TagTypeEnum), nullable=False)
+    type, type_id, type_enum, type_filter = get_relation_definitions(tag_type, 'type_id', 'type', 'id', 'tag', nullable=False)
 
     # ## Instance properties
 
@@ -40,13 +43,12 @@ class Tag(JsonModel):
     # ## Class properties
 
     polymorphic_base = True
-    type_enum = TagTypeEnum
 
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': TagTypeEnum.tag,
-        'polymorphic_on': type,
+        'polymorphic_identity': tag_type.tag.id,
+        'polymorphic_on': type if USE_ENUMS else type_id,
     }
 
 
@@ -84,7 +86,7 @@ class SiteTag(Tag):
                    .filter(Tag.id == self.id)
 
     __mapper_args__ = {
-        'polymorphic_identity': TagTypeEnum.site_tag,
+        'polymorphic_identity': tag_type.site_tag.id,
     }
 
 
@@ -122,7 +124,7 @@ class UserTag(Tag):
         return Post.query.join(UserTag, Post._tags).filter(UserTag.id == self.id)
 
     __mapper_args__ = {
-        'polymorphic_identity': TagTypeEnum.user_tag,
+        'polymorphic_identity': tag_type.user_tag.id,
     }
 
 

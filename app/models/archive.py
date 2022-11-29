@@ -12,8 +12,8 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical.enums import ArchiveTypeEnum
-from .base import JsonModel, IntEnum, EpochTimestamp, image_server_url
+from ..enum_imports import archive_type
+from .base import JsonModel, IntEnum, EpochTimestamp, image_server_url, get_relation_definitions
 
 
 # ## CLASSES
@@ -21,14 +21,14 @@ from .base import JsonModel, IntEnum, EpochTimestamp, image_server_url
 class Archive(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    type_id = DB.Column(IntEnum(ArchiveTypeEnum), nullable=False)
+    type, type_id, type_enum, type_filter = get_relation_definitions(archive_type, 'type_id', 'type', 'id', 'archive', nullable=False)
     key = DB.Column(DB.String(255), nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
 
     @property
     def is_post_type(self):
-        return self.type_id.name == 'post'
+        return self.type.name == 'post'
 
     @property
     def has_preview(self):
@@ -64,8 +64,6 @@ class Archive(JsonModel):
         return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')
 
     # ## Class properties
-
-    type_enum = ArchiveTypeEnum
 
     @classproperty(cached=True)
     def searchable_attributes(cls):

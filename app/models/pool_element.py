@@ -7,12 +7,12 @@ import math
 from flask import url_for
 
 # ## PACKAGE IMPORTS
-from config import DEFAULT_PAGINATE_LIMIT
+from config import DEFAULT_PAGINATE_LIMIT, USE_ENUMS
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
-from ..logical.enums import PoolElementTypeEnum
-from .base import JsonModel, IntEnum
+from ..enum_imports import pool_element_type
+from .base import JsonModel, IntEnum, get_relation_definitions
 
 
 # ## FUNCTIONS
@@ -50,7 +50,7 @@ class PoolElement(JsonModel):
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
     notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
     position = DB.Column(DB.Integer, nullable=False)
-    type_id = DB.Column(IntEnum(PoolElementTypeEnum), nullable=False)
+    type, type_id, type_enum, type_filter = get_relation_definitions(pool_element_type, 'type_id', 'type', 'id', 'pool_element', nullable=False)
 
     # ## Relationships
     # (MtO) pool [Pool]
@@ -70,13 +70,12 @@ class PoolElement(JsonModel):
     # ## Class properties
 
     polymorphic_base = True
-    type_enum = PoolElementTypeEnum
 
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': PoolElementTypeEnum.pool_element,
-        'polymorphic_on': type,
+        'polymorphic_identity': pool_element_type.pool_element.id,
+        'polymorphic_on': type if USE_ENUMS else type_id,
     }
     __table_args__ = (
         DB.CheckConstraint(
@@ -100,7 +99,7 @@ class PoolPost(PoolElement):
     # #### Private
 
     __mapper_args__ = {
-        'polymorphic_identity': PoolElementTypeEnum.pool_post,
+        'polymorphic_identity': pool_element_type.pool_post.id,
     }
 
 
@@ -118,7 +117,7 @@ class PoolIllust(PoolElement):
 
     # #### Private
     __mapper_args__ = {
-        'polymorphic_identity': PoolElementTypeEnum.pool_illust,
+        'polymorphic_identity': pool_element_type.pool_illust.id,
     }
 
 
@@ -136,7 +135,7 @@ class PoolNotation(PoolElement):
 
     # ## Private
     __mapper_args__ = {
-        'polymorphic_identity': PoolElementTypeEnum.pool_notation,
+        'polymorphic_identity': pool_element_type.pool_notation.id,
     }
 
 
