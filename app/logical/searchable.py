@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import re
+import logging
 from sqlalchemy import and_, not_, func
 from sqlalchemy.orm import aliased, with_polymorphic, ColumnProperty, RelationshipProperty
 from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance, ObjectAssociationProxyInstance,\
@@ -9,6 +10,7 @@ from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance, Obje
 import sqlalchemy.sql.sqltypes as sqltypes
 
 # ## PACKAGE IMPORTS
+from config import DEBUG_LOG
 from utility.data import is_truthy, is_falsey
 from utility.time import process_utc_timestring
 
@@ -17,6 +19,9 @@ from .. import SESSION
 from ..models import base
 
 # ## GLOBAL VARIABLES
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG if DEBUG_LOG else logging.WARNING)
 
 TEXT_COMPARISON_TYPES = ['eq', 'ne', 'like', 'ilike', 'not_like', 'not_ilike', 'regex', 'not_regex']
 
@@ -119,6 +124,7 @@ def column_type(model, columnname):
         sqltypes.UnicodeText: 'TEXT',
     }
     column_type = type(getattr(model, columnname).property.columns[0].type)
+    logger.debug('COLUMN-TYPE %s:%s as %s', model._table_name(), columnname, column_type)
     if column_type is not None:
         return switcher[column_type]
     else:
@@ -159,6 +165,7 @@ def basic_attribute_filters(model, columnname, params):
         'TEXT': text_filters,
     }
     type = column_type(model, columnname)
+    logger.debug('BASIC-FILTER %s:%s as %s with %s', model._table_name(), columnname, type, params)
     return switcher[type](model, columnname, params)
 
 
@@ -178,10 +185,13 @@ def relationship_attribute_filters(query, model, attribute, params):
     elif ('count_' + attribute) in params:
         query = relationship_count_filters(model, attribute, params, relation_property, query)
     if attribute in params:
-        aliased_model = aliased(relation_model)
-        query = query.unique_join(aliased_model, relation)
-        attr_filters, query = all_attribute_filters(query, aliased_model, params[attribute])
-        filters += (and_(*attr_filters),)
+        if isinstance(params[attribute], dict):
+            aliased_model = aliased(relation_model)
+            query = query.unique_join(aliased_model, relation)
+            attr_filters, query = all_attribute_filters(query, aliased_model, params[attribute])
+            filters += (and_(*attr_filters),)
+        else:
+            logger.warning("RELATION-FILTER on %s with value %s is not a dict", attribute, params[attribute])
     return filters, query
 
 
