@@ -19,7 +19,6 @@ from utility.uprint import print_info
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, get_api_data, save_api_data
 from ..database.server_info_db import get_next_wait, update_next_wait
-from ..sites import get_site_from_domain
 from ..enums import SiteDescriptorEnum
 
 
@@ -143,8 +142,6 @@ def is_post_url(url):
 
 
 def get_media_url(illust_url):
-    if illust_url.site == SiteDescriptorEnum.custom:
-        return illust_url.url
     return 'https://' + illust_url.site.domain + illust_url.url
 
 
@@ -373,12 +370,11 @@ def get_illust_tags(artwork):
 def get_illust_urls_from_artwork(artwork):
     original_url = artwork['urls']['original']
     parse = urllib.parse.urlparse(original_url)
-    site = get_site_from_domain(parse.netloc)
-    url = parse.path if site != 0 else original_url
+    site = SiteDescriptorEnum.get_site_from_domain(parse.netloc)
     return [
         {
-            'site': site,
-            'url': url,
+            'site': site.id,
+            'url': parse.path,
             'width': artwork['width'],
             'height': artwork['height'],
             'order': 1,
@@ -392,12 +388,11 @@ def get_illust_urls_from_page(page_data):
     for i in range(len(page_data['pages'])):
         image = page_data['pages'][i]
         parse = urllib.parse.urlparse(image['urls']['original'])
-        site = get_site_from_domain(parse.netloc)
-        url = parse.path if site != 0 else image['urls']['original']
+        site = site_descriptor.get_site_from_domain(parse.netloc)
         image_urls.append(
             {
-                'site': site,
-                'url': url,
+                'site': site.id,
+                'url': parse.path,
                 'width': image['width'],
                 'height': image['height'],
                 'order': i + 1,
@@ -415,7 +410,7 @@ def get_illust_parameters_from_artwork(artwork, page_data):
         illust_urls = get_illust_urls_from_page(page_data)
     sub_data = artwork['userIllusts'][str(site_illust_id)]
     return {
-        'site': SITE,
+        'site_id': SITE.id,
         'site_illust_id': site_illust_id,
         'site_created': process_utc_timestring(artwork['createDate']),
         'pages': artwork['pageCount'],
@@ -447,7 +442,7 @@ def get_pixiv_user_webpages(pxuser):
 
 def get_artist_parameters_from_pxuser(pxuser, artwork):
     return {
-        'site': SITE,
+        'site_id': SITE.id,
         'site_artist_id': int(pxuser['userId']),
         'site_created': None,
         'current_site_account': artwork['userAccount'] if artwork is not None else None,

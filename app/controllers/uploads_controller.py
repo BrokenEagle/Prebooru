@@ -10,11 +10,11 @@ from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
 from .. import SCHEDULER
+from ..logical.enums import SiteDescriptorEnum
 from ..logical.utility import set_error
 from ..logical.records.upload_rec import process_upload
 from ..logical.records.media_file_rec import batch_get_or_create_media
 from ..models import Upload, UploadElement, IllustUrl, Illust
-from ..logical.sources.base import get_post_source, get_preview_url
 from ..logical.database.upload_db import create_upload_from_parameters, set_upload_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_form, get_data_params, hide_input, parse_string_list,\
@@ -154,10 +154,11 @@ def create(get_request=False):
             retdata['item'] = check_upload.to_json()
             return set_error(retdata, "Upload already exists: upload #%d" % check_upload.id)
     if createparams['request_url']:
-        source = get_post_source(createparams['request_url'])
-        if source is None:
+        site = site_descriptor.get_site_from_url(createparams['request_url'])
+        if site.name == 'custom':
             msg = "Upload source currently not handled for request url: %s" % createparams['request_url']
             return set_error(retdata, msg)
+        source = site.source
         createparams['image_urls'] = [url for url in createparams['image_urls'] if source.is_image_url(url)]
         createparams['type'] = 'post'
     elif createparams['illust_url_id']:
@@ -175,15 +176,16 @@ def upload_select():
     errors = check_create_params(selectparams, True)
     if len(errors):
         return set_error(retdata, '\n'.join(errors))
-    source = get_post_source(selectparams['request_url'])
-    if source is None:
+    site = site_descriptor.get_site_from_url(selectparams['request_url'])
+    if site.name == 'custom':
         msg = "Upload source currently not handled for request url: %s" % selectparams['request_url']
         return set_error(retdata, msg)
+    source = site.source
     site_illust_id = source.get_illust_id(selectparams['request_url'])
     illust_data = source.get_illust_data(site_illust_id)
     media_batches = []
     for url_data in illust_data['illust_urls']:
-        full_url = get_preview_url(url_data['url'], url_data['site'])
+        full_url = source.get_preview_url(url_data['url'])
         url_data['full_url'] = full_url
         url_data['preview_url'] = source.small_image_url(full_url)
         media_batches.append((url_data['preview_url'], source))

@@ -1,6 +1,7 @@
 # APP/LOGICAL/SITES.PY
 
-from .enums import SiteDescriptorEnum
+# ## PYTHON IMPORTS
+import urllib
 
 
 # ## GLOBAL VARIABLES
@@ -30,22 +31,26 @@ def domain(self):
     return SITES[self.name]
 
 
-def get_site_from_domain(domain):
+@classmethod
+def get_site_from_domain(cls, domain):
     if domain in DOMAINS:
         s = DOMAINS[domain]
-        return SiteDescriptorEnum[s].value
-    return 0
+        return getattr(cls, s)
+    return getattr(cls, 'custom')
 
 
-def get_site_domain(site):
-    return SITES[SiteDescriptorEnum(site).name]
+@classmethod
+def get_site_from_url(cls, url):
+    parse = urllib.parse.urlparse(url)
+    return cls.get_site_from_domain(parse.netloc)
 
 
-def get_site_key(site):
-    return SiteDescriptorEnum(site).name
-
-
-# ## Initialization
-
-SiteDescriptorEnum.source = source
-SiteDescriptorEnum.domain = domain
+@classmethod
+def get_site_from_id(cls, id):
+    val = cls.find(id)
+    if val is not None:
+        return val.copy()
+    values = cls.values
+    if id in values:
+        name = cls.names[values.index(id)]
+        return cls(id=id, name=name)

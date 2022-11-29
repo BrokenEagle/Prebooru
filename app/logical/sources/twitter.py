@@ -28,7 +28,6 @@ from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
 from ..records.artist_rec import update_artist_from_source
-from ..sites import get_site_from_domain
 from ..enums import SiteDescriptorEnum
 
 
@@ -347,7 +346,7 @@ def is_post_url(url):
 
 def partial_media_url(url):
     parse = urllib.parse.urlparse(url)
-    site = get_site_from_domain(parse.netloc)
+    site = SiteDescriptorEnum.get_site_from_domain(parse.netloc)
     match = IMAGE2_RG.match(url)
     query_addon = '?format=%s' % match.group(3) if match else ""
     return parse.path + query_addon if site != 0 else parse.geturl()
@@ -430,14 +429,12 @@ def normalized_image_url(image_url):
 
 
 def get_media_url(illust_url):
-    return illust_url.url if illust_url.site == SiteDescriptorEnum.custom\
-        else 'https://' + illust_url.site.domain + illust_url.url
+    return 'https://' + illust_url.site.domain + illust_url.url
 
 
 def get_sample_url(illust_url, original=False):
     addon = ':orig' if original else ""
-    return illust_url.sample_url if illust_url.sample_site == SiteDescriptorEnum.custom\
-        else 'https://' + illust_url.sample_site.domain + illust_url.sample_url + addon
+    return 'https://' + illust_url.sample_site.domain + illust_url.sample_url + addon
 
 
 def get_post_url(illust):
@@ -994,7 +991,7 @@ def get_illust_url_info(entry):
         dimensions = (entry['sizes']['large']['w'], entry['sizes']['large']['h'])
     else:
         return None, None, None
-    site = get_site_from_domain(parse.netloc)
+    site = SiteDescriptorEnum.get_site_from_domain(parse.netloc)
     url = parse.path + query_addon if site != 0 else parse.geturl()
     return url, site, dimensions
 
@@ -1023,7 +1020,7 @@ def get_tweet_image_urls(tweet):
         if url is None:
             continue
         illust_urls.append({
-            'site': site,
+            'site': site.id,
             'url': url,
             'width': dimensions[0],
             'height': dimensions[1],
@@ -1043,7 +1040,7 @@ def get_tweet_video_urls(tweet):
         if url is None:
             continue
         video_urls.append({
-            'site': site,
+            'site': site.id,
             'url': url,
             'width': dimensions[0],
             'height': dimensions[1],
@@ -1056,7 +1053,7 @@ def get_tweet_video_urls(tweet):
 def get_illust_parameters_from_tweet(tweet):
     site_artist_id = safe_get(tweet, 'user', 'id_str') or safe_get(tweet, 'user_id_str')
     return {
-        'site': SITE,
+        'site': SITE.id,
         'site_illust_id': int(tweet['id_str']),
         'site_created': process_twitter_timestring(tweet['created_at']),
         'pages': len(tweet['extended_entities']['media']),
@@ -1097,7 +1094,7 @@ def get_twuser_webpages(twuser):
 
 def get_artist_parameters_from_twuser(twuser):
     return {
-        'site': SITE,
+        'site': SITE.id,
         'site_artist_id': int(twuser['id_str']),
         'site_created': process_twitter_timestring(twuser['created_at']),
         'current_site_account': twuser['screen_name'],

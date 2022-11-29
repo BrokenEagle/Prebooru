@@ -9,7 +9,8 @@ from wtforms.validators import DataRequired
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl
 from ..logical.utility import set_error
-from ..logical.sources.base import get_image_site, get_media_source
+from ..logical.enums import SiteDescriptorEnum
+from ..logical.sources.base import get_media_source
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from ..logical.downloader.network import redownload_post
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
@@ -110,9 +111,9 @@ def convert_update_params(dataparams):
 
 
 def set_url_site(dataparams, source):
-    dataparams['site'] = get_image_site(dataparams['url'])
+    dataparams['site'] = SiteDescriptorEnum.get_site_from_url(dataparams['url'])
     dataparams['url'] = source.partial_media_url(dataparams['url'])
-    dataparams['sample_site'] = get_image_site(dataparams['sample']) if dataparams['sample'] is not None else None
+    dataparams['sample_site'] = SiteDescriptorEnum.get_site_from_url(dataparams['sample']) if dataparams['sample'] is not None else None
     dataparams['sample_url'] = source.partial_media_url(dataparams['sample'])\
         if dataparams['sample'] is not None else None
 

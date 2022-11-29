@@ -3,6 +3,9 @@
 # ## PACKAGE IMPORTS
 from utility.obj import AttrEnum
 
+# ## LOCAL IMPORTS
+from .. import sites
+
 
 # ## CLASSES
 
@@ -101,3 +104,14 @@ class SiteDescriptorEnum(AttrEnum):
     twvideo = 4
     custom = 126
     unknown = 127
+
+    # ## Instance properties
+
+    source = sites.source
+    domain = sites.domain
+
+    # ## Class properties
+
+    get_site_from_domain = sites.get_site_from_domain
+    get_site_from_url = sites.get_site_from_url
+    get_site_from_id = sites.get_site_from_id

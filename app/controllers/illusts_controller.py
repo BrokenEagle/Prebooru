@@ -14,7 +14,7 @@ from utility.data import eval_bool_string, is_falsey, random_id
 from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
 from ..logical.utility import set_error
 from ..logical.enums import SiteDescriptorEnum
-from ..logical.sources.base import get_source_by_id, get_illust_required_params
+from ..logical.sources.base import get_illust_required_params
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
     illust_delete_commentary, set_illust_artist
@@ -294,7 +294,7 @@ def query_create():
     if check_illust is not None:
         retdata['item'] = check_illust.to_json()
         return set_error(retdata, "Illust already exists: %s" % check_illust.shortlink)
-    source = get_source_by_id(retdata['site'])
+    source = site_descriptor.get_site_from_id(retdata['site_id'])
     createparams = retdata['data'] = source.get_illust_data(retdata['site_illust_id'])
     if not createparams['active']:
         return set_error(retdata, "Illust post does not exist!")

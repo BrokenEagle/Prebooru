@@ -12,8 +12,7 @@ from utility.data import random_id
 # ## LOCAL IMPORTS
 from ..models import Artist, Booru
 from ..logical.utility import set_error
-from ..logical.enums import SiteDescriptorEnum
-from ..logical.sources.base import get_source_by_id, get_artist_required_params
+from ..logical.sources.base import get_artist_required_params
 from ..logical.sources.danbooru import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion
 from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
@@ -230,7 +229,7 @@ def query_create():
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
         return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
-    source = get_source_by_id(retdata['site'])
+    source = retdata['site'].source
     createparams = retdata['data'] = source.get_artist_data(retdata['site_artist_id'])
     if not createparams['active']:
         return set_error(retdata, "Artist account does not exist!")

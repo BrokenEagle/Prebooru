@@ -2,6 +2,7 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
+from ..logical import sites
 from .base import JsonModel
 
 
@@ -14,7 +15,18 @@ class SiteDescriptor(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
+    # ## Instance properties
+
+    source = sites.source
+    domain = sites.domain
+
     # ## Class properties
+
+    get_site_from_domain = sites.get_site_from_domain
+    get_site_from_url = sites.get_site_from_url
+    get_site_from_id = sites.get_site_from_id
+
+    # ## Private
 
     __initial_mapping__ = {
         'pixiv': 0,
@@ -34,7 +46,7 @@ class ApiDataType(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'illust': 0,
@@ -52,7 +64,7 @@ class ArchiveType(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'post': 0,
@@ -70,7 +82,7 @@ class PostType(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'user': 0,
@@ -86,7 +98,7 @@ class SubscriptionStatus(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'idle': 0,
@@ -105,7 +117,7 @@ class SubscriptionElementStatus(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'unlinked': 0,
@@ -125,7 +137,7 @@ class SubscriptionElementKeep(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'yes': 0,
@@ -143,7 +155,7 @@ class UploadStatus(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'complete': 0,
@@ -162,7 +174,7 @@ class UploadElementStatus(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'complete': 0,
@@ -182,7 +194,7 @@ class PoolElementType(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'pool_post': 0,
@@ -199,7 +211,7 @@ class SiteDataType(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'twitter_data': 0,
@@ -215,7 +227,7 @@ class TagType(JsonModel):
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
 
-    # ## Class properties
+    # ## Private
 
     __initial_mapping__ = {
         'site_tag': 0,
