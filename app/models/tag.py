@@ -16,7 +16,7 @@ class Tag(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
-    type = DB.Column(IntEnum(TagTypeEnum), nullable=False)
+    type_id = DB.Column(IntEnum(TagTypeEnum), nullable=False)
 
     # ## Instance properties
 

@@ -5,7 +5,7 @@ import alembic.op as op
 import sqlalchemy as sa
 
 # PACKAGE IMPORTS
-from config import NAMING_CONVENTION
+from migrations import batch_alter_table
 
 # LOCAL IMPORTS
 from . import get_inspector
@@ -16,24 +16,42 @@ from . import get_inspector
 # #### Batch operations
 
 def add_columns(table_name, add_column_commands, batch_kwargs=None):
-    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
-    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
+    def _process(batch_op, add_column_commands):
         for (column_name, column_type) in add_column_commands:
             batch_op.add_column(sa.Column(column_name, getattr(sa, column_type)(), nullable=True))
 
-
-def drop_columns(table_name, column_names, batch_kwargs=None):
     batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
-    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
+    if batch_op is None:
+        with batch_alter_table(table_name, **batch_kwargs) as batch_op:
+            _process(batch_op, add_column_commands)
+    else:
+        _process(batch_op, add_column_commands)
+
+
+def drop_columns(table_name, column_names, batch_op=None, batch_kwargs=None):
+    def _process(batch_op, column_names):
         for column_name in column_names:
             batch_op.drop_column(column_name)
 
-
-def alter_columns(table_name, alter_column_commands, batch_kwargs=None):
     batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
-    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
+    if batch_op is None:
+        with batch_alter_table(table_name, **batch_kwargs) as batch_op:
+            _process(batch_op, column_names)
+    else:
+        _process(batch_op, column_names)
+
+
+def alter_columns(table_name, alter_column_commands, batch_op=None, batch_kwargs=None):
+    def _process(batch_op, alter_column_commands):
         for (column_name, column_type, alter_args) in alter_column_commands:
             batch_op.alter_column(column_name, existing_type=getattr(sa, column_type)(), **alter_args)
+
+    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
+    if batch_op is None:
+        with batch_alter_table(table_name, **batch_kwargs) as batch_op:
+            _process(batch_op, alter_column_commands)
+    else:
+        _process(batch_op, alter_column_commands)
 
 
 def transfer_columns(table_name, from_config, to_config):

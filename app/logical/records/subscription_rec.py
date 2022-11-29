@@ -168,8 +168,8 @@ def download_missing_elements(manual=False):
     max_pages = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
     q = SubscriptionElement.query.join(Subscription)\
                                  .filter(SubscriptionElement.post_id.is_(None),
-                                         SubscriptionElement.status == 'active',
-                                         Subscription.status == 'idle')
+                                         SubscriptionElement.status_id == 'active',
+                                         Subscription.status_id == 'idle')
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
@@ -311,7 +311,7 @@ def reinstantiate_element(element):
     if results['error']:
         unlinked = SubscriptionElement.query.filter(SubscriptionElement.md5 == element.md5,
                                                     SubscriptionElement.id.is_not(element.id),
-                                                    SubscriptionElement.status == 'unlinked').first()
+                                                    SubscriptionElement.status_id == 'unlinked').first()
         if unlinked is not None:
             update_subscription_element_status(element, 'duplicate')
         return results

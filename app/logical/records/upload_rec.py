@@ -85,7 +85,7 @@ def populate_upload_elements(upload, illust=None):
     if illust is None:
         source = get_post_source(upload.request_url)
         site_illust_id = source.get_illust_id(upload.request_url)
-        illust = get_site_illust(site_illust_id, source.site)
+        illust = get_site_illust(site_illust_id, source.site.value)
         if illust is None:
             return
     else:
@@ -116,15 +116,15 @@ def populate_all_upload_elements(uploads):
         else:
             print_warning(f"Unable to find an illust for {upload.shortlink}")
             continue
-        add_dict_entry(illust_lookup, source.SITE, site_illust_id)
-        illust_index[upload.id] = {'site': source.SITE, 'site_illust_id': site_illust_id}
+        add_dict_entry(illust_lookup, source.SITE.value, site_illust_id)
+        illust_index[upload.id] = {'site_id': source.SITE.value, 'site_illust_id': site_illust_id}
     illusts = []
     for key in illust_lookup:
         illusts += get_site_illusts(key, illust_lookup[key], load_urls=True)
     for upload in uploads:
         illust_params = illust_index[upload.id]
         illust = next((illust for illust in illusts
-                       if illust.site == illust_params['site']
+                       if illust.site_id == illust_params['site_id']
                        and illust.site_illust_id == illust_params['site_illust_id']), None)
         if illust is None:
             continue
@@ -142,7 +142,7 @@ def process_network_upload(upload):
     if error is not None:
         append_error(upload, error)
     requery_time = days_ago(1)
-    illust = Illust.query.filter_by(site=source.SITE, site_illust_id=site_illust_id).one_or_none()
+    illust = Illust.query.filter_by(site_id=source.SITE.value, site_illust_id=site_illust_id).one_or_none()
     if illust is None:
         illust = create_illust_from_source(site_illust_id, source)
         if illust is None:

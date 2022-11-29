@@ -56,11 +56,11 @@ def archive_illust_for_deletion(illust):
 def recreate_archived_illust(data):
     retdata = {'error': False}
     illust_data = data['body']
-    illust = get_site_illust(illust_data['site_illust_id'], illust_data['site'])
+    illust = get_site_illust(illust_data['site_illust_id'], illust_data['site_id'])
     if illust is not None:
         return set_error(retdata, "Illust already exists: illust #%d" % illust.id)
     artist_data = data['links']['artist']
-    artist = get_site_artist(artist_data['site_artist_id'], artist_data['site'])
+    artist = get_site_artist(artist_data['site_artist_id'], artist_data['site_id'])
     if artist is None:
         return set_error(retdata, "Artist for illust does not exist.")
     illust_data['artist_id'] = artist.id
@@ -84,7 +84,7 @@ def recreate_archived_illust(data):
 
 def relink_archived_illust(data, illust=None):
     if illust is None:
-        illust = get_site_illust(data['body']['site_illust_id'], data['body']['site'])
+        illust = get_site_illust(data['body']['site_illust_id'], data['body']['site_id'])
         if illust is None:
             return "No illust found with site ID %d" % data['body']['site_illust_id']
     for link_data in data['links']['posts']:

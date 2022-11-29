@@ -8,10 +8,10 @@ from .base_db import update_column_attributes
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['upload_id', 'illust_url_id', 'md5', 'status']
+COLUMN_ATTRIBUTES = ['upload_id', 'illust_url_id', 'md5', 'status_id']
 
 CREATE_ALLOWED_ATTRIBUTES = ['upload_id', 'illust_url_id']
-UPDATE_ALLOWED_ATTRIBUTES = ['md5', 'status']
+UPDATE_ALLOWED_ATTRIBUTES = ['md5', 'status_id']
 
 
 # ## FUNCTIONS
@@ -21,7 +21,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['md5', 'status']
 # ###### CREATE
 
 def create_upload_element_from_parameters(createparams, commit=True):
-    upload_element = UploadElement(status='pending')
+    upload_element = UploadElement(status_id='pending')
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(upload_element, update_columns, createparams, commit=commit)

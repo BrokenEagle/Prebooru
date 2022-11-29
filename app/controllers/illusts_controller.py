@@ -28,7 +28,7 @@ from .base_controller import get_params_value, process_request_values, show_json
 
 bp = Blueprint("illust", __name__)
 
-CREATE_REQUIRED_PARAMS = ['site', 'site_illust_id']
+CREATE_REQUIRED_PARAMS = ['site_id', 'site_illust_id']
 VALUES_MAP = {
     'illust_urls': 'illust_urls',
     'tags': 'tags',
@@ -84,7 +84,7 @@ FORM_CONFIG = {
             'validators': [DataRequired()],
         },
     },
-    'site': {
+    'site_id': {
         'field': SelectField,
         'kwargs': {
             'choices': [
@@ -190,10 +190,10 @@ def get_illust_form(**kwargs):
 
 
 def uniqueness_check(dataparams, illust):
-    site = dataparams['site'] if 'site' in dataparams else illust.site
+    site_id = dataparams['site_id'] if 'site_id' in dataparams else illust.site_id
     site_illust_id = dataparams['site_illust_id'] if 'site_illust_id' in dataparams else illust.site_illust_id
-    if site != illust.site or site_illust_id != illust.site_illust_id:
-        return Illust.query.filter_by(site=site, site_illust_id=site_illust_id).one_or_none()
+    if site_id != illust.site_id or site_illust_id != illust.site_illust_id:
+        return Illust.query.filter_by(site_id=site_id, site_illust_id=site_illust_id).one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -250,7 +250,7 @@ def create():
     check_artist = Artist.find(createparams['artist_id'])
     if check_artist is None:
         return set_error(retdata, "artist #%s not found." % dataparams['artist_id'])
-    if createparams['site'] == SiteDescriptorEnum.custom and createparams['site_illust_id'] is None:
+    if createparams['site_id'] == site_descriptor.custom.id and createparams['site_illust_id'] is None:
         for i in range(100):
             createparams['site_illust_id'] = random_id()
             if uniqueness_check(createparams, Illust()) is None:
@@ -377,7 +377,7 @@ def new_html():
             form.artist_id.data = None
         else:
             hide_input(form, 'artist_id', artist.id)
-            hide_input(form, 'site', artist.site.value)
+            hide_input(form, 'site_id', artist.site_id)
     return render_template("illusts/new.html", form=form, artist=artist, illust=Illust())
 
 
@@ -408,7 +408,7 @@ def edit_html(id):
                            if k not in ['id', 'illust_id', 'type']})
     form = get_illust_form(**editparams)
     hide_input(form, 'artist_id', illust.artist_id)
-    hide_input(form, 'site', illust.site.value)
+    hide_input(form, 'site_id', illust.site_id)
     return render_template("illusts/edit.html", form=form, illust=illust)
 
 

@@ -48,7 +48,7 @@ IllustNotations = secondarytable(
 class Illust(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
+    site_id = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
     site_illust_id = DB.Column(DB.Integer, nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)

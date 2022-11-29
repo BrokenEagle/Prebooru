@@ -1,17 +1,18 @@
 # MIGRATIONS/CONSTRAINTS.PY
 
-# EXTERNAL IMPORTS
-import alembic.op as op
-
 # PACKAGE IMPORTS
-from config import NAMING_CONVENTION
+from migrations import batch_alter_table
 
 
 # ## FUNCTIONS
 
 # #### Batch operations
 
-def create_constraints(table_name, add_constraint_commands, batch_kwargs=None):
+def create_constraints(table_name, add_constraint_commands, batch_op=None, batch_kwargs=None):
+    def _process(batch_op, add_constraint_commands):
+        for (constraint_name, constraint_type, args) in add_constraint_commands:
+            switcher[constraint_type](batch_op, constraint_name, *args)
+
     switcher = {
         'primary': _create_primary_key_batch_op,
         'foreignkey': _create_foreign_key_batch_op,
@@ -19,16 +20,24 @@ def create_constraints(table_name, add_constraint_commands, batch_kwargs=None):
         'check': _create_check_constraint_batch_op,
     }
     batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
-    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
-        for (constraint_name, constraint_type, *args) in add_constraint_commands:
-            switcher[constraint_type](batch_op, constraint_name, *args)
+    if batch_op is None:
+        with batch_alter_table(table_name, **batch_kwargs) as batch_op:
+            _process(batch_op, add_constraint_commands)
+    else:
+        _process(batch_op, add_constraint_commands)
 
 
-def drop_constraints(table_name, drop_constraint_commands, batch_kwargs=None):
-    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
-    with op.batch_alter_table(table_name, naming_convention=NAMING_CONVENTION, **batch_kwargs) as batch_op:
+def drop_constraints(table_name, drop_constraint_commands, batch_op=None, batch_kwargs=None):
+    def _process(batch_op, drop_constraint_commands):
         for (constraint_name, constraint_type) in drop_constraint_commands:
             batch_op.drop_constraint(batch_op.f(constraint_name), type_=constraint_type)
+
+    batch_kwargs = batch_kwargs if isinstance(batch_kwargs, dict) else {}
+    if batch_op is None:
+        with batch_alter_table(table_name, **batch_kwargs) as batch_op:
+            _process(batch_op, drop_constraint_commands)
+    else:
+        _process(batch_op, drop_constraint_commands)
 
 
 # #### Single operations

@@ -2,7 +2,6 @@
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..enums import SiteDescriptorEnum
 from ...models import TwitterData, PixivData
 from .base_db import update_column_attributes
 
@@ -22,15 +21,15 @@ SITE_DATA_TYPE_DICT = {
 
 def update_site_data_from_parameters(illust, params):
     if illust.site_data is not None:
-        expected_type = SITE_DATA_TYPE_DICT[illust.site.name]
+        expected_type = SITE_DATA_TYPE_DICT[illust.site_id.name]
         if illust.site_data.type != expected_type:
             print("Deleting site data!")
             SESSION.delete(illust.site_data)
             SESSION.commit()
             illust.site_data = None
-    if illust.site == SiteDescriptorEnum.twitter:
+    if illust.site_id.name == 'twitter':
         return update_twitter_site_data(illust, params)
-    if illust.site == SiteDescriptorEnum.pixiv:
+    if illust.site_id.name == 'pixiv':
         return update_pixiv_site_data(illust, params)
 
 

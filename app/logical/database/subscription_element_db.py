@@ -37,7 +37,7 @@ else:
 # ###### CREATE
 
 def create_subscription_element_from_parameters(createparams):
-    subscription_element = SubscriptionElement(status='active')
+    subscription_element = SubscriptionElement(status_id='active')
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(subscription_element, update_columns, createparams)
@@ -59,7 +59,7 @@ def update_subscription_element_keep(subscription_element, value):
 
 
 def update_subscription_element_status(subscription_element, value):
-    subscription_element.status = value
+    subscription_element.status_id = value
     SESSION.commit()
 
 
@@ -68,7 +68,7 @@ def update_subscription_element_status(subscription_element, value):
 def link_subscription_post(element, post):
     element.post = post
     element.md5 = post.md5
-    element.status = 'active'
+    element.status_id = 'active'
     element.expires = None
     _update_subscription_element_keep(element, None)
     SESSION.commit()
@@ -77,7 +77,7 @@ def link_subscription_post(element, post):
 def unlink_subscription_post(element):
     element.post = None
     element.expires = None
-    element.status = 'unlinked'
+    element.status_id = 'unlinked'
     SESSION.commit()
 
 
@@ -85,7 +85,7 @@ def delete_subscription_post(element):
     if element.post is not None:
         delete_post_and_media(element.post)
     element.expires = None
-    element.status = 'deleted'
+    element.status_id = 'deleted'
     SESSION.commit()
 
 
@@ -93,14 +93,14 @@ def archive_subscription_post(element):
     if element.post is not None:
         archive_post_for_deletion(element.post, None)
     element.expires = None
-    element.status = 'archived'
+    element.status_id = 'archived'
     SESSION.commit()
 
 
 def duplicate_subscription_post(element, md5):
     element.expires = None
     element.md5 = md5
-    element.status = 'duplicate'
+    element.status_id = 'duplicate'
     SESSION.commit()
 
 
@@ -113,14 +113,14 @@ def get_elements_by_id(id_list):
 def check_deleted_subscription_post(md5):
     return SESSION.query(SubscriptionElement.id)\
                   .filter(SubscriptionElement.md5 == md5,
-                          SubscriptionElement.status.in_(['deleted', 'archived'])
+                          SubscriptionElement.status_id.in_(['deleted', 'archived'])
                           ).first() is not None
 
 
 def expired_subscription_elements(expire_type):
     switcher = {
         'unlink': lambda q: q.join(Post, SubscriptionElement.post)
-                             .filter(or_(_expired_clause('yes', 'unlink'), (Post.type == 'user'))),
+                             .filter(or_(_expired_clause('yes', 'unlink'), (Post.type_id == 'user'))),
         'delete': lambda q: q.filter(_expired_clause('no', 'delete')),
         'archive': lambda q: q.filter(_expired_clause('archive', 'archive')),
     }
@@ -132,15 +132,15 @@ def expired_subscription_elements(expire_type):
 def total_missing_downloads():
     return SubscriptionElement.query.join(Subscription)\
                                     .filter(SubscriptionElement.post_id.is_(None),
-                                            SubscriptionElement.status == 'active',
-                                            Subscription.status == 'idle')\
+                                            SubscriptionElement.status_filter('name', '__eq__', 'active'),
+                                            Subscription.status_filter('name', '__eq__', 'idle'))\
                                     .get_count()
 
 
 # #### Private
 
 def _update_subscription_element_keep(element, value):
-    element.keep = value
+    element.keep_id = value
     if value == 'yes' or value == 'archive':
         element.expires = days_from_now(1)  # Posts will be unlinked/archived after this period
     elif value == 'no':
@@ -152,9 +152,9 @@ def _update_subscription_element_keep(element, value):
 
 
 def _expired_clause(keep, action):
-    main_clause = (SubscriptionElement.keep == keep)
+    main_clause = (SubscriptionElement.keep_id == keep)
     if (action == EXPIRED_SUBSCRIPTION_ACTION):
-        keep_clause = or_(main_clause, SubscriptionElement.keep.is_(None))
+        keep_clause = or_(main_clause, SubscriptionElement.keep_id.is_(None))
     else:
         keep_clause = main_clause
-    return and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.status == 'active', keep_clause)
+    return and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.status_id == 'active', keep_clause)

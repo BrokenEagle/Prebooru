@@ -7,11 +7,11 @@ from .base_db import update_column_attributes
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['illust_id', 'site', 'url', 'sample_site', 'sample_url', 'width', 'height', 'order', 'active']
+COLUMN_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height', 'order', 'active']
 
-CREATE_ALLOWED_ATTRIBUTES = ['illust_id', 'site', 'url', 'sample_site', 'sample_url', 'width', 'height', 'order',
+CREATE_ALLOWED_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height', 'order',
                              'active']
-UPDATE_ALLOWED_ATTRIBUTES = ['site', 'url', 'sample_site', 'sample_url', 'width', 'height', 'order', 'active']
+UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height', 'order', 'active']
 
 
 # ## FUNCTIONS
@@ -38,10 +38,5 @@ def update_illust_url_from_parameters(illust_url, updateparams):
 
 # #### Query
 
-def get_illust_url_by_url(site=None, partial_url=None, full_url=None):
-    from ..sources.base import get_illust_url_params
-    if (site is None or partial_url is None):
-        if full_url is None:
-            return
-        site, partial_url = get_illust_url_params(full_url)
-    return IllustUrl.query.filter_by(site=site, url=partial_url).first()
+def get_illust_url_by_url(site_id, partial_url):
+    return IllustUrl.query.filter_by(site_id=site_id, url=partial_url).first()

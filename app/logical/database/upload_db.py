@@ -31,7 +31,7 @@ def create_upload_from_parameters(createparams):
     data = {
         'successes': 0,
         'failures': 0,
-        'status': 'pending',
+        'status_id': 'pending',
         'created': get_current_time(),
     }
     upload = Upload(**data)
@@ -50,8 +50,8 @@ def has_duplicate_posts(upload):
     return any(re.match(r'Image already uploaded on post #\d+', error.message) for error in upload.errors)
 
 
-def set_upload_status(upload, status):
-    upload.status = status
+def set_upload_status(upload, value):
+    upload.status_id = value
     SESSION.commit()
 
 

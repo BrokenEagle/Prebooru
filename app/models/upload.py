@@ -42,7 +42,7 @@ class Upload(JsonModel):
     request_url = DB.Column(DB.String(255), nullable=True)
     successes = DB.Column(DB.Integer, nullable=False)
     failures = DB.Column(DB.Integer, nullable=False)
-    status = DB.Column(IntEnum(UploadStatusEnum), nullable=False)
+    status_id = DB.Column(IntEnum(UploadStatusEnum), nullable=False)
     media_filepath = DB.Column(DB.String(255), nullable=True)
     sample_filepath = DB.Column(DB.String(255), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=True)

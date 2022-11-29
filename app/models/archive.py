@@ -19,31 +19,33 @@ from .base import JsonModel, IntEnum, EpochTimestamp, image_server_url
 # ## CLASSES
 
 class Archive(JsonModel):
-    # ## Declarations
-
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    type = DB.Column(IntEnum(ArchiveTypeEnum), nullable=False)
+    type_id = DB.Column(IntEnum(ArchiveTypeEnum), nullable=False)
     key = DB.Column(DB.String(255), nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
 
     @property
+    def is_post_type(self):
+        return self.type_id.name == 'post'
+
+    @property
     def has_preview(self):
-        if self.type != ArchiveTypeEnum.post:
+        if not self.is_post_type:
             return
         return self.data['body']['width'] > PREVIEW_DIMENSIONS[0] or\
             self.data['body']['height'] > PREVIEW_DIMENSIONS[1]
 
     @property
     def file_url(self):
-        if self.type != ArchiveTypeEnum.post:
+        if not self.is_post_type:
             return
         return image_server_url('archive' + self._partial_network_path + self.data['body']['file_ext'], 'main')
 
     @property
     def preview_url(self):
-        if self.type != ArchiveTypeEnum.post:
+        if not self.is_post_type:
             return
         if not self.has_preview:
             return self.file_url
@@ -51,13 +53,13 @@ class Archive(JsonModel):
 
     @property
     def file_path(self):
-        if self.type != ArchiveTypeEnum.post:
+        if not self.is_post_type:
             return
         return os.path.join(MEDIA_DIRECTORY, 'archive', self._partial_file_path + self.data['body']['file_ext'])
 
     @property
     def preview_path(self):
-        if self.type != ArchiveTypeEnum.post or not self.has_preview:
+        if not self.is_post_type or not self.has_preview:
             return
         return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')
 
@@ -84,5 +86,5 @@ class Archive(JsonModel):
         return '%s.' % (self.key)
 
     __table_args__ = (
-        DB.Index(None, 'type', 'key', unique=True),
+        DB.Index(None, 'type_id', 'key', unique=True),
     )

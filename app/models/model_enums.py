@@ -1,4 +1,7 @@
-# APP/MODELS/ATTR_ENUMS.PY
+# APP/MODELS/MODEL_ENUMS.PY
+
+# ## PACKAGE IMPORTS
+from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -8,9 +11,52 @@ from .base import JsonModel
 
 # ## CLASSES
 
+class EnumModel(JsonModel):
+    __abstract__ = True
+
+    @classproperty(cached=True)
+    def names(cls):
+        return list(cls.__initial_mapping__.keys()) + list(cls.__mandatory_mapping__.keys())
+
+    @classproperty(cached=True)
+    def values(cls):
+        return list(cls.__initial_mapping__.keys()) + list(cls.__mandatory_mapping__.keys())
+
+    @classproperty(cached=True)
+    def unknown(cls):
+        return cls.by_name('unknown')
+
+    @classmethod
+    def by_name(cls, name):
+        cls._default_or_value()
+        return cls._name_items[name]
+
+    @classmethod
+    def by_id(cls, id):
+        cls._default_or_value()
+        return cls._id_items[id]
+
+    # ## Private
+
+    @classmethod
+    def _default_or_value(cls):
+        if not hasattr(cls, '_name_items'):
+            items = cls.query.all()
+            if len(items) == 0:
+                items = [cls(id=id, name=name) for (name, id) in cls.cls.__mandatory_mapping__.items()] +\
+                        [cls(id=id, name=name) for (name, id) in cls.cls.__initial_mapping__.items()]
+            else:
+                items = [item.copy() for item in items]
+            cls._name_items = {item.name: item for item in items}
+            cls._id_items = {item.id: item for item in items}
+
+    _enum_model = True
+
+
+
 # #### Column enums
 
-class SiteDescriptor(JsonModel):
+class SiteDescriptor(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
@@ -25,6 +71,30 @@ class SiteDescriptor(JsonModel):
     get_site_from_domain = sites.get_site_from_domain
     get_site_from_url = sites.get_site_from_url
     get_site_from_id = sites.get_site_from_id
+
+    @classproperty(cached=True)
+    def custom(cls):
+        return cls.by_name('custom')
+
+    @classproperty(cached=True)
+    def pixiv(cls):
+        return cls.by_name('pixiv')
+
+    @classproperty(cached=True)
+    def pximg(cls):
+        return cls.by_name('pximg')
+
+    @classproperty(cached=True)
+    def twitter(cls):
+        return cls.by_name('twitter')
+
+    @classproperty(cached=True)
+    def twimg(cls):
+        return cls.by_name('twimg')
+
+    @classproperty(cached=True)
+    def twvideo(cls):
+        return cls.by_name('twvideo')
 
     # ## Private
 
@@ -41,10 +111,28 @@ class SiteDescriptor(JsonModel):
     }
 
 
-class ApiDataType(JsonModel):
+class ApiDataType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def illust(cls):
+        return cls.by_name('illust')
+
+    @classproperty(cached=True)
+    def artist(cls):
+        return cls.by_name('artist')
+
+    @classproperty(cached=True)
+    def profile(cls):
+        return cls.by_name('profile')
+
+    @classproperty(cached=True)
+    def page(cls):
+        return cls.by_name('page')
 
     # ## Private
 
@@ -59,10 +147,28 @@ class ApiDataType(JsonModel):
     }
 
 
-class ArchiveType(JsonModel):
+class ArchiveType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Class properties
+
+    @classproperty(cached=True)
+    def post(cls):
+        return cls.by_name('post')
+
+    @classproperty(cached=True)
+    def illust(cls):
+        return cls.by_name('illust')
+
+    @classproperty(cached=True)
+    def artist(cls):
+        return cls.by_name('artist')
+
+    @classproperty(cached=True)
+    def booru(cls):
+        return cls.by_name('booru')
 
     # ## Private
 
@@ -77,10 +183,20 @@ class ArchiveType(JsonModel):
     }
 
 
-class PostType(JsonModel):
+class PostType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def user(cls):
+        return cls.by_name('user')
+
+    @classproperty(cached=True)
+    def subscription(cls):
+        return cls.by_name('subscription')
 
     # ## Private
 
@@ -93,10 +209,32 @@ class PostType(JsonModel):
     }
 
 
-class SubscriptionStatus(JsonModel):
+class SubscriptionStatus(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def error(cls):
+        return cls.by_name('error')
+
+    @classproperty(cached=True)
+    def idle(cls):
+        return cls.by_name('idle')
+
+    @classproperty(cached=True)
+    def retired(cls):
+        return cls.by_name('retired')
+
+    @classproperty(cached=True)
+    def automatic(cls):
+        return cls.by_name('automatic')
+
+    @classproperty(cached=True)
+    def manual(cls):
+        return cls.by_name('manual')
 
     # ## Private
 
@@ -112,10 +250,36 @@ class SubscriptionStatus(JsonModel):
     }
 
 
-class SubscriptionElementStatus(JsonModel):
+class SubscriptionElementStatus(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def error(cls):
+        return cls.by_name('error')
+
+    @classproperty(cached=True)
+    def unlinked(cls):
+        return cls.by_name('unlinked')
+
+    @classproperty(cached=True)
+    def deleted(cls):
+        return cls.by_name('deleted')
+
+    @classproperty(cached=True)
+    def active(cls):
+        return cls.by_name('active')
+
+    @classproperty(cached=True)
+    def archived(cls):
+        return cls.by_name('archived')
+
+    @classproperty(cached=True)
+    def duplicate(cls):
+        return cls.by_name('duplicate')
 
     # ## Private
 
@@ -132,10 +296,28 @@ class SubscriptionElementStatus(JsonModel):
     }
 
 
-class SubscriptionElementKeep(JsonModel):
+class SubscriptionElementKeep(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def yes(cls):
+        return cls.by_name('yes')
+
+    @classproperty(cached=True)
+    def no(cls):
+        return cls.by_name('no')
+
+    @classproperty(cached=True)
+    def maybe(cls):
+        return cls.by_name('maybe')
+
+    @classproperty(cached=True)
+    def archive(cls):
+        return cls.by_name('archive')
 
     # ## Private
 
@@ -150,10 +332,32 @@ class SubscriptionElementKeep(JsonModel):
     }
 
 
-class UploadStatus(JsonModel):
+class UploadStatus(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def error(cls):
+        return cls.by_name('error')
+
+    @classproperty(cached=True)
+    def complete(cls):
+        return cls.by_name('complete')
+
+    @classproperty(cached=True)
+    def duplicate(cls):
+        return cls.by_name('duplicate')
+
+    @classproperty(cached=True)
+    def pending(cls):
+        return cls.by_name('pending')
+
+    @classproperty(cached=True)
+    def processing(cls):
+        return cls.by_name('processing')
 
     # ## Private
 
@@ -169,10 +373,28 @@ class UploadStatus(JsonModel):
     }
 
 
-class UploadElementStatus(JsonModel):
+class UploadElementStatus(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def error(cls):
+        return cls.by_name('error')
+
+    @classproperty(cached=True)
+    def complete(cls):
+        return cls.by_name('complete')
+
+    @classproperty(cached=True)
+    def duplicate(cls):
+        return cls.by_name('duplicate')
+
+    @classproperty(cached=True)
+    def pending(cls):
+        return cls.by_name('pending')
 
     # ## Private
 
@@ -189,10 +411,28 @@ class UploadElementStatus(JsonModel):
 
 # #### Polymorphic enums
 
-class PoolElementType(JsonModel):
+class PoolElementType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def pool_element(cls):
+        return cls.by_name('pool_element')
+
+    @classproperty(cached=True)
+    def pool_post(cls):
+        return cls.by_name('pool_post')
+
+    @classproperty(cached=True)
+    def pool_illust(cls):
+        return cls.by_name('pool_illust')
+
+    @classproperty(cached=True)
+    def pool_notation(cls):
+        return cls.by_name('pool_notation')
 
     # ## Private
 
@@ -206,10 +446,24 @@ class PoolElementType(JsonModel):
     }
 
 
-class SiteDataType(JsonModel):
+class SiteDataType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def site_data(cls):
+        return cls.by_name('site_data')
+
+    @classproperty(cached=True)
+    def twitter_data(cls):
+        return cls.by_name('twitter_data')
+
+    @classproperty(cached=True)
+    def pixiv_data(cls):
+        return cls.by_name('pixiv_data')
 
     # ## Private
 
@@ -222,10 +476,24 @@ class SiteDataType(JsonModel):
     }
 
 
-class TagType(JsonModel):
+class TagType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def tag(cls):
+        return cls.by_name('tag')
+
+    @classproperty(cached=True)
+    def site_tag(cls):
+        return cls.by_name('site_tag')
+
+    @classproperty(cached=True)
+    def user_tag(cls):
+        return cls.by_name('user_tag')
 
     # ## Private
 

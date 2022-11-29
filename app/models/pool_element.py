@@ -50,7 +50,7 @@ class PoolElement(JsonModel):
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
     notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
     position = DB.Column(DB.Integer, nullable=False)
-    type = DB.Column(IntEnum(PoolElementTypeEnum), nullable=False)
+    type_id = DB.Column(IntEnum(PoolElementTypeEnum), nullable=False)
 
     # ## Relationships
     # (MtO) pool [Pool]

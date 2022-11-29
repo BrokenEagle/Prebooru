@@ -19,9 +19,9 @@ from .base import JsonModel, IntEnum
 class IllustUrl(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
+    site_id = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
-    sample_site = DB.Column(IntEnum(SiteDescriptorEnum, nullable=True), nullable=True)
+    sample_site_id = DB.Column(IntEnum(SiteDescriptorEnum, nullable=True), nullable=True)
     sample_url = DB.Column(DB.String(255), nullable=True)
     width = DB.Column(DB.Integer, nullable=False)
     height = DB.Column(DB.Integer, nullable=False)

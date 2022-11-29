@@ -14,8 +14,8 @@ from .base import JsonModel, IntEnum, CompressedJSON, EpochTimestamp
 class ApiData(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    type = DB.Column(IntEnum(ApiDataTypeEnum), nullable=False)
-    site = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
+    type_id = DB.Column(IntEnum(ApiDataTypeEnum), nullable=False)
+    site_id = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
     data_id = DB.Column(DB.Integer, nullable=False)
     data = DB.Column(CompressedJSON(), nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)

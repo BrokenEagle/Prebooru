@@ -66,7 +66,7 @@ def add_danbooru_artists(url, danbooru_artists, booru_dict, db_artists):
 
 
 def get_or_create_artist_from_source(site_artist_id, source):
-    artist = get_site_artist(site_artist_id, source.SITE)
+    artist = get_site_artist(site_artist_id, source.SITE.value)
     if artist is None:
         artist = create_artist_from_source(site_artist_id, source)
     return artist
@@ -100,7 +100,7 @@ def archive_artist_for_deletion(artist):
 
 def recreate_archived_artist(data):
     retdata = {'error': False}
-    artist = get_site_artist(data['body']['site_artist_id'], data['body']['site'])
+    artist = get_site_artist(data['body']['site_artist_id'], data['body']['site_id'])
     if artist is not None:
         return set_error(retdata, "Artist already exists: artist #%d" % artist.id)
     artist = create_artist_from_json(data['body'])
@@ -126,7 +126,7 @@ def recreate_archived_artist(data):
 
 def relink_archived_artist(data, artist=None):
     if artist is None:
-        artist = get_site_artist(data['body']['site_artist_id'], data['body']['site'])
+        artist = get_site_artist(data['body']['site_artist_id'], data['body']['site_id'])
         if artist is None:
             return "No artist found with site ID %d" % data['body']['site_artist_id']
     for danbooru_id in data['links']['boorus']:

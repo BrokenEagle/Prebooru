@@ -37,7 +37,7 @@ class Subscription(JsonModel):
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
     interval = DB.Column(DB.Float, nullable=False)
     expiration = DB.Column(DB.Float, nullable=True)
-    status = DB.Column(IntEnum(SubscriptionStatusEnum), nullable=False)
+    status_id = DB.Column(IntEnum(SubscriptionStatusEnum), nullable=False)
     last_id = DB.Column(DB.Integer, nullable=True)
     requery = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     checked = DB.Column(EpochTimestamp(nullable=True), nullable=True)

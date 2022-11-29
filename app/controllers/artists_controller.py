@@ -12,6 +12,7 @@ from utility.data import random_id
 # ## LOCAL IMPORTS
 from ..models import Artist, Booru
 from ..logical.utility import set_error
+from ..logical.enums import SiteDescriptorEnum
 from ..logical.sources.base import get_artist_required_params
 from ..logical.sources.danbooru import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion
@@ -28,7 +29,7 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("artist", __name__)
 
-CREATE_REQUIRED_PARAMS = ['site', 'site_artist_id']
+CREATE_REQUIRED_PARAMS = ['site_id', 'site_artist_id']
 VALUES_MAP = {
     'site_accounts': 'site_accounts',
     'site_account_string': 'site_accounts',
@@ -70,7 +71,7 @@ JSON_OPTIONS = (
 # #### Form
 
 FORM_CONFIG = {
-    'site': {
+    'site_id': {
         'field': SelectField,
         'kwargs': {
             'choices': [
@@ -139,10 +140,10 @@ def get_artist_form(**kwargs):
 
 
 def uniqueness_check(dataparams, artist):
-    site = dataparams['site'] if 'site' in dataparams else artist.site
+    site_id = dataparams['site_id'] if 'site_id' in dataparams else artist.site_id
     site_artist_id = dataparams['site_artist_id'] if 'site_artist_id' in dataparams else artist.site_artist_id
-    if site != artist.site or site_artist_id != artist.site_artist_id:
-        return Artist.query.filter_by(site=site, site_artist_id=site_artist_id).one_or_none()
+    if site_id != artist.site_id or site_artist_id != artist.site_artist_id:
+        return Artist.query.filter_by(site_id=site_id, site_artist_id=site_artist_id).one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -185,7 +186,7 @@ def create():
     dataparams = get_data_params(request, 'artist')
     createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    if createparams['site'] == SiteDescriptorEnum.custom and createparams['site_artist_id'] is None:
+    if createparams['site_id'] == SiteDescriptorEnum.custom.id and createparams['site_artist_id'] is None:
         for i in range(100):
             createparams['site_artist_id'] = random_id()
             if uniqueness_check(createparams, Artist()) is None:
@@ -339,7 +340,7 @@ def edit_html(id):
     form = get_artist_form(**editparams)
     if artist.illust_count > 0:
         # Artists with illusts cannot have their critical identifiers changed
-        hide_input(form, 'site')
+        hide_input(form, 'site_id')
         hide_input(form, 'site_artist_id')
     return render_template("artists/edit.html", form=form, artist=artist)
 

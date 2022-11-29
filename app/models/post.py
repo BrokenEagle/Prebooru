@@ -73,7 +73,7 @@ class Post(JsonModel):
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    type = DB.Column(IntEnum(PostTypeEnum), nullable=False)
+    type_id = DB.Column(IntEnum(PostTypeEnum), nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
     pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
     duration = DB.Column(DB.Float, nullable=True)

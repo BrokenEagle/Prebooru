@@ -84,10 +84,10 @@ def get_illust_url_form(**kwargs):
 
 def uniqueness_check(dataparams, illust_url):
     illust_id = dataparams['illust_id'] if 'illust_id' in dataparams else illust_url.illust_id
-    site = dataparams['url'] if 'site' in dataparams else illust_url.site
+    site_id = dataparams['url'] if 'site_id' in dataparams else illust_url.site_id
     url = dataparams['url'] if 'url' in dataparams else illust_url.url
-    if site != illust_url.site or url != illust_url.url:
-        return IllustUrl.query.filter_by(illust_id=illust_id, site=site, url=url).first()
+    if site_id != illust_url.site_id or url != illust_url.url:
+        return IllustUrl.query.filter_by(illust_id=illust_id, site_id=site_id, url=url).first()
 
 
 def convert_data_params(dataparams):
@@ -111,9 +111,9 @@ def convert_update_params(dataparams):
 
 
 def set_url_site(dataparams, source):
-    dataparams['site'] = SiteDescriptorEnum.get_site_from_url(dataparams['url'])
+    dataparams['site'] = SiteDescriptorEnum.get_site_from_url(dataparams['url']).value
     dataparams['url'] = source.partial_media_url(dataparams['url'])
-    dataparams['sample_site'] = SiteDescriptorEnum.get_site_from_url(dataparams['sample']) if dataparams['sample'] is not None else None
+    dataparams['sample_site'] = SiteDescriptorEnum.get_site_from_url(dataparams['sample']).value if dataparams['sample'] is not None else None
     dataparams['sample_url'] = source.partial_media_url(dataparams['sample'])\
         if dataparams['sample'] is not None else None
 

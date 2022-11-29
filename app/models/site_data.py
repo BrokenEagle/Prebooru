@@ -15,7 +15,7 @@ class SiteData(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False, index=True)
-    type = DB.Column(IntEnum(SiteDataTypeEnum), nullable=False)
+    type_id = DB.Column(IntEnum(SiteDataTypeEnum), nullable=False)
 
     # ## Relations
     # (OtO) illust [Illust]

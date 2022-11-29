@@ -29,9 +29,9 @@ class SubscriptionElement(JsonModel):
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    keep = DB.Column(IntEnum(SubscriptionElementKeepEnum, nullable=True), nullable=True)
+    keep_id = DB.Column(IntEnum(SubscriptionElementKeepEnum, nullable=True), nullable=True)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    status = DB.Column(IntEnum(SubscriptionElementStatusEnum), nullable=False)
+    status_id = DB.Column(IntEnum(SubscriptionElementStatusEnum), nullable=False)
 
     # ## Relationships
     errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, uselist=True, cascade='all,delete',

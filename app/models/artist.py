@@ -54,7 +54,7 @@ ArtistNotations = secondarytable(
 class Artist(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
+    site_id = DB.Column(IntEnum(SiteDescriptorEnum), nullable=False)
     site_artist_id = DB.Column(DB.Integer, nullable=False)
     current_site_account = DB.Column(DB.String(255), nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)

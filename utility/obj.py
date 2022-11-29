@@ -60,6 +60,10 @@ class StaticProperty:
 
 
 class AttrEnum(enum.IntEnum):
+    @property
+    def id(self):
+        return self.value
+
     @classproperty(cached=False)
     def names(cls):
         return [e.name for e in cls]
@@ -67,3 +71,11 @@ class AttrEnum(enum.IntEnum):
     @classproperty(cached=False)
     def values(cls):
         return [e.value for e in cls]
+
+    @classmethod
+    def by_name(cls, name):
+        return cls[name]
+
+    @classmethod
+    def by_id(cls, id):
+        return cls(id)

@@ -32,7 +32,7 @@ AVERAGE_INTERVAL_CLAUSE = (func.max(Illust.site_created) - func.min(Illust.site_
 
 def create_subscription_from_parameters(createparams):
     current_time = get_current_time()
-    subscription = Subscription(status='idle', created=current_time, updated=current_time)
+    subscription = Subscription(status_id='idle', created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(subscription, update_columns, createparams)
@@ -55,8 +55,8 @@ def update_subscription_from_parameters(subscription, updateparams):
         SESSION.commit()
 
 
-def update_subscription_status(subscription, status):
-    subscription.status = status
+def update_subscription_status(subscription, value):
+    subscription.status_id = value
     SESSION.commit()
 
 
@@ -90,18 +90,18 @@ def get_available_subscription(unlimited):
     query = Subscription.query.filter(Subscription.requery < get_current_time(),
                                       Subscription.last_id.is_not(None),
                                       Subscription.active.is_(True),
-                                      Subscription.status.not_in(['manual', 'automatic']))
+                                      Subscription.status_id.not_in(['manual', 'automatic']))
     if not unlimited:
         query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
     return query.all()
 
 
 def get_busy_subscriptions():
-    return Subscription.query.filter(Subscription.status.in_(['manual', 'automatic'])).all()
+    return Subscription.query.filter(Subscription.status_id.in_(['manual', 'automatic'])).all()
 
 
 def check_processing_subscriptions():
-    return Subscription.query.filter_by(status='manual').get_count() > 0
+    return Subscription.query.filter_by(status_id='manual').get_count() > 0
 
 
 def get_subscription_by_ids(subscription_ids):
@@ -112,7 +112,7 @@ def get_subscription_by_ids(subscription_ids):
 
 def add_subscription_error(subscription, error):
     subscription.errors.append(error)
-    subscription.status = 'error'
+    subscription.status_id = 'error'
     subscription.checked = get_current_time()
     subscription.requery = None
     subscription.active = False
@@ -135,7 +135,7 @@ def get_average_interval_for_subscriptions(subscriptions, days):
                               .with_entities(SubscriptionElement.subscription_id, AVERAGE_INTERVAL_CLAUSE)\
                               .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
                                       Illust.site_created > days_ago(days),
-                                      SubscriptionElement.keep == 'yes',
+                                      SubscriptionElement.keep_id == 'yes',
                                )\
                               .group_by(SubscriptionElement.subscription_id)\
                               .having(func.count(Illust.id) > 1).all()
