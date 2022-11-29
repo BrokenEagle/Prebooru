@@ -442,7 +442,8 @@ class PoolElementType(EnumModel):
         'pool_notation': 2,
     }
     __mandatory_mapping__ = {
-        'pool_element': 127,
+        'pool_element': 126,
+        'unknown': 127,
     }
 
 
@@ -472,7 +473,8 @@ class SiteDataType(EnumModel):
         'pixiv_data': 1,
     }
     __mandatory_mapping__ = {
-        'site_data': 127,
+        'site_data': 126,
+        'unknown': 127,
     }
 
 
@@ -502,5 +504,6 @@ class TagType(EnumModel):
         'user_tag': 1,
     }
     __mandatory_mapping__ = {
-        'tag': 127,
+        'tag': 126,
+        'unknown': 127,
     }

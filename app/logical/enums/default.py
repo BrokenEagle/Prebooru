@@ -81,19 +81,22 @@ class PoolElementTypeEnum(AttrEnum):
     pool_post = 0
     pool_illust = 1
     pool_notation = 2
-    pool_element = 127
+    pool_element = 126
+    unknown = 127
 
 
 class SiteDataTypeEnum(AttrEnum):
     twitter_data = 0
     pixiv_data = 1
-    site_data = 127
+    site_data = 126
+    unknown = 127
 
 
 class TagTypeEnum(AttrEnum):
     site_tag = 0
     user_tag = 1
-    tag = 127
+    tag = 126
+    unknown = 127
 
 
 class SiteDescriptorEnum(AttrEnum):
