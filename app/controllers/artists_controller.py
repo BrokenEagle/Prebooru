@@ -140,8 +140,8 @@ def get_artist_form(**kwargs):
 
 
 def uniqueness_check(dataparams, artist):
-    site_id = dataparams['site_id'] if 'site_id' in dataparams else artist.site_id
-    site_artist_id = dataparams['site_artist_id'] if 'site_artist_id' in dataparams else artist.site_artist_id
+    site_id = dataparams.get('site_id', artist.site_id)
+    site_artist_id = dataparams.get('site_artist_id', artist.site_artist_id)
     if site_id != artist.site_id or site_artist_id != artist.site_artist_id:
         return Artist.query.enum_join(Artist.site_enum)\
                            .filter(Artist.site_filter('id', '__eq__', site_id),

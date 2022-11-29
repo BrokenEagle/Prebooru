@@ -29,7 +29,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['current_name', 'banned', 'deleted', '_names']
 def set_all_names(params, booru):
     if 'current_name' in params and params['current_name']:
         booru_names = list(booru.names) if booru is not None else []
-        params['names'] = params['names'] if 'names' in params else booru_names
+        params['names'] = params.get('names', booru_names)
         params['names'] = list(set(params['names'] + [params['current_name']]))
 
 

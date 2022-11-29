@@ -190,8 +190,8 @@ def get_illust_form(**kwargs):
 
 
 def uniqueness_check(dataparams, illust):
-    site_id = dataparams['site_id'] if 'site_id' in dataparams else illust.site_id
-    site_illust_id = dataparams['site_illust_id'] if 'site_illust_id' in dataparams else illust.site_illust_id
+    site_id = dataparams.get('site_id', illust.site_id)
+    site_illust_id = dataparams.get('site_illust_id', illust.site_illust_id)
     if site_id != illust.site_id or site_illust_id != illust.site_illust_id:
         return Illust.query.enum_join(Illust.site_enum).filter(Illust.site_filter('id', '__eq__', site_id),
                                                                Illust.site_illust_id == site_illust_id)\
@@ -237,7 +237,7 @@ def index():
     q = Illust.query
     q = search_filter(q, search, negative_search)
     q = pool_filter(q, search)
-    if 'order' in search and search['order'] in ['site']:
+    if search.get('order') == 'site':
         q = q.order_by(Illust.site_illust_id.desc())
     else:
         q = default_order(q, search)

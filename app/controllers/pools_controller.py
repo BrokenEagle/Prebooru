@@ -66,7 +66,7 @@ def get_pool_form(**kwargs):
 
 
 def uniqueness_check(dataparams, pool):
-    name = dataparams['name'] if 'name' in dataparams else pool.name
+    name = dataparams.get('name', pool.name)
     if name != pool.name:
         return Pool.query.filter_by(name=name).first()
 

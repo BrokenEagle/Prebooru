@@ -86,7 +86,7 @@ def get_booru_form(**kwargs):
 
 
 def uniqueness_check(dataparams, artist):
-    danbooru_id = dataparams['danbooru_id'] if 'danbooru_id' in dataparams else artist.danbooru_id
+    danbooru_id = dataparams.get('danbooru_id', artist.danbooru_id)
     if danbooru_id != artist.danbooru_id:
         return Booru.query.filter_by(danbooru_id=danbooru_id).one_or_none()
 

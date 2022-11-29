@@ -128,7 +128,7 @@ def add_container(tagname, markup_text, classlist=[], **attrs):
 
 
 def external_link(text, url, **addons):
-    addons['rel'] = addons['rel'] if 'rel' in addons else ""
+    addons['rel'] = addons.get('rel', "")
     addons['rel'] = ' '.join((addons['rel'].split() + ['external', 'noreferrer', 'nofollow']))
     addons['target'] = '_blank'
     return general_link(text, url, **addons)
@@ -198,12 +198,12 @@ def form_iterator(form):
                     built_markup += field(onclick=kwargs['onclick'])
                 else:
                     built_markup += field
-            description = kwargs['description'] if 'description' in kwargs else field.description
+            description = kwargs.get('description', field.description)
             if description:
                 # Add description if set in class definition or on template form
                 built_markup += add_container('span', description, classlist=['description small-2'])
             # Allow classes to be set individually for any input
-            classlist = ['input'] + (kwargs['classlist'] if 'classlist' in kwargs else [])
+            classlist = ['input'] + kwargs.get('classlist', [])
             return add_container('div', built_markup, classlist=classlist)
 
         yield field_name, _builder

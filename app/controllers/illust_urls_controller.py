@@ -83,9 +83,9 @@ def get_illust_url_form(**kwargs):
 
 
 def uniqueness_check(dataparams, illust_url):
-    illust_id = dataparams['illust_id'] if 'illust_id' in dataparams else illust_url.illust_id
-    site_id = dataparams['url'] if 'site_id' in dataparams else illust_url.site_id
-    url = dataparams['url'] if 'url' in dataparams else illust_url.url
+    illust_id = dataparams.get('illust_id', illust_url.illust_id)
+    site_id = dataparams.get('site_id', illust_url.site_id)
+    url = dataparams.get('url', illust_url.url)
     if site_id != illust_url.site_id or url != illust_url.url:
         return IllustUrl.query.enum_join(IllustUrl.site_enum, IllustUrl.site_id == IllustUrl.site_enum.id)\
                               .filter(IllustUrl.site_filter('id', '__eq__', site_id),

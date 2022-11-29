@@ -42,7 +42,7 @@ BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 def set_all_site_accounts(params, artist):
     if 'current_site_account' in params and params['current_site_account']:
         artist_accounts = list(artist.site_accounts) if artist is not None else []
-        params['site_accounts'] = params['site_accounts'] if 'site_accounts' in params else artist_accounts
+        params['site_accounts'] = params.get('site_accounts', artist_accounts)
         params['site_accounts'] = list(set(params['site_accounts'] + [params['current_site_account']]))
 
 
