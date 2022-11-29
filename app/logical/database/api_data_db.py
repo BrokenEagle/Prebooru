@@ -45,11 +45,22 @@ def delete_expired_api_data():
 # #### Query functions
 
 def get_api_data(data_ids, site_id, type_id):
+    current_time = get_current_time()
+    has_deleted = False
     cache_data = []
     for i in range(0, len(data_ids), 100):
         sublist = data_ids[i: i + 100]
         cache_data += _get_api_data(sublist, site_id, type_id)
-    return cache_data
+    ret_data = []
+    for cache in cache_data:
+        if cache.expires < current_time:
+            SESSION.delete(cache)
+            has_deleted = True
+        else:
+            ret_data.append(cache)
+    if has_deleted:
+        SESSION.commit()
+    return ret_data
 
 
 def get_api_artist(site_artist_id, site_id):
@@ -76,5 +87,4 @@ def _get_api_data(data_ids, site_id, type_id):
         q = q.filter(ApiData.data_id == data_ids[0])
     else:
         q = q.filter(ApiData.data_id.in_(data_ids))
-    q = q.filter(ApiData.expires > get_current_time())
     return q.all()
