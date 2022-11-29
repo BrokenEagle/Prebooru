@@ -98,13 +98,8 @@
                     <li>
                         <a href="{{ url_for('artist.new_html') }}">New</a>
                     </li>
-                </ul>
-            </section>
-            <section id="static-artist-urls">
-                <h4>Artist URLs</h4>
-                <ul>
                     <li>
-                        <a href="{{ url_for('artist_url.index_html') }}">Listing</a>
+                        <a href="{{ url_for('artist_url.index_html') }}">URLs</a>
                     </li>
                 </ul>
             </section>
@@ -119,18 +114,11 @@
                     <li>
                         <a href="{{ url_for('illust.new_html') }}">New</a>
                     </li>
-                </ul>
-            </section>
-            <section id="static-illust-urls">
-                <h4>
-                    Illust URLs
-                </h4>
-                <ul>
                     <li>
-                        <a href="{{ url_for('illust_url.index_html') }}">Listing</a>
+                        <a href="{{ url_for('illust_url.index_html') }}">URLs</a>
                     </li>
                     <li>
-                        <a href="{{ url_for('illust_url.new_html') }}">New</a>
+                        <a href="{{ url_for('illust_url.new_html') }}">New URL</a>
                     </li>
                 </ul>
             </section>
@@ -161,9 +149,6 @@
                 </h4>
                 <ul>
                     <li>
-                        <a href="{{ url_for('image_hash.check_html', show_form='true') }}">Check Image Matches</a>
-                    </li>
-                    <li>
                         <a href="{{ url_for('task.list_html') }}">Tasks</a>
                     </li>
                 </ul>
@@ -173,6 +158,9 @@
                     Similarity
                 </h4>
                 <ul>
+                    <li>
+                        <a href="{{ url_for('image_hash.check_html', show_form='true') }}">Check Image Matches</a>
+                    </li>
                     <li>
                         <a href="{{ url_for('similarity_match.index_html') }}">Elements</a>
                     </li>
