@@ -174,7 +174,7 @@ def process_network_upload(upload):
 
 
 def process_file_upload(upload):
-    illust = upload.illust_url.illust
+    illust = upload.file_illust_url.illust
     requery_time = days_ago(1)
     if illust.updated < requery_time:
         update_illust_from_source(illust)

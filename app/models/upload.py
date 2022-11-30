@@ -56,7 +56,7 @@ class Upload(JsonModel):
     elements = DB.relationship(UploadElement, lazy=True, cascade='all,delete',
                                backref=DB.backref('upload', uselist=False, lazy=True))
     file_illust_url = DB.relationship(IllustUrl, lazy=True, uselist=False, viewonly=True,
-                                      backref=DB.backref('upload', lazy=True, uselist=False))
+                                      backref=DB.backref('file_uploads', lazy=True, uselist=True))
 
     # ## Instance properties
 
@@ -71,14 +71,30 @@ class Upload(JsonModel):
         return self._duplicate_illust_urls
 
     @property
+    def type(self):
+        if len(self.illust_urls):
+            return 'network'
+        if self.illust_url_id is not None:
+            return 'file'
+        return 'unknown'
+
+    @property
     def posts(self):
-        self._populate_posts()
-        return [illust_url.post for illust_url in self.illust_urls if illust_url.post is not None]
+        if self.type == 'network':
+            self._populate_posts()
+            return [illust_url.post for illust_url in self.illust_urls if illust_url.post is not None]
+        elif self.type == 'file':
+            return [self.file_illust_url.post] if self.file_illust_url.post is not None else []
+        return []
 
     @property
     def duplicate_posts(self):
-        self._populate_posts()
-        return [illust_url.post for illust_url in self.duplicate_illust_urls if illust_url.post is not None]
+        if self.type == 'network':
+            self._populate_posts()
+            return [illust_url.post for illust_url in self.duplicate_illust_urls if illust_url.post is not None]
+        elif self.type == 'file':
+            return self.posts if self.status.name == 'duplicate' else []
+        return []
 
     @property
     def post_ids(self):
@@ -137,6 +153,5 @@ class Upload(JsonModel):
         self._populate_illust_urls = lambda: None
 
     def _populate_posts(self):
-        if len(self.illust_urls):
-            selectinload_batch_secondary(self.illust_urls, 'post')
+        selectinload_batch_secondary(self.illust_urls, 'post')
         self._populate_posts = lambda: None

@@ -14,20 +14,20 @@ from .base import load_post_image, check_existing, check_filetype, check_image_d
 
 # ## FUNCTIONS
 
-def convert_file_upload(upload_element):
-    if upload_element.illust_url.type == 'image':
-        post = create_image_post(upload_element, 'user')
-    elif upload_element.illust_url.type == 'video':
-        post = create_video_post(upload_element, 'user')
+def convert_file_upload(upload):
+    if upload.file_illust_url.type == 'image':
+        post = create_image_post(upload, 'user')
+    elif upload.file_illust_url.type == 'video':
+        post = create_video_post(upload, 'user')
     if post is not None:
-        record_outcome(post, upload_element)
+        record_outcome(post, upload)
     return post is not None
 
 
 # #### Post creation functions
 
 def create_image_post(record, post_type):
-    illust_url = record.illust_url
+    illust_url = record.file_illust_url
     file_ext = get_file_extension(record.media_filepath)
     buffer = put_get_raw(record.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url, record)
@@ -51,7 +51,7 @@ def create_image_post(record, post_type):
 
 
 def create_video_post(record, post_type):
-    illust_url = record.illust_url
+    illust_url = record.file_illust_url
     file_ext = get_file_extension(record.media_filepath)
     buffer = put_get_raw(record.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url)
