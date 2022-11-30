@@ -64,8 +64,8 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
     connection_record.uuid = str(uuid.uuid4())
     connection_record.pid = os.getpid()
     DATABASE_INFO.connections[database].add(connection_record.uuid)
-    logger.debug('DBOPEN-%s(%d) [%d]--%s--', database, len(DATABASE_INFO.connections[database]),
-                 connection_record.pid, connection_record.uuid)
+    logger.debug('DBOPEN-%s(%d) [%d]--%s--:CONN(%s)', database, len(DATABASE_INFO.connections[database]),
+                 connection_record.pid, connection_record.uuid, SERVER_INFO.unique_id)
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA journal_mode")
     mode = cursor.fetchone()
@@ -107,8 +107,10 @@ def _fk_open_connections():
 
 def _before_request():
     from app.logical.database.server_info_db import update_last_activity
-    logger.info("Before request: Endpoint - %s, Allow - %s, Active = %d\n",
-                request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
+    SERVER_INFO.unique_id = str(uuid.uuid4())
+    logger.info("Before request: Endpoint - %s, Allow - %s, Active = %d, UUID = %s\n",
+                request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests,
+                SERVER_INFO.unique_id)
     SERVER_INFO.active_requests += 1
     if not re.match(r'^(?:shutdown|ping|scheduler|job|static|media)', request.endpoint or ''):
         try:
@@ -125,8 +127,10 @@ def _before_request():
 def _teardown_request(error=None):
     if error is not None:
         logger.warning(f"\nRequest error: {error}\n")
-    logger.info("After request: Endpoint - %s, Allow - %s, Active = %d\n",
-                request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
+    logger.info("After request: Endpoint - %s, Allow - %s, Active = %d, UUID = %s\n",
+                request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests,
+                SERVER_INFO.unique_id)
+    SERVER_INFO.unique_id = None
     SERVER_INFO.active_requests = max(SERVER_INFO.active_requests - 1, 0)
 
 
