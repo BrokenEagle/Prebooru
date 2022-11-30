@@ -1144,7 +1144,8 @@ def get_illust_data(site_illust_id):
 
 def get_artist_id_by_illust_id(site_illust_id):
     tweet = get_illust_api_data(site_illust_id)
-    return safe_get(tweet, 'user', 'id_str') or safe_get(tweet, 'user_id_str')
+    site_artist_id = safe_get(tweet, 'user', 'id_str') or safe_get(tweet, 'user_id_str')
+    return int(site_artist_id) if site_artist_id is not None else None
 
 
 # #### Other

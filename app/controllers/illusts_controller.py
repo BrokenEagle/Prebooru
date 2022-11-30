@@ -14,7 +14,7 @@ from utility.data import eval_bool_string, is_falsey, random_id
 from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
-from ..logical.sources.base import get_illust_required_params
+from ..logical.records.artist_rec import get_or_create_artist_from_source
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
     illust_delete_commentary, set_illust_artist
@@ -287,27 +287,29 @@ def update(illust):
 def query_create():
     """Query source and create illust."""
     params = dict(url=request.values.get('url'))
-    retdata = {'error': False, 'params': params}
-    retdata.update(get_illust_required_params(params['url']))
-    if retdata['error']:
-        return retdata
-    check_illust = uniqueness_check(retdata, Illust())
+    site = site_descriptor.get_site_from_url(params['url'])
+    createparams = {'site_id': site.id}
+    retdata = {'error': False, 'params': params, 'createparams': createparams}
+    if site.name == 'custom':
+        return set_error(retdata, "Query create does not support URLs from custom domains.")
+    source = site.source
+    createparams['site_illust_id'] = source.get_illust_id(params['url'])
+    if createparams['site_illust_id'] is None:
+        return set_error(retdata, "Unable to find site illust ID with URL.")
+    check_illust = uniqueness_check(createparams, Illust())
     if check_illust is not None:
         retdata['item'] = check_illust.to_json()
         return set_error(retdata, "Illust already exists: %s" % check_illust.shortlink)
-    source = site_descriptor.get_site_from_id(retdata['site_id'])
-    createparams = retdata['data'] = source.get_illust_data(retdata['site_illust_id'])
-    if not createparams['active']:
+    retdata['data'] = source.get_illust_data(createparams['site_illust_id'])
+    if not retdata['data']['active']:
         return set_error(retdata, "Illust post does not exist!")
-    site_artist_id = source.get_artist_id_by_illust_id(retdata['site_illust_id'])
+    createparams.update(retdata['data'])
+    site_artist_id = source.get_artist_id_by_illust_id(createparams['site_illust_id'])
     if site_artist_id is None:
         return set_error(retdata, "Unable to find site artist ID with URL.")
-    artist = Artist.query.enum_join(Artist.site_enum)\
-                       .filter(Artist.site_filter('id', '__eq__', retdata['site_id']),
-                               Artist.site_artist_id == site_artist_id)\
-                       .one_or_none()
+    artist = get_or_create_artist_from_source(site_artist_id, source)
     if artist is None:
-        return set_error(retdata, "Unable to find Prebooru artist... artist must exist before creating an illust.")
+        return set_error(retdata, "Unable to create artist with URL.")
     createparams['artist_id'] = artist.id
     illust = create_illust_from_parameters(createparams)
     retdata['item'] = illust.to_json()

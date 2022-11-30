@@ -28,6 +28,10 @@ class NoSource():
         return url
 
     @staticmethod
+    def get_illust_id(url):
+        return None
+
+    @staticmethod
     def normalized_image_url(url):
         return url
 
@@ -101,21 +105,6 @@ def get_artist_required_params(url):
     if is_error(ret):
         return set_error(retdata, ret.message)
     retdata['site_artist_id'] = int(ret)
-    return retdata
-
-
-def get_illust_required_params(url):
-    retdata = {'error': False}
-    source = get_illust_source(url)
-    if source is None:
-        return set_error(retdata, "Not a valid illust URL.")
-    retdata['site'] = source.SITE
-    ret = source.get_illust_id(url)
-    if ret is None:
-        return set_error(retdata, "Unable to find site illust ID with URL.")
-    if is_error(ret):
-        return set_error(retdata, ret.message)
-    retdata['site_illust_id'] = int(ret)
     return retdata
 
 

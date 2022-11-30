@@ -530,4 +530,5 @@ def get_illust_data(site_illust_id):
 
 def get_artist_id_by_illust_id(site_illust_id):
     artwork = get_illust_api_data(site_illust_id)
-    return safe_get(artwork, 'userId')
+    artist_id = safe_get(artwork, 'userId')
+    return int(artist_id) if artist_id is not None else None
