@@ -28,10 +28,10 @@ def record_outcome(post, record):
         extend_errors(record, valid_errors)
         if record.model_name == 'subscription_element' and record.status.name == 'active':
             update_subscription_element_status(record, 'error')
+        elif record.model_name == 'upload_element' and post.type.name != 'user':
+            update_upload_element_from_parameters(record, {'status': 'error'})
         return False
     if record.model_name == 'upload_element':
-        if post.type.name != 'user':
-            set_post_type(post, 'user')
         update_upload_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
     elif record.model_name == 'subscription_element':
         link_subscription_post(record, post)
@@ -65,6 +65,8 @@ def check_existing(buffer, illust_url, record):
         post_append_illust_url(post, illust_url)
         if record.model_name == 'upload_element':
             update_upload_element_from_parameters(record, {'status': 'duplicate', 'md5': post.md5})
+            if post.type.name != 'user':
+                set_post_type(post, 'user')
         elif record.model_name == 'subscription_element':
             duplicate_subscription_post(record, post.md5)
         return None
