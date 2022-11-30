@@ -163,6 +163,7 @@ def convert_create_params(dataparams):
     createparams = convert_data_params(dataparams)
     set_default(createparams, 'active', True)
     createparams['profiles'] = [dataparams['profile']]
+    createparams['profiles'] = [dataparams['profile']] if len(dataparams['profile']) else None
     return createparams
 
 
