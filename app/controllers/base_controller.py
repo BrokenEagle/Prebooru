@@ -16,6 +16,7 @@ from wtforms.widgets import HiddenInput
 # ## PACKAGE IMPORTS
 from config import MAXIMUM_PAGINATE_LIMIT, DEFAULT_PAGINATE_LIMIT
 from utility.data import eval_bool_string, merge_dicts, kebab_case, display_case
+from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
 from ..logical.searchable import search_attributes
@@ -47,8 +48,10 @@ def show_json_response(model, id, options=None):
     return results.to_json() if type(results) is not dict else results
 
 
-def index_json_response(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT):
-    return jsonify([x.to_json() for x in paginate(query, request, max_limit).items])
+def index_json_response(query, request, **kwargs):
+    # Don't unncessarily calculate the count when doing a JSON response since it doesn't get used
+    kwargs['count'] = False
+    return jsonify([x.to_json() for x in paginate(query, request, **kwargs).items])
 
 
 def jsonify_data(data):
@@ -94,12 +97,17 @@ def default_order(query, search):
     return query.order_by(entity.id.desc())
 
 
-def paginate(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT):
+def paginate(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT, **kwargs):
+    page = get_page(request)
+    per_page = get_limit(request, max_limit)
     try:
-        return query.count_paginate(page=get_page(request), per_page=get_limit(request, max_limit))
-    except Exception:
+        return query.count_paginate(page=page, per_page=per_page, **kwargs)
+    except Exception as e:
         # Fallback to a less efficient paginate upon exception
-        return query.paginate(page=get_page(request), per_page=get_limit(request, max_limit))
+        print_warning(f"Unable to use count paginate: {e}")
+        if kwargs.get('distinct'):
+            query = query.distinct()
+        return query.paginate(page=page, per_page=per_page)
 
 
 # #### ID helpers

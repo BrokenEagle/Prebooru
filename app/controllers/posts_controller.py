@@ -87,7 +87,6 @@ def index():
     q = Post.query
     q = search_filter(q, search, negative_search)
     q = pool_filter(q, search)
-    q = q.distinct(Post.id)
     q = default_order(q, search)
     return q
 
@@ -113,7 +112,7 @@ def show_html(id):
 def index_json():
     q = index()
     q = q.options(JSON_OPTIONS)
-    return index_json_response(q, request)
+    return index_json_response(q, request, distinct=True)
 
 
 @bp.route('/posts', methods=['GET'])
@@ -124,7 +123,7 @@ def index_html():
         if post_type in Post.type_enum.names:
             q = q.enum_join(Post.type_enum).filter(Post.type_filter('name', '__eq__', post_type))
     q = q.options(INDEX_HTML_OPTIONS)
-    posts = paginate(q, request, MAX_LIMIT_HTML)
+    posts = paginate(q, request, max_limit=MAX_LIMIT_HTML, distinct=True)
     return render_template("posts/index.html", posts=posts, post=Post())
 
 

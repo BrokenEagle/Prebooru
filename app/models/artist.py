@@ -89,10 +89,9 @@ class Artist(JsonModel):
     @memoized_property
     def recent_posts(self):
         q = self._post_query
-        q = q.distinct(Post.id)
         q = q.order_by(Post.id.desc())
-        q = q.limit(10)
-        return q.all()
+        page = q.count_paginate(per_page=10, distinct=True, count=False)
+        return page.items
 
     @property
     def booru_count(self):
@@ -104,7 +103,7 @@ class Artist(JsonModel):
 
     @property
     def post_count(self):
-        return self._post_query.distinct().relation_count()
+        return self._post_query.distinct_count()
 
     @property
     def site_domain(self):

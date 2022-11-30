@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 from enum import Enum
 from types import SimpleNamespace
+from functools import reduce
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy import func
@@ -23,17 +24,19 @@ INIT = False
 # ## CLASSES
 
 class CountPaginate():
-    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
+    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT, distinct=False, count=True):
         self.query = query
         self.per_page = per_page
+        self.distinct = distinct
         self.page = max(page, 1)
         self.offset = (page - 1) * per_page
         self.items = self._get_items()
-        self.count = self._get_count()
-        self.pages = ((self.count - 1) // per_page) + 1
-        self.total = self.pages
-        self.first = ((page - 1) * per_page) + 1
-        self.last = min(page * per_page, self.count)
+        if count:
+            self.count = self._get_count()
+            self.pages = ((self.count - 1) // per_page) + 1
+            self.total = self.pages
+            self.first = ((page - 1) * per_page) + 1
+            self.last = min(page * per_page, self.count)
 
     @property
     def has_next(self):
@@ -52,13 +55,16 @@ class CountPaginate():
         return self.page - 1 if self.has_prev else None
 
     def next(self):
-        return CountPaginate(query=self.query, page=self.page + 1, per_page=self.per_page) if self.has_next else None
+        if self.has_next:
+            return CountPaginate(query=self.query, page=self.page + 1, per_page=self.per_page, distinct=distinct)
 
     def prev(self):
-        return CountPaginate(query=self.query, page=self.page - 1, per_page=self.per_page) if self.has_prev else None
+        if self.has_prev:
+            return CountPaginate(query=self.query, page=self.page - 1, per_page=self.per_page, distinct=distinct)
 
     def _get_items(self):
-        return self.query.limit(self.per_page).offset(self.offset).all()
+        q = self.query.distinct() if self.distinct else self.query
+        return q.limit(self.per_page).offset(self.offset).all()
 
     def _get_count(self):
         # Easy way to get an exact copy of a query
@@ -69,7 +75,11 @@ class CountPaginate():
             self._count_query = self._count_query.filter(model.id)
         # Using function count with scalar does not like loader options
         self._count_query._with_options = ()
-        return self._count_query.get_count()
+        if self.distinct:
+            # Keep it from rendering an unncessary DISTINCT outside of the count
+            self._count_query._distinct_on = ()
+            self._count_query._distinct = False
+        return self._count_query.get_count() if not self.distinct else self._count_query.distinct_count()
 
 
 class LimitPaginate():
@@ -147,6 +157,7 @@ def initialize():
         sqlalchemy.orm.selectinload_enum = initialize_selectin_enum()._unbound_fn
         sqlalchemy.orm.Query.get_count = get_count
         sqlalchemy.orm.Query.relation_count = relation_count
+        sqlalchemy.orm.Query.distinct_count = distinct_count
         sqlalchemy.orm.Query.count_paginate = count_paginate
         sqlalchemy.orm.Query.limit_paginate = limit_paginate
         sqlalchemy.orm.Query.all2 = secondary_all
@@ -201,8 +212,14 @@ def relation_count(self):
         return self.distinct().count()
 
 
-def count_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
-    return CountPaginate(query=self, page=page, per_page=per_page)
+def distinct_count(self):
+    entity = self._raw_columns[0]
+    concat_cols = _multiconcat(entity.primary_key.columns)
+    return self.with_entities(func.count(concat_cols.distinct())).scalar()
+
+
+def count_paginate(self, **kwargs):
+    return CountPaginate(query=self, **kwargs)
 
 
 def limit_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
@@ -265,3 +282,7 @@ def _result(item, columns):
 
 def _columns(query):
     return query._raw_columns[0].columns.keys()
+
+
+def _multiconcat(columns):
+    return reduce(lambda acc, x: getattr(acc, 'concat')(x), columns)

@@ -25,10 +25,10 @@
 {% endblock content %}
 
 {% block pagescript %}
-Illusts.SITE_MAP = {
+    Illusts.SITE_MAP = {
     "": "",
     "{{ illust.site_enum.pixiv.id }}": 'pixiv-data',
     "{{ illust.site_enum.twitter.id }}": 'twitter-data',
     "{{ illust.site_enum.custom.id }}": 'custom-data',
-};
+    };
 {% endblock pagescript %}

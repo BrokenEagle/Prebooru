@@ -358,14 +358,14 @@ def show_html(id):
 def index_json():
     q = index()
     q = q.options(JSON_OPTIONS)
-    return index_json_response(q, request)
+    return index_json_response(q, request, distinct=True)
 
 
 @bp.route('/illusts', methods=['GET'])
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    illusts = paginate(q, request)
+    illusts = paginate(q, request, distinct=True)
     return render_template("illusts/index.html", illusts=illusts, illust=Illust())
 
 

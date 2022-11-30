@@ -365,9 +365,13 @@ class JsonModel(DB.Model):
             setattr(cls, key + '_show_url', property(_show_url))
             setattr(cls, key + '_show_link', property(_show_link))
 
+    @classproperty(cached=False)
+    def primary_key(cls):
+        return cls.__table__.primary_key
+
     @classproperty(cached=True)
     def primary_keys(cls):
-        pk_cols = [c for c in cls.__table__.primary_key.columns]
+        pk_cols = [c for c in cls.primary_key.columns]
         return [t.name for t in pk_cols]
 
     @classmethod
