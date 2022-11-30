@@ -104,8 +104,12 @@ def get_relation_definitions(*args, **kwargs):
 
 
 def secondarytable(*args):
+    @property
+    def _query(self):
+        return SESSION.query(self)
+
     table = DB.Table(*args, sqlite_with_rowid=False)
-    table.query = SESSION.query(table)
+    table.__class__.query = _query
     table._model_name = lambda: args[0]
     table._secondary_table = True
     for col in table.columns.keys():
