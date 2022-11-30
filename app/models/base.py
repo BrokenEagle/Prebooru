@@ -461,7 +461,7 @@ class JsonModel(DB.Model):
         column_positions = {}
         relations = []
         for attr in class_attributes:
-            if attr.startswith('_'):
+            if attr.startswith('_') and attr.endswith('_'):
                 continue
             val = getattr(cls, attr)
             if not hasattr(val, 'property'):
