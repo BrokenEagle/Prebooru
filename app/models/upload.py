@@ -14,7 +14,7 @@ from .upload_url import UploadUrl
 from .upload_element import UploadElement
 from .illust_url import IllustUrl
 from .error import Error
-from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, get_relation_definitions
+from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -42,7 +42,9 @@ class Upload(JsonModel):
     request_url = DB.Column(DB.String(255), nullable=True)
     successes = DB.Column(DB.Integer, nullable=False)
     failures = DB.Column(DB.Integer, nullable=False)
-    status, status_id, status_enum, status_filter = get_relation_definitions(upload_status, 'status_id', 'status', 'id', 'upload', nullable=False)
+    status, status_id, status_enum, status_filter =\
+        get_relation_definitions(upload_status, relname='status', relcol='id', colname='status_id',
+                                 tblname='upload', nullable=False)
     media_filepath = DB.Column(DB.String(255), nullable=True)
     sample_filepath = DB.Column(DB.String(255), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=True)

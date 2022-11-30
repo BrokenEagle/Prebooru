@@ -158,4 +158,5 @@ def _expired_clause(keep, action):
         keep_clause = or_(main_clause, SubscriptionElement.keep_filter('name', 'is_', None))
     else:
         keep_clause = main_clause
-    return and_(SubscriptionElement.expires < get_current_time(), SubscriptionElement.status_filter('name', '__eq__', 'active'), keep_clause)
+    return and_(SubscriptionElement.expires < get_current_time(),
+                SubscriptionElement.status_filter('name', '__eq__', 'active'), keep_clause)

@@ -4,7 +4,7 @@
 from .. import DB
 from ..enum_imports import subscription_element_status, subscription_element_keep
 from .error import Error
-from .base import JsonModel, IntEnum, BlobMD5, EpochTimestamp, secondarytable, get_relation_definitions
+from .base import JsonModel, BlobMD5, EpochTimestamp, secondarytable, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -29,9 +29,13 @@ class SubscriptionElement(JsonModel):
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    keep, keep_id, keep_enum, keep_filter = get_relation_definitions(subscription_element_keep, 'keep_id', 'keep', 'id', 'subscription_element', nullable=True)
+    keep, keep_id, keep_enum, keep_filter =\
+        get_relation_definitions(subscription_element_keep, relname='keep', relcol='id', colname='keep_id',
+                                 tblname='subscription_element', nullable=True)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    status, status_id, status_enum, status_filter = get_relation_definitions(subscription_element_status, 'status_id', 'status', 'id', 'subscription_element', nullable=False)
+    status, status_id, status_enum, status_filter =\
+        get_relation_definitions(subscription_element_status, relname='status', relcol='id', colname='status_id',
+                                 tblname='subscription_element', nullable=False)
 
     # ## Relationships
     errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, uselist=True, cascade='all,delete',

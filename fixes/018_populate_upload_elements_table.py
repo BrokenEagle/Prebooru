@@ -69,7 +69,7 @@ def create_missing_upload_elements():
 
 
 def delete_duplicate_error_records():
-    error_ids = [e[0] for e in Error.query.filter(Error.message.ilike('%already uploaded on post #%'))\
+    error_ids = [e[0] for e in Error.query.filter(Error.message.ilike('%already uploaded on post #%'))
                                           .with_entities(Error.id)]
     for i in range(0, len(error_ids), 100):
         sublist = error_ids[i: i + 100]

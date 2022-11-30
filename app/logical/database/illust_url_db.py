@@ -7,11 +7,13 @@ from .base_db import update_column_attributes
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height', 'order', 'active']
+COLUMN_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'sample_site_id', 'sample_url',
+                     'width', 'height', 'order', 'active']
 
-CREATE_ALLOWED_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height', 'order',
-                             'active']
-UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height', 'order', 'active']
+CREATE_ALLOWED_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'sample_site_id', 'sample_url',
+                             'width', 'height', 'order', 'active']
+UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height',
+                             'order', 'active']
 
 
 # ## FUNCTIONS

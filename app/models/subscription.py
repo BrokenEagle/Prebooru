@@ -14,7 +14,7 @@ from .illust import IllustUrl
 from .post import Post
 from .error import Error
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, get_relation_definitions
+from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -37,7 +37,9 @@ class Subscription(JsonModel):
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
     interval = DB.Column(DB.Float, nullable=False)
     expiration = DB.Column(DB.Float, nullable=True)
-    status, status_id, status_enum, status_filter = get_relation_definitions(subscription_status, 'status_id', 'status', 'id', 'subscription', nullable=False)
+    status, status_id, status_enum, status_filter =\
+        get_relation_definitions(subscription_status, relname='status', relcol='id', colname='status_id',
+                                 tblname='subscription', nullable=False)
     last_id = DB.Column(DB.Integer, nullable=True)
     requery = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     checked = DB.Column(EpochTimestamp(nullable=True), nullable=True)

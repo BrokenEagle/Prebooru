@@ -107,9 +107,10 @@ def _fk_open_connections():
 
 def _before_request():
     from app.logical.database.server_info_db import update_last_activity
-    logger.info("Before request: Endpoint - %s, Allow - %s, Active = %d\n", request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
+    logger.info("Before request: Endpoint - %s, Allow - %s, Active = %d\n",
+                request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
     SERVER_INFO.active_requests += 1
-    if request.endpoint is not None and not re.match(r'^(?:shutdown|ping|scheduler|job|static|media)', request.endpoint):
+    if not re.match(r'^(?:shutdown|ping|scheduler|job|static|media)', request.endpoint or ''):
         try:
             update_last_activity('user')
         except Exception as e:
@@ -124,7 +125,8 @@ def _before_request():
 def _teardown_request(error=None):
     if error is not None:
         logger.warning(f"\nRequest error: {error}\n")
-    logger.info("After request: Endpoint - %s, Allow - %s, Active = %d\n", request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
+    logger.info("After request: Endpoint - %s, Allow - %s, Active = %d\n",
+                request.endpoint, SERVER_INFO.allow_requests, SERVER_INFO.active_requests)
     SERVER_INFO.active_requests = max(SERVER_INFO.active_requests - 1, 0)
 
 
@@ -159,6 +161,12 @@ def _error_handler(error):
 @atexit.register
 def _close_session():
     SESSION.close()
+
+
+def _load_models():
+    from . import enum_imports  # noqa: F401
+    from . import models
+    models.initialize()
 
 
 # ## CLASSES
@@ -249,7 +257,4 @@ if DEBUG_LOG and not is_interactive_shell() and (not DEBUG_MODE or os.environ.ge
 query_extensions.initialize()
 
 # #### Load models
-
-from . import enum_imports
-from . import models
-models.initialize()
+_load_models()

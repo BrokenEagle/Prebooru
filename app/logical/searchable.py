@@ -128,7 +128,7 @@ def column_type(model, columnname):
     if column_type is not None:
         return switcher[column_type]
     else:
-        raise Exception("%s - column of unexpected type: %s" % (columnname, str(model_class)))
+        raise Exception("%s - column of unexpected type: %s" % (columnname, str(column_type)))
 
 
 # #### Main execution functions

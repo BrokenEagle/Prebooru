@@ -108,13 +108,6 @@ def get_artist_required_params(url):
     return retdata
 
 
-def get_illust_url_params(media_url):
-    source = get_media_source(media_url)
-    site = get_image_site(media_url)
-    partial_url = source.partial_media_url(media_url)
-    return site, partial_url
-
-
 # #### Private
 
 def _import_package():

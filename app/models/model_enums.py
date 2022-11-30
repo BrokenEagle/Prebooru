@@ -53,7 +53,6 @@ class EnumModel(JsonModel):
     _enum_model = True
 
 
-
 # #### Column enums
 
 class SiteDescriptor(EnumModel):

@@ -4,3 +4,6 @@ ignore = W503
 exclude = migrations/versions*,migrations/env.py,config/local.py
 classmethod-decorators = classmethod,classproperty
 max-complexity = 10
+per-file-ignores =
+    app/enum_imports.py: N813, F401
+    app/logical/enums/__init__.py: F403, F401

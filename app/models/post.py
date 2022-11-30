@@ -26,7 +26,7 @@ from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
-from .base import JsonModel, EpochTimestamp, IntEnum, secondarytable, image_server_url, BlobMD5, get_relation_definitions
+from .base import JsonModel, EpochTimestamp, secondarytable, image_server_url, BlobMD5, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -73,7 +73,9 @@ class Post(JsonModel):
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    type, type_id, type_enum, type_filter = get_relation_definitions(post_type, 'type_id', 'type', 'id', 'post', nullable=False)
+    type, type_id, type_enum, type_filter =\
+        get_relation_definitions(post_type, relname='type', relcol='id', colname='type_id',
+                                 tblname='post', nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
     pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
     duration = DB.Column(DB.Float, nullable=True)

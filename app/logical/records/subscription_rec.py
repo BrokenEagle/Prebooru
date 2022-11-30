@@ -314,7 +314,8 @@ def reinstantiate_element(element):
     if results['error']:
         unlinked = SubscriptionElement.query.filter(SubscriptionElement.md5 == element.md5,
                                                     SubscriptionElement.id.is_not(element.id),
-                                                    SubscriptionElement.status_filter('name', '__eq__', 'unlinked')).first()
+                                                    SubscriptionElement.status_filter('name', '__eq__', 'unlinked'))\
+                                            .first()
         if unlinked is not None:
             update_subscription_element_status(element, 'duplicate')
         return results

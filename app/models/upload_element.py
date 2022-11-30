@@ -4,7 +4,7 @@
 from .. import DB
 from ..enum_imports import upload_element_status
 from .error import Error
-from .base import JsonModel, IntEnum, BlobMD5, secondarytable, get_relation_definitions
+from .base import JsonModel, BlobMD5, secondarytable, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -27,7 +27,9 @@ class UploadElement(JsonModel):
     upload_id = DB.Column(DB.Integer, DB.ForeignKey('upload.id'), nullable=False, index=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    status, status_id, status_enum, status_filter = get_relation_definitions(upload_element_status, 'status_id', 'status', 'id', 'upload_element', nullable=False)
+    status, status_id, status_enum, status_filter =\
+        get_relation_definitions(upload_element_status, relname='status', relcol='id', colname='status_id',
+                                 tblname='upload_element', nullable=False)
 
     # ## Relationships
     errors = DB.relationship(Error, secondary=UploadElementErrors, lazy=True, cascade='all,delete',

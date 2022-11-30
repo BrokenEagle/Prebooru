@@ -96,46 +96,11 @@ def relation_property_factory(model_key, table_name, relation_key):
     return _shortlink, _show_url, _show_link
 
 
-def get_relation_definitions(enum_or_rel, colname, relname, relcol, tblname, backname=None, nullable=None):
+def get_relation_definitions(*args, **kwargs):
     if USE_ENUMS:
-        baseval = DB.Column(colname, IntEnum(enum_or_rel, nullable=nullable, colname=colname, tblname=tblname), nullable=nullable)
-        @property
-        def idval(self):
-            attr = getattr(self, relname)
-            return attr.value if attr is not None else None
-        @idval.setter
-        def idval(self, value):
-            setattr(self, relname, enum_or_rel(value) if value is not None else None)
-        @classmethod
-        def filter(cls, relattr, op, *args):
-            enum_op = getattr(getattr(cls, relname), op)
-            if type(args[0]) in (set, list, tuple):
-                if relattr == 'id':
-                    arg = [enum_or_rel(a) for a in args[0]]
-                elif relattr == 'name':
-                    arg = [enum_or_rel[a] for a in args[0]]
-            elif args[0] is not None:
-                if relattr == 'id':
-                    arg = enum_or_rel(args[0])
-                elif relattr == 'name':
-                    arg = enum_or_rel[args[0]]
-            else:
-                arg = args[0]
-            return enum_op(arg, *args[1:])
+        return _get_relation_definitions_use_enums(*args, **kwargs)
     else:
-        idval = DB.Column(DB.INTEGER, DB.ForeignKey(getattr(enum_or_rel, relcol)), nullable=nullable)
-        relation_kw = {
-            'lazy': True,
-            'foreign_keys': [idval],
-        }
-        if backname is not None:
-            relation_kw['backref'] = DB.backref(backname, lazy=True)
-        baseval = DB.relation(enum_or_rel, **relation_kw)
-        @classmethod
-        def filter(cls, relattr, op, *args):
-            enum_op = getattr(getattr(enum_or_rel, relattr), op)
-            return enum_op(*args)
-    return baseval, idval, enum_or_rel, filter
+        return _get_relation_definitions_use_models(*args, **kwargs)
 
 
 def secondarytable(*args):
@@ -244,14 +209,16 @@ class IntEnum(DB.TypeDecorator):
             return value.id
         if value is None and self._nullable:
             return None
-        raise ValueError(f"Illegal value {repr(value)} to bind for enum {self._enumname} to {self._tblname}:{self._colname}.")
+        msg = f"Illegal value {repr(value)} to bind for enum {self._enumname} to {self._tblname}:{self._colname}."
+        raise ValueError(msg)
 
     def process_result_value(self, value, dialect):
         if value in self._values:
             return self._enumtype(value)
         if value is None and self._nullable:
             return None
-        raise ValueError(f"Illegal value {repr(value)} found in DB for enum {self._enumname} on {self._tblname}:{self._colname}.")
+        msg = f"Illegal value {repr(value)} found in DB for enum {self._enumname} on {self._tblname}:{self._colname}."
+        raise ValueError(msg)
 
 
 class CompressedJSON(DB.TypeDecorator):
@@ -492,3 +459,66 @@ class JsonModel(DB.Model):
 
     _secondary_table = False
     _enum_model = False
+
+
+# #### Private
+
+def _get_relation_definitions_use_enums(enm, relname=None, colname=None, tblname=None, nullable=None, **kwargs):
+    if relname is None:
+        raise Exception(f"Relation name is not defined for relation definition on {enm}.")
+    baseval = DB.Column(colname,
+                        IntEnum(enm, nullable=nullable, colname=colname, tblname=tblname),
+                        nullable=nullable)
+
+    @property
+    def idval(self):
+        attr = getattr(self, relname)
+        return attr.value if attr is not None else None
+
+    @idval.setter
+    def idval(self, value):
+        setattr(self, relname, enm(value) if value is not None else None)
+
+    @classmethod
+    def filter(cls, relattr, op, *args):
+        rel = getattr(cls, relname)
+        return _enum_filter(enm, rel, relattr, op, *args)
+
+    return baseval, idval, enm, filter
+
+
+def _get_relation_definitions_use_models(rel, relcol=None, backname=None, nullable=None, **kwargs):
+    if relcol is None:
+        raise Exception(f"Relation column is not defined for relation definition on {rel}.")
+    idval = DB.Column(DB.INTEGER, DB.ForeignKey(getattr(rel, relcol)), nullable=nullable)
+    relation_kw = {
+        'lazy': True,
+        'foreign_keys': [idval],
+    }
+    if backname is not None:
+        relation_kw['backref'] = DB.backref(backname, lazy=True)
+    baseval = DB.relation(rel, **relation_kw)
+
+    @classmethod
+    def filter(cls, relattr, op, *args):
+        enum_op = getattr(getattr(rel, relattr), op)
+        return enum_op(*args)
+
+    return baseval, idval, rel, filter
+
+
+def _enum_filter(enm, rel, relattr, op, *args):
+    enum_op = getattr(rel, op)
+    if type(args[0]) in (set, list, tuple):
+        if relattr == 'id':
+            arg = [enm(a) for a in args[0]]
+        elif relattr == 'name':
+            arg = [enm[a] for a in args[0]]
+    elif args[0] is not None:
+        if relattr == 'id':
+            arg = enm(args[0])
+        elif relattr == 'name':
+            arg = enm[args[0]]
+    else:
+        arg = args[0]
+    return enum_op(arg, *args[1:])

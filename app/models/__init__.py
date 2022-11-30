@@ -11,59 +11,67 @@ import sqlalchemy
 # ## LOCAL IMPORTS
 from .. import DB
 
-# ## COLLATION IMPORTS
+
+# ## GLOBAL VARIABLES
+
+NONCE = None
+TABLES = {}
+
+
+# ## FUNCTIONS
 
 def load_all():
-    global  SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,\
-            SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,\
-            Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,\
-            IllustCommentaries, IllustNotations, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
-            ArtistNotations, Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations,\
-            PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, Notation, Pool, PoolElement, PoolPost,\
-            PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,\
-            SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,\
-            UploadElement, UploadElementErrors,\
-            MediaFile, Domain,\
-            ServerInfo, Version,\
-            JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
+    global\
+        SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,\
+        SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,\
+        Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,\
+        IllustCommentaries, IllustNotations, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
+        ArtistNotations, Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations,\
+        PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, Notation, Pool, PoolElement, PoolPost,\
+        PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,\
+        SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,\
+        UploadElement, UploadElementErrors,\
+        MediaFile, Domain,\
+        ServerInfo, Version,\
+        JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
 
     # #### Enum data
     from .model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
         SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType,\
-        SiteDataType, TagType  # noqa: F401
+        SiteDataType, TagType
 
     # #### Site data
-    from .tag import Tag, SiteTag, UserTag  # noqa: F401
-    from .label import Label  # noqa: F401
-    from .description import Description  # noqa: F401
-    from .site_data import SiteData, PixivData, TwitterData  # noqa: F401
-    from .illust_url import IllustUrl  # noqa: F401
-    from .illust import Illust, IllustTags, IllustCommentaries, IllustNotations  # noqa: F401
-    from .artist_url import ArtistUrl  # noqa: F401
-    from .artist import Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles, ArtistNotations  # noqa: F401
-    from .booru import Booru, BooruNames, BooruArtists  # noqa: F401
+    from .tag import Tag, SiteTag, UserTag
+    from .label import Label
+    from .description import Description
+    from .site_data import SiteData, PixivData, TwitterData
+    from .illust_url import IllustUrl
+    from .illust import Illust, IllustTags, IllustCommentaries, IllustNotations
+    from .artist_url import ArtistUrl
+    from .artist import Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles, ArtistNotations
+    from .booru import Booru, BooruNames, BooruArtists
 
     # #### Local data
-    from .error import Error  # noqa: F401
-    from .post import Post, PostIllustUrls, PostErrors, PostNotations, PostTags  # noqa: F401
-    from .upload import Upload, UploadUrls, UploadErrors  # noqa: F401
-    from .upload_element import UploadElement, UploadElementErrors  # noqa: F401
-    from .upload_url import UploadUrl  # noqa: F401
-    from .notation import Notation  # noqa: F401
-    from .pool import Pool  # noqa: F401
-    from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation  # noqa: F401
-    from .subscription import Subscription, SubscriptionErrors  # noqa: F401
-    from .subscription_element import SubscriptionElement, SubscriptionElementErrors  # noqa: F401
+    from .error import Error
+    from .post import Post, PostIllustUrls, PostErrors, PostNotations, PostTags
+    from .upload import Upload, UploadUrls, UploadErrors
+    from .upload_element import UploadElement, UploadElementErrors
+    from .upload_url import UploadUrl
+    from .notation import Notation
+    from .pool import Pool
+    from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation
+    from .subscription import Subscription, SubscriptionErrors
+    from .subscription_element import SubscriptionElement, SubscriptionElementErrors
 
     # #### Similarity data
-    from .image_hash import ImageHash  # noqa: F401
-    from .similarity_match import SimilarityMatch  # noqa: F401
+    from .image_hash import ImageHash
+    from .similarity_match import SimilarityMatch
 
     # #### Cache data
-    from .api_data import ApiData  # noqa: F401
-    from .archive import Archive  # noqa: F401
-    from .media_file import MediaFile  # noqa: F401
-    from .domain import Domain  # noqa: F401
+    from .api_data import ApiData
+    from .archive import Archive
+    from .media_file import MediaFile
+    from .domain import Domain
 
     # #### Server data
 
@@ -73,14 +81,6 @@ def load_all():
     # #### Job data
     from .jobs import JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
 
-
-# ## GLOBAL VARIABLES
-
-NONCE = None
-TABLES = {}
-
-
-# ## FUNCTIONS
 
 def initialize():
 

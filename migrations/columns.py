@@ -15,7 +15,7 @@ from . import get_inspector
 
 # #### Batch operations
 
-def add_columns(table_name, add_column_commands, batch_kwargs=None):
+def add_columns(table_name, add_column_commands, batch_op=None, batch_kwargs=None):
     def _process(batch_op, add_column_commands):
         for (column_name, column_type) in add_column_commands:
             batch_op.add_column(sa.Column(column_name, getattr(sa, column_type)(), nullable=True))

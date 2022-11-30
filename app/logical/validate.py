@@ -25,6 +25,7 @@ CREATE TABLE alembic_version_temp (
 ) WITHOUT ROWID
 """
 
+
 # ## FUNCTIONS
 
 def validate_python():

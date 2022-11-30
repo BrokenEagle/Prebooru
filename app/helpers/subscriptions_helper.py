@@ -5,14 +5,13 @@ from flask import url_for, request, Markup
 
 # ## PACKAGE IMPORTS
 from utility.data import readable_bytes
-from utility.time import humanized_timedelta
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
 from ..logical.database.subscription_db import get_average_interval_for_subscriptions
 from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
-from .base_helper import general_link, url_for_with_params, val_or_none
+from .base_helper import general_link, url_for_with_params
 
 
 # ## GLOBAL VARIABLES

@@ -18,7 +18,7 @@ from .subscription import Subscription
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, get_relation_definitions
+from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions
 
 
 # ## GLOBAL VARIABLES
@@ -54,7 +54,9 @@ ArtistNotations = secondarytable(
 class Artist(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site, site_id, site_enum, site_filter = get_relation_definitions(site_descriptor, 'site_id', 'site', 'id', 'artist', nullable=False)
+    site, site_id, site_enum, site_filter =\
+        get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
+                                 tblname='artist', nullable=False)
     site_artist_id = DB.Column(DB.Integer, nullable=False)
     current_site_account = DB.Column(DB.String(255), nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)

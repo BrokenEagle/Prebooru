@@ -12,7 +12,7 @@ from config import DEFAULT_PAGINATE_LIMIT, USE_ENUMS
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
 from ..enum_imports import pool_element_type
-from .base import JsonModel, IntEnum, get_relation_definitions
+from .base import JsonModel, get_relation_definitions
 
 
 # ## FUNCTIONS
@@ -50,7 +50,9 @@ class PoolElement(JsonModel):
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
     notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
     position = DB.Column(DB.Integer, nullable=False)
-    type, type_id, type_enum, type_filter = get_relation_definitions(pool_element_type, 'type_id', 'type', 'id', 'pool_element', nullable=False)
+    type, type_id, type_enum, type_filter =\
+        get_relation_definitions(pool_element_type, relname='type', relcol='id', colname='type_id',
+                                 tblname='pool_element', nullable=False)
 
     # ## Relationships
     # (MtO) pool [Pool]

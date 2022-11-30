@@ -10,7 +10,7 @@ from config import USE_ENUMS
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import tag_type
-from .base import JsonModel, IntEnum, get_relation_definitions
+from .base import JsonModel, get_relation_definitions
 
 
 # ## CLASSES
@@ -19,7 +19,9 @@ class Tag(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
-    type, type_id, type_enum, type_filter = get_relation_definitions(tag_type, 'type_id', 'type', 'id', 'tag', nullable=False)
+    type, type_id, type_enum, type_filter =\
+        get_relation_definitions(tag_type, relname='type', relcol='id', colname='type_id',
+                                 tblname='tag', nullable=False)
 
     # ## Instance properties
 
@@ -82,7 +84,7 @@ class SiteTag(Tag):
         from .illust_url import IllustUrl
         from .illust import Illust
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust._tags)\
-                   .filter(Tag.id == self.id)
+                         .filter(Tag.id == self.id)
 
     __mapper_args__ = {
         'polymorphic_identity': tag_type.site_tag.id,
@@ -115,7 +117,7 @@ class UserTag(Tag):
         from .illust_url import IllustUrl
         from .post import Post
         return Illust.query.join(IllustUrl).join(Post, IllustUrl.post).join(UserTag, Post._tags)\
-                     .filter(UserTag.id == self.id)
+                           .filter(UserTag.id == self.id)
 
     @property
     def _post_query(self):

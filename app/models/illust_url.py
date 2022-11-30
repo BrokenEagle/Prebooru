@@ -11,7 +11,7 @@ from .. import DB
 from ..enum_imports import site_descriptor
 from .upload_element import UploadElement
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, IntEnum, get_relation_definitions
+from .base import JsonModel, get_relation_definitions
 
 
 # ## CLASSES
@@ -19,9 +19,13 @@ from .base import JsonModel, IntEnum, get_relation_definitions
 class IllustUrl(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site, site_id, site_enum, site_filter = get_relation_definitions(site_descriptor, 'site_id', 'site', 'id', 'illust_url', nullable=False)
+    site, site_id, site_enum, site_filter =\
+        get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
+                                 tblname='illust_url', nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
-    sample_site, sample_site_id, sample_site_enum, sample_site_filter = get_relation_definitions(site_descriptor, 'sample_site_id', 'sample_site', 'id', 'illust_url', nullable=True)
+    sample_site, sample_site_id, sample_site_enum, sample_site_filter =\
+        get_relation_definitions(site_descriptor, relname='sample_site', relcol='id', colname='sample_site_id',
+                                 tblname='illust_url', nullable=True)
     sample_url = DB.Column(DB.String(255), nullable=True)
     width = DB.Column(DB.Integer, nullable=False)
     height = DB.Column(DB.Integer, nullable=False)

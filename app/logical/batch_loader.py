@@ -1,5 +1,6 @@
 # APP/LOGICAL/BATCH_LOADER.PY
 
+
 # ## FUNCTIONS
 
 def selectinload_batch_primary(records, relation):

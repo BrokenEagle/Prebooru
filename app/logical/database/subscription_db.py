@@ -148,6 +148,6 @@ def get_average_interval_for_subscriptions(subscriptions, days):
                               .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
                                       Illust.site_created > days_ago(days),
                                       keep_filter,
-                               )\
+                                      )\
                               .group_by(SubscriptionElement.subscription_id)\
                               .having(func.count(Illust.id) > 1).all()

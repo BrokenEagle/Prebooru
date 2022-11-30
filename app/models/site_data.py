@@ -9,7 +9,7 @@ from config import USE_ENUMS
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import site_data_type
-from .base import JsonModel, IntEnum, EpochTimestamp, get_relation_definitions
+from .base import JsonModel, EpochTimestamp, get_relation_definitions
 
 
 # ## CLASSES
@@ -18,7 +18,9 @@ class SiteData(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False, index=True)
-    type, type_id, type_enum, type_filter = get_relation_definitions(site_data_type, 'type_id', 'type', 'id', 'site_data', nullable=False)
+    type, type_id, type_enum, type_filter =\
+        get_relation_definitions(site_data_type, relname='type', relcol='id', colname='type_id',
+                                 tblname='site_data', nullable=False)
 
     # ## Relations
     # (OtO) illust [Illust]

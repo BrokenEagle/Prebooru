@@ -346,7 +346,6 @@ def is_post_url(url):
 
 def partial_media_url(url):
     parse = urllib.parse.urlparse(url)
-    site = site_descriptor.get_site_from_domain(parse.netloc)
     match = IMAGE2_RG.match(url)
     query_addon = '?format=%s' % match.group(3) if match else ""
     return parse.path + query_addon
