@@ -59,10 +59,18 @@ logger.addHandler(LOGHANDLER)
 # ## FUNCTIONS
 
 def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
-    if DEBUG_LOG:
-        dbapi_connection.set_trace_callback(print)
-    connection_record.uuid = str(uuid.uuid4())
+    conuuid = connection_record.uuid = str(uuid.uuid4())
     connection_record.pid = os.getpid()
+    if DEBUG_LOG:
+
+        def _dbg_print(*args, **kwargs):
+            sep = kwargs.get('sep', ' ')
+            fmt_str = sep.join(arg.replace('\n', '\n\t') for arg in args)
+            final_str = f'====Conn({conuuid})====\n\t' + fmt_str
+            print(final_str, **kwargs)
+
+        dbapi_connection.set_trace_callback(_dbg_print)
+
     DATABASE_INFO.connections[database].add(connection_record.uuid)
     logger.debug('DBOPEN-%s(%d) [%d]--%s--:CONN(%s)', database, len(DATABASE_INFO.connections[database]),
                  connection_record.pid, connection_record.uuid, SERVER_INFO.unique_id)
