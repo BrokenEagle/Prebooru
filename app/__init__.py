@@ -78,7 +78,7 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
     cursor.execute("PRAGMA journal_mode")
     mode = cursor.fetchone()
     if mode != ('wal',):
-        cursor.execute("PRAGMA journal_mode = wal;")
+        cursor.execute("PRAGMA journal_mode = wal")
         cursor.execute("PRAGMA journal_mode")
         mode = cursor.fetchone()
         if mode != ('wal',):
@@ -87,6 +87,7 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
     cursor.execute('PRAGMA temp_store = MEMORY')
     cursor.execute('PRAGMA mmap_size = 0x7FFF0000')
     cursor.execute('PRAGMA cache_size = -32000')
+    cursor.execute('PRAGMA foreign_keys = 1')
     cursor.close()
 
 
