@@ -101,17 +101,26 @@ class Illust(JsonModel):
         return [post for post in self._posts if post is not None]
 
     @property
-    def site_domain(self):
-        return self.site.domain
+    def type(self):
+        if self.has_images and self.has_videos:
+            return 'mixed'
+        if self.has_images:
+            return 'image'
+        if self.has_videos:
+            return 'video'
+        return 'unknown'
 
     @memoized_property
-    def type(self):
-        if self.site.source.illust_has_videos(self):
-            return 'video'
-        elif self.site.source.illust_has_images(self):
-            return 'image'
-        else:
-            return 'unknown'
+    def has_images(self):
+        return any(illust_url.type == 'image' for illust_url in self.urls)
+
+    @memoized_property
+    def has_videos(self):
+        return any(illust_url.type == 'video' for illust_url in self.urls)
+
+    @property
+    def site_domain(self):
+        return self.site.domain
 
     def delete(self):
         pools = [pool for pool in self.pools]

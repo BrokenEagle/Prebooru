@@ -280,14 +280,6 @@ LAST_QUERY = None
 
 # Illust
 
-def illust_has_images(illust):
-    return any(map(image_url_mapper, illust.urls))
-
-
-def illust_has_videos(illust):
-    return any(map(video_url_mapper, illust.urls))
-
-
 def image_illust_download_urls(illust):
     return list(filter(lambda x: image_url_mapper, illust.urls))
 

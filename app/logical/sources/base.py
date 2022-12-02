@@ -4,6 +4,7 @@
 from utility.file import get_http_filename, get_file_extension
 
 # ## LOCAL IMPORTS
+from ...enum_imports import site_descriptor
 from ..utility import set_error
 from ..database.error_db import is_error
 
@@ -12,6 +13,8 @@ from ..database.error_db import is_error
 
 class NoSource():
     """These mirror the functions in the other source files, for when a source is not found"""
+
+    SITE = site_descriptor.custom
 
     IMAGE_HEADERS = {}
 
@@ -24,7 +27,11 @@ class NoSource():
         return url
 
     @staticmethod
-    def get_preview_url(url):
+    def normalized_image_url(url):
+        return url
+
+    @staticmethod
+    def partial_media_url(url):
         return url
 
     @staticmethod
@@ -36,20 +43,28 @@ class NoSource():
         return url
 
     @staticmethod
+    def get_media_url(illust_url):
+        return illust_url.url
+
+    @staticmethod
+    def get_preview_url(illust_url):
+        return illust_url.url
+
+    @staticmethod
+    def video_url_mapper(illust_url):
+        return illust_url.sample_site_id is not None and illust_url.sample_url is not None
+
+    @staticmethod
+    def image_url_mapper(illust_url):
+        return illust_url.sample_site_id is None and illust_url.sample_url is None
+
+    @staticmethod
     def get_media_extension(url):
         return get_file_extension(get_http_filename(url)).replace('jpeg', 'jpg')
 
     @staticmethod
     def artist_booru_search_url(url):
         return None
-
-    @staticmethod
-    def illust_has_images(illust):
-        return False
-
-    @staticmethod
-    def illust_has_videos(illust):
-        return False
 
 
 # ## FUNCTIONS
@@ -89,6 +104,7 @@ def get_media_source(image_url):
     for source in SOURCES:
         if source.is_image_url(image_url) or source.is_video_url(image_url):
             return source
+    return NoSource
 
 
 # #### Param functions

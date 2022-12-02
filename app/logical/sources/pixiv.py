@@ -153,14 +153,6 @@ def get_illust_url(site_illust_id):
     return ILLUST_HREFURL % site_illust_id
 
 
-def illust_has_images(illust_url):
-    return True
-
-
-def illust_has_videos(illust_url):
-    return False
-
-
 def image_illust_download_urls(illust):
     return list(filter(lambda x: image_url_mapper, illust.urls))
 
