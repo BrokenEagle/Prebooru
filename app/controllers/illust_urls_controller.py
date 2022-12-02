@@ -24,6 +24,7 @@ bp = Blueprint("illust_url", __name__)
 
 CREATE_REQUIRED_PARAMS = ['illust_id', 'url']
 VALUES_MAP = {
+    'sample': 'sample',
     **{k: k for k in IllustUrl.__table__.columns.keys()},
 }
 
