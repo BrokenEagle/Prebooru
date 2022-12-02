@@ -9,11 +9,7 @@
     <div id="notation-form-heading" class="heading">Edit {{ notation.header }}</div>
     {% if notation.append_item is not none %}
         <div id="notation-form-info">
-            {% if notation.append_type == "pool_element" %}
-                For {{ notation.append_item.pool.name_link }}:
-            {% else %}
-                For {{ notation.append_item.show_link }}:
-            {% endif %}
+            {{ helpers.notation.edit_append_info(notation) }}
         </div>
     {% endif %}
     {{ render_form(form, "PUT", notation.update_url) }}
