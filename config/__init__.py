@@ -20,7 +20,8 @@ VERSION = '2.27.3'
 
 # ## INTITIALIZATION
 
-DEBUG_LOG = get_environment_variable('DEBUG_LOG', False, eval_bool_string)
+DEBUG_LOG = get_environment_variable('DEBUG_LOG', DEBUG_LOG, eval_bool_string)
+DEBUG_VERBOSE = get_environment_variable('DEBUG_VERBOSE', DEBUG_VERBOSE, eval_bool_string)
 
 LOGHANDLER = logging.StreamHandler()
 LOGHANDLER.setLevel(logging.DEBUG)

@@ -24,7 +24,7 @@ from werkzeug.formparser import parse_form_data
 from werkzeug.exceptions import HTTPException
 
 # ## PACKAGE IMPORTS
-from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION, DEBUG_LOG, LOGHANDLER
+from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION, DEBUG_LOG, DEBUG_VERBOSE, LOGHANDLER
 from utility import RepeatTimer, is_interactive_shell
 from utility.uprint import buffered_print, print_warning
 
@@ -61,14 +61,18 @@ logger.addHandler(LOGHANDLER)
 def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
     conuuid = connection_record.uuid = str(uuid.uuid4())
     connection_record.pid = os.getpid()
+
     if DEBUG_LOG:
+        if DEBUG_VERBOSE:
 
-        def _dbg_print(*args, **kwargs):
-            sep = kwargs.get('sep', ' ')
-            fmt_str = sep.join(arg.replace('\n', '\n\t') for arg in args)
-            final_str = f'====Conn({conuuid})====\n\t' + fmt_str
-            print(final_str, **kwargs)
+            def _dbg_print(*args, **kwargs):
+                sep = kwargs.get('sep', ' ')
+                fmt_str = sep.join(arg.replace('\n', '\n\t') for arg in args)
+                final_str = f'====Conn({conuuid})====\n\t' + fmt_str
+                print(final_str, **kwargs)
 
+        else:
+            _dbg_print = print
         dbapi_connection.set_trace_callback(_dbg_print)
 
     DATABASE_INFO.connections[database].add(connection_record.uuid)
