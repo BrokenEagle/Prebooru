@@ -1,11 +1,15 @@
 # APP/LOGICAL/DATABASE/POOL_ELEMENT_DB.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy import func
+
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Illust, Post, Notation
+from ...models.pool_element import PoolElement, pool_element_create
 from ..utility import set_error
 
 
@@ -59,9 +63,13 @@ def create_pool_element_for_item(pool, id_key, dataparams):
     pool_ids = [pool.id for pool in item.pools]
     if pool.id in pool_ids:
         return set_error(retdata, "%s already added to %s." % (item.shortlink, pool.shortlink))
+    max_position = PoolElement.query.filter(PoolElement.pool_id == pool.id).with_entities(func.max(PoolElement.position)).scalar()
     pool.updated = get_current_time()
-    pool.elements.append(item)
-    pool.element_count += 1
+    new_element = pool_element_create(item)
+    new_element.pool_id = pool.id
+    new_element.position = max_position + 1
+    SESSION.add(new_element)
+    pool.element_count = max_position + 2
     SESSION.flush()
     pool_ids += [pool.id]
     pool_element_ids = [pool_element.id for pool_element in item._pools]
