@@ -15,7 +15,7 @@ from .pool_element_db import delete_pool_element
 COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type_id', 'alternate',
                      'pixel_md5', 'duration', 'audio']
 CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type_id', 'pixel_md5', 'duration', 'audio']
-UPDATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'duration', 'audio', 'danbooru_id']
+UPDATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type_id', 'pixel_md5', 'duration', 'audio', 'danbooru_id']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
                                                 .with_entities(SubscriptionElement.post_id)

@@ -47,7 +47,15 @@
                                 <li>
                                     <strong>Upload( {{ helpers.illust_url.upload_media_link(illust_url.type, illust_url) }} )</strong>
                                 </li>
-                            {% elif illust_url.active and illust.active %}
+                                <li>
+                                    <strong>Download( {{ illust_url.type }} )</strong>
+                                </li>
+                            {% else %}
+                                <li>
+                                    <strong>Reupload( {{ illust_url.type }} )</strong>
+                                </li>
+                            {% endif %}
+                            {% if illust_url.post is not none and illust_url.active and illust.active %}
                                 <li>
                                     <strong>Redownload( {{ helpers.illust_url.redownload_post_link(illust_url.type, illust_url) }} )</strong>
                                 </li>

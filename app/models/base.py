@@ -485,8 +485,11 @@ def _get_relation_definitions_use_enums(enm, relname=None, colname=None, tblname
 
     @classmethod
     def filter(cls, relattr, op, *args):
-        rel = getattr(cls, relname)
-        return _enum_filter(enm, rel, relattr, op, *args)
+        if relattr is None:
+            return getattr(baseval, op)(*args)
+        else:
+            rel = getattr(cls, relname)
+            return _enum_filter(enm, rel, relattr, op, *args)
 
     return baseval, idval, enm, filter
 
@@ -505,7 +508,10 @@ def _get_relation_definitions_use_models(rel, relcol=None, backname=None, nullab
 
     @classmethod
     def filter(cls, relattr, op, *args):
-        enum_op = getattr(getattr(rel, relattr), op)
+        if relattr is None:
+            enum_op = getattr(idval, op)
+        else:
+            enum_op = getattr(getattr(rel, relattr), op)
         return enum_op(*args)
 
     return baseval, idval, rel, filter

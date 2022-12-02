@@ -60,6 +60,8 @@ def create_post_error(function, message, post_errors, module='downloader.base'):
 
 def check_existing(buffer, illust_url, record):
     md5 = get_buffer_checksum(buffer)
+    if record.model_name == 'post':
+        return md5
     post = get_post_by_md5(md5)
     if post is not None:
         post_append_illust_url(post, illust_url)
