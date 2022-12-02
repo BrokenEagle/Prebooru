@@ -4,6 +4,12 @@
 import re
 import html
 
+# ## EXTERNAL IMPORTS
+from flask import Markup
+
+# ## LOCAL IMPORTS
+from app.models.pool_element import PoolElementType
+
 
 # ## FUNCTIONS
 
