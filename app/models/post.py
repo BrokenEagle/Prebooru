@@ -243,6 +243,11 @@ class Post(JsonModel):
                 pool._elements.reorder()
             DB.session.commit()
 
+    def archive_dict(self):
+        data = {k: v for (k, v) in super().archive_dict().items() if k not in ['type', 'type_id']}
+        data['type'] = self.type.name
+        return data
+
     # ## Class properties
 
     @classproperty(cached=True)

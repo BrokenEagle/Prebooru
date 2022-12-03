@@ -122,6 +122,9 @@ class Artist(JsonModel):
         DB.session.delete(self)
         DB.session.commit()
 
+    def archive_dict(self):
+        return {k: v for (k, v) in super().archive_dict().items() if k not in ['site', 'site_id']}
+
     # ## Class properties
 
     @classproperty(cached=True)

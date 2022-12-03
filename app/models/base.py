@@ -350,16 +350,20 @@ class JsonModel(DB.Model):
         return [c for c in cls.__table__.columns]
 
     @classproperty(cached=True)
+    def column_map(cls):
+        return {c.name: c for c in cls.columns()}
+
+    @classproperty(cached=True)
     def all_columns(cls):
-        return cls.columns.keys()
+        return [c.name for c in cls.columns()]
 
     @classproperty(cached=True)
     def base_columns(cls):
-        return [k for k in cls.all_columns if len(getattr(cls.columns, k).foreign_keys) == 0]
+        return [k for k in cls.all_columns if len(cls.column_map[k].foreign_keys) == 0]
 
     @classproperty(cached=True)
     def fk_columns(cls):
-        return [k for k in cls.all_columns if len(getattr(cls.columns, k).foreign_keys) > 0]
+        return [k for k in cls.all_columns if len(cls.column_map[k].foreign_keys) > 0]
 
     @classproperty(cached=True)
     def archive_columns(cls):

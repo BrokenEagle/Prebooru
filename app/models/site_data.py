@@ -25,6 +25,11 @@ class SiteData(JsonModel):
     # ## Relations
     # (OtO) illust [Illust]
 
+    # ## Instance properties
+
+    def archive_dict(self):
+        return {k: v for (k, v) in super().archive_dict().items() if k not in ['type', 'type_id']}
+
     # ## Class properties
 
     polymorphic_base = True

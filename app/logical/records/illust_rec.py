@@ -9,7 +9,7 @@ from ..utility import set_error
 from ..database.artist_db import get_site_artist, get_blank_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust,\
     get_site_illust, create_illust_from_json, recreate_illust_relations
-from ..database.illust_url_db import get_illust_url_by_url
+from ..database.illust_url_db import get_illust_url_by_url, set_url_site
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.notation_db import create_notation_from_json
 from ..database.archive_db import get_archive, create_archive, update_archive
@@ -65,13 +65,16 @@ def recreate_archived_illust(data):
         return set_error(retdata, "Artist for illust does not exist.")
     illust_data['artist_id'] = artist.id
     illust = create_illust_from_json(illust_data)
-    updateparams = data['relations']['site_data'].copy() if 'site_data' in data['relations'] else {}
+    updateparams = (data['relations'].get('site_data') or {}).copy()
     if len(data['scalars']['tags']):
         updateparams['tags'] = data['scalars']['tags']
     if len(data['scalars']['commentaries']):
         updateparams['commentaries'] = data['scalars']['commentaries']
     if len(data['relations']['illust_urls']):
         updateparams['illust_urls'] = data['relations']['illust_urls']
+        for illust_url_data in updateparams['illust_urls']:
+            source = get_media_source(illust_url_data['url'])
+            set_url_site(illust_url_data, source)
     recreate_illust_relations(illust, updateparams)
     retdata['item'] = illust.to_json()
     relink_archived_illust(data, illust)

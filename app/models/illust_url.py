@@ -72,6 +72,18 @@ class IllustUrl(JsonModel):
     def site_domain(self):
         return self.site.domain
 
+    def archive_dict(self):
+        data = {
+            'url': self.full_url,
+            'width': self.width,
+            'height': self.height,
+            'order': self.order,
+            'active': self.active,
+        }
+        if self.type == 'video':
+            data['sample'] = self.full_sample_url
+        return data
+
     # ## Class properties
 
     @classproperty(cached=True)

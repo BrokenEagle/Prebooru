@@ -2,6 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...models import IllustUrl
+from ...enum_imports import site_descriptor
 from .base_db import update_column_attributes
 
 
@@ -49,3 +50,14 @@ def get_illust_url_by_url(site_id, partial_url):
                           .filter(IllustUrl.site_filter('id', '__eq__', site_id),
                                   IllustUrl.url == partial_url)\
                           .one_or_none()
+
+
+# #### Misc
+
+def set_url_site(dataparams, source):
+    dataparams['site_id'] = site_descriptor.get_site_from_url(dataparams['url']).id
+    dataparams['url'] = source.partial_media_url(dataparams['url'])
+    dataparams['sample_site_id'] = site_descriptor.get_site_from_url(dataparams['sample']).id\
+        if dataparams.get('sample') is not None else None
+    dataparams['sample_url'] = source.partial_media_url(dataparams['sample'])\
+        if dataparams.get('sample') is not None else None
