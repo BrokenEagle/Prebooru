@@ -38,9 +38,9 @@
                         {% endif %}
                     </td>
                     <td>
-                        <strong>Interval:</strong> {{ subscription.interval }}
-                        <br>
                         <strong>Expiration:</strong> {{ subscription.expiration }}
+                        <br>
+                        <strong>Interval:</strong> {{ subscription.interval }}
                     </td>
                     <td>
                         <strong>Requery:</strong> {{ helpers.base.format_expires(subscription.requery) }}
