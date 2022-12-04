@@ -64,6 +64,7 @@ WATCHDOG_MAX_MEMORY_MB = get_environment_variable('PREBOORU_MAX_MEMORY', WATCHDO
 WATCHDOG_POLLING_INTERVAL = get_environment_variable('WATCHDOG_POLLING_INTERVAL', WATCHDOG_POLLING_INTERVAL, int)
 MAXIMUM_PAGINATE_LIMIT = get_environment_variable('MAXIMUM_PAGINATE_LIMIT', MAXIMUM_PAGINATE_LIMIT, eval_bool_string)
 DEFAULT_PAGINATE_LIMIT = get_environment_variable('DEFAULT_PAGINATE_LIMIT', DEFAULT_PAGINATE_LIMIT, eval_bool_string)
+CHECK_FOREIGN_KEYS = get_environment_variable('CHECK_FOREIGN_KEYS', CHECK_FOREIGN_KEYS, eval_bool_string)
 USE_ENUMS = get_environment_variable('USE_ENUMS', USE_ENUMS, eval_bool_string)
 DEBUG_MODE = get_environment_variable('DEBUG_MODE', DEBUG_MODE, eval_bool_string)
 

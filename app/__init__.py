@@ -24,7 +24,8 @@ from werkzeug.formparser import parse_form_data
 from werkzeug.exceptions import HTTPException
 
 # ## PACKAGE IMPORTS
-from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION, DEBUG_LOG, DEBUG_VERBOSE, LOGHANDLER
+from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION, DEBUG_LOG, DEBUG_VERBOSE, LOGHANDLER,\
+    CHECK_FOREIGN_KEYS
 from utility import RepeatTimer, is_interactive_shell
 from utility.uprint import buffered_print, print_warning
 
@@ -91,7 +92,8 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
     cursor.execute('PRAGMA temp_store = MEMORY')
     cursor.execute('PRAGMA mmap_size = 0x7FFF0000')
     cursor.execute('PRAGMA cache_size = -32000')
-    cursor.execute('PRAGMA foreign_keys = 1')
+    if CHECK_FOREIGN_KEYS:
+        cursor.execute('PRAGMA foreign_keys = 1')
     cursor.close()
 
 
