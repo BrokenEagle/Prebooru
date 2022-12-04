@@ -78,16 +78,18 @@ def update_archive_enums():
                     del item.data['body']['type_id']
                 else:
                     old_type = item.data['body']['type']
-                item.data['body']['type'] = post_mapping[old_type]
+                item.data['body']['type'] = post_mapping[old_type] if isinstance(old_type, int) else old_type
             else:
                 if 'site_id' in item.data['body']:
                     del item.data['body']['site_id']
                 elif 'site' in item.data['body']:
                     del item.data['body']['site']
-                site_id, site_item_id = ARCHIVEKEY_RG.match(item.key).groups()
-                site_name = site_descriptor_mapping[int(site_id)]
-                new_key = "%s-%s" % (site_name, site_item_id)
-                item.key = new_key
+                match = ARCHIVEKEY_RG.match(item.key)
+                if match:
+                    site_id, site_item_id = match.groups()
+                    site_name = site_descriptor_mapping[int(site_id)]
+                    new_key = "%s-%s" % (site_name, site_item_id)
+                    item.key = new_key
             if item.type.name == 'illust':
                 if 'site_data' in item.data['relations'] and item.data['relations']['site_data'] is not None:
                     if 'type_id' in item.data['relations']['site_data']:
@@ -95,6 +97,7 @@ def update_archive_enums():
                     else:
                         del item.data['relations']['site_data']['type']
                 for illust_url in item.data['relations']['illust_urls']:
+                    site_id = None
                     if 'site_id' in illust_url:
                         site_id = illust_url['site_id']
                         del illust_url['site_id']
@@ -108,23 +111,26 @@ def update_archive_enums():
                     elif 'sample_site' in illust_url:
                         sample_site_id = illust_url['sample_site']
                         del illust_url['sample_site']
-                    site_name = site_descriptor_mapping[site_id]
-                    site = site_descriptor.by_name(site_name)
-                    illust_url['url'] = 'https://' + site.domain + illust_url['url']
-                    if sample_site_id is not None:
+                    if isinstance(site_id, int):
+                        site_name = site_descriptor_mapping[site_id]
+                        site = site_descriptor.by_name(site_name)
+                        illust_url['url'] = 'https://' + site.domain + illust_url['url']
+                    if isinstance(sample_site_id, int):
                         sample_site_name = site_descriptor_mapping[sample_site_id]
                         sample_site = sample_site_descriptor.by_name(sample_site_name)
                         illust_url['sample'] = 'https://' + sample_site.domain + illust_url['sample']
                 for post in item.data['links']['posts']:
+                    site_id = None
                     if 'site_id' in post:
                         site_id = post['site_id']
                         del post['site_id']
                     elif 'site' in post:
                         site_id = post['site']
                         del post['site']
-                    site_name = site_descriptor_mapping[site_id]
-                    site = site_descriptor.by_name(site_name)
-                    post['url'] = 'https://' + site.domain + post['url']
+                    if isinstance(site_id, int):
+                        site_name = site_descriptor_mapping[site_id]
+                        site = site_descriptor.by_name(site_name)
+                        post['url'] = 'https://' + site.domain + post['url']
             attributes.flag_modified(item, "data")
             SESSION.flush()
         SESSION.commit()
