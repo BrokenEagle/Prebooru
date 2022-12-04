@@ -179,6 +179,7 @@ def upgrade_tables(next_migration, prev_migration):
         for row in next_values:
             SESSION.add(model(**row))
         if prev_migration is None or model_name not in prev_migration['tables']:
+            SESSION.flush()
             continue
         prev_values = prev_migration['tables'][model_name]
         mapping = {}
