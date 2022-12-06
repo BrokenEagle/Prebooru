@@ -63,7 +63,11 @@ def create_pool_element_for_item(pool, id_key, dataparams):
     pool_ids = [pool.id for pool in item.pools]
     if pool.id in pool_ids:
         return set_error(retdata, "%s already added to %s." % (item.shortlink, pool.shortlink))
-    max_position = PoolElement.query.filter(PoolElement.pool_id == pool.id).with_entities(func.max(PoolElement.position)).scalar()
+    if pool.element_count > 0:
+        max_position = PoolElement.query.filter(PoolElement.pool_id == pool.id)\
+                                        .with_entities(func.max(PoolElement.position)).scalar()
+    else:
+        max_position = -1
     pool.updated = get_current_time()
     new_element = pool_element_create(item)
     new_element.pool_id = pool.id
