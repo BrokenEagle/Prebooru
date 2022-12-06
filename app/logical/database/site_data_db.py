@@ -22,7 +22,7 @@ SITE_DATA_TYPE_DICT = {
 def update_site_data_from_parameters(illust, params):
     if illust.site_data is not None:
         expected_type = SITE_DATA_TYPE_DICT[illust.site.name]
-        if illust.site_data.type != expected_type:
+        if illust.site_data.type.name != expected_type:
             print("Deleting site data!")
             SESSION.delete(illust.site_data)
             SESSION.commit()
