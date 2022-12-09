@@ -151,30 +151,30 @@ There is a branch of NTISAS under development which adds support for uploading a
 # To-Do
 
 1. Add usage wikis.
-2. Need to eventually add tests for the code.
+2. Add tests for the code.
 3. Pool reorder page.
 4. Add order filters to searchable.
-5. User tags for posts.
+5. User tags for posts. (\*\*DONE\*\*)
 6. Tag categories, and maybe illust/post count.
 7. Generalized query parameter which would use query arguments parameterized by logical operators instead of being hamstrung by URL arguments.
 8. Add automatic artist webpage URL unshortening.
-9. Pool elements, similarity pool elements, similarity pools, similarity data index page(s).
+9. Pool elements, similarity matches, similarity data INDEX page(s). (\*\*PARTIALLY DONE\*\*)
 10. Drop unused columns or those used mostly for testing. (\*\*PARTIALLY DONE\*\*)
 11. Server status page and ping functions.
 12. Network upload link for unuploaded illust URLs.
 13. Add series column and navigation to pools. (\*\*DONE\*\*)
 14. Add full URL to illust URL JSON. (\*\*DONE\*\*)
-15. Subscribe to artists.
-    - Mandator recheck interval.
+15. Subscribe to artists. (\*\*DONE\*\*)
+    - Mandatory recheck interval.
     - Optional expiration, with either hard deletion or archiving.
     - Posts created with subscriptions will be segregated from those created via user interaction.
-16. Archive posts/illusts/artists.
+16. Archive posts/illusts/artists/boorus. (\*\*DONE\*\*)
 17. Add `parent_id` and `updated` column to posts.
    - To allow parent/child relationships.
-18. On uploads select, have an asynchronous process download all of the images.
+18. On uploads select, have an asynchronous process download all of the images. (\*\*DONE\*\*)
     - Currently the user is forced to wait until all of the previews have been downloaded.
 19. Have pagination for uploads/illusts, since some Pixiv artworks can have well over 10 images.
-20. Add `banned` column to boorus which will match the artist's status on Danbooru.
+20. Add `banned` column to boorus which will match the artist's status on Danbooru. (\*\*DONE\*\*)
 21. Backup/export/import the DB from the script itself.
 22. Add delete method to more types.
     - Save JSON of data in a separate table when this is done to allow for delete operations to be undone.
@@ -185,5 +185,9 @@ There is a branch of NTISAS under development which adds support for uploading a
 26. Add include and only parameters for json endpoints.
     - Includes will chain include relationship models.
     - Only will limit the values returned.
+27. Connect multiple Preboorus together as an Overbooru.
+28. Sequential pagination
+    - i.e. Danbooru style with 'a' or 'b' prefixes.
+29. Other selection mechanics, such as drag-select.
 
 *And much, much, more...*
