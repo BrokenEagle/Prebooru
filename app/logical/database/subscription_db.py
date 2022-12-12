@@ -4,6 +4,7 @@
 from sqlalchemy import func
 
 # ## PACKAGE IMPORTS
+from config import MAXIMUM_PROCESS_SUBSCRIPTIONS
 from utility.time import get_current_time, hours_from_now, add_days, days_ago
 
 # ## LOCAL IMPORTS
@@ -15,12 +16,10 @@ from .base_db import update_column_attributes
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'last_id', 'requery', 'checked', 'active']
+COLUMN_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'last_id', 'requery', 'checked']
 
-CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'active']
-UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration', 'active']
-
-MAXIMUM_PROCESS_SUBSCRIPTIONS = 10
+CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration']
+UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
 
 AVERAGE_INTERVAL_CLAUSE = (func.max(Illust.site_created) - func.min(Illust.site_created)) / (func.count(Illust.id) - 1)
 
@@ -65,11 +64,6 @@ def update_subscription_status(subscription, value):
     SESSION.commit()
 
 
-def update_subscription_active(subscription, active):
-    subscription.active = active
-    SESSION.commit()
-
-
 def update_subscription_requery(subscription, timeval):
     subscription.requery = timeval
     SESSION.commit()
@@ -90,17 +84,13 @@ def delete_subscription(subscription):
 
 # #### Query
 
-def get_available_subscription(unlimited):
+def get_available_subscriptions_query():
     # Return only subscriptions which have already been processed manually (requery is not None)
     status_filter = Subscription.status_filter('name', 'not_in', ['manual', 'automatic'])
-    query = Subscription.query.enum_join(Subscription.status_enum)\
+    return Subscription.query.enum_join(Subscription.status_enum)\
                               .filter(Subscription.requery < get_current_time(),
                                       Subscription.last_id.is_not(None),
-                                      Subscription.active.is_(True),
                                       status_filter)
-    if not unlimited:
-        query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
-    return query.all()
 
 
 def get_busy_subscriptions():
@@ -126,7 +116,6 @@ def add_subscription_error(subscription, error):
     subscription.status_id = subscription_status.error.id
     subscription.checked = get_current_time()
     subscription.requery = None
-    subscription.active = False
     SESSION.commit()
 
 

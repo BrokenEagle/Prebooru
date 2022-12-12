@@ -28,6 +28,43 @@
                 </li>
             </ul>
         </section>
+        <section id="subscription-element-keep">
+            <h4>Element Keep</h4>
+            <ul>
+                <li>
+                    <strong>Undecided:</strong>
+                </li>
+                <li>
+                    <strong>Yes:</strong>
+                </li>
+                <li>
+                    <strong>No:</strong>
+                </li>
+                <li>
+                    <strong>Maybe:</strong>
+                </li>
+            </ul>
+        </section>
+        <section id="subscription-element-status">
+            <h4>Element Status</h4>
+            <ul>
+                <li>
+                    <strong>Active:</strong>
+                </li>
+                <li>
+                    <strong>Duplicate:</strong>
+                </li>
+                <li>
+                    <strong>Unlinked:</strong>
+                </li>
+                <li>
+                    <strong>Archived:</strong>
+                </li>
+                <li>
+                    <strong>Deleted:</strong>
+                </li>
+            </ul>
+        </section>
         <section id="subscription-settings">
             <h4>Settings</h4>
             <ul>
@@ -41,9 +78,6 @@
                     {% else %}
                         <em>none</em>
                     {% endif %}
-                </li>
-                <li>
-                    <strong>Active:</strong> {{ subscription.active | tojson }}
                 </li>
             </ul>
         </section>

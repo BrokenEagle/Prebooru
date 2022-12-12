@@ -22,7 +22,7 @@
     (function () {
     const subscription_status = "{{ subscription.status.name }}";
     const job_status = "{{ job_status['stage'] if job_status is not none else 'done' }}";
-    const query_url = "{{ url_for('subscription.status_json', id=subscription.id, job=job_id) }}";
+    const query_url = "{{ url_for('subscription.show_status_json', id=subscription.id, job=job_id) }}";
     Subscriptions.initializeReloadInterval(subscription_status);
     Subscriptions.initializeJobQueryInterval(job_status, query_url);
     })();

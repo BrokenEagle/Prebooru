@@ -57,12 +57,6 @@ FORM_CONFIG = {
                               Clear the field for no expiration. [Default: no expiration]""",
         },
     },
-    'active': {
-        'field': BooleanField,
-        'kwargs': {
-            'default': True,
-        },
-    },
 }
 
 
@@ -94,7 +88,6 @@ def convert_data_params(dataparams):
     params = get_subscription_form(**dataparams).data
     params['interval'] = parse_type(params, 'interval', float)
     params['expiration'] = parse_type(params, 'expiration', float)
-    params['active'] = parse_bool_parameter(dataparams, 'active')
     params = nullify_blanks(params)
     return params
 
@@ -102,7 +95,6 @@ def convert_data_params(dataparams):
 def convert_create_params(dataparams):
     createparams = convert_data_params(dataparams)
     set_default(createparams, 'interval', 24.0)
-    set_default(createparams, 'active', True)
     return createparams
 
 
@@ -299,8 +291,15 @@ def reset_html(id):
     return redirect(request.referrer)
 
 
+@bp.route('/subscriptions/<int:id>/retire', methods=['PUT'])
+def retire_html(id):
+    subscription = get_or_abort(Subscription, id)
+    update_subscription_status(subscription, 'retired')
+    return redirect(request.referrer)
+
+
 @bp.route('/subscriptions/<int:id>/status.json', methods=['GET'])
-def status_json(id):
+def show_status_json(id):
     subscription = get_or_error(Subscription, id)
     if type(subscription) is dict:
         return subscription
@@ -311,6 +310,11 @@ def status_json(id):
     if job_status is None:
         return {'error': True, 'message': "Job with ID %s not found." % job_id}
     return {'error': False, 'item': job_status}
+
+
+@bp.route('/subscriptions/status', methods=['GET'])
+def index_status_html():
+    return render_template("subscriptions/status.html", subscription=Subscription())
 
 
 @bp.route('/subscriptions/<int:id>/delay', methods=['POST'])

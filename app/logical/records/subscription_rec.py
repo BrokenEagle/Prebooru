@@ -1,6 +1,7 @@
 # APP/LOGICAL/RECORDS/SUBSCRIPTION_REC.PY
 
 # ## PYTHON IMPORTS
+import random
 import threading
 
 # ## EXTERNAL IMPORTS
@@ -23,7 +24,7 @@ from ..logger import log_error
 from ..downloader.network import convert_network_subscription
 from ..records.post_rec import recreate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
-    update_subscription_element_status, link_subscription_post
+    update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query
 from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.archive_db import get_archive
@@ -32,7 +33,7 @@ from ..database.jobs_db import get_job_status_data, update_job_status, update_jo
 from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post, expired_subscription_elements
 from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
-    add_subscription_error, update_subscription_status, update_subscription_active, check_processing_subscriptions
+    add_subscription_error, update_subscription_status, check_processing_subscriptions
 from ..database.base_db import safe_db_execute
 from .image_hash_rec import generate_post_image_hashes
 
@@ -84,7 +85,6 @@ def process_subscription_manual(subscription_id, job_id):
         nonlocal subscription
         subscription = subscription or Subscription.find(subscription_id)
         update_subscription_status(subscription, 'error')
-        update_subscription_active(subscription, False)
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
@@ -169,10 +169,7 @@ def download_subscription_elements(subscription, job_id=None):
 
 def download_missing_elements(manual=False):
     max_pages = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
-    q = SubscriptionElement.query.join(Subscription)\
-                                 .filter(SubscriptionElement.post_id.is_(None),
-                                         SubscriptionElement.status_filter('name', '__eq__', 'active'),
-                                         Subscription.status_filter('name', '__eq__', 'idle'))
+    q = pending_subscription_downloads_query()
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
@@ -333,6 +330,13 @@ def relink_element(element):
         return {'error': True, 'message': f'Post with MD5 {element.md5} does not exist.'}
     link_subscription_post(element, post)
     return {'error': False}
+
+
+def subscription_slots_needed_per_hour():
+    """The number of subscriptions that need to run every hour to keep up to date (assumes active all day)."""
+    status_filter = Subscription.status_filter('name', 'not_in', ['manual', 'automatic'])
+    subscriptions = Subscription.query.filter(status_filter).with_entities(Subscription.interval).all()
+    return sum(1 / subscription.interval for subscription in subscriptions)
 
 
 # #### Private

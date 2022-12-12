@@ -45,7 +45,6 @@ class Subscription(JsonModel):
     checked = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    active = DB.Column(DB.Boolean, nullable=False)
 
     # ## Relationships
     elements = DB.relationship(SubscriptionElement, lazy=True, uselist=True, cascade="all, delete",

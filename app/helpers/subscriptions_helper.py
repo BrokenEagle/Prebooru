@@ -4,17 +4,19 @@
 from flask import url_for, request, Markup
 
 # ## PACKAGE IMPORTS
+from config import MAXIMUM_PROCESS_SUBSCRIPTIONS, DOWNLOAD_POSTS_PER_PAGE, DOWNLOAD_POSTS_PAGE_LIMIT
 from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from ..logical.database.subscription_db import get_average_interval_for_subscriptions
+from ..logical.database.subscription_db import get_average_interval_for_subscriptions, get_available_subscriptions_query
+from ..logical.database.subscription_element_db import expired_subscription_elements, pending_subscription_downloads_query
+from ..logical.records.subscription_rec import subscription_slots_needed_per_hour
+from ..logical.tasks import JOB_CONFIG
 from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
 from .base_helper import general_link, url_for_with_params
 
-
-# ## GLOBAL VARIABLES
 
 # ## FUNCTIONS
 
@@ -71,6 +73,51 @@ def status_link(subscription):
     return general_link(subscription.status.name, url, method='PUT')
 
 
+def retire_link(subscription):
+    url = url_for('subscription.retire_html', id=subscription.id)
+    return general_link("Retire subscription", url, method='PUT')
+
+
+# ###### Iterator functions
+
+def subscriptions_iterator():
+    hours = _hours_from_config(JOB_CONFIG['check_pending_subscriptions']['config'])
+    output = {
+        "Slots Per Interval": MAXIMUM_PROCESS_SUBSCRIPTIONS,
+        "Processed Every": "%0.1f hours" % hours,
+        "Slots Per Hour": "%0.1f" % (MAXIMUM_PROCESS_SUBSCRIPTIONS / hours),
+        "Pending": get_available_subscriptions_query().get_count(),
+    }
+    for key, value in output.items():
+        yield key, value
+
+
+def slots_per_hour_iterator():
+    needed = subscription_slots_needed_per_hour()
+    for i in range(4, 28, 4):
+        yield "%0.2f" % ((24 / i) * needed)
+
+
+def download_iterator():
+    hours = hours = _hours_from_config(JOB_CONFIG['check_pending_downloads']['config'])
+    per_interval = DOWNLOAD_POSTS_PER_PAGE * DOWNLOAD_POSTS_PAGE_LIMIT
+    output = {
+        "Downloads Per interval": per_interval,
+        "Processed Every": "%0.1f hours" % hours,
+        "Downloads Per Hour": "%0.1f" % (per_interval / hours),
+        "Pending": pending_subscription_downloads_query().get_count(),
+    }
+    for key, value in output.items():
+        yield key, value
+
+
+def expires_iterator():
+    for key in ['unlink', 'delete', 'archive']:
+        hours = _hours_from_config(JOB_CONFIG[f'{key}_expired_subscription_elements']['config'])
+        pending = expired_subscription_elements(key).get_count()
+        yield key, hours, pending
+
+
 # ###### Other functions
 
 def average_interval_lookup(subscription, average_intervals):
@@ -98,13 +145,6 @@ def storage_bytes(subscription, type=None):
 
 
 # #### Elements
-
-def keep_element_val(subscription_element):
-    if subscription_element.keep is not None:
-        return subscription_element.keep.name
-    else:
-        return Markup("<em>Not yet chosen</em>")
-
 
 # ###### Link functions
 
@@ -151,3 +191,14 @@ def nopost_function_link(name, element):
         'onclick': 'return Subscriptions.networkHandler(this)',
     }
     return general_link(name, url, **addons)
+
+
+# #### Private
+
+def _hours_from_config(config):
+    if 'hours' in config:
+        return config['hours']
+    if 'minutes' in config:
+        return config['minutes'] / 60
+    if 'days' in config:
+        return config['days'] * 24

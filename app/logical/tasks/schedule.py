@@ -6,10 +6,10 @@ import re
 import time
 
 # ## PACKAGE IMPORTS
-from config import ALTERNATE_MEDIA_DIRECTORY
+from config import ALTERNATE_MEDIA_DIRECTORY, MAXIMUM_PROCESS_SUBSCRIPTIONS
 from utility.uprint import buffered_print, print_info
 from utility.file import get_directory_listing, delete_file
-from utility.time import seconds_from_now_local
+from utility.time import seconds_from_now_local, get_current_time, days_ago, datetime_to_epoch, datetime_from_epoch
 
 # ## LOCAL IMPORTS
 from ... import DB, SESSION, SCHEDULER
@@ -23,13 +23,14 @@ from ..records.subscription_rec import sync_missing_subscription_illusts, popula
     archive_expired_subscription_elements
 from ..database.base_db import safe_db_execute
 from ..database.pool_db import get_all_recheck_pools, update_pool_positions
-from ..database.subscription_db import get_available_subscription, update_subscription_status,\
-    update_subscription_active, get_busy_subscriptions, get_subscription_by_ids
+from ..database.subscription_db import get_available_subscriptions_query, update_subscription_status,\
+    get_busy_subscriptions, get_subscription_by_ids
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_db import expired_archive_count, delete_expired_archive
-from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id
+from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id, get_job_status_data,\
+    create_or_update_job_status
 from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready,\
     update_subscriptions_ready
 from .reschedule import reschedule_from_child, schedule_from_child
@@ -93,8 +94,14 @@ def check_all_posts_for_danbooru_id_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_subscriptions']['config'])
 def check_pending_subscriptions_task():
     def _task(printer):
+        start = get_current_time()
+        yesterday = days_ago(1)
+        status = get_job_status_data('check_pending_subscriptions_task') or []
         manual = _is_job_manual('check_pending_subscriptions')
-        subscriptions = get_available_subscription(manual)
+        query = get_available_subscriptions_query()
+        if not manual:
+            query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
+        subscriptions = query.all()
         if len(subscriptions) > 0:
             schedule_from_child('subscriptions-callback', 'app.logical.tasks.schedule:_pending_subscription_callback',
                                 [subscription.id for subscription in subscriptions], seconds_from_now_local(900))
@@ -103,6 +110,9 @@ def check_pending_subscriptions_task():
                 _process_pending_subscription(subscription, printer)
         else:
             printer("No subscriptions to process.")
+        status = [item for item in status if datetime_from_epoch(item['processed']) > yesterday]
+        status.append({'processed': int(datetime_to_epoch(start)), 'duration': (get_current_time() - start).seconds, 'total': len(subscriptions)})
+        create_or_update_job_status('check_pending_subscriptions_task', status)
 
     if _subscriptions_check():
         _execute_scheduled_task(_task, 'check_pending_subscriptions', True, True)
@@ -319,7 +329,6 @@ def _process_pending_subscription(subscription, printer):
     def error_func(scope_vars, error):
         nonlocal subscription
         update_subscription_status(subscription, 'error')
-        update_subscription_active(subscription, False)
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
