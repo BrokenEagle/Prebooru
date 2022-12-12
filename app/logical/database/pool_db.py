@@ -1,5 +1,8 @@
 # APP/LOGICAL/DATABASE/POOL_DB.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy import or_
+
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 
