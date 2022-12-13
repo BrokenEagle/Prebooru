@@ -23,15 +23,16 @@ class ${name}(AttrEnum):
     ${k.replace('-', '_')} = ${v}
     % endfor
 
-    @property
-    def source(self):
-        from .logical.sources import SOURCEDICT
-        return SOURCEDICT[self.name]
+    # ## Instance properties
 
-    @property
-    def domain(self):
-        from .logical.sites import SITES
-        return SITES[self.name]
+    source = sites.source
+    domain = sites.domain
+
+    # ## Class properties
+
+    get_site_from_domain = sites.get_site_from_domain
+    get_site_from_url = sites.get_site_from_url
+    get_site_from_id = sites.get_site_from_id
 % endif
 
 % endfor

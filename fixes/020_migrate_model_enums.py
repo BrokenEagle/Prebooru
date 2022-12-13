@@ -27,105 +27,105 @@ def initialize(args):
     from utility.file import create_directory, get_directory_listing, put_get_json, put_get_raw
     from app.models.model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
         SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType,\
-        SiteDataType, TagType
+        SiteDataType, TagType, DanbooruAssetModel
     from app.models import ApiData, Archive, Artist, Illust, IllustUrl, PoolElement, Post, SiteData,\
-        Subscription, SubscriptionElement, Upload, UploadElement, Tag, Version
+        Subscription, SubscriptionElement, Upload, UploadElement, Tag, DanbooruAsset, Version
     ENUMS_CONFIG = [
         {
             'model': ApiDataType,
             'enum': enums.ApiDataTypeEnum,
             'tables': [{
                 'table': ApiData,
-                'field': 'type',
+                'field': 'type_id',
             }],
         }, {
             'model': ArchiveType,
             'enum': enums.ArchiveTypeEnum,
             'tables': [{
                 'table': Archive,
-                'field': 'type',
+                'field': 'type_id',
             }],
         }, {
             'model': PostType,
             'enum': enums.PostTypeEnum,
             'tables': [{
                 'table': Post,
-                'field': 'type',
+                'field': 'type_id',
             }],
         }, {
             'model': SubscriptionStatus,
             'enum': enums.SubscriptionStatusEnum,
             'tables': [{
                 'table': Subscription,
-                'field': 'status',
+                'field': 'status_id',
             }],
         }, {
             'model': SubscriptionElementStatus,
             'enum': enums.SubscriptionElementStatusEnum,
             'tables': [{
                 'table': SubscriptionElement,
-                'field': 'status',
+                'field': 'status_id',
             }],
         }, {
             'model': SubscriptionElementKeep,
             'enum': enums.SubscriptionElementKeepEnum,
             'tables': [{
                 'table': SubscriptionElement,
-                'field': 'keep',
+                'field': 'keep_id',
             }],
         }, {
             'model': UploadStatus,
             'enum': enums.UploadStatusEnum,
             'tables': [{
                 'table': Upload,
-                'field': 'status',
+                'field': 'status_id',
             }],
         }, {
             'model': UploadElementStatus,
             'enum': enums.UploadElementStatusEnum,
             'tables': [{
                 'table': UploadElement,
-                'field': 'status',
+                'field': 'status_id',
             }],
         }, {
             'model': PoolElementType,
             'enum': enums.PoolElementTypeEnum,
             'tables': [{
                 'table': PoolElement,
-                'field': 'type',
+                'field': 'type_id',
             }],
         }, {
             'model': SiteDataType,
             'enum': enums.SiteDataTypeEnum,
             'tables': [{
                 'table': SiteData,
-                'field': 'type',
+                'field': 'type_id',
             }],
         }, {
             'model': TagType,
             'enum': enums.TagTypeEnum,
             'tables': [{
                 'table': Tag,
-                'field': 'type',
+                'field': 'type_id',
             }],
         }, {
             'model': SiteDescriptor,
             'enum': enums.SiteDescriptorEnum,
             'tables': [{
                 'table': ApiData,
-                'field': 'site',
+                'field': 'site_id',
             }, {
                 'table': Artist,
-                'field': 'site',
+                'field': 'site_id',
             }, {
                 'table': Illust,
-                'field': 'site',
+                'field': 'site_id',
             }, {
                 'table': IllustUrl,
-                'field': 'site',
+                'field': 'site_id',
             }, {
                 'table': IllustUrl,
-                'field': 'sample_site',
+                'field': 'sample_site_id',
             }],
         },
     ]
