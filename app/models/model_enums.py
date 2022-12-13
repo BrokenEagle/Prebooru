@@ -110,6 +110,24 @@ class SiteDescriptor(EnumModel):
     }
 
 
+class DanbooruAssetModel(EnumModel):
+    # ## Columns
+    id = DB.Column(DB.INTEGER, primary_key=True)
+    name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    __initial_mapping__ = {
+        'post': 0,
+        'upload': 1,
+        'artist': 2,
+        'user': 3,
+    }
+    __mandatory_mapping__ = {
+        'unknown': 127,
+    }
+
+
 class ApiDataType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)

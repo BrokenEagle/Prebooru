@@ -31,6 +31,7 @@ def load_all():
         PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,\
         SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,\
         UploadElement, UploadElementErrors,\
+        DanbooruAsset,\
         MediaFile, Domain,\
         ServerInfo, Version,\
         JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
@@ -50,6 +51,7 @@ def load_all():
     from .artist_url import ArtistUrl
     from .artist import Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles, ArtistNotations
     from .booru import Booru, BooruNames, BooruArtists
+    from .danbooru_asset import DanbooruAsset
 
     # #### Local data
     from .error import Error

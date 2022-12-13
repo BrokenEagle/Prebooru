@@ -99,6 +99,14 @@ class TagTypeEnum(AttrEnum):
     unknown = 127
 
 
+class DanbooruAssetModelEnum(AttrEnum):
+    post = 0
+    upload = 1
+    artist = 2
+    user = 3
+    unknown = 127
+
+
 class SiteDescriptorEnum(AttrEnum):
     pixiv = 0
     pximg = 1

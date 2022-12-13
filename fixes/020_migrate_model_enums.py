@@ -109,6 +109,13 @@ def initialize(args):
                 'field': 'type_id',
             }],
         }, {
+            'model': DanbooruAssetModel,
+            'enum': enums.DanbooruAssetModelEnum,
+            'tables': [{
+                'table': DanbooruAsset,
+                'field': 'model_id',
+            }],
+        }, {
             'model': SiteDescriptor,
             'enum': enums.SiteDescriptorEnum,
             'tables': [{
