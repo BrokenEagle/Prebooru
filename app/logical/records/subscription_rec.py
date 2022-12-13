@@ -334,7 +334,7 @@ def relink_element(element):
 
 def subscription_slots_needed_per_hour():
     """The number of subscriptions that need to run every hour to keep up to date (assumes active all day)."""
-    status_filter = Subscription.status_filter('name', 'not_in', ['manual', 'automatic'])
+    status_filter = Subscription.status_filter('name', 'in_', ['manual', 'automatic', 'idle'])
     subscriptions = Subscription.query.filter(status_filter).with_entities(Subscription.interval).all()
     return sum(1 / subscription.interval for subscription in subscriptions)
 

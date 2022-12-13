@@ -27,7 +27,7 @@ class UploadElement(JsonModel):
     upload_id = DB.Column(DB.Integer, DB.ForeignKey('upload.id'), nullable=False, index=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    status, status_id, status_enum, status_filter =\
+    status, status_id, status_enum, status_filter, status_col =\
         get_relation_definitions(upload_element_status, relname='status', relcol='id', colname='status_id',
                                  tblname='upload_element', nullable=False)
 
