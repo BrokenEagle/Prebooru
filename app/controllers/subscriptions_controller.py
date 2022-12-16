@@ -291,6 +291,13 @@ def reset_html(id):
     return redirect(request.referrer)
 
 
+@bp.route('/subscriptions/<int:id>/retire', methods=['PUT'])
+def retire_html(id):
+    subscription = get_or_abort(Subscription, id)
+    update_subscription_status(subscription, 'retired')
+    return redirect(request.referrer)
+
+
 @bp.route('/subscriptions/<int:id>/status.json', methods=['GET'])
 def status_json(id):
     subscription = get_or_error(Subscription, id)

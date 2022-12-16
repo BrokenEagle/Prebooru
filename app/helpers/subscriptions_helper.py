@@ -71,6 +71,11 @@ def status_link(subscription):
     return general_link(subscription.status.name, url, method='PUT')
 
 
+def retire_link(subscription):
+    url = url_for('subscription.retire_html', id=subscription.id)
+    return general_link("Retire subscription", url, method='PUT')
+
+
 # ###### Other functions
 
 def average_interval_lookup(subscription, average_intervals):
