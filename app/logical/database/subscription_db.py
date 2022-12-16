@@ -86,7 +86,7 @@ def delete_subscription(subscription):
 
 def get_available_subscription(unlimited):
     # Return only subscriptions which have already been processed manually (requery is not None)
-    status_filter = Subscription.status_filter('name', 'not_in', ['manual', 'automatic'])
+    status_filter = Subscription.status_filter('name', '__eq__', 'idle')
     query = Subscription.query.enum_join(Subscription.status_enum)\
                               .filter(Subscription.requery < get_current_time(),
                                       Subscription.last_id.is_not(None),
