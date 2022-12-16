@@ -23,7 +23,7 @@ from ..logger import log_error
 from ..downloader.network import convert_network_subscription
 from ..records.post_rec import recreate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
-    update_subscription_element_status, link_subscription_post
+    update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query
 from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.archive_db import get_archive
@@ -168,10 +168,7 @@ def download_subscription_elements(subscription, job_id=None):
 
 def download_missing_elements(manual=False):
     max_pages = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
-    q = SubscriptionElement.query.join(Subscription)\
-                                 .filter(SubscriptionElement.post_id.is_(None),
-                                         SubscriptionElement.status_filter('name', '__eq__', 'active'),
-                                         Subscription.status_filter('name', '__eq__', 'idle'))
+    q = pending_subscription_downloads_query()
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
