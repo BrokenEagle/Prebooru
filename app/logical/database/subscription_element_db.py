@@ -130,6 +130,13 @@ def expired_subscription_elements(expire_type):
     return switcher[expire_type](query)
 
 
+def pending_subscription_downloads_query():
+    return SubscriptionElement.query.join(Subscription)\
+                                 .filter(SubscriptionElement.post_id.is_(None),
+                                         SubscriptionElement.status_filter('name', '__eq__', 'active'),
+                                         Subscription.status_filter('name', '__eq__', 'idle'))
+
+
 def total_missing_downloads():
     return SubscriptionElement.query.join(Subscription)\
                                     .filter(SubscriptionElement.post_id.is_(None),
