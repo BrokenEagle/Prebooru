@@ -24,7 +24,7 @@ from ..records.subscription_rec import sync_missing_subscription_illusts, popula
 from ..database.base_db import safe_db_execute
 from ..database.pool_db import get_all_recheck_pools, update_pool_positions
 from ..database.subscription_db import get_available_subscription, update_subscription_status,\
-    update_subscription_active, get_busy_subscriptions, get_subscription_by_ids
+    get_busy_subscriptions, get_subscription_by_ids
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
@@ -319,7 +319,6 @@ def _process_pending_subscription(subscription, printer):
     def error_func(scope_vars, error):
         nonlocal subscription
         update_subscription_status(subscription, 'error')
-        update_subscription_active(subscription, False)
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription

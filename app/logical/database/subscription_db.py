@@ -15,10 +15,10 @@ from .base_db import update_column_attributes
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'last_id', 'requery', 'checked', 'active']
+COLUMN_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'last_id', 'requery', 'checked']
 
-CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'active']
-UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration', 'active']
+CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration']
+UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
 
 MAXIMUM_PROCESS_SUBSCRIPTIONS = 10
 
@@ -64,11 +64,6 @@ def update_subscription_status(subscription, value):
     SESSION.commit()
 
 
-def update_subscription_active(subscription, active):
-    subscription.active = active
-    SESSION.commit()
-
-
 def update_subscription_requery(subscription, timeval):
     subscription.requery = timeval
     SESSION.commit()
@@ -95,7 +90,6 @@ def get_available_subscription(unlimited):
     query = Subscription.query.enum_join(Subscription.status_enum)\
                               .filter(Subscription.requery < get_current_time(),
                                       Subscription.last_id.is_not(None),
-                                      Subscription.active.is_(True),
                                       status_filter)
     if not unlimited:
         query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
@@ -125,7 +119,6 @@ def add_subscription_error(subscription, error):
     subscription.status_id = subscription_status.error.id
     subscription.checked = get_current_time()
     subscription.requery = None
-    subscription.active = False
     SESSION.commit()
 
 

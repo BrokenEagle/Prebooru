@@ -57,12 +57,6 @@ FORM_CONFIG = {
                               Clear the field for no expiration. [Default: no expiration]""",
         },
     },
-    'active': {
-        'field': BooleanField,
-        'kwargs': {
-            'default': True,
-        },
-    },
 }
 
 
@@ -94,7 +88,6 @@ def convert_data_params(dataparams):
     params = get_subscription_form(**dataparams).data
     params['interval'] = parse_type(params, 'interval', float)
     params['expiration'] = parse_type(params, 'expiration', float)
-    params['active'] = parse_bool_parameter(dataparams, 'active')
     params = nullify_blanks(params)
     return params
 
@@ -102,7 +95,6 @@ def convert_data_params(dataparams):
 def convert_create_params(dataparams):
     createparams = convert_data_params(dataparams)
     set_default(createparams, 'interval', 24.0)
-    set_default(createparams, 'active', True)
     return createparams
 
 
