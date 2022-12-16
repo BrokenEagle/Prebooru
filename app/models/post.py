@@ -73,7 +73,7 @@ class Post(JsonModel):
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    type, type_id, type_enum, type_filter =\
+    type, type_id, type_enum, type_filter, type_col =\
         get_relation_definitions(post_type, relname='type', relcol='id', colname='type_id',
                                  tblname='post', nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)

@@ -54,7 +54,7 @@ ArtistNotations = secondarytable(
 class Artist(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site, site_id, site_enum, site_filter =\
+    site, site_id, site_enum, site_filter, site_col =\
         get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
                                  tblname='artist', nullable=False)
     site_artist_id = DB.Column(DB.Integer, nullable=False)

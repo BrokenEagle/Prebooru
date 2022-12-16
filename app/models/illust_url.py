@@ -19,11 +19,11 @@ from .base import JsonModel, get_relation_definitions
 class IllustUrl(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site, site_id, site_enum, site_filter =\
+    site, site_id, site_enum, site_filter, site_col =\
         get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
                                  tblname='illust_url', nullable=False)
     url = DB.Column(DB.String(255), nullable=False)
-    sample_site, sample_site_id, sample_site_enum, sample_site_filter =\
+    sample_site, sample_site_id, sample_site_enum, sample_site_filter, sample_site_col =\
         get_relation_definitions(site_descriptor, relname='sample_site', relcol='id', colname='sample_site_id',
                                  tblname='illust_url', nullable=True)
     sample_url = DB.Column(DB.String(255), nullable=True)

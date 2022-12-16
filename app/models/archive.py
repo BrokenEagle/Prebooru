@@ -21,7 +21,7 @@ from .base import JsonModel, EpochTimestamp, image_server_url, get_relation_defi
 class Archive(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    type, type_id, type_enum, type_filter =\
+    type, type_id, type_enum, type_filter, type_col =\
         get_relation_definitions(archive_type, relname='type', relcol='id', colname='type_id',
                                  tblname='archive', nullable=False)
     key = DB.Column(DB.String(255), nullable=False)
