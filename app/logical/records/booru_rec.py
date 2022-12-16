@@ -15,17 +15,16 @@ from ..database.archive_db import get_archive, create_archive, update_archive
 
 def check_all_boorus():
     print("Checking all boorus for updated data.")
+    status = {'total': 0}
     page = get_all_boorus_page(100)
-    if len(page.items) == 0:
-        return
     while True:
         print(f"check_all_boorus: {page.first} - {page.last} / Total({page.count})")
-        if not check_boorus(page.items) or not page.has_next:
-            return
+        if len(page.items) == 0 or not check_boorus(page.items, status) or not page.has_next:
+            return status
         page = page.next()
 
 
-def check_boorus(boorus):
+def check_boorus(boorus, status):
     danbooru_ids = [booru.danbooru_id for booru in boorus]
     results = get_artists_by_ids(danbooru_ids)
     if results['error']:
@@ -34,7 +33,8 @@ def check_boorus(boorus):
     for data in results['artists']:
         booru = next(filter(lambda x: x.danbooru_id == data['id'], boorus))
         updates = {'current_name': data['name'], 'deleted': data['is_deleted'], 'banned': data['is_banned']}
-        update_booru_from_parameters(booru, updates)
+        if update_booru_from_parameters(booru, updates):
+            status['total'] += 1
     return True
 
 

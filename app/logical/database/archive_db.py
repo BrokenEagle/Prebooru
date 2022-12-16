@@ -59,21 +59,24 @@ def set_archive_temporary(item, days):
 
 def delete_expired_archive():
     from ..records.archive_rec import remove_archive_media_file
-    Archive.query.enum_join(Archive.type_enum)\
-                 .filter(Archive.type_filter('name', '__ne__', 'post'),
-                         Archive.expires < get_current_time())\
-                 .delete()
+    status = {}
+    status['nonposts'] =\
+        Archive.query.enum_join(Archive.type_enum)\
+               .filter(Archive.type_filter('name', '__ne__', 'post'),
+                       Archive.expires < get_current_time())\
+               .delete()
     SESSION.commit()
     expired_data = Archive.query.enum_join(Archive.type_enum)\
                                 .filter(Archive.type_filter('name', '__eq__', 'post'),
                                         Archive.expires < get_current_time())\
                                 .all()
-    if len(expired_data) == 0:
-        return
-    for archive in expired_data:
-        remove_archive_media_file(archive)
-    Archive.query.filter(Archive.id.in_([data.id for data in expired_data])).delete()
-    SESSION.commit()
+    status['posts'] = len(expired_data)
+    if len(expired_data) > 0:
+        for archive in expired_data:
+            remove_archive_media_file(archive)
+        Archive.query.filter(Archive.id.in_([data.id for data in expired_data])).delete()
+        SESSION.commit()
+    return status
 
 
 # #### Query functions

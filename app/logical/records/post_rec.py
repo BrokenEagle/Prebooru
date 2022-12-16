@@ -34,17 +34,16 @@ RELOCATE_PAGE_LIMIT = 10
 
 def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
+    status = {'total': 0}
     page = get_posts_to_query_danbooru_id_page(5000)
     while True:
         print(f"check_all_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})")
-        if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items):
-            return
-        if not page.has_next:
-            return
+        if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, status) or not page.has_next:
+            return status
         page = page.next()
 
 
-def check_posts_for_danbooru_id(posts):
+def check_posts_for_danbooru_id(posts, status):
     from ..sources.danbooru import get_danbooru_posts_by_md5s
     post_md5s = [post.md5 for post in posts]
     for i in range(0, len(post_md5s), 1000):
@@ -59,6 +58,7 @@ def check_posts_for_danbooru_id(posts):
                 if danbooru_post is None:
                     continue
                 update_post_from_parameters(post, {'danbooru_id': danbooru_post['id']})
+                status['total'] += 1
     return True
 
 
