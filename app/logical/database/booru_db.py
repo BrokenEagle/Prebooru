@@ -71,6 +71,8 @@ def update_booru_from_parameters(booru, updateparams):
         print("[%s]: updated" % booru.shortlink)
         booru.updated = get_current_time()
         SESSION.commit()
+        return True
+    return False
 
 
 def recreate_booru_relations(booru, updateparams):

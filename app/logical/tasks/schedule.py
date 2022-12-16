@@ -4,12 +4,13 @@
 import os
 import re
 import time
+import traceback
 
 # ## PACKAGE IMPORTS
 from config import ALTERNATE_MEDIA_DIRECTORY, MAXIMUM_PROCESS_SUBSCRIPTIONS
-from utility.uprint import buffered_print, print_info
+from utility.uprint import buffered_print, print_info, print_error
 from utility.file import get_directory_listing, delete_file
-from utility.time import seconds_from_now_local
+from utility.time import seconds_from_now_local, get_current_time, days_ago, datetime_to_epoch, datetime_from_epoch
 
 # ## LOCAL IMPORTS
 from ... import DB, SESSION, SCHEDULER
@@ -29,7 +30,8 @@ from ..database.subscription_element_db import total_missing_downloads, expired_
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_db import expired_archive_count, delete_expired_archive
-from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id
+from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id, get_job_status_data,\
+    create_or_update_job_status
 from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready,\
     update_subscriptions_ready
 from .reschedule import reschedule_from_child, schedule_from_child
@@ -43,14 +45,18 @@ from . import JOB_CONFIG
 @SCHEDULER.task("interval", **JOB_CONFIG['expunge_cache_records']['config'])
 def expunge_cache_records_task():
     def _task(printer):
+        status = {}
         api_delete_count = expired_api_data_count()
         printer("API data records to delete:", api_delete_count)
         if api_delete_count > 0:
             delete_expired_api_data()
+            status['api'] = api_delete_count
         expired_media_records = get_expired_media_files()
         printer("Media files to delete:", len(expired_media_records))
         if len(expired_media_records) > 0:
             batch_delete_media(expired_media_records)
+            status['media'] = len(expired_media_records)
+        return status
 
     _execute_scheduled_task(_task, 'expunge_cache_records', True, True)
 
@@ -59,9 +65,12 @@ def expunge_cache_records_task():
 def expunge_archive_records_task():
     def _task(printer):
         archive_delete_count = expired_archive_count()
-        printer("Archive data records to delete:", archive_delete_count)
         if archive_delete_count > 0:
-            delete_expired_archive()
+            printer("Archive records deleted:", archive_delete_count)
+            status = {'total': archive_delete_count}
+            status.update(delete_expired_archive())
+            return status
+        printer("No archive records to delete.")
 
     _execute_scheduled_task(_task, 'expunge_archive_records', True, True)
 
@@ -69,7 +78,11 @@ def expunge_archive_records_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_boorus']['config'])
 def check_all_boorus_task():
     def _task(printer):
-        check_all_boorus()
+        status = check_all_boorus()
+        if status['total'] > 0:
+            printer("Boorus updated:", status['total'])
+            return status
+        printer("No boorus updated.")
 
     _execute_scheduled_task(_task, 'check_all_boorus', True, True)
 
@@ -77,7 +90,12 @@ def check_all_boorus_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_artists_for_boorus']['config'])
 def check_all_artists_for_boorus_task():
     def _task(printer):
-        check_all_artists_for_boorus()
+        status = check_all_artists_for_boorus()
+        if status['total'] > 0:
+            printer("Artists updated:", status['total'])
+            printer("Boorus created:", status['created'])
+            return status
+        printer("No artists updated.")
 
     _execute_scheduled_task(_task, 'check_all_artists_for_boorus', True, True)
 
@@ -85,7 +103,11 @@ def check_all_artists_for_boorus_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_posts_for_danbooru_id']['config'])
 def check_all_posts_for_danbooru_id_task():
     def _task(printer):
-        check_all_posts_for_danbooru_id()
+        status = check_all_posts_for_danbooru_id()
+        if status['total'] > 0:
+            printer("Posts updated:", status['total'])
+            return status
+        printer("No posts updated.")
 
     _execute_scheduled_task(_task, 'check_all_posts_for_danbooru_id', True, True)
 
@@ -104,6 +126,7 @@ def check_pending_subscriptions_task():
             for subscription in subscriptions:
                 printer("Processing subscription:", subscription.id)
                 _process_pending_subscription(subscription, printer)
+            return {'total': len(subscriptions)}
         else:
             printer("No subscriptions to process.")
 
@@ -120,6 +143,7 @@ def check_pending_downloads_task():
             manual = _is_job_manual('check_pending_downloads')
             processed = download_missing_elements(manual)
             printer("Elements processed:", processed)
+            return {'available': total, 'total': processed}
 
     if _subscriptions_check():
         _execute_scheduled_task(_task, 'check_pending_downloads', True, True)
@@ -135,6 +159,7 @@ def unlink_expired_subscription_elements_task():
             data = safe_db_execute('unlink_expired_subscription_elements', 'tasks.schedule', printer=printer,
                                    try_func=(lambda data: unlink_expired_subscription_elements(manual)))
             printer("Unlinked subscription elements:", data)
+            return {'available': total, 'total': data}
         else:
             printer("No subscriptions elements to process.")
 
@@ -151,6 +176,7 @@ def delete_expired_subscription_elements_task():
             data = safe_db_execute('delete_expired_subscription_elements', 'tasks.schedule', printer=printer,
                                    try_func=(lambda data: delete_expired_subscription_elements(manual)))
             printer("Deleted subscription elements:", data)
+            return {'available': total, 'total': data}
         else:
             printer("No subscriptions elements to process.")
 
@@ -167,6 +193,7 @@ def archive_expired_subscription_elements_task():
             data = safe_db_execute('archive_expired_subscription_elements', 'tasks.schedule', printer=printer,
                                    try_func=(lambda data: archive_expired_subscription_elements(manual)))
             printer("Archived subscription elements:", data)
+            return {'available': total, 'total': data}
         else:
             printer("No subscriptions elements to process.")
 
@@ -176,8 +203,13 @@ def archive_expired_subscription_elements_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['recalculate_pool_positions']['config'])
 def recalculate_pool_positions_task():
     def _task(printer):
-        for pool in get_all_recheck_pools():
-            update_pool_positions(pool)
+        recheck_pools = get_all_recheck_pools()
+        if len(recheck_pools):
+            for pool in recheck_pools:
+                update_pool_positions(pool)
+            printer("Pools recalculated:", len(recheck_pools))
+            return {'total': len(recheck_pools)}
+        printer("No pools to recalculate.")
 
     _execute_scheduled_task(_task, 'recalculate_pool_positions', True, True)
 
@@ -186,13 +218,14 @@ def recalculate_pool_positions_task():
 def relocate_old_posts_task():
     def _task(printer):
         manual = _is_job_manual('relocate_old_posts')
-        start = time.time()
         posts_moved = relocate_old_posts_to_alternate(manual)
         if posts_moved is None:
             printer("Alternate move days not configured.")
-        else:
+        elif posts_moved > 0:
             printer("Posts moved:", posts_moved)
-        printer("Task duration:", time.time() - start)
+            return {'total': posts_moved}
+        else:
+            printer("No posts to move.")
 
     if ALTERNATE_MEDIA_DIRECTORY is None:
         print("Alternate media directory not configured.")
@@ -217,7 +250,10 @@ def delete_orphan_images_task():
             print("Deleting file:", filename)
             delete_file(os.path.join(CACHE_DATA_DIRECTORY, filename))
             files_deleted += 1
-        printer("Files deleted:", files_deleted)
+        if files_deleted > 0:
+            printer("Files deleted:", files_deleted)
+            return {'total': files_deleted}
+        printer("No files to delete.")
 
     _execute_scheduled_task(_task, 'delete_orphan_images', True, True)
 
@@ -242,10 +278,16 @@ def vacuum_analyze_database_task():
 def reset_subscription_status_task():
     def _task(printer):
         subscriptions = get_busy_subscriptions()
-        for subscription in subscriptions:
-            update_subscription_status(subscription, 'idle')
-        printer("Subscriptions reset:", len(subscriptions))
+        if len(subscriptions):
+            for subscription in subscriptions:
+                update_subscription_status(subscription, 'idle')
+            printer("Subscriptions reset:", len(subscriptions))
+            status = {'total': len(subscriptions)}
+        else:
+            printer("No subscriptions to reset.")
+            status = None
         update_subscriptions_ready()
+        return status
 
     _execute_scheduled_task(_task, 'reset_subscription_status', False, False)
 
@@ -266,14 +308,35 @@ def _execute_scheduled_task(func, id, has_enabled, has_lock):
         printer = buffered_print(display_name)
         printer("PID:", os.getpid())
         start_time = time.time()
-        func(printer)
+        info = func(printer) or {}
         printer("Execution time: %0.2f" % (time.time() - start_time))
         printer.print()
         if has_lock:
             _free_db_semaphore(id)
+        return info
 
-    _execute()
-    SESSION.remove()
+    dirty = False
+    start = get_current_time()
+    status = get_job_status_data(id) or []
+    filtered = [item for item in status if datetime_from_epoch(item['processed']) > days_ago(7)]
+    if len(filtered) != len(status):
+        dirty = True
+    try:
+        info = _execute()
+    except Exception as e:
+        tback = traceback.format_exc()
+        info = {'error': "%s :\n%s" % (repr(e), tback)}
+        print_error(info['error'])
+        SESSION.rollback()
+    if info is not None:
+        info['processed'] = int(datetime_to_epoch(start))
+        info['duration'] = (get_current_time() - start).seconds
+        status.append(info)
+        dirty = True
+    if dirty:
+        create_or_update_job_status(id, status)
+        SESSION.commit()
+        SESSION.remove()
 
 
 def _is_job_enabled(id):

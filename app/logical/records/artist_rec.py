@@ -18,20 +18,22 @@ from ..database.archive_db import get_archive, create_archive, update_archive
 
 def check_all_artists_for_boorus():
     print("Checking all artists for Danbooru artists.")
+    status = {'total': 0, 'created': 0}
     page = get_artists_without_boorus_page(100)
     booru_dict = {}
     while True:
         print(f"check_all_artists_for_boorus: {page.first} - {page.last} / Total({page.count})")
-        if len(page.items) == 0 or not check_artists_for_boorus(page.items, booru_dict):
-            return
-        if not page.has_next:
-            return
+        if len(page.items) == 0\
+           or not check_artists_for_boorus(page.items, booru_dict, status)\
+           or not page.has_next:
+            return status
         page = page.next()
 
 
-def check_artists_for_boorus(artists, booru_dict=None):
+def check_artists_for_boorus(artists, booru_dict=None, status=None):
     from ..sources.danbooru import get_artists_by_multiple_urls
     booru_dict = booru_dict if booru_dict is not None else {}
+    status = status if status is not None else {}
     query_urls = [artist.booru_search_url for artist in artists]
     query_urls = [url for url in query_urls if url is not None]
     results = get_artists_by_multiple_urls(query_urls)
@@ -44,11 +46,11 @@ def check_artists_for_boorus(artists, booru_dict=None):
         boorus = get_boorus(danb_artist_ids)
         booru_dict.update({booru.danbooru_id: booru for booru in boorus})
         for url in results['data']:
-            add_danbooru_artists(url, results['data'][url], booru_dict, artists)
+            add_danbooru_artists(url, results['data'][url], booru_dict, artists, status)
     return True
 
 
-def add_danbooru_artists(url, danbooru_artists, booru_dict, db_artists):
+def add_danbooru_artists(url, danbooru_artists, booru_dict, db_artists, status):
     artist = next(filter(lambda x: x.booru_search_url == url, db_artists))
     for data in danbooru_artists:
         booru = booru_dict.get(data['id'])
@@ -62,7 +64,9 @@ def add_danbooru_artists(url, danbooru_artists, booru_dict, db_artists):
                 }
             booru = create_booru_from_parameters(params)
             booru_dict[data['id']] = booru
+            status['created'] += 1
         booru_append_artist(booru, artist)
+        status['total'] += 1
 
 
 def get_or_create_artist_from_source(site_artist_id, source):
