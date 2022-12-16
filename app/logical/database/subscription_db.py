@@ -22,8 +22,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration', 'active']
 
 MAXIMUM_PROCESS_SUBSCRIPTIONS = 10
 
-AVERAGE_INTERVAL_CLAUSE = (func.max(Illust.site_created) - func.min(Illust.site_created)) / (func.count(Illust.id) - 1)
-
+AVERAGE_INTERVAL_CLAUSE = (Subscription.checked - func.min(Illust.site_created)) / func.count(Illust.id)
 
 # ## FUNCTIONS
 
@@ -143,11 +142,11 @@ def delay_subscription_elements(subscription, delay_days):
 def get_average_interval_for_subscriptions(subscriptions, days):
     keep_filter = SubscriptionElement.keep_filter('name', '__eq__', 'yes')
     return SubscriptionElement.query.enum_join(SubscriptionElement.keep_enum)\
-                              .join(IllustUrl).join(Illust)\
+                              .join(Subscription).join(IllustUrl).join(Illust)\
                               .with_entities(SubscriptionElement.subscription_id, AVERAGE_INTERVAL_CLAUSE)\
                               .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
                                       Illust.site_created > days_ago(days),
                                       keep_filter,
                                       )\
                               .group_by(SubscriptionElement.subscription_id)\
-                              .having(func.count(Illust.id) > 1).all()
+                              .having(func.count(Illust.id) > 0).all()
