@@ -32,7 +32,7 @@ from ..database.jobs_db import get_job_status_data, update_job_status, update_jo
 from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post, expired_subscription_elements
 from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
-    add_subscription_error, update_subscription_status, update_subscription_active, check_processing_subscriptions
+    add_subscription_error, update_subscription_status, check_processing_subscriptions
 from ..database.base_db import safe_db_execute
 from .image_hash_rec import generate_post_image_hashes
 
@@ -84,7 +84,6 @@ def process_subscription_manual(subscription_id, job_id):
         nonlocal subscription
         subscription = subscription or Subscription.find(subscription_id)
         update_subscription_status(subscription, 'error')
-        update_subscription_active(subscription, False)
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
