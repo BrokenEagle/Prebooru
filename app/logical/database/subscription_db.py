@@ -20,8 +20,6 @@ COLUMN_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'last_id', 'requery'
 CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration']
 UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
 
-MAXIMUM_PROCESS_SUBSCRIPTIONS = 10
-
 AVERAGE_INTERVAL_CLAUSE = (Subscription.checked - func.min(Illust.site_created)) / func.count(Illust.id)
 
 # ## FUNCTIONS
@@ -84,16 +82,13 @@ def delete_subscription(subscription):
 
 # #### Query
 
-def get_available_subscription(unlimited):
+def get_available_subscriptions_query():
     # Return only subscriptions which have already been processed manually (requery is not None)
     status_filter = Subscription.status_filter('name', '__eq__', 'idle')
-    query = Subscription.query.enum_join(Subscription.status_enum)\
+    return Subscription.query.enum_join(Subscription.status_enum)\
                               .filter(Subscription.requery < get_current_time(),
                                       Subscription.last_id.is_not(None),
                                       status_filter)
-    if not unlimited:
-        query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
-    return query.all()
 
 
 def get_busy_subscriptions():

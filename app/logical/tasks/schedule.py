@@ -6,7 +6,7 @@ import re
 import time
 
 # ## PACKAGE IMPORTS
-from config import ALTERNATE_MEDIA_DIRECTORY
+from config import ALTERNATE_MEDIA_DIRECTORY, MAXIMUM_PROCESS_SUBSCRIPTIONS
 from utility.uprint import buffered_print, print_info
 from utility.file import get_directory_listing, delete_file
 from utility.time import seconds_from_now_local
@@ -23,7 +23,7 @@ from ..records.subscription_rec import sync_missing_subscription_illusts, popula
     archive_expired_subscription_elements
 from ..database.base_db import safe_db_execute
 from ..database.pool_db import get_all_recheck_pools, update_pool_positions
-from ..database.subscription_db import get_available_subscription, update_subscription_status,\
+from ..database.subscription_db import get_available_subscriptions_query, update_subscription_status,\
     get_busy_subscriptions, get_subscription_by_ids
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
@@ -94,7 +94,10 @@ def check_all_posts_for_danbooru_id_task():
 def check_pending_subscriptions_task():
     def _task(printer):
         manual = _is_job_manual('check_pending_subscriptions')
-        subscriptions = get_available_subscription(manual)
+        query = get_available_subscriptions_query()
+        if not manual:
+            query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
+        subscriptions = query.all()
         if len(subscriptions) > 0:
             schedule_from_child('subscriptions-callback', 'app.logical.tasks.schedule:_pending_subscription_callback',
                                 [subscription.id for subscription in subscriptions], seconds_from_now_local(900))
