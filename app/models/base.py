@@ -495,10 +495,14 @@ def _get_relation_definitions_use_enums(enm, relname=None, colname=None, tblname
             rel = getattr(cls, relname)
             return _enum_filter(enm, rel, relattr, op, *args)
 
-    return baseval, idval, enm, filter
+    @classmethod
+    def colval(cls):
+        return getattr(cls, relname)
+
+    return baseval, idval, enm, filter, colval
 
 
-def _get_relation_definitions_use_models(rel, relcol=None, backname=None, nullable=None, **kwargs):
+def _get_relation_definitions_use_models(rel, colname=None, relcol=None, backname=None, nullable=None, **kwargs):
     if relcol is None:
         raise Exception(f"Relation column is not defined for relation definition on {rel}.")
     idval = DB.Column(DB.INTEGER, DB.ForeignKey(getattr(rel, relcol)), nullable=nullable)
@@ -518,7 +522,11 @@ def _get_relation_definitions_use_models(rel, relcol=None, backname=None, nullab
             enum_op = getattr(getattr(rel, relattr), op)
         return enum_op(*args)
 
-    return baseval, idval, rel, filter
+    @classmethod
+    def colval(cls):
+        return getattr(cls, colname)
+
+    return baseval, idval, rel, filter, colval
 
 
 def _enum_filter(enm, rel, relattr, op, *args):
