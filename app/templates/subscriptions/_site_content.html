@@ -28,6 +28,49 @@
                 </li>
             </ul>
         </section>
+        <section id="subscription-element-keep">
+            <h4>Element Keep</h4>
+            <ul>
+                <li>
+                    <strong>Undecided:</strong> {{ subscription.undecided_count }} {{ helpers.subscription.element_keep_link(subscription, None) }}
+                </li>
+                <li>
+                    <strong>Yes:</strong> {{ subscription.yes_count }} {{ helpers.subscription.element_keep_link(subscription, 'yes') }}
+                </li>
+                <li>
+                    <strong>No:</strong> {{ subscription.no_count }} {{ helpers.subscription.element_keep_link(subscription, 'no') }}
+                </li>
+                <li>
+                    <strong>Maybe:</strong> {{ subscription.maybe_count }} {{ helpers.subscription.element_keep_link(subscription, 'maybe') }}
+                </li>
+                <li>
+                    <strong>Archive:</strong> {{ subscription.archive_count }} {{ helpers.subscription.element_keep_link(subscription, 'archive') }}
+                </li>
+            </ul>
+        </section>
+        <section id="subscription-element-status">
+            <h4>Element Status</h4>
+            <ul>
+                <li>
+                    <strong>Active:</strong> {{ subscription.active_count }} {{ helpers.subscription.element_status_link(subscription, 'active') }}
+                </li>
+                <li>
+                    <strong>Duplicate:</strong> {{ subscription.duplicate_count }} {{ helpers.subscription.element_status_link(subscription, 'duplicate') }}
+                </li>
+                <li>
+                    <strong>Unlinked:</strong> {{ subscription.unlinked_count }} {{ helpers.subscription.element_status_link(subscription, 'unlinked') }}
+                </li>
+                <li>
+                    <strong>Deleted:</strong> {{ subscription.deleted_count }} {{ helpers.subscription.element_status_link(subscription, 'deleted') }}
+                </li>
+                <li>
+                    <strong>Archived:</strong> {{ subscription.archived_count }} {{ helpers.subscription.element_status_link(subscription, 'error') }}
+                </li>
+                <li>
+                    <strong>Error:</strong> {{ subscription.error_count }} {{ helpers.subscription.element_status_link(subscription, 'error') }}
+                </li>
+            </ul>
+        </section>
         <section id="subscription-settings">
             <h4>Settings</h4>
             <ul>

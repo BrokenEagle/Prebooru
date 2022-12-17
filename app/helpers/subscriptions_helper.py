@@ -76,6 +76,22 @@ def retire_link(subscription):
     return general_link("Retire subscription", url, method='PUT')
 
 
+def element_keep_link(subscription, keep):
+    search_args = {'subscription_id': subscription.id}
+    if keep is not None:
+        search_args['keep'] = keep
+    else:
+        search_args['keep_exists'] = 'false'
+    url = search_url_for('subscription_element.index_html', base_args={'type': 'all'}, **search_args)
+    return general_link('»', url)
+
+
+def element_status_link(subscription, status):
+    search_args = {'subscription_id': subscription.id, 'status': status}
+    url = search_url_for('subscription_element.index_html', base_args={'type': 'all'}, **search_args)
+    return general_link('»', url)
+
+
 # ###### Other functions
 
 def average_interval_lookup(subscription, average_intervals):

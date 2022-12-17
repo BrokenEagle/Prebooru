@@ -71,6 +71,14 @@ section#subscription-status {
     width: 25%;
 }
 
+section#subscription-element-keep {
+    width: 20%;
+}
+
+section#subscription-element-status {
+    width: 20%;
+}
+
 div#subscription-site-content-2 {
     border: 1px solid #ddd;
     margin-top: 2em;
