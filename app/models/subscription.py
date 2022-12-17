@@ -8,7 +8,7 @@ from utility.time import average_timedelta, days_ago, get_current_time
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import subscription_status
+from ..enum_imports import subscription_status, subscription_element_status, subscription_element_keep
 from .illust import Illust
 from .illust import IllustUrl
 from .post import Post
@@ -113,6 +113,61 @@ class Subscription(JsonModel):
     def post_count(self):
         return self._post_query.distinct_count()
 
+    @memoized_property
+    def undecided_count(self):
+        self._populate_keep_counts()
+        return self._keep_counts['undecided']
+
+    @memoized_property
+    def yes_count(self):
+        self._populate_keep_counts()
+        return self._keep_counts['yes']
+
+    @memoized_property
+    def no_count(self):
+        self._populate_keep_counts()
+        return self._keep_counts['no']
+
+    @memoized_property
+    def maybe_count(self):
+        self._populate_keep_counts()
+        return self._keep_counts['maybe']
+
+    @memoized_property
+    def archive_count(self):
+        self._populate_keep_counts()
+        return self._keep_counts['archive']
+
+    @memoized_property
+    def active_count(self):
+        self._populate_status_counts()
+        return self._status_counts['active']
+
+    @memoized_property
+    def unlinked_count(self):
+        self._populate_status_counts()
+        return self._status_counts['unlinked']
+
+    @memoized_property
+    def deleted_count(self):
+        self._populate_status_counts()
+        return self._status_counts['deleted']
+
+    @memoized_property
+    def archived_count(self):
+        self._populate_status_counts()
+        return self._status_counts['archived']
+
+    @memoized_property
+    def duplicate_count(self):
+        self._populate_status_counts()
+        return self._status_counts['duplicate']
+
+    @memoized_property
+    def error_count(self):
+        self._populate_status_counts()
+        return self._status_counts['error']
+
     # ## Private
 
     @property
@@ -143,6 +198,29 @@ class Subscription(JsonModel):
             self._main_bytes = sum([x[0] for x in filesizes if x[1] is False])
             self._alternate_bytes = sum([x[0] for x in filesizes if x[1] is True])
 
+    def _populate_keep_counts(self):
+        if hasattr(self, '_keep_counts'):
+            return
+        keep_counts = self._element_query.with_entities(SubscriptionElement.keep_col()).all()
+        counts = {name: 0 for name in subscription_element_keep.names + ['undecided']}
+        for keep in keep_counts:
+            keep_enum = _get_enum_id(keep[0])
+            keep_value = subscription_element_keep.by_id(keep_enum) if keep_enum is not None else None
+            keep_name = keep_value.name if keep_value is not None else 'undecided'
+            counts[keep_name] = 1 + (counts[keep_name] if keep_name in counts else 0)
+        setattr(self, '_keep_counts', counts)
+
+    def _populate_status_counts(self):
+        if hasattr(self, '_status_counts'):
+            return
+        status_counts = self._element_query.with_entities(SubscriptionElement.status_col()).all()
+        counts = {name: 0 for name in subscription_element_status.names}
+        for status in status_counts:
+            status_enum = _get_enum_id(status[0])
+            status_value = subscription_element_status.by_id(status_enum)
+            status_name = status_value.name
+            counts[status_name] = 1 + (counts[status_name] if status_name in counts else 0)
+        setattr(self, '_status_counts', counts)
 
 # ## INITIALIZATION
 
@@ -151,3 +229,9 @@ def initialize():
     # Access the opposite side of the relationship to force the back reference to be generated
     Artist.subscription.property._configure_started
     Subscription.set_relation_properties()
+
+
+# ## Private
+
+def _get_enum_id(value):
+    return value if isinstance(value, int) or value is None else value.id
