@@ -97,3 +97,35 @@ div#subscription-illusts {
 div#subscription-posts {
     margin-top: 2em;
 }
+
+/**** STATUS Page ****/
+div#subscription-status > div {
+    margin-bottom: 2em;
+}
+
+div#subscription-main-tasks,
+div#subscription-expirations-section {
+    display: flex;
+}
+
+div#subscription-main-tasks > div {
+    width: 20%;
+}
+
+div#subscription-main-tasks div.heading,
+div#subscription-slots-per-hour > div.heading,
+div#subscription-expirations > div.heading {
+    font-size: 24px;
+}
+
+div#subscription-expirations-section > div {
+    width: 12%;
+}
+
+div#subscription-expirations-section div.heading {
+    font-size: 18px;
+}
+
+table#subscriptions-table {
+    margin-top: 0;
+}
