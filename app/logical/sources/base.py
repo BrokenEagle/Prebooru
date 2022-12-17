@@ -39,14 +39,6 @@ class NoSource():
         return None
 
     @staticmethod
-    def normalized_image_url(url):
-        return url
-
-    @staticmethod
-    def partial_media_url(url):
-        return url
-
-    @staticmethod
     def get_media_url(illust_url):
         return illust_url.url
 

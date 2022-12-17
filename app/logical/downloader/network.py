@@ -95,7 +95,7 @@ def create_image_post(record, post_type):
     pixel_md5 = get_pixel_hash(image)
     if record.model_name == 'post':
         update_post_from_parameters(record, {'md5': md5, 'width': image_width, 'height': image_height,
-                                           'size': len(buffer), 'file_ext': image_file_ext, 'pixel_md5': pixel_md5})
+                                             'size': len(buffer), 'file_ext': image_file_ext, 'pixel_md5': pixel_md5})
         post = record
     else:
         post = create_post_and_add_illust_url(illust_url, image_width, image_height, image_file_ext, md5, len(buffer),

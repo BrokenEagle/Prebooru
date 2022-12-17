@@ -222,6 +222,7 @@ class Subscription(JsonModel):
             counts[status_name] = 1 + (counts[status_name] if status_name in counts else 0)
         setattr(self, '_status_counts', counts)
 
+
 # ## INITIALIZATION
 
 def initialize():

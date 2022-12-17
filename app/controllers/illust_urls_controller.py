@@ -8,7 +8,6 @@ from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl
-from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.sources.base import get_media_source
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters,\

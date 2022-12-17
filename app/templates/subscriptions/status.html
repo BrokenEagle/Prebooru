@@ -11,7 +11,9 @@
                 <div class="heading">Subscriptions</div>
                 <ul>
                     {% for setting, value in helpers.subscription.subscriptions_iterator() %}
-                        <li><b>{{ setting }}:</b> {{ value }}
+                        <li>
+                            <b>{{ setting }}:</b> {{ value }}
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
@@ -19,7 +21,9 @@
                 <div class="heading">Downloads</div>
                 <ul>
                     {% for setting, value in helpers.subscription.download_iterator() %}
-                        <li><b>{{ setting }}:</b> {{ value }}
+                        <li>
+                            <b>{{ setting }}:</b> {{ value }}
+                        </li>
                     {% endfor %}
                 </ul>
             </div>

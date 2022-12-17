@@ -7,10 +7,6 @@
 
 {% block content %}
     <div id="notation-form-heading" class="heading">Edit {{ notation.header }}</div>
-    {% if notation.append_item is not none %}
-        <div id="notation-form-info">
-            {{ helpers.notation.edit_append_info(notation) }}
-        </div>
-    {% endif %}
+    {% if notation.append_item is not none %}<div id="notation-form-info">{{ helpers.notation.edit_append_info(notation) }}</div>{% endif %}
     {{ render_form(form, "PUT", notation.update_url) }}
 {% endblock content %}

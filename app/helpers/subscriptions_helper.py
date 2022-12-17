@@ -10,15 +10,14 @@ from utility.data import readable_bytes
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
 from ..logical.database.subscription_db import get_average_interval_for_subscriptions, get_available_subscriptions_query
-from ..logical.database.subscription_element_db import expired_subscription_elements, pending_subscription_downloads_query
+from ..logical.database.subscription_element_db import expired_subscription_elements,\
+    pending_subscription_downloads_query
 from ..logical.records.subscription_rec import subscription_slots_needed_per_hour
 from ..logical.tasks import JOB_CONFIG
 from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
 from .base_helper import general_link, url_for_with_params
 
-
-# ## GLOBAL VARIABLES
 
 # ## FUNCTIONS
 

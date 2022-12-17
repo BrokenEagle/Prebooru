@@ -3,7 +3,7 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
 from flask import Blueprint, request, render_template, abort, url_for, flash, redirect
-from wtforms import BooleanField, FloatField, IntegerField
+from wtforms import FloatField, IntegerField
 from wtforms.validators import DataRequired
 
 # ## PACKAGE IMPORTS
@@ -21,7 +21,7 @@ from ..logical.database.jobs_db import get_job_status_data, create_or_update_job
 from ..logical.database.server_info_db import get_subscriptions_ready
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
-    check_param_requirements, nullify_blanks, parse_bool_parameter, set_default, hide_input, parse_type
+    check_param_requirements, nullify_blanks, set_default, hide_input, parse_type
 
 
 # ## GLOBAL VARIABLES
