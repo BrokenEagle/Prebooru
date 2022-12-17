@@ -22,6 +22,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
 
 AVERAGE_INTERVAL_CLAUSE = (Subscription.checked - func.min(Illust.site_created)) / func.count(Illust.id)
 
+
 # ## FUNCTIONS
 
 # #### Route DB functions

@@ -18,8 +18,6 @@ from .posts_helper import post_preview_link
 from .base_helper import general_link, url_for_with_params
 
 
-# ## GLOBAL VARIABLES
-
 # ## FUNCTIONS
 
 # #### Subscriptions
