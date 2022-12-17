@@ -1,0 +1,66 @@
+{% extends "subscriptions/_base.html" %}
+
+{% block title %}
+    Subscrptions Status
+{% endblock title %}
+
+{% block content %}
+    <div id="subscription-status">
+        <div id="subscription-main-tasks">
+            <div>
+                <div class="heading">Subscriptions</div>
+                <ul>
+                    {% for setting, value in helpers.subscription.subscriptions_iterator() %}
+                        <li><b>{{ setting }}:</b> {{ value }}
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <div class="heading">Downloads</div>
+                <ul>
+                    {% for setting, value in helpers.subscription.download_iterator() %}
+                        <li><b>{{ setting }}:</b> {{ value }}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div id="subscription-slots-per-hour">
+            <div class="heading">Slots Needed Per Hour</div>
+            <table id="subscriptions-table" class="striped" width="50%">
+                <thead>
+                    <tr>
+                        <th>Online Per Day</th>
+                        <th>4 Hours</th>
+                        <th>8 Hours</th>
+                        <th>12 Hours</th>
+                        <th>16 Hours</th>
+                        <th>20 Hours</th>
+                        <th>24 Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        {% for slots in helpers.subscription.slots_per_hour_iterator() %}
+                            <td>{{ slots }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="subscription-expirations">
+            <div class="heading">Expirations</div>
+            <div id="subscription-expirations-section">
+                {% for task, hours, pending in helpers.subscription.expires_iterator() %}
+                    <div>
+                        <div class="heading">{{ task | title }}:</div>
+                        <ul>
+                            <li>Interval: {{ hours }} hours</li>
+                            <li>Pending: {{ pending }} elements</li>
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}

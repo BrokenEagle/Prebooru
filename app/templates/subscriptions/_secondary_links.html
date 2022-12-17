@@ -3,6 +3,7 @@
 <menu id="secondary-menu">
     {{ subnav_link_to("Listing", 'subscription.index_html') }}
     ({{ subnav_link_to("w/Interval", 'subscription.index_html', show_interval='true') }})&emsp;
+    {{ subnav_link_to("Status", 'subscription.index_status_html') }}
     {{ subnav_link_to("New", 'subscription.new_html') }}
     {{ subnav_link_to("Elements", 'subscription_element.index_html') }}
     {% if subscription.id is not none %}
