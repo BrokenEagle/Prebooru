@@ -28,6 +28,22 @@
                 </li>
             </ul>
         </section>
+        <section id="subscription-settings">
+            <h4>Settings</h4>
+            <ul>
+                <li>
+                    <strong>Expiration:</strong>
+                    {% if subscription.expiration is not none %}
+                        {{ subscription.expiration }} days
+                    {% else %}
+                        <em>none</em>
+                    {% endif %}
+                </li>
+                <li>
+                    <strong>Interval:</strong> {{ subscription.interval }} hours
+                </li>
+            </ul>
+        </section>
         <section id="subscription-element-keep">
             <h4>Element Keep</h4>
             <ul>
@@ -68,22 +84,6 @@
                 </li>
                 <li>
                     <strong>Error:</strong> {{ subscription.error_count }} {{ helpers.subscription.element_status_link(subscription, 'error') }}
-                </li>
-            </ul>
-        </section>
-        <section id="subscription-settings">
-            <h4>Settings</h4>
-            <ul>
-                <li>
-                    <strong>Interval:</strong> {{ subscription.interval }} hours
-                </li>
-                <li>
-                    <strong>Expiration:</strong>
-                    {% if subscription.expiration is not none %}
-                        {{ subscription.expiration }} days
-                    {% else %}
-                        <em>none</em>
-                    {% endif %}
                 </li>
             </ul>
         </section>

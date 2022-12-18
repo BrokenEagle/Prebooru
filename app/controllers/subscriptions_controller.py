@@ -44,17 +44,17 @@ FORM_CONFIG = {
             'validators': [DataRequired()],
         },
     },
-    'interval': {
-        'field': FloatField,
-        'kwargs': {
-            'description': "How often to check the artist (hours, >1.0). [Default: 24 hours]",
-        },
-    },
     'expiration': {
         'field': FloatField,
         'kwargs': {
             'description': """How long to wait before deleting the post/illust (days, >1.0).
                               Clear the field for no expiration. [Default: no expiration]""",
+        },
+    },
+    'interval': {
+        'field': FloatField,
+        'kwargs': {
+            'description': "How often to check the artist (hours, >1.0). [Default: 24 hours]",
         },
     },
 }
