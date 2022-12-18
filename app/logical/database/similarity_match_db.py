@@ -26,8 +26,8 @@ def create_similarity_match_from_parameters(createparams):
     similarity_match = SimilarityMatch()
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(similarity_match, update_columns, createparams)
-    print("[%s]: created" % similarity_match.shortlink)
+    update_column_attributes(similarity_match, update_columns, createparams, commit=False)
+    print("[%s]: created\n" % similarity_match.shortlink)
     return similarity_match
 
 
@@ -37,9 +37,9 @@ def update_similarity_match_from_parameters(similarity_match, updateparams):
     update_results = []
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(similarity_match, update_columns, updateparams))
+    update_results.append(update_column_attributes(similarity_match, update_columns, updateparams, commit=False))
     if any(update_results):
-        print("[%s]: updated" % similarity_match.shortlink)
+        print("[%s]: updated\n" % similarity_match.shortlink)
 
 
 # ###### DELETE
