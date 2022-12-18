@@ -97,6 +97,8 @@ class LimitPaginate():
         self.total = ((self.count - 1) // per_page) + 1
         self.first = ((page - 1) * per_page) + 1
         self.last = min(page * per_page, self.count)
+        self.next_sequential_id = min([item.id for item in self.items]) if len(self.items) else None
+        self.prev_sequential_id = max([item.id for item in self.items]) if len(self.items) else None
 
     @property
     def has_next(self):
@@ -113,14 +115,6 @@ class LimitPaginate():
     @property
     def prev_num(self):
         return self.page + 1
-
-    @property
-    def next_sequential_id(self):
-        return min([item.id for item in self.items]) if len(self.items) else None
-
-    @property
-    def prev_sequential_id(self):
-        return max([item.id for item in self.items]) if len(self.items) else None
 
     def next(self):
         return LimitPaginate(query=self.query, page=self.next_num, per_page=self.per_page, count=self.count,
