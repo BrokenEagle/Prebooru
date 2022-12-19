@@ -30,7 +30,7 @@ NO_SUBELEMENT_CLAUSE = Post.id.not_in(SUBELEMENT_SUBCLAUSE)
 
 def create_post_from_parameters(createparams):
     current_time = get_current_time()
-    post = Post(created=current_time, alternate=False)
+    post = Post(created=current_time, alternate=False, simcheck=False)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(post, update_columns, createparams)
@@ -66,6 +66,11 @@ def set_post_alternate(post, alternate):
 def set_post_type(post, post_type):
     post.type_id = Post.type_enum.by_name(post_type).id
     SESSION.commit()
+
+
+def set_post_simcheck(post, simcheck):
+    post.simcheck = simcheck
+    SESSION.flush()
 
 
 # ###### Delete

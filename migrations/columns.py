@@ -94,6 +94,12 @@ def alter_column(table_name, column_name, column_type, alter_args, **kwargs):
     alter_columns(table_name, [(column_name, column_type, alter_args)], **kwargs)
 
 
+def set_column_default(table_name, **kwargs):
+    set_statement_str = ', '.join([f'{k}={v}' for (k, v) in kwargs.items()])
+    connection = op.get_bind()
+    connection.execute(sa.text(f'UPDATE {table_name} SET {set_statement_str}'))
+
+
 def initialize_column(table_name, column_name, column_type, *extra_columns):
     columns = [sa.Column('id', sa.Integer), sa.Column(column_name, getattr(sa, column_type))]
     for (colname, coltype) in extra_columns:

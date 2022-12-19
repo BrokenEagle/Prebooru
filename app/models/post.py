@@ -80,6 +80,7 @@ class Post(JsonModel):
     pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
     duration = DB.Column(DB.Float, nullable=True)
     audio = DB.Column(DB.Boolean, nullable=True)
+    simcheck = DB.Column(DB.Boolean, nullable=False)
 
     # ## Relationships
     illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True,
