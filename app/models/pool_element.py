@@ -15,6 +15,12 @@ from ..enum_imports import pool_element_type
 from .base import JsonModel, get_relation_definitions
 
 
+# ## GLOBAL VARIABLES
+
+# IS NULL produces a boolean, which is evaluated internally as either a 1 (truth) or 0 (false)
+SINGLE_FOREIGN_KEY_NOT_NULL = "((post_id IS NULL) + (illust_id IS NULL) + (notation_id IS NULL)) = 2"
+
+
 # ## FUNCTIONS
 
 def pool_element_create(item):
@@ -81,7 +87,7 @@ class PoolElement(JsonModel):
     }
     __table_args__ = (
         DB.CheckConstraint(
-            "post_id IS NOT NULL OR illust_id IS NOT NULL OR notation_id IS NOT NULL",
+            SINGLE_FOREIGN_KEY_NOT_NULL,
             name="null_check"),
     )
 

@@ -10,11 +10,25 @@ from .image_hash_rec import get_image_hash_matches, check_image_match_scores, fi
 # ## FUNCTIONS
 
 def populate_similarity_pools(post, printer=print):
+    import time
     imghash_items = get_image_hash_by_post_id(post.id)
     score_results = []
+    start = time.time()
+    sqltime = 0
+    calctime = 0
+    print("####START####")
     for imghash in imghash_items:
+        start1 = time.time()
         smatches = get_image_hash_matches(imghash.hash, imghash.ratio, sim_clause='cross2', post_id=imghash.post_id)
+        start2 = time.time()
+        sqltime += start2 - start1
+        start1 = start2
         score_results += check_image_match_scores(smatches, imghash.hash, 90.0)
+        start2 = time.time()
+        calctime += start2 - start1
+    print("Duration:", time.time() - start)
+    print("SQL:", sqltime)
+    print("Calc:", calctime)
     final_results = filter_score_results(score_results)
     printer("Similarity pool results (post #%d): %d" % (post.id, len(final_results)))
     if len(final_results) == 0:
