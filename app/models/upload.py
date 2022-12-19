@@ -68,6 +68,11 @@ class Upload(JsonModel):
         return self._illust_urls
 
     @memoized_property
+    def complete_illust_urls(self):
+        self._populate_illust_urls()
+        return self._complete_illust_urls
+
+    @memoized_property
     def duplicate_illust_urls(self):
         self._populate_illust_urls()
         return self._duplicate_illust_urls
@@ -90,6 +95,15 @@ class Upload(JsonModel):
         return []
 
     @property
+    def complete_posts(self):
+        if self.type == 'network':
+            self._populate_posts()
+            return [illust_url.post for illust_url in self.complete_illust_urls if illust_url.post is not None]
+        elif self.type == 'file':
+            return self.posts if self.status.name == 'complete' else []
+        return []
+
+    @property
     def duplicate_posts(self):
         if self.type == 'network':
             self._populate_posts()
@@ -101,6 +115,10 @@ class Upload(JsonModel):
     @property
     def post_ids(self):
         return [post.id for post in self.posts]
+
+    @property
+    def complete_post_ids(self):
+        return [post.id for post in self.complete_posts]
 
     @property
     def duplicate_post_ids(self):
@@ -133,7 +151,7 @@ class Upload(JsonModel):
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['image_urls', 'post_ids', 'duplicate_post_ids', 'errors']
+        return super().json_attributes + ['image_urls', 'post_ids', 'complete_post_ids', 'duplicate_post_ids', 'errors']
 
     # ## Private
 
@@ -150,6 +168,8 @@ class Upload(JsonModel):
         if len(self.elements):
             selectinload_batch_primary(self.elements, 'illust_url')
         self._illust_urls = [element.illust_url for element in self.elements]
+        self._complete_illust_urls = [element.illust_url for element in self.elements
+                                      if element.status.name == 'complete']
         self._duplicate_illust_urls = [element.illust_url for element in self.elements
                                        if element.status.name == 'duplicate']
         self._populate_illust_urls = lambda: None

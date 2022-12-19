@@ -61,14 +61,16 @@ def process_upload(upload_id):
         nonlocal upload
         upload = upload or Upload.find(upload_id)
         printer("Upload:", upload.status)
-        printer("Posts:", len(upload.posts))
-        if upload.status.name in ['complete', 'duplicate'] and len(upload.posts) > 0:
+        printer("Total:", len(upload.posts))
+        printer("Complete:", len(upload.complete_posts))
+        printer("Duplicate:", len(upload.duplicate_posts))
+        if upload.status.name == 'complete' and len(upload.complete_posts) > 0:
             printer("Starting secondary threads.")
-            post_ids = [post.id for post in upload.posts]
+            post_ids = upload.complete_post_ids
             SessionThread(target=process_image_matches, args=(post_ids,)).start()
             SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
             SessionThread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
-            video_post_ids = [post.id for post in upload.posts if post.is_video]
+            video_post_ids = [post.id for post in upload.complete_posts if post.is_video]
             if len(video_post_ids):
                 SessionThread(target=process_videos, args=(video_post_ids,)).start()
 
