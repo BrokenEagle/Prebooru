@@ -3,63 +3,66 @@
 # ## PYTHON IMPORTS
 import os
 import sys
+import colorama
 from argparse import ArgumentParser
-from sqlalchemy import func, not_
+from sqlalchemy import func, not_, or_
+from sqlalchemy.orm import selectinload
 
 
 # ## FUNCTIONS
 
 def initialize():
-    global SESSION, Post, SimilarityPool, SimilarityPoolElement, populate_similarity_pools
+    global SESSION, Post, SimilarityMatch, SubscriptionElement, populate_similarity_pools, search_attributes,\
+        TYPE_CLAUSE, SUBELEMENT_SUBQUERY,\
+        print_info
+    colorama.init(autoreset=True)
     sys.path.append(os.path.abspath('.'))
+    from utility.uprint import print_info
     from app import SESSION
-    from app.models import Post, SimilarityPool, SimilarityPoolElement
-    from app.logical.similarity.populate_pools import populate_similarity_pools
+    from app.models import Post, SimilarityMatch, SubscriptionElement
+    from app.logical.records.similarity_match_rec import populate_similarity_pools
+    from app.logical.searchable import search_attributes
+    TYPE_CLAUSE = Post.type_filter('name', '__eq__', 'user')
+    SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
+                                                   .with_entities(SubscriptionElement.post_id)
 
 
-def standard_populate_similarity_pools(args):
-    if args.expunge:
-        # Sibling relationship must be removed first
-        SimilarityPoolElement.query.update({SimilarityPoolElement.sibling_id: None}, synchronize_session=False)
-        SESSION.commit()
-        SimilarityPoolElement.query.delete()
-        SESSION.commit()
-        SimilarityPool.query.delete()
-        SESSION.commit()
-        max_post_id = 0
-    else:
-        max_post_id = SESSION.query(func.max(SimilarityPool.post_id)).scalar() or 0
-    page = Post.query.filter(Post.id > max_post_id).count_paginate(per_page=100)
+def expunge_populate_similarity_pools(args):
+    SimilarityMatch.query.delete()
+    SESSION.commit()
+    page = Post.query.count_paginate(per_page=100)
     while True:
-        print("\n%d/%d\n" % (page.page, page.total))
+        print(f"\nexpunge_populate_similarity_pools: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
-            populate_similarity_pools(post)
+            populate_similarity_pools(post, empty=False)
+        SESSION.commit()
         if not page.has_next:
             break
         page = page.next()
 
 
 def missing_populate_similarity_pools(args):
-    primaryjoin = Post.similarity_pool.property.primaryjoin
-    subquery = Post.query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)\
-                   .filter(primaryjoin.left == primaryjoin.right).with_entities(Post.id)
-    subclause = Post.id.in_(subquery)
-    query = Post.query.filter(not_(subclause)).order_by(Post.id.asc())
+    query = Post.query.enum_join(Post.type_enum)
+    query = query.filter(Post.simcheck.is_(False), or_(TYPE_CLAUSE, Post.id.not_in(SUBELEMENT_SUBQUERY)))
+    query = query.options(selectinload(Post.image_hashes),
+                          selectinload(Post.similarity_matches_forward),
+                          selectinload(Post.similarity_matches_reverse))
     page = query.limit_paginate(per_page=100)
     while True:
-        print("\n%d/%d\n" % (page.page, page.total))
+        print_info(f"\nmissing_populate_similarity_pools: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
-            populate_similarity_pools(post)
-        if not page.has_prev:
+            populate_similarity_pools(post, empty=False)
+        SESSION.commit()
+        if not page.has_next:
             break
-        page = page.prev()
+        page = page.next()
 
 
 def main(args):
     if args.missing:
         missing_populate_similarity_pools(args)
-    else:
-        standard_populate_similarity_pools(args)
+    elif args.expunge:
+        expunge_populate_similarity_pools(args)
 
 
 # ## EXECUTION START
