@@ -15,7 +15,8 @@ from utility.time import seconds_from_now_local, get_current_time, days_ago, dat
 # ## LOCAL IMPORTS
 from ... import DB, SESSION, SCHEDULER
 from ...models.media_file import CACHE_DATA_DIRECTORY
-from ..records.post_rec import relocate_old_posts_to_alternate, check_all_posts_for_danbooru_id
+from ..records.post_rec import relocate_old_posts_to_alternate, check_all_posts_for_danbooru_id,\
+    generate_missing_image_hashes
 from ..records.artist_rec import check_all_artists_for_boorus
 from ..records.booru_rec import check_all_boorus
 from ..records.media_file_rec import batch_delete_media
@@ -73,6 +74,20 @@ def expunge_archive_records_task():
         printer("No archive records to delete.")
 
     _execute_scheduled_task(_task, 'expunge_archive_records', True, True)
+
+
+@SCHEDULER.task('interval', **JOB_CONFIG['generate_missing_image_hashes']['config'])
+def generate_missing_image_hashes_task():
+    def _task(printer):
+        manual = _is_job_manual('check_pending_subscriptions')
+        status = generate_missing_image_hashes(manual)
+        if status['total'] > 0:
+            printer("Post records updated:", status['total'])
+        else:
+            printer("No post records to update.")
+        return status
+
+    _execute_scheduled_task(_task, 'generate_missing_image_hashes', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_boorus']['config'])

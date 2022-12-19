@@ -25,6 +25,14 @@ JOB_CONFIG = {
         },
         'leeway': 180,
     },
+    'generate_missing_image_hashes': {
+        'config': {
+            'id': 'generate_missing_image_hashes',
+            'days': 2,
+            'jitter': 3600,
+        },
+        'leeway': 180,
+    },
     'check_all_boorus': {
         'config': {
             'id': 'check_all_boorus',
