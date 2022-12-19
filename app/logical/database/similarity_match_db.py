@@ -24,6 +24,8 @@ UPDATE_ALLOWED_ATTRIBUTES = ['score']
 
 def create_similarity_match_from_parameters(createparams):
     similarity_match = SimilarityMatch()
+    if createparams['forward_id'] > createparams['reverse_id']:
+        createparams['forward_id'], createparams['reverse_id'] = createparams['reverse_id'], createparams['forward_id']
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(similarity_match, update_columns, createparams, commit=False)
