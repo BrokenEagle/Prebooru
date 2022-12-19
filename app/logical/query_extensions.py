@@ -30,13 +30,13 @@ class CountPaginate():
         self.distinct = distinct
         self.page = max(page, 1)
         self.offset = (page - 1) * per_page
-        self.items = self._get_items()
         if count:
             self.count = self._get_count()
             self.pages = ((self.count - 1) // per_page) + 1
             self.total = self.pages
             self.first = ((page - 1) * per_page) + 1
             self.last = min(page * per_page, self.count)
+        self.items = self._get_items() if not count or self.count > 0 else []
 
     @property
     def has_next(self):
@@ -90,9 +90,9 @@ class LimitPaginate():
         self.page = page
         self.next_id = next_id
         self.prev_id = prev_id
-        self.items = self._get_items()
         self.current_count = self._get_count()
         self.count = count or self.current_count
+        self.items = self._get_items() if self.current_count > 0 else []
         self.pages = ((self.current_count - 1) // per_page) + 1
         self.total = ((self.count - 1) // per_page) + 1
         self.first = ((page - 1) * per_page) + 1

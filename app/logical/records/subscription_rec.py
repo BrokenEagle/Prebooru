@@ -158,8 +158,9 @@ def download_subscription_elements(subscription, job_id=None):
         for element in page.items:
             if convert_network_subscription(element):
                 job_status['downloads'] += 1
-        _process_image_matches(page.items)
-        _process_videos(page.items)
+        active_elements = [element for element in page.items if element.status.name == 'active']
+        _process_image_matches(active_elements)
+        _process_videos(active_elements)
         if not page.has_prev:
             break
         page = page.prev()

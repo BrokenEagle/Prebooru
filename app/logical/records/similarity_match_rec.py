@@ -9,14 +9,15 @@ from .image_hash_rec import get_image_hash_matches, check_image_match_scores, fi
 
 # ## FUNCTIONS
 
-def populate_similarity_pools(post, printer=print):
-    _calculate_similarity_matches(post, printer)
+def populate_similarity_pools(post, empty=True, printer=print):
+    """"Empty indicates that the post will have no similarity matches."""
+    _calculate_similarity_matches(post, empty, printer)
     set_post_simcheck(post, True)
 
 
 # #### Private
 
-def _calculate_similarity_matches(post, printer):
+def _calculate_similarity_matches(post, empty, printer):
     score_results = []
     for imghash in post.image_hashes:
         smatches = get_image_hash_matches(imghash.hash, imghash.ratio, sim_clause='cross2', post_id=imghash.post_id)
@@ -25,7 +26,7 @@ def _calculate_similarity_matches(post, printer):
     printer("Similarity pool results (post #%d): %d" % (post.id, len(final_results)))
     if len(final_results) == 0:
         return
-    current_similarity_matches = post.similarity_matches
+    current_similarity_matches = post.similarity_matches if not empty else []
     for result in score_results:
         similarity_match = next((match for match in current_similarity_matches
                                  if match.forward_id == result['post_id']

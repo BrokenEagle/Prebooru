@@ -5,7 +5,7 @@ from utility.time import get_current_time, days_ago
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Post, SubscriptionElement
+from ...models import Post, SubscriptionElement, ImageHash
 from .base_db import update_column_attributes
 from .pool_element_db import delete_pool_element
 
@@ -140,6 +140,10 @@ def get_post_by_md5(md5):
 
 def alternate_posts_query(days):
     return Post.query.filter(Post.created < days_ago(days), Post.alternate.is_(False))
+
+
+def missing_image_hashes_query():
+    return Post.query.filter(Post.id.not_in(ImageHash.query.with_entities(ImageHash.post_id)))
 
 
 def get_all_posts_page(limit):

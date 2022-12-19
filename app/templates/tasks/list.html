@@ -60,6 +60,20 @@
                 </tr>
                 <tr>
                     <td colspan="5">
+                        <span class="heading">Fix Tasks</span>
+                    </td>
+                </tr>
+                <tr>
+                    {{ task_row('recalculate_pool_positions', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('generate_missing_image_hashes', tasks) }}
+                </tr>
+                <tr>
+                    {{ task_row('delete_orphan_images', tasks) }}
+                </tr>
+                <tr>
+                    <td colspan="5">
                         <span class="heading">Maintenance Tasks</span>
                     </td>
                 </tr>
@@ -70,13 +84,7 @@
                     {{ task_row('expunge_archive_records', tasks) }}
                 </tr>
                 <tr>
-                    {{ task_row('recalculate_pool_positions', tasks) }}
-                </tr>
-                <tr>
                     {{ task_row('relocate_old_posts', tasks) }}
-                </tr>
-                <tr>
-                    {{ task_row('delete_orphan_images', tasks) }}
                 </tr>
                 <tr>
                     {{ task_row('vacuum_analyze_database', tasks) }}
