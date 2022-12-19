@@ -9,6 +9,7 @@ from wtforms import TextAreaField, FloatField, SelectField
 from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
+from .. import SESSION
 from ..models import Post
 from ..logical.utility import set_error
 from ..logical.database.post_db import get_posts_by_id
@@ -112,6 +113,7 @@ def regenerate_post_image_hash():
     delete_similarity_matches_by_post_id(post.id)
     generate_post_image_hashes(post)
     populate_similarity_pools(post)
+    SESSION.commit()
     return retdata
 
 

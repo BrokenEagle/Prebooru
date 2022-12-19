@@ -1,6 +1,7 @@
 # APP/LOGICAL/RECORDS/SIMILARITY_MATCH_REC.PY
 
 # ## LOCAL IMPORTS
+from ..database.post_db import set_post_simcheck
 from ..database.similarity_match_db import create_similarity_match_from_parameters,\
     update_similarity_match_from_parameters
 from .image_hash_rec import get_image_hash_matches, check_image_match_scores, filter_score_results
@@ -9,6 +10,13 @@ from .image_hash_rec import get_image_hash_matches, check_image_match_scores, fi
 # ## FUNCTIONS
 
 def populate_similarity_pools(post, printer=print):
+    _calculate_similarity_matches(post, printer)
+    set_post_simcheck(post, True)
+
+
+# #### Private
+
+def _calculate_similarity_matches(post, printer):
     score_results = []
     for imghash in post.image_hashes:
         smatches = get_image_hash_matches(imghash.hash, imghash.ratio, sim_clause='cross2', post_id=imghash.post_id)

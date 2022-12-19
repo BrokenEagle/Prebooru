@@ -23,7 +23,7 @@ def create_image_hash_from_parameters(createparams):
     image_hash = ImageHash()
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(image_hash, update_columns, createparams)
+    update_column_attributes(image_hash, update_columns, createparams, commit=False)
     print("[%s]: created" % image_hash.shortlink)
     return image_hash
 
@@ -32,7 +32,7 @@ def create_image_hash_from_parameters(createparams):
 
 def delete_image_hash_by_post_id(post_id):
     ImageHash.query.filter(ImageHash.post_id == post_id).delete()
-    SESSION.commit()
+    SESSION.flush()
 
 
 # #### Misc functions

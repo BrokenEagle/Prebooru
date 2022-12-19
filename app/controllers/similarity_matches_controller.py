@@ -6,6 +6,7 @@ from sqlalchemy import and_, or_
 from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
+from .. import SESSION
 from ..models import SimilarityMatch
 from ..logical.utility import search_url_for
 from ..logical.searchable import numeric_filters
@@ -131,5 +132,6 @@ def batch_delete_html():
         flash("Found no elements to delete with parameters.")
         return redirect(request.referrer)
     batch_delete_similarity_matches(similarity_matches)
+    SESSION.commit()
     flash("Removed elements from post.")
     return redirect(request.referrer)
