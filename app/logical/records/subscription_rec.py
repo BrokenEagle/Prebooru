@@ -354,6 +354,9 @@ def _process_image_matches(elements):
         except Exception as e:
             msg = "Error processing image matches on subscription: %s" % str(e)
             log_error('subscription_rec._process_image_matches', msg)
+            SESSION.rollback()
+        else:
+            SESSION.commit()
         finally:
             IMAGEMATCH_SEMAPHORE.release()
 

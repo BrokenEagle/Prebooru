@@ -194,6 +194,7 @@ def process_image_matches(post_ids):
     for post in posts:
         generate_post_image_hashes(post, printer=printer)
         populate_similarity_pools(post, printer=printer)
+    SESSION.commit()
     printer.print()
 
 
