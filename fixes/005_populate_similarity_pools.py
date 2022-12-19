@@ -34,7 +34,7 @@ def expunge_populate_similarity_pools(args):
     while True:
         print(f"\nexpunge_populate_similarity_pools: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
-            populate_similarity_pools(post, empty=False)
+            populate_similarity_pools(post)
         SESSION.commit()
         if not page.has_next:
             break
@@ -51,7 +51,7 @@ def missing_populate_similarity_pools(args):
     while True:
         print_info(f"\nmissing_populate_similarity_pools: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
-            populate_similarity_pools(post, empty=False)
+            populate_similarity_pools(post)
         SESSION.commit()
         if not page.has_next:
             break

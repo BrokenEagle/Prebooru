@@ -112,7 +112,7 @@ def regenerate_post_image_hash():
     delete_image_hash_by_post_id(post.id)
     delete_similarity_matches_by_post_id(post.id)
     generate_post_image_hashes(post)
-    populate_similarity_pools(post)
+    populate_similarity_pools(post, singular=True)
     SESSION.commit()
     return retdata
 
