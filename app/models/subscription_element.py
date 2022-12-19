@@ -68,7 +68,7 @@ class SubscriptionElement(JsonModel):
 def initialize():
     from .subscription import Subscription
     DB.Index(None, SubscriptionElement.md5, unique=False, sqlite_where=SubscriptionElement.md5.is_not(None))
-    DB.Index(None, SubscriptionElement.post_id, unique=False, sqlite_where=SubscriptionElement.post_id.is_not(None))
+    DB.Index(None, SubscriptionElement.post_id, unique=True, sqlite_where=SubscriptionElement.post_id.is_not(None))
     # Access the opposite side of the relationship to force the back reference to be generated
     Subscription.elements.property._configure_started
     SubscriptionElement.set_relation_properties()
