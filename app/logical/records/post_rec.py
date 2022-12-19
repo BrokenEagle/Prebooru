@@ -22,7 +22,7 @@ from ..media import load_image, create_sample, create_preview, create_video_scre
     convert_mp4_to_webm
 from ..database.post_db import create_post_from_json, delete_post, post_append_illust_url, get_post_by_md5,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, set_post_alternate, alternate_posts_query,\
-    get_all_posts_page, missing_image_hashes_query
+    get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_json
 from ..database.error_db import create_error_from_json, create_error
@@ -187,6 +187,22 @@ def generate_missing_image_hashes(manual):
             generate_post_image_hashes(post)
             if post.subscription_element is None:
                 populate_similarity_pools(post)
+        SESSION.commit()
+        if not page.has_next or page.page > max_pages:
+            break
+        page = page.next()
+    return {'total': page.count}
+
+
+def calculate_similarity_matches(manual):
+    max_pages = 10 if not manual else float('inf')
+    query = missing_similarity_matches_query()
+    query = query.options(selectinload(Post.image_hashes))
+    page = query.limit_paginate(per_page=50)
+    while page.count > 0:
+        print(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
+        for post in page.items:
+            populate_similarity_pools(post)
         SESSION.commit()
         if not page.has_next or page.page > max_pages:
             break

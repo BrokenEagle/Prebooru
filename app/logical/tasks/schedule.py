@@ -16,7 +16,7 @@ from utility.time import seconds_from_now_local, get_current_time, days_ago, dat
 from ... import DB, SESSION, SCHEDULER
 from ...models.media_file import CACHE_DATA_DIRECTORY
 from ..records.post_rec import relocate_old_posts_to_alternate, check_all_posts_for_danbooru_id,\
-    generate_missing_image_hashes
+    generate_missing_image_hashes, calculate_similarity_matches
 from ..records.artist_rec import check_all_artists_for_boorus
 from ..records.booru_rec import check_all_boorus
 from ..records.media_file_rec import batch_delete_media
@@ -88,6 +88,21 @@ def generate_missing_image_hashes_task():
         return status
 
     _execute_scheduled_task(_task, 'generate_missing_image_hashes', True, True)
+
+
+@SCHEDULER.task('interval', **JOB_CONFIG['calculate_similarity_matches']['config'])
+def calculate_similarity_matches_task():
+    """Processes newly unlinked subscription posts for similarity matches."""
+    def _task(printer):
+        manual = _is_job_manual('calculate_similarity_matches')
+        status = calculate_similarity_matches(manual)
+        if status['total'] > 0:
+            printer("Post records updated:", status['total'])
+        else:
+            printer("No post records to update.")
+        return status
+
+    _execute_scheduled_task(_task, 'calculate_similarity_matches', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_boorus']['config'])

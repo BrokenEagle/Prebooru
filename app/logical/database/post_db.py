@@ -1,5 +1,8 @@
 # APP/LOGICAL/DATABASE/POST_DB.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy import or_
+
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time, days_ago
 
@@ -21,6 +24,9 @@ SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post
                                                 .with_entities(SubscriptionElement.post_id)
 NO_SUBELEMENT_CLAUSE = Post.id.not_in(SUBELEMENT_SUBCLAUSE)
 
+TYPE_CLAUSE = Post.type_filter('name', '__eq__', 'user')
+SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
+                                               .with_entities(SubscriptionElement.post_id)
 
 # ## FUNCTIONS
 
@@ -144,6 +150,11 @@ def alternate_posts_query(days):
 
 def missing_image_hashes_query():
     return Post.query.filter(Post.id.not_in(ImageHash.query.with_entities(ImageHash.post_id)))
+
+
+def missing_similarity_matches_query():
+    query = Post.query.enum_join(Post.type_enum)
+    return query.filter(Post.simcheck.is_(False), or_(TYPE_CLAUSE, Post.id.not_in(SUBELEMENT_SUBQUERY)))
 
 
 def get_all_posts_page(limit):

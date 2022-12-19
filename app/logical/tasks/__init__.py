@@ -33,6 +33,14 @@ JOB_CONFIG = {
         },
         'leeway': 180,
     },
+    'calculate_similarity_matches': {
+        'config': {
+            'id': 'calculate_similarity_matches',
+            'days': 1,
+            'jitter': 3600,
+        },
+        'leeway': 180,
+    },
     'check_all_boorus': {
         'config': {
             'id': 'check_all_boorus',
