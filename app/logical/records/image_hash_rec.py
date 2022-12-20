@@ -9,7 +9,7 @@ import imagehash
 
 # ## LOCAL IMPORTS
 from ...models.image_hash import ImageHash, HASH_SIZE, TOTAL_BITS
-from ..sources.base import get_media_source, NoSource
+from ..sources.base_src import get_media_source, NoSource
 from ..database.post_db import get_posts_by_id
 from ..database.image_hash_db import create_image_hash_from_parameters
 from .media_file_rec import batch_get_or_create_media

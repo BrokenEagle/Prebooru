@@ -12,7 +12,7 @@ from utility.uprint import buffered_print, print_warning
 from ... import SESSION
 from ...models import Upload, Illust
 from ..utility import unique_objects, SessionThread
-from ..sources.base import get_post_source
+from ..sources.base_src import get_post_source
 from ..records.artist_rec import update_artist_from_source, check_artists_for_boorus
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
 from ..records.post_rec import check_posts_for_danbooru_id

@@ -157,7 +157,7 @@ class Upload(JsonModel):
 
     @memoized_property
     def _source(self):
-        from ..logical.sources.base import get_post_source
+        from ..logical.sources.base_src import get_post_source
         if self.request_url:
             return get_post_source(self.request_url)
         elif self.illust_url_id:

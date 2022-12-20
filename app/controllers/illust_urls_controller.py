@@ -9,7 +9,7 @@ from wtforms.validators import DataRequired
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl
 from ..logical.utility import set_error
-from ..logical.sources.base import get_media_source
+from ..logical.sources.base_src import get_media_source
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters,\
     set_url_site
 from ..logical.downloader.network_dl import redownload_post

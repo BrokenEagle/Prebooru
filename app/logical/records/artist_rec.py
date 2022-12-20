@@ -31,7 +31,7 @@ def check_all_artists_for_boorus():
 
 
 def check_artists_for_boorus(artists, booru_dict=None, status=None):
-    from ..sources.danbooru import get_artists_by_multiple_urls
+    from ..sources.danbooru_src import get_artists_by_multiple_urls
     booru_dict = booru_dict if booru_dict is not None else {}
     status = status if status is not None else {}
     query_urls = [artist.booru_search_url for artist in artists]

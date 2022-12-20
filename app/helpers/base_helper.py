@@ -16,7 +16,7 @@ from config import PREBOORU_PORT, VERSION  # noqa: F401
 from utility.time import time_ago, time_from_now
 
 # ## LOCAL IMPORTS
-from ..logical.sources import pixiv, twitter
+from ..logical.sources import pixiv_src, twitter_src
 
 
 # ## GLOBAL VARIABLES
@@ -27,10 +27,10 @@ LOCAL_SHORTLINK_RG = re.compile(r'\b(booru|artist|illust|post|upload|pool|notati
 SITE_SHORTLINK_RG = re.compile(r'\b(pixiv|pxuser|twitter|twuser) #(\d+)\b', re.IGNORECASE)
 
 SITE_URL_DICT = {
-    'pixiv': pixiv.ILLUST_HREFURL,
-    'pxuser': pixiv.ARTIST_HREFURL,
-    'twitter': twitter.ILLUST_HREFURL,
-    'twuser': twitter.ARTIST_HREFURL,
+    'pixiv': pixiv_src.ILLUST_HREFURL,
+    'pxuser': pixiv_src.ARTIST_HREFURL,
+    'twitter': twitter_src.ILLUST_HREFURL,
+    'twuser': twitter_src.ARTIST_HREFURL,
 }
 
 HR = Markup('<hr>')

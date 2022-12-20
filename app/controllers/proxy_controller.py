@@ -13,7 +13,7 @@ from utility.file import put_get_raw
 
 # ## LOCAL IMPORTS
 from ..models import Post
-from ..logical.sources.danbooru import get_uploads_by_md5, create_upload_from_buffer
+from ..logical.sources.danbooru_src import get_uploads_by_md5, create_upload_from_buffer
 
 
 # ## GLOBAL VARIABLES

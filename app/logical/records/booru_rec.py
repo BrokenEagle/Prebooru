@@ -3,8 +3,8 @@
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
-from ..sources.base import get_artist_id_source
-from ..sources.danbooru import get_artist_by_id, get_artists_by_ids
+from ..sources.base_src import get_artist_id_source
+from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
     get_booru, create_booru_from_json, delete_booru, get_all_boorus_page, recreate_booru_relations

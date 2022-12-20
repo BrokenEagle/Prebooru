@@ -13,8 +13,8 @@ from utility.data import random_id
 from ..models import Artist, Booru
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
-from ..logical.sources.base import get_artist_required_params
-from ..logical.sources.danbooru import get_artists_by_url
+from ..logical.sources.base_src import get_artist_required_params
+from ..logical.sources.danbooru_src import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion
 from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
     artist_append_booru, artist_delete_profile

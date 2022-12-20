@@ -6,7 +6,7 @@ from utility.uprint import print_warning
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
-from ..sources.base import get_media_source
+from ..sources.base_src import get_media_source
 from ..database.artist_db import get_site_artist, get_blank_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust,\
     get_site_illust, create_illust_from_json, recreate_illust_relations
