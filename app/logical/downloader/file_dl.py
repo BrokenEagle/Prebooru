@@ -1,4 +1,4 @@
-# APP/LOGICAL/DOWNLOADER/FILE.PY
+# APP/LOGICAL/DOWNLOADER/FILE_DL.PY
 
 # ## PACKAGE IMPORTS
 from utility.file import get_file_extension, put_get_raw
@@ -8,7 +8,7 @@ from ...models import Post
 from ..media import get_pixel_hash
 from ..database.post_db import create_post_and_add_illust_url
 from ..database.error_db import extend_errors, is_error
-from .base import load_post_image, check_existing, check_filetype, check_image_dimensions,\
+from .base_dl import load_post_image, check_existing, check_filetype, check_image_dimensions,\
     check_video_info, save_image, save_video, save_thumb, record_outcome
 
 

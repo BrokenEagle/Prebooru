@@ -1,4 +1,4 @@
-# APP/LOGICAL/DOWNLOADER/BASE.PY
+# APP/LOGICAL/DOWNLOADER/BASE_DL.PY
 
 # ## PYTHON IMPORTS
 import filetype
@@ -41,17 +41,17 @@ def record_outcome(post, record):
 def load_post_image(buffer):
     image = load_image(buffer)
     if isinstance(image, str):
-        return create_error('downloader.base.load_post_image', image)
+        return create_error('downloader.base_dl.load_post_image', image)
     try:
         if check_alpha(image):
             return convert_alpha(image)
         else:
             return image
     except Exception as e:
-        return create_error('downloader.base.load_post_image', "Error removing alpha transparency: %s" % repr(e))
+        return create_error('downloader.base_dl.load_post_image', "Error removing alpha transparency: %s" % repr(e))
 
 
-def create_post_error(function, message, post_errors, module='downloader.base'):
+def create_post_error(function, message, post_errors, module='downloader.base_dl'):
     error = create_error(f'{module}.{function}', message)
     post_errors.append(error)
 
@@ -121,19 +121,19 @@ def check_video_info(post, illust_url, post_errors):
 def create_post_preview(image, post, downsample=True):
     result = create_preview(image, post.preview_path, downsample)
     if result is not None:
-        return create_error('downloader.base.create_post_preview', result)
+        return create_error('downloader.base_dl.create_post_preview', result)
 
 
 def create_post_sample(image, post, downsample=True):
     result = create_sample(image, post.sample_path, downsample)
     if result is not None:
-        return create_error('downloader.base.create_post_sample', result)
+        return create_error('downloader.base_dl.create_post_sample', result)
 
 
 def create_post_data(buffer, post):
     result = create_data(buffer, post.file_path)
     if result is not None:
-        return create_error('downloader.base.create_post_data', result)
+        return create_error('downloader.base_dl.create_post_data', result)
 
 
 # #### Save functions

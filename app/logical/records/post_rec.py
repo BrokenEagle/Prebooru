@@ -70,7 +70,7 @@ def check_posts_for_danbooru_id(posts, status=None):
 
 
 def check_posts_for_valid_md5():
-    from ..downloader.network import redownload_post
+    from ..downloader.network_dl import redownload_post
     page = get_all_posts_page(100)
     while True:
         print(f"check_posts_for_valid_md5: {page.first} - {page.last} / Total({page.count})")

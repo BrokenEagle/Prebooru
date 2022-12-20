@@ -25,8 +25,8 @@ from ..database.upload_element_db import create_upload_element_from_parameters
 from ..database.post_db import get_posts_by_id
 from ..database.error_db import create_and_append_error, append_error
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
-from ..downloader.network import convert_network_upload
-from ..downloader.file import convert_file_upload
+from ..downloader.network_dl import convert_network_upload
+from ..downloader.file_dl import convert_file_upload
 
 
 # ## FUNCTIONS

@@ -20,7 +20,7 @@ from ..utility import SessionThread, SessionTimer
 from ..searchable import search_attributes
 from ..media import convert_mp4_to_webp
 from ..logger import log_error
-from ..downloader.network import convert_network_subscription
+from ..downloader.network_dl import convert_network_subscription
 from ..records.post_rec import recreate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
     update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query

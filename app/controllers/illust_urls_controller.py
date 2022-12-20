@@ -12,7 +12,7 @@ from ..logical.utility import set_error
 from ..logical.sources.base import get_media_source
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters,\
     set_url_site
-from ..logical.downloader.network import redownload_post
+from ..logical.downloader.network_dl import redownload_post
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
     nullify_blanks, check_param_requirements, hide_input, set_default, parse_bool_parameter

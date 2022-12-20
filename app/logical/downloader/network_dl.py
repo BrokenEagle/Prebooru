@@ -1,4 +1,4 @@
-# APP/LOGICAL/DOWNLOADER/NETWORK.PY
+# APP/LOGICAL/DOWNLOADER/NETWORK_DL.PY
 
 # ## LOCAL IMPORTS
 from ..network import get_http_data
@@ -6,7 +6,7 @@ from ..media import get_pixel_hash
 from ...models import Post
 from ..database.post_db import create_post_and_add_illust_url, update_post_from_parameters
 from ..database.error_db import create_error, append_error, extend_errors, is_error
-from .base import load_post_image, check_existing, check_filetype, check_image_dimensions,\
+from .base_dl import load_post_image, check_existing, check_filetype, check_image_dimensions,\
     check_video_info, save_image, save_video, save_thumb, record_outcome
 
 
@@ -44,7 +44,7 @@ def get_media_extension(illust_url):
     full_url = source.get_full_url(illust_url)
     file_ext = source.get_media_extension(full_url)
     if file_ext not in ['jpg', 'png', 'mp4']:
-        return create_error('downloader.network.get_media_extension', "Unsupported file format: %s" % file_ext)
+        return create_error('downloader.network_dl.get_media_extension', "Unsupported file format: %s" % file_ext)
     else:
         return file_ext
 
@@ -140,5 +140,5 @@ def _download_media(download_url, source):
     print("Downloading", download_url)
     buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
     if isinstance(buffer, str):
-        return create_error('downloader.network.download_media', "Download URL: %s => %s" % (download_url, buffer))
+        return create_error('downloader.network_dl.download_media', "Download URL: %s => %s" % (download_url, buffer))
     return buffer
