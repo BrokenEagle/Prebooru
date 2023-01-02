@@ -248,8 +248,10 @@ class JsonModel(DB.Model):
     __abstract__ = True
 
     @classmethod
-    def find(cls, id):
-        return cls.query.filter_by(id=id).one_or_none()
+    def find(cls, *args, **kwargs):
+        if len(args):
+            kwargs = {cls.primary_keys[i]: args[i] for i in range(len(args))}
+        return cls.query.filter_by(**kwargs).one_or_none()
 
     @property
     def model_name(self):
@@ -341,9 +343,12 @@ class JsonModel(DB.Model):
         return cls.__table__.primary_key
 
     @classproperty(cached=True)
+    def pk_cols(cls):
+        return [c for c in cls.primary_key.columns]
+
+    @classproperty(cached=True)
     def primary_keys(cls):
-        pk_cols = [c for c in cls.primary_key.columns]
-        return [t.name for t in pk_cols]
+        return [t.name for t in cls.pk_cols]
 
     @classmethod
     def columns(cls):

@@ -72,7 +72,7 @@ class CountPaginate():
         if len(self._count_query._where_criteria) == 0:
             model = self._count_query.column_descriptions[0]['entity']
             # Queries with no where criteria do not work correctly
-            self._count_query = self._count_query.filter(model.id)
+            self._count_query = self._count_query.filter(*model.pk_cols)
         # Using function count with scalar does not like loader options
         self._count_query._with_options = ()
         if self.distinct:
