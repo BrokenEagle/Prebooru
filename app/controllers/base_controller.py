@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 import re
 import urllib
+import traceback
 from functools import reduce
 
 # ## EXTERNAL IMPORTS
@@ -104,7 +105,8 @@ def paginate(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT, **kwargs):
         return query.count_paginate(page=page, per_page=per_page, **kwargs)
     except Exception as e:
         # Fallback to a less efficient paginate upon exception
-        print_warning(f"Unable to use count paginate: {e}")
+        tback = traceback.format_exc()
+        print_warning(f"Unable to use count paginate: {repr(e)}\n{tback}")
         if kwargs.get('distinct'):
             query = query.distinct()
         return query.paginate(page=page, per_page=per_page)
