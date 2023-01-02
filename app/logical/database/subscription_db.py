@@ -20,7 +20,8 @@ COLUMN_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'last_id', 'requery'
 CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration']
 UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
 
-AVERAGE_INTERVAL_CLAUSE = (Subscription.checked - func.min(Illust.site_created)) / func.count(Illust.id)
+DISTINCT_ILLUST_COUNT = func.count(Illust.id.distinct())
+AVERAGE_INTERVAL_CLAUSE = (Subscription.checked - func.min(Illust.site_created)) / DISTINCT_ILLUST_COUNT
 
 
 # ## FUNCTIONS
@@ -138,4 +139,4 @@ def get_average_interval_for_subscriptions(subscriptions, days):
                                       keep_filter,
                                       )\
                               .group_by(SubscriptionElement.subscription_id)\
-                              .having(func.count(Illust.id) > 0).all()
+                              .having(DISTINCT_ILLUST_COUNT > 0).all()
