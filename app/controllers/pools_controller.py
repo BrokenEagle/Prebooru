@@ -164,7 +164,8 @@ def show_html(id):
 @bp.route('/pools/<int:id>/last', methods=['GET'])
 def show_last_html(id):
     pool = get_or_abort(Pool, id)
-    last_page = ((pool.element_count - 1) // get_limit(request)) + 1 if pool.element_count > 0 else 1
+    element_count = pool._get_element_count()
+    last_page = ((element_count - 1) // get_limit(request)) + 1 if element_count > 0 else 1
     return redirect(url_for('pool.show_html', id=id, page=last_page, **request.args))
 
 
