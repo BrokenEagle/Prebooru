@@ -28,7 +28,7 @@ from ..database.notation_db import create_notation_from_json
 from ..database.error_db import create_error_from_json, create_error
 from ..database.archive_db import get_archive, create_archive, update_archive, set_archive_temporary
 from .image_hash_rec import generate_post_image_hashes
-from .similarity_match_rec import populate_similarity_pools
+from .similarity_match_rec import generate_similarity_matches
 
 
 # ## GLOBAL VARIABLES
@@ -186,7 +186,7 @@ def generate_missing_image_hashes(manual):
         for post in page.items:
             generate_post_image_hashes(post)
             if post.subscription_element is None:
-                populate_similarity_pools(post)
+                generate_similarity_matches(post)
         SESSION.commit()
         if not page.has_next or page.page > max_pages:
             break
@@ -202,7 +202,7 @@ def calculate_similarity_matches(manual):
     while page.count > 0:
         print(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
-            populate_similarity_pools(post)
+            generate_similarity_matches(post)
         SESSION.commit()
         if not page.has_next or page.page > max_pages:
             break

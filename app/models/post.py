@@ -96,7 +96,6 @@ class Post(JsonModel):
     _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False))
     image_hashes = DB.relationship(ImageHash, lazy=True, cascade='all,delete',
                                    backref=DB.backref('post', lazy=True, uselist=False))
-    # Similarity pools and elements must be deleted specially because of sibling relationships
     similarity_matches_forward = DB.relationship(SimilarityMatch, lazy=True, cascade='all,delete',
                                                  backref=DB.backref('forward_post', lazy=True, uselist=False),
                                                  foreign_keys=[SimilarityMatch.forward_id])

@@ -9,7 +9,7 @@ from .image_hash_rec import get_image_hash_matches, check_image_match_scores, fi
 
 # ## FUNCTIONS
 
-def populate_similarity_pools(post, singular=False, printer=print):
+def generate_similarity_matches(post, singular=False, printer=print):
     """"Singular indicates that only one post with no similarity matches is being processed."""
     _calculate_similarity_matches(post, singular, printer)
     set_post_simcheck(post, True)
@@ -23,7 +23,7 @@ def _calculate_similarity_matches(post, singular, printer):
         smatches = get_image_hash_matches(imghash.hash, imghash.ratio, sim_clause='cross2', post_id=imghash.post_id)
         score_results += check_image_match_scores(smatches, imghash.hash, 90.0)
     final_results = filter_score_results(score_results)
-    printer("Similarity pool results (post #%d): %d" % (post.id, len(final_results)))
+    printer("Similarity match results (post #%d): %d" % (post.id, len(final_results)))
     if len(final_results) == 0:
         return
     current_similarity_matches = post.similarity_matches if not singular else []

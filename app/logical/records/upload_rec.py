@@ -17,7 +17,7 @@ from ..records.artist_rec import update_artist_from_source, check_artists_for_bo
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
 from ..records.post_rec import check_posts_for_danbooru_id
 from ..records.image_hash_rec import generate_post_image_hashes
-from ..records.similarity_match_rec import populate_similarity_pools
+from ..records.similarity_match_rec import generate_similarity_matches
 from ..database.base_db import safe_db_execute
 from ..database.illust_db import get_site_illust, get_site_illusts
 from ..database.upload_db import set_upload_status
@@ -195,7 +195,7 @@ def process_image_matches(post_ids):
     posts = get_posts_by_id(post_ids)
     for post in posts:
         generate_post_image_hashes(post, printer=printer)
-        populate_similarity_pools(post, printer=printer)
+        generate_similarity_matches(post, printer=printer)
     SESSION.commit()
     printer.print()
 
