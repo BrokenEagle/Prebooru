@@ -2,7 +2,7 @@
 
 <menu id="secondary-menu">
     {{ subnav_link_to("Listing", 'subscription_element.index_html') }}
-    {{ subnav_link_to("Pools", 'subscription.index_html') }}
+    {{ subnav_link_to("Subscriptions", 'subscription.index_html') }}
     {% if subscription_element.id is not none %}
         |
         {{ subnav_link_to("Show", 'subscription_element.show_html', id=subscription_element.id) }}
