@@ -22,21 +22,11 @@ def initialize():
     from app.logical.records.similarity_match_rec import populate_similarity_pools
 
 
-def expunge_populate_similarity_pools():
-    SimilarityMatch.query.delete()
-    SESSION.commit()
-    page = Post.query.count_paginate(per_page=50)
-    while True:
-        print(f"\nexpunge_populate_similarity_pools: {page.first} - {page.last} / Total({page.count})\n")
-        for post in page.items:
-            populate_similarity_pools(post)
+def main(args):
+    if args.expunge:
+        SimilarityMatch.query.delete()
+        Post.query.update({'simcheck': False})
         SESSION.commit()
-        if not page.has_next:
-            break
-        page = page.next()
-
-
-def missing_populate_similarity_pools():
     query = missing_similarity_matches_query()
     query = query.options(selectinload(Post.image_hashes))
     page = query.limit_paginate(per_page=50)
@@ -50,21 +40,12 @@ def missing_populate_similarity_pools():
         page = page.next()
 
 
-def main():
-    if args.missing:
-        missing_populate_similarity_pools(args)
-    elif args.expunge:
-        expunge_populate_similarity_pools(args)
-
-
 # ## EXECUTION START
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Fix script to populate similarity pools.")
     parser.add_argument('--expunge', required=False, default=False, action="store_true",
                         help="Expunge all similarity pool records.")
-    parser.add_argument('--missing', required=False, default=False, action="store_true",
-                        help="Generate similarity pools missing on posts.")
     args = parser.parse_args()
 
     initialize()
