@@ -185,6 +185,8 @@ def relationship_attribute_filters(query, model, attribute, params):
     elif ('count_' + attribute) in params:
         query = relationship_count_filters(model, attribute, params, relation_property, query)
     if attribute in params:
+        if isinstance(params[attribute], str) and hasattr(model, attribute + '_enum'):
+            params[attribute] = {'name': params[attribute]}
         if isinstance(params[attribute], dict):
             aliased_model = aliased(relation_model)
             query = query.unique_join(aliased_model, relation)
@@ -244,6 +246,11 @@ def enum_filters(model, columnname, params):
     enum = getattr(model, columnname + '_enum')
 
     def _normalize_parameter(value):
+        if isinstance(value, dict):
+            temp = value.get('name')
+            if temp is None:
+                raise Exception("%s - only [name] subkey supported for enums" % columnname)
+            value = temp
         subvalues = value.split(',')
         retvalues = []
         for v in subvalues:
