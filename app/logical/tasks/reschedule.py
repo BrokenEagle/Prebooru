@@ -16,12 +16,14 @@ from ..logger import log_error
 from ..network import prebooru_json_request
 from ..database.server_info_db import get_last_activity
 from ..database.jobs_db import get_all_job_info, get_all_job_items, update_job_item, update_job_by_id
+from ..database.server_info_db import get_subscriptions_ready
 from . import JOB_CONFIG
 
 
 # ## GLOBAL VARIABLES
 
 LAST_CHECK = time.time()
+SUBSCRIPTIONS_READY = False
 
 
 # ## FUNCTIONS
@@ -29,7 +31,7 @@ LAST_CHECK = time.time()
 # #### Main functions
 
 def recheck_schedule_interval(reschedule):
-    global LAST_CHECK
+    global LAST_CHECK, SUBSCRIPTIONS_READY
     printer = buffered_print("Recheck Schedule Interval", header=False)
     printer("PID:", os.getpid())
     printer("Local time:", datetime.datetime.now().ctime())
@@ -50,6 +52,10 @@ def recheck_schedule_interval(reschedule):
         for id in orig_info:
             if orig_info[id] != info[id]:
                 change_info[id] = info[id]
+        SUBSCRIPTIONS_READY = SUBSCRIPTIONS_READY or get_subscriptions_ready()
+        if not SUBSCRIPTIONS_READY:
+            from .schedule import reset_subscription_status_task
+            reset_subscription_status_task()
     else:
         change_info = {}
     _print_tasks(info, printer)
