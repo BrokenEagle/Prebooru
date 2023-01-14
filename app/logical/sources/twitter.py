@@ -6,6 +6,7 @@ import re
 import sys
 import time
 import json
+import html
 import urllib
 import datetime
 
@@ -511,19 +512,29 @@ def process_twitter_timestring(time_string):
 
 
 def convert_entity_text(twitter_data, key, url_subkeys, mention_subkeys=None):
+    replace_entries = []
     text = twitter_data[key]
     url_entries = safe_get(twitter_data, 'entities', *url_subkeys) or []
-    for url_entry in reversed(url_entries):
-        replace_url = url_entry['expanded_url']
-        start_index, end_index = url_entry['indices']
-        text = text[:start_index] + replace_url + text[end_index:]
+    for url_entry in url_entries:
+        replace_entries.append({
+            'replace': url_entry['expanded_url'],
+            'start_index': url_entry['indices'][0],
+            'end_index': url_entry['indices'][1],
+        })
     if mention_subkeys is not None:
         mention_entries = safe_get(twitter_data, 'entities', *mention_subkeys) or []
         for mention in mention_entries:
             user_id = mention['id_str']
             screen_name = mention['screen_name']
-            text = re.sub(rf'@{screen_name}\b', f'@{screen_name} (twuser #{user_id})', text)
-    return text
+            replace_entries.append({
+                'replace': f'@{screen_name} (twuser #{user_id})',
+                'start_index': mention['indices'][0],
+                'end_index': mention['indices'][1],
+            })
+    replace_entries.sort(key=lambda x: x['start_index'], reverse=True)
+    for entry in replace_entries:
+        text = text[:entry['start_index']] + entry['replace'] + text[entry['end_index']:]
+    return html.unescape(text)
 
 
 #   Database
@@ -821,9 +832,15 @@ def get_twitter_illust_timeline(illust_id):
         msg = "Error parsing Twitter data: %s" % str(e)
         return create_error('sources.twitter.get_twitter_illust_timeline', msg)
     if len(found_tweets) == 0:
+        put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], unicode=True)
         return create_error('sources.twitter.get_twitter_illust_timeline', "No tweets found in data.")
+    for tweet in found_tweets:
+        if 'tweet' in safe_get(tweet, 'result'):
+            for k in tweet['result']['tweet']:
+                tweet['result'][k] = tweet['result']['tweet'][k]
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
     if illust_id_str not in tweet_ids:
+        put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], unicode=True)
         return create_error('sources.twitter.get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
     return found_tweets
 

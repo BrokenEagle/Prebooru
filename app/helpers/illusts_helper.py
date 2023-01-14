@@ -105,7 +105,7 @@ def add_media_url_link(illust):
 
 
 def add_notation_link(illust):
-    return general_link("Add notation", url_for('notation.new_html', illust_id=illust.id))
+    return general_link("Add notation", url_for('notation.new_html', illust_id=illust.id, redirect='true'))
 
 
 def add_pool_link(illust):

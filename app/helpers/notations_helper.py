@@ -7,9 +7,6 @@ import html
 # ## EXTERNAL IMPORTS
 from flask import Markup
 
-# ## LOCAL IMPORTS
-from app.models.pool_element import PoolElementType
-
 
 # ## FUNCTIONS
 
@@ -21,7 +18,7 @@ def body_excerpt(notation):
 
 
 def edit_append_info(notation):
-    if notation.append_type in PoolElementType.names:
+    if notation.append_type == 'pool_element':
         return Markup(f"For {notation.append_item.pool.name_link}:")
     else:
         return Markup(f"For {notation.append_item.show_link}:")

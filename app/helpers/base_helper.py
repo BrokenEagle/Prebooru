@@ -105,13 +105,16 @@ def format_expires(timeval):
 def convert_to_html(text):
     links = HTTP_RG.findall(text)
     output_html = html.escape(text)
+    pos = 0
     for link in links:
         escaped_link = re.escape(html.escape(link))
-        link_match = re.search(escaped_link, output_html)
+        link_match = re.search(escaped_link, output_html[pos:])
         if link_match is None:
             continue
         html_link = url_link(link)
-        output_html = output_html[:link_match.start()] + str(html_link) + output_html[link_match.end():]
+        link_str = str(html_link)
+        output_html = output_html[:pos + link_match.start()] + link_str + output_html[pos + link_match.end():]
+        pos += link_match.start() + len(link_str)
     output_html = _convert_local_short_links(output_html)
     output_html = _convert_site_short_links(output_html)
     output_html = re.sub(r'\r?\n', '<br>', output_html)

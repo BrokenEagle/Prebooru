@@ -12,5 +12,9 @@
             {{ helpers.notation.edit_append_info(notation) }}
         </div>
     {% endif %}
-    {{ render_form(form, "PUT", notation.update_url) }}
+    {% if redirect_val %}
+        {{ render_form(form, "PUT", notation.update_url + '?redirect=true') }}
+    {% else %}
+        {{ render_form(form, "PUT", notation.update_url) }}
+    {% endif %}
 {% endblock content %}

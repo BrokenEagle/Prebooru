@@ -16,7 +16,7 @@ from migrations.columns import add_column, drop_column
 
 # revision identifiers, used by Alembic.
 revision = 'fa670b30cd07'
-down_revision = '5c54b3e09a84'
+down_revision = '754d9b6b1460'
 branch_labels = None
 depends_on = None
 
