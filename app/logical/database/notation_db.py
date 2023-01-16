@@ -85,7 +85,8 @@ def append_notation_to_item(notation, append_key, dataparams):
         item.elements.append(notation)
         item.updated = get_current_time()
         item.element_count += 1
+        notation.no_pool = False
     else:
-        item.notations.append(notation)
+        setattr(notation, table_name + '_id', item.id)
     SESSION.commit()
     return {'error': False}
