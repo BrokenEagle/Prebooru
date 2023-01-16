@@ -81,7 +81,7 @@ class PoolElement(JsonModel):
     }
     __table_args__ = (
         DB.CheckConstraint(
-            "post_id IS NOT NULL OR illust_id IS NOT NULL OR notation_id IS NOT NULL",
+            "((post_id IS NULL) + (illust_id IS NULL) + (notation_id IS NULL)) = 2",
             name="null_check"),
     )
 
