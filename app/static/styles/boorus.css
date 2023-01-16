@@ -37,6 +37,11 @@ section#booru-illusts {
     font-weight: bold;
 }
 
+div.booru-notations-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
 div#booru-site-content {
     width: 70%;
 }

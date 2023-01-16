@@ -35,13 +35,6 @@ IllustCommentaries = secondarytable(
     DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
 )
 
-IllustNotations = secondarytable(
-    'illust_notations',
-    DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
-    DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),
-    DB.Index(None, 'notation_id', 'illust_id'),
-)
-
 
 # ## CLASSES
 
@@ -69,7 +62,7 @@ class Illust(JsonModel):
                            backref=DB.backref('illust', lazy=True, uselist=False))
     site_data = DB.relationship(SiteData, lazy=True, uselist=False, cascade="all, delete",
                                 backref=DB.backref('illust', lazy=True, uselist=False))
-    notations = DB.relationship(Notation, secondary=IllustNotations, lazy=True, uselist=True, cascade='all,delete',
+    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
                                 backref=DB.backref('illust', uselist=False, lazy=True))
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
     _pools = DB.relationship(PoolIllust, lazy=True, uselist=True,
