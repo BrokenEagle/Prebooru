@@ -76,16 +76,14 @@ def delete_notation(notation):
 def append_notation_to_item(notation, append_key, dataparams):
     model = ID_MODEL_DICT[append_key]
     item = model.find(dataparams[append_key])
-    table_name = model.__table__.name
+    table_name = item.table_name
     if item is None:
         msg = "Unable to add to %s; %s #%d does not exist." % (dataparams[append_key], table_name, table_name)
         return {'error': True, 'message': msg}
     if table_name == 'pool':
         item.elements.append(notation)
         item.updated = get_current_time()
-        SESSION.commit()
-        item.element_count = item._get_element_count()
-        SESSION.commit()
+        item.element_count += 1
     else:
         item.notations.append(notation)
     SESSION.commit()
