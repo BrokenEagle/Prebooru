@@ -5,7 +5,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Notation, Pool, Artist, Illust, Post
+from ...models import Notation, Pool, Booru, Artist, Illust, Post
 from .pool_element_db import delete_pool_element
 from .base_db import update_column_attributes
 
@@ -19,6 +19,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['body']
 
 ID_MODEL_DICT = {
     'pool_id': Pool,
+    'booru_id': Booru,
     'artist_id': Artist,
     'illust_id': Illust,
     'post_id': Post,
@@ -33,7 +34,7 @@ ID_MODEL_DICT = {
 
 def create_notation_from_parameters(createparams):
     current_time = get_current_time()
-    notation = Notation(created=current_time, updated=current_time)
+    notation = Notation(created=current_time, updated=current_time, no_pool=True)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(notation, update_columns, createparams)
@@ -76,16 +77,14 @@ def delete_notation(notation):
 def append_notation_to_item(notation, append_key, dataparams):
     model = ID_MODEL_DICT[append_key]
     item = model.find(dataparams[append_key])
-    table_name = model.__table__.name
+    table_name = item.table_name
     if item is None:
         msg = "Unable to add to %s; %s #%d does not exist." % (dataparams[append_key], table_name, table_name)
         return {'error': True, 'message': msg}
     if table_name == 'pool':
         item.elements.append(notation)
         item.updated = get_current_time()
-        SESSION.commit()
-        item.element_count = item._get_element_count()
-        SESSION.commit()
+        item.element_count += 1
     else:
         item.notations.append(notation)
     SESSION.commit()

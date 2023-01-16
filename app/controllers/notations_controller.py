@@ -24,12 +24,12 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("notation", __name__)
 
-APPEND_KEYS = ['pool_id', 'artist_id', 'illust_id', 'post_id']
+APPEND_KEYS = ['pool_id', 'booru_id', 'artist_id', 'illust_id', 'post_id']
 
 CREATE_REQUIRED_PARAMS = ['body']
 VALUES_MAP = {
     **{k: k for k in Notation.__table__.columns.keys()},
-    **{k: k for k in APPEND_KEYS},
+    **{'pool_id': 'pool_id'},
 }
 
 NOTATION_POOLS_SUBQUERY = Notation.query.join(PoolNotation, Notation._pool)\
@@ -40,6 +40,7 @@ NOTATION_POOLS_SUBQUERY = Notation.query.join(PoolNotation, Notation._pool)\
 
 SHOW_HTML_OPTIONS = (
     selectinload(Notation._pool).selectinload(PoolNotation.pool),
+    selectinload(Notation.booru),
     selectinload(Notation.artist),
     selectinload(Notation.illust),
     selectinload(Notation.post),
@@ -57,6 +58,10 @@ FORM_CONFIG = {
     },
     'pool_id': {
         'name': 'Pool ID',
+        'field': IntegerField,
+    },
+    'booru_id': {
+        'name': 'Booru ID',
         'field': IntegerField,
     },
     'artist_id': {
