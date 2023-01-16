@@ -13,6 +13,7 @@ from .artist import Artist
 from .illust import Illust
 from .illust_url import IllustUrl
 from .post import Post
+from .notation import Notation
 from .label import Label
 from .base import JsonModel, EpochTimestamp, secondarytable
 
@@ -49,6 +50,8 @@ class Booru(JsonModel):
                              backref=DB.backref('boorus', lazy=True, uselist=True))
     artists = DB.relationship(Artist, secondary=BooruArtists, lazy=True, uselist=True,
                               backref=DB.backref('boorus', lazy=True))
+    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
+                                backref=DB.backref('booru', lazy=True, uselist=False))
 
     # ## Association proxies
     names = association_proxy('_names', 'name')

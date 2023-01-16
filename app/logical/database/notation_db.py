@@ -5,7 +5,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Notation, Pool, Artist, Illust, Post
+from ...models import Notation, Pool, Booru, Artist, Illust, Post
 from .pool_element_db import delete_pool_element
 from .base_db import update_column_attributes
 
@@ -19,6 +19,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['body']
 
 ID_MODEL_DICT = {
     'pool_id': Pool,
+    'booru_id': Booru,
     'artist_id': Artist,
     'illust_id': Illust,
     'post_id': Post,
@@ -33,7 +34,7 @@ ID_MODEL_DICT = {
 
 def create_notation_from_parameters(createparams):
     current_time = get_current_time()
-    notation = Notation(created=current_time, updated=current_time)
+    notation = Notation(created=current_time, updated=current_time, no_pool=True)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(notation, update_columns, createparams)
@@ -84,7 +85,8 @@ def append_notation_to_item(notation, append_key, dataparams):
         item.elements.append(notation)
         item.updated = get_current_time()
         item.element_count += 1
+        notation.no_pool = False
     else:
-        item.notations.append(notation)
+        setattr(notation, table_name + '_id', item.id)
     SESSION.commit()
     return {'error': False}

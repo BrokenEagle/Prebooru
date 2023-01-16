@@ -47,13 +47,6 @@ PostErrors = secondarytable(
     DB.Index(None, 'error_id', 'post_id'),
 )
 
-PostNotations = secondarytable(
-    'post_notations',
-    DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
-    DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),
-    DB.Index(None, 'notation_id', 'post_id'),
-)
-
 PostTags = secondarytable(
     'post_tags',
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
@@ -89,7 +82,7 @@ class Post(JsonModel):
                              backref=DB.backref('post', uselist=False, lazy=True))
     subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False,
                                            backref=DB.backref('post', lazy=True, uselist=False))
-    notations = DB.relationship(Notation, secondary=PostNotations, lazy=True, cascade='all,delete',
+    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
                                 backref=DB.backref('post', uselist=False, lazy=True))
     _tags = DB.relationship(UserTag, secondary=PostTags, lazy=True, backref=DB.backref('posts', lazy=True))
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted

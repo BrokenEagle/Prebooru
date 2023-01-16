@@ -1,5 +1,6 @@
 {% from "layouts/_macros.html" import timestamps_section %}
 {% from "pools/_macros.html" import pools_section %}
+{% from "boorus/_macros.html" import boorus_section %}
 {% from "artists/_macros.html" import artists_section %}
 {% from "illusts/_macros.html" import illusts_section %}
 
@@ -7,6 +8,8 @@
     {% if notation.append_item is not none %}
         {% if notation.append_type == 'pool_notation' %}
             {{ pools_section(notation.append_item, 'notation-pool') }}
+        {% elif notation.append_type == 'booru' %}
+            {{ boorus_section(notation.append_item, 'booru-artist') }}
         {% elif notation.append_type == 'artist' %}
             {{ artists_section(notation.append_item, 'notation-artist') }}
         {% elif notation.append_type == 'illust' %}

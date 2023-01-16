@@ -46,6 +46,10 @@ def check_artists_link(booru):
     return general_link("Check for artists", url_for('booru.check_artists_html', id=booru.id), method="POST")
 
 
+def add_notation_link(booru):
+    return general_link("Add notation", url_for('notation.new_html', booru_id=booru.id))
+
+
 # ###### GENERAL
 
 def post_search_link(booru):

@@ -41,13 +41,6 @@ ArtistProfiles = secondarytable(
     DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
 )
 
-ArtistNotations = secondarytable(
-    'artist_notations',
-    DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
-    DB.Column('notation_id', DB.Integer, DB.ForeignKey('notation.id'), primary_key=True),
-    DB.Index(None, 'notation_id', 'artist_id'),
-)
-
 
 # ## CLASSES
 
@@ -77,7 +70,7 @@ class Artist(JsonModel):
                                    backref=DB.backref('artist', lazy=True, uselist=False))
     webpages = DB.relationship(ArtistUrl, lazy=True, uselist=True, cascade="all, delete",
                                backref=DB.backref('artist', lazy=True, uselist=False))
-    notations = DB.relationship(Notation, secondary=ArtistNotations, lazy=True,
+    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
                                 backref=DB.backref('artist', lazy=True, uselist=False))
     # (MtM) boorus [Booru]
 

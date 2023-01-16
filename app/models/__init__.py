@@ -25,8 +25,8 @@ def load_all():
         SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,\
         SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,\
         Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,\
-        IllustCommentaries, IllustNotations, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
-        ArtistNotations, Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations,\
+        IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
+        Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors,\
         PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, Notation, Pool, PoolElement, PoolPost,\
         PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,\
         SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,\
@@ -46,14 +46,14 @@ def load_all():
     from .description import Description
     from .site_data import SiteData, PixivData, TwitterData
     from .illust_url import IllustUrl
-    from .illust import Illust, IllustTags, IllustCommentaries, IllustNotations
+    from .illust import Illust, IllustTags, IllustCommentaries
     from .artist_url import ArtistUrl
-    from .artist import Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles, ArtistNotations
+    from .artist import Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles
     from .booru import Booru, BooruNames, BooruArtists
 
     # #### Local data
     from .error import Error
-    from .post import Post, PostIllustUrls, PostErrors, PostNotations, PostTags
+    from .post import Post, PostIllustUrls, PostErrors, PostTags
     from .upload import Upload, UploadUrls, UploadErrors
     from .upload_element import UploadElement, UploadElementErrors
     from .upload_url import UploadUrl
@@ -98,8 +98,8 @@ def initialize():
             SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,
             SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,
             Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,
-            IllustCommentaries, IllustNotations, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
-            ArtistNotations, Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors, PostNotations,
+            IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
+            Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors,
             PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,
             SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,
