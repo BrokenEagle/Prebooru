@@ -33,13 +33,6 @@ from .base import JsonModel, EpochTimestamp, secondarytable, image_server_url, B
 
 # Many-to-many tables
 
-PostIllustUrls = secondarytable(
-    'post_illust_urls',
-    DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
-    DB.Column('illust_url_id', DB.Integer, DB.ForeignKey('illust_url.id'), primary_key=True),
-    DB.Index(None, 'illust_url_id', 'post_id'),
-)
-
 PostTags = secondarytable(
     'post_tags',
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
@@ -69,7 +62,7 @@ class Post(JsonModel):
     simcheck = DB.Column(DB.Boolean, nullable=False)
 
     # ## Relationships
-    illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True,
+    illust_urls = DB.relationship(IllustUrl, lazy=True, uselist=True,
                                   backref=DB.backref('post', uselist=False, lazy=True))
     errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
                              backref=DB.backref('post', uselist=False, lazy=True))
