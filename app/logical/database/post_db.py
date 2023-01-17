@@ -108,7 +108,7 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, durati
 
 
 def post_append_illust_url(post, illust_url):
-    post.illust_urls.append(illust_url)
+    illust_url.post_id = post.id
     SESSION.commit()
 
 

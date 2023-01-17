@@ -9,7 +9,7 @@ from utility.obj import classproperty
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import upload_status
-from ..logical.batch_loader import selectinload_batch_primary, selectinload_batch_secondary
+from ..logical.batch_loader import selectinload_batch_primary
 from .upload_url import UploadUrl
 from .upload_element import UploadElement
 from .illust_url import IllustUrl
@@ -158,5 +158,5 @@ class Upload(JsonModel):
         self._populate_illust_urls = lambda: None
 
     def _populate_posts(self):
-        selectinload_batch_secondary(self.illust_urls, 'post')
+        selectinload_batch_primary(self.illust_urls, 'post')
         self._populate_posts = lambda: None
