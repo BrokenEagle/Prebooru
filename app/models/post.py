@@ -40,13 +40,6 @@ PostIllustUrls = secondarytable(
     DB.Index(None, 'illust_url_id', 'post_id'),
 )
 
-PostErrors = secondarytable(
-    'post_errors',
-    DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
-    DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
-    DB.Index(None, 'error_id', 'post_id'),
-)
-
 PostTags = secondarytable(
     'post_tags',
     DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
@@ -78,7 +71,7 @@ class Post(JsonModel):
     # ## Relationships
     illust_urls = DB.relationship(IllustUrl, secondary=PostIllustUrls, lazy=True,
                                   backref=DB.backref('post', uselist=False, lazy=True))
-    errors = DB.relationship(Error, secondary=PostErrors, lazy=True, cascade='all,delete',
+    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
                              backref=DB.backref('post', uselist=False, lazy=True))
     subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False,
                                            backref=DB.backref('post', lazy=True, uselist=False))
