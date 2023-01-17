@@ -14,18 +14,7 @@ from .upload_url import UploadUrl
 from .upload_element import UploadElement
 from .illust_url import IllustUrl
 from .error import Error
-from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions
-
-
-# ## GLOBAL VARIABLES
-
-# Many-to-many tables
-
-UploadUrls = secondarytable(
-    'upload_urls',
-    DB.Column('upload_id', DB.Integer, DB.ForeignKey('upload.id'), primary_key=True),
-    DB.Column('upload_url_id', DB.Integer, DB.ForeignKey('upload_url.id'), primary_key=True),
-)
+from .base import JsonModel, EpochTimestamp, get_relation_definitions
 
 
 # ## CLASSES
@@ -45,7 +34,7 @@ class Upload(JsonModel):
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # ## Relationships
-    image_urls = DB.relationship(UploadUrl, secondary=UploadUrls, lazy=True, uselist=True, cascade='all,delete',
+    image_urls = DB.relationship(UploadUrl, lazy=True, uselist=True, cascade='all,delete',
                                  backref=DB.backref('upload', lazy=True, uselist=False))
     errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
                              backref=DB.backref('upload', lazy=True, uselist=False))
