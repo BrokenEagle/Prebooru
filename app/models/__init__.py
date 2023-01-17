@@ -26,11 +26,11 @@ def load_all():
         SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,\
         Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,\
         IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
-        Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors,\
-        PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, Notation, Pool, PoolElement, PoolPost,\
-        PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,\
-        SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,\
-        UploadElement, UploadElementErrors,\
+        Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls,\
+        PostTags, UploadUrl, Upload, UploadUrls, Notation, Pool, PoolElement, PoolPost,\
+        PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
+        ImageHash, SimilarityMatch, ApiData, Archive,\
+        UploadElement,\
         MediaFile, Domain,\
         ServerInfo, Version,\
         JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
@@ -53,15 +53,15 @@ def load_all():
 
     # #### Local data
     from .error import Error
-    from .post import Post, PostIllustUrls, PostErrors, PostTags
-    from .upload import Upload, UploadUrls, UploadErrors
-    from .upload_element import UploadElement, UploadElementErrors
+    from .post import Post, PostIllustUrls, PostTags
+    from .upload import Upload, UploadUrls
+    from .upload_element import UploadElement
     from .upload_url import UploadUrl
     from .notation import Notation
     from .pool import Pool
     from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation
-    from .subscription import Subscription, SubscriptionErrors
-    from .subscription_element import SubscriptionElement, SubscriptionElementErrors
+    from .subscription import Subscription
+    from .subscription_element import SubscriptionElement
 
     # #### Similarity data
     from .image_hash import ImageHash
@@ -99,11 +99,11 @@ def initialize():
             SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,
             Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,
             IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
-            Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls, PostErrors,
-            PostTags, UploadUrl, Upload, UploadUrls, UploadErrors, Notation, Pool, PoolElement, PoolPost,
-            PoolIllust, PoolNotation, Subscription, SubscriptionErrors, SubscriptionElement,
-            SubscriptionElementErrors, ImageHash, SimilarityMatch, ApiData, Archive,
-            UploadElement, UploadElementErrors,
+            Booru, BooruNames, BooruArtists, Error, Post, PostIllustUrls,
+            PostTags, UploadUrl, Upload, UploadUrls, Notation, Pool, PoolElement, PoolPost,
+            PoolIllust, PoolNotation, Subscription, SubscriptionElement,
+            ImageHash, SimilarityMatch, ApiData, Archive,
+            UploadElement,
             MediaFile, Domain,
             ServerInfo, Version,
             JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus,

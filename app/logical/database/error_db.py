@@ -27,7 +27,7 @@ def create_error_from_parameters(createparams):
     error = Error(created=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(error, update_columns, createparams)
+    update_column_attributes(error, update_columns, createparams, commit=False)
     print("[%s]: created" % error.shortlink)
     return error
 
@@ -45,11 +45,13 @@ def create_error_from_json(data):
 # ###### Create
 
 def create_error(module_name, message):
-    return create_error_from_parameters({'module': module_name, 'message': message})
+    error = create_error_from_parameters({'module': module_name, 'message': message})
+    SESSION.commit()
+    return error
 
 
 def create_and_append_error(module_name, message, instance):
-    error = create_error(module_name, message)
+    error = create_error_from_parameters({'module': module_name, 'message': message})
     append_error(instance, error)
     return error
 
@@ -57,13 +59,19 @@ def create_and_append_error(module_name, message, instance):
 # ###### Add relationship
 
 def extend_errors(instance, errors):
-    instance.errors.extend(errors)
+    for error in errors:
+        append_error(instance, error, commit=False)
     SESSION.commit()
 
 
-def append_error(instance, error):
-    instance.errors.append(error)
-    SESSION.commit()
+def append_error(instance, error, commit=True):
+    table_name = instance.table_name
+    append_key = table_name + '_id'
+    setattr(error, append_key, instance.id)
+    if commit:
+        SESSION.commit()
+    else:
+        SESSION.flush()
 
 
 # ###### Test
