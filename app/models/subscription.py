@@ -14,19 +14,7 @@ from .illust import IllustUrl
 from .post import Post
 from .error import Error
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions
-
-
-# ## GLOBAL VARIABLES
-
-# Many-to-many tables
-
-SubscriptionErrors = secondarytable(
-    'subscription_errors',
-    DB.Column('subscription_id', DB.Integer, DB.ForeignKey('subscription.id'), primary_key=True),
-    DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
-    DB.Index(None, 'error_id', 'subscription_id'),
-)
+from .base import JsonModel, EpochTimestamp, get_relation_definitions
 
 
 # ## CLASSES
@@ -49,7 +37,7 @@ class Subscription(JsonModel):
     # ## Relationships
     elements = DB.relationship(SubscriptionElement, lazy=True, uselist=True, cascade="all, delete",
                                backref=DB.backref('subscription', lazy=True, uselist=False))
-    errors = DB.relationship(Error, secondary=SubscriptionErrors, lazy=True, uselist=True, cascade='all,delete',
+    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
                              backref=DB.backref('subscription', uselist=False, lazy=True))
     # (OtO) artist [Artist]
 

@@ -26,12 +26,6 @@ UploadUrls = secondarytable(
     DB.Column('upload_id', DB.Integer, DB.ForeignKey('upload.id'), primary_key=True),
     DB.Column('upload_url_id', DB.Integer, DB.ForeignKey('upload_url.id'), primary_key=True),
 )
-UploadErrors = secondarytable(
-    'upload_errors',
-    DB.Column('upload_id', DB.Integer, DB.ForeignKey('upload.id'), primary_key=True),
-    DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
-    DB.Index(None, 'error_id', 'upload_id'),
-)
 
 
 # ## CLASSES
@@ -53,8 +47,8 @@ class Upload(JsonModel):
     # ## Relationships
     image_urls = DB.relationship(UploadUrl, secondary=UploadUrls, lazy=True, uselist=True, cascade='all,delete',
                                  backref=DB.backref('upload', lazy=True, uselist=False))
-    errors = DB.relationship(Error, secondary=UploadErrors, lazy=True, cascade='all,delete',
-                             backref=DB.backref('upload', uselist=False, lazy=True))
+    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
+                             backref=DB.backref('upload', lazy=True, uselist=False))
     elements = DB.relationship(UploadElement, lazy=True, cascade='all,delete',
                                backref=DB.backref('upload', uselist=False, lazy=True))
     file_illust_url = DB.relationship(IllustUrl, lazy=True, uselist=False, viewonly=True,

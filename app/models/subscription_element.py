@@ -4,20 +4,7 @@
 from .. import DB
 from ..enum_imports import subscription_element_status, subscription_element_keep
 from .error import Error
-from .base import JsonModel, BlobMD5, EpochTimestamp, secondarytable, get_relation_definitions
-
-
-# ## GLOBAL VARIABLES
-
-# Many-to-many tables
-
-SubscriptionElementErrors = secondarytable(
-    'subscription_element_errors',
-    DB.Column('subscription_element_id', DB.Integer, DB.ForeignKey('subscription_element.id'),
-              primary_key=True),
-    DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
-    DB.Index(None, 'error_id', 'subscription_element_id'),
-)
+from .base import JsonModel, BlobMD5, EpochTimestamp, get_relation_definitions
 
 
 # ## CLASSES
@@ -38,7 +25,7 @@ class SubscriptionElement(JsonModel):
                                  tblname='subscription_element', nullable=False)
 
     # ## Relationships
-    errors = DB.relationship(Error, secondary=SubscriptionElementErrors, lazy=True, uselist=True, cascade='all,delete',
+    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
                              backref=DB.backref('subscription_element', lazy=True, uselist=False))
     # (MtO) subscription [Susbscription]
     # (MtO) post [Post]

@@ -1,22 +1,10 @@
-# APP/MODELS/SUBSCRIPTION_ELEMENT.PY
+# APP/MODELS/UPLOAD_ELEMENT.PY
 
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import upload_element_status
 from .error import Error
-from .base import JsonModel, BlobMD5, secondarytable, get_relation_definitions
-
-
-# ## GLOBAL VARIABLES
-
-# Many-to-many tables
-
-UploadElementErrors = secondarytable(
-    'upload_element_errors',
-    DB.Column('upload_element_id', DB.Integer, DB.ForeignKey('upload_element.id'), primary_key=True),
-    DB.Column('error_id', DB.Integer, DB.ForeignKey('error.id'), primary_key=True),
-    DB.Index(None, 'error_id', 'upload_element_id'),
-)
+from .base import JsonModel, BlobMD5, get_relation_definitions
 
 
 # ## CLASSES
@@ -32,8 +20,8 @@ class UploadElement(JsonModel):
                                  tblname='upload_element', nullable=False)
 
     # ## Relationships
-    errors = DB.relationship(Error, secondary=UploadElementErrors, lazy=True, cascade='all,delete',
-                             backref=DB.backref('upload_element', uselist=False, lazy=True))
+    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
+                             backref=DB.backref('upload_element', lazy=True, uselist=False))
     # (MtO) upload [Upload]
     # (MtO) illust_url [IllustUrl]
 
