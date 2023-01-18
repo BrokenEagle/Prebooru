@@ -131,7 +131,7 @@ def column_type(model, columnname):
         raise Exception("%s - column of unexpected type: %s" % (columnname, str(column_type)))
 
 
-# #### Main execution functions
+# #### Main filter functions
 
 def search_attributes(query, model, params):
     all_filters, query = all_attribute_filters(query, model, params)
@@ -462,3 +462,35 @@ def boolean_matching(model, columnname, value):
     if is_falsey(value):
         return (getattr(model, columnname).is_(False),)
     raise Exception("%s - value must be truthy or falsey" % columnname)
+
+
+# #### Main order functions
+
+def order_attributes(query, model, order_params):
+    attributes = model.order_attributes
+    basic_attributes = [attribute for attribute in attributes if is_column(model, attribute)]
+    basic_orders = ()
+    if type(order_params) is not list:
+        order_params = [order_params]
+    basic_order_params = [param for param in order_params if type(param) is str]
+    for param in basic_order_params:
+        for attribute in basic_attributes:
+            basic_orders += basic_attribute_orders(model, attribute, param)
+    return query.order_by(*basic_orders)
+
+
+def basic_attribute_orders(model, columnname, param):
+    if param == columnname or param == columnname + '_asc':
+        return (getattr(model, columnname).asc(),)
+    if param == columnname + '_desc':
+        return (getattr(model, columnname).desc(),)
+    if param == columnname + '_nulls_first' or param == columnname + '_asc_nulls_first':
+        return (getattr(model, columnname).asc().nulls_first(),)
+    if param == columnname + '_nulls_last' or param == columnname + '_asc_nulls_last':
+        return (getattr(model, columnname).asc().nulls_last(),)
+    if param == columnname + '_desc_nulls_first':
+        return (getattr(model, columnname).desc().nulls_first(),)
+    if param == columnname + '_desc_nulls_last':
+        return (getattr(model, columnname).desc().nulls_last(),)
+    return ()
+
