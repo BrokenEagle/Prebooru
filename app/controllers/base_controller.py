@@ -9,7 +9,6 @@ from functools import reduce
 # ## EXTERNAL IMPORTS
 from flask import jsonify, abort, url_for, render_template
 from sqlalchemy import not_
-from sqlalchemy.sql.expression import case
 from wtforms import Form
 from wtforms.meta import DefaultMeta
 from wtforms.widgets import HiddenInput
@@ -20,7 +19,7 @@ from utility.data import eval_bool_string, merge_dicts, kebab_case, display_case
 from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
-from ..logical.searchable import search_attributes, order_attributes
+from ..logical.searchable import search_attributes, order_attributes, custom_order
 
 
 # ## CLASSES
@@ -90,11 +89,9 @@ def default_order(query, search):
     entity = query.column_descriptions[0]['entity']
     if 'order' in search:
         if search['order'] == 'custom':
-            ids = [int(id) for id in search['id'].split(',') if id.isdigit()]
-            if len(ids) > 1:
-                return query.order_by(_custom_order(ids, entity))
-        elif search['order'] == 'id_asc':
-            return query.order_by(entity.id.asc())
+            custom_query = custom_order(query, entity, search)
+            if custom_query is not None:
+                return custom_query
         else:
             return order_attributes(query, entity, search['order'])
     return query.order_by(entity.id.desc())
@@ -297,13 +294,6 @@ def strip_whitespace(html):
 
 
 # #### Private functions
-
-def _custom_order(ids, entity):
-    return case(
-        {id: index for index, id in enumerate(ids)},
-        value=entity.id,
-    )
-
 
 def _query_model(query):
     return query.column_descriptions[0]['entity']
