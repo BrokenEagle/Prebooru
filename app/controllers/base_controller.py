@@ -20,7 +20,7 @@ from utility.data import eval_bool_string, merge_dicts, kebab_case, display_case
 from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
-from ..logical.searchable import search_attributes
+from ..logical.searchable import search_attributes, order_attributes
 
 
 # ## CLASSES
@@ -95,6 +95,8 @@ def default_order(query, search):
                 return query.order_by(_custom_order(ids, entity))
         elif search['order'] == 'id_asc':
             return query.order_by(entity.id.asc())
+        else:
+            return order_attributes(query, entity, search['order'])
     return query.order_by(entity.id.desc())
 
 

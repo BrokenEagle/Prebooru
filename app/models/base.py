@@ -388,6 +388,10 @@ class JsonModel(DB.Model):
         return cls.basic_attributes + cls.relation_attributes
 
     @classproperty(cached=False)
+    def order_attributes(cls):
+        return cls.basic_attributes
+
+    @classproperty(cached=False)
     def json_attributes(cls):
         return cls.basic_attributes
 
