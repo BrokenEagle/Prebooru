@@ -7,6 +7,7 @@ from sqlalchemy import and_, not_, func
 from sqlalchemy.orm import aliased, with_polymorphic, ColumnProperty, RelationshipProperty
 from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance, ObjectAssociationProxyInstance,\
     AmbiguousAssociationProxyInstance
+from sqlalchemy.sql.expression import case
 import sqlalchemy.sql.sqltypes as sqltypes
 
 # ## PACKAGE IMPORTS
@@ -494,3 +495,13 @@ def basic_attribute_orders(model, columnname, param):
         return (getattr(model, columnname).desc().nulls_last(),)
     return ()
 
+
+def custom_order(query, model, search):
+    ids = [int(id) for id in search.get('id', "").split(',') if id.isdigit()]
+    if len(ids) == 0:
+        return None
+    order_clause = case(
+        {id: index for index, id in enumerate(ids)},
+        value=model.id,
+    )
+    return query.order_by(order_clause)
