@@ -6,7 +6,7 @@
 
 <aside id="notation-sidebar">
     {% if notation.append_item is not none %}
-        {% if notation.append_type == 'pool_notation' %}
+        {% if notation.append_type == 'pool_element' %}
             {{ pools_section(notation.append_item, 'notation-pool') }}
         {% elif notation.append_type == 'booru' %}
             {{ boorus_section(notation.append_item, 'booru-artist') }}

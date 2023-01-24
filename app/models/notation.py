@@ -41,7 +41,7 @@ class Notation(JsonModel):
 
     @property
     def append_type(self):
-        return self.append_item.model_name if self.append_item is not None else None
+        return self.append_item.table_name if self.append_item is not None else None
 
     # ## Private
 

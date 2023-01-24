@@ -57,7 +57,7 @@ def remove_artist_link(booru, artist):
 
 
 def add_notation_link(booru):
-    return general_link("Add notation", url_for('notation.new_html', booru_id=booru.id))
+    return general_link("Add notation", url_for('notation.new_html', booru_id=booru.id, redirect='true'))
 
 
 # ###### GENERAL
