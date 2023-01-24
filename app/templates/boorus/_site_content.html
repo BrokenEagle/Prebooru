@@ -3,18 +3,22 @@
         <section id="booru-site-info">
             <h4>Info</h4>
             <ul>
-                <li>
-                    <span class="heading">{{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span>
-                </li>
-                <li>
-                    <strong>Danbooru ID:</strong> {{ booru.danbooru_id }}
-                </li>
-                <li>
-                    <strong>Banned:</strong> {{ booru.banned | tojson }}
-                </li>
-                <li>
-                    <strong>Deleted:</strong> {{ booru.deleted | tojson }}
-                </li>
+                {% if booru.danbooru_id is not none %}
+                    <li>
+                        <span class="heading">{{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span>
+                    </li>
+                    <li>
+                        <strong>Danbooru ID:</strong> {{ booru.danbooru_id }}
+                    </li>
+                    <li>
+                        <strong>Banned:</strong> {{ booru.banned | tojson }}
+                    </li>
+                    <li>
+                        <strong>Deleted:</strong> {{ booru.deleted | tojson }}
+                    </li>
+                {% else %}
+                    <li><strong>Name:</strong> {{ booru.current_name }} <em>(temporary)</em></li>
+                {% endif %}
             </ul>
         </section>
         <section id="booru-names">
