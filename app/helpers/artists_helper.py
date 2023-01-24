@@ -50,7 +50,7 @@ def add_subscription_link(artist):
 
 
 def add_notation_link(artist):
-    return general_link("Add notation", url_for('notation.new_html', artist_id=artist.id))
+    return general_link("Add notation", url_for('notation.new_html', artist_id=artist.id, redirect='true'))
 
 
 def delete_profile_link(artist, profile):
