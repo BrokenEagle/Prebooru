@@ -863,6 +863,16 @@ def get_media_page_v2(user_id, count, cursor=None):
     return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params)
 
 
+def get_search_page(query, cursor=None):
+    params = TWITTER_BASE_PARAMS.copy()
+    params.update(TWITTER_SEARCH_PARAMS)
+    params['q'] = query
+    if cursor is not None:
+        params['cursor'] = cursor
+    url_params = urllib.parse.urlencode(params)
+    return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params)
+
+
 def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
     print("Populating from media page: %d" % (user_id))
 
@@ -892,13 +902,7 @@ def populate_twitter_search_timeline(account, since_date, until_date, job_id=Non
         job_status['range'] = since_date + '..' + until_date + ':' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        params = TWITTER_BASE_PARAMS.copy()
-        params.update(TWITTER_SEARCH_PARAMS)
-        params['q'] = query
-        if cursor is not None:
-            params['cursor'] = cursor
-        url_params = urllib.parse.urlencode(params)
-        return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params)
+        return get_search_page(query, cursor)
 
     page = 1
     tweet_ids = get_timeline(page_func, **kwargs)
