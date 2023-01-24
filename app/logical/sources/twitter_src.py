@@ -180,6 +180,7 @@ TWITTER_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
                "Zz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
 
 TWITTER_USER_HEADERS = {
+    'user-agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
     'authorization': 'Bearer ' + TWITTER_AUTH,
     'x-csrf-token': TWITTER_CSRF_TOKEN,
     'cookie': f'auth_token={TWITTER_USER_TOKEN}; ct0={TWITTER_CSRF_TOKEN}'
@@ -240,21 +241,29 @@ TWITTER_BASE_PARAMS = {
     "include_mute_edge": "1",
     "include_can_dm": "1",
     "include_can_media_tag": "1",
+    "include_ext_has_nft_avatar": "1",
+    "include_ext_is_blue_verified": "1",
+    "include_ext_verified_type": "1",
     "skip_status": "1",
     "cards_platform": "Web-12",
     "include_cards": "1",
     "include_ext_alt_text": "true",
+    "include_ext_limited_action_results": "false",
+    "include_ext_collab_control": "true",
+    "include_ext_views": "true",
     "include_reply_count": "1",
+    "include_quote_count": "true",
     "tweet_mode": "extended",
     "include_entities": "true",
     "include_user_entities": "true",
     "include_ext_media_color": "true",
     "include_ext_media_availability": "true",
+    "include_ext_sensitive_media_warning": "true",
+    "include_ext_edit_control": "true",
     "send_error_codes": "true",
     "simple_quoted_tweet": "true",
     "count": "20",
-    "ext": "mediaStats,highlightedLabel,cameraMoment",
-    "include_quote_count": "true"
+    "ext": "mediaStats,highlightedLabel,hasNftAvatar,voiceInfo,birdwatchPivot,enrichments,superFollowMetadata,unmentionInfo,editControl,collab_control,vibe",
 }
 
 TWITTER_SEARCH_PARAMS = {
