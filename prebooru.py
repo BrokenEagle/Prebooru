@@ -379,7 +379,7 @@ def check_other_execs():
     import sys
     exec_name = os.path.split(sys.argv[0])[-1]
     if exec_name == 'flask':
-        os.environ['USE_ENUMS'] = 'false'
+        os.environ['USE_ENUMS'] = 'true'
         os.environ['CHECK_FOREIGN_KEYS'] = 'false'
         from app import PREBOORU_APP, DB
         command = sys.argv[1]
