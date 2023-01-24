@@ -1,5 +1,12 @@
 {% macro notation_block(notation) -%}
-    <strong>{{ notation.show_link }}</strong>
+    <div class="notation-block-header">
+        <strong>{{ notation.show_link }}</strong>
+        (
+        {{ helpers.base.general_link('edit', notation.edit_url + '?redirect=true') }}
+        |
+        {{ helpers.base.general_link('delete', notation.delete_url + '?redirect=true', method="DELETE", **{'class': 'warning-link'}) }}
+        )
+    </div>
     <div class="notation-block">
         {{ helpers.base.convert_to_html(notation.body) }}
         <br>
