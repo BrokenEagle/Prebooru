@@ -38,7 +38,7 @@ BooruArtists = secondarytable(
 class Booru(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    danbooru_id = DB.Column(DB.Integer, unique=True, nullable=False)
+    danbooru_id = DB.Column(DB.Integer, nullable=True)
     current_name = DB.Column(DB.String(255), nullable=False)
     banned = DB.Column(DB.Boolean, nullable=False)
     deleted = DB.Column(DB.Boolean, nullable=False)
@@ -94,3 +94,9 @@ class Booru(JsonModel):
     @classproperty(cached=True)
     def json_attributes(cls):
         return super().json_attributes + ['names']
+
+
+# ## INITIALIZATION
+
+def initialize():
+    DB.Index(None, Booru.danbooru_id, unique=True, sqlite_where=Booru.danbooru_id.is_not(None))
