@@ -95,6 +95,13 @@ def booru_append_artist(booru, artist):
     SESSION.commit()
 
 
+def booru_remove_artist(booru, artist):
+    print("[%s]: Removing %s" % (booru.shortlink, artist.shortlink))
+    booru.artists.remove(artist)
+    booru.updated = get_current_time()
+    SESSION.commit()
+
+
 # #### Query functions
 
 def get_booru(danbooru_id):

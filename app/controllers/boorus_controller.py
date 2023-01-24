@@ -7,9 +7,10 @@ from wtforms import TextAreaField, IntegerField, StringField, BooleanField
 from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
-from ..models import Booru
+from ..models import Booru, Artist
 from ..logical.utility import set_error
-from ..logical.database.booru_db import create_booru_from_parameters, update_booru_from_parameters
+from ..logical.database.booru_db import create_booru_from_parameters, update_booru_from_parameters,\
+    booru_append_artist, booru_remove_artist
 from ..logical.records.booru_rec import create_booru_from_source, update_booru_from_source,\
     update_booru_artists_from_source, archive_booru_for_deletion
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -23,7 +24,7 @@ from .base_controller import show_json_response, index_json_response, search_fil
 bp = Blueprint("booru", __name__)
 
 
-CREATE_REQUIRED_PARAMS = ['danbooru_id', 'current_name', 'deleted', 'banned']
+CREATE_REQUIRED_PARAMS = ['current_name', 'deleted', 'banned']
 VALUES_MAP = {
     'names': 'names',
     'name_string': 'names',
@@ -55,7 +56,7 @@ FORM_CONFIG = {
         'name': 'Danbooru ID',
         'field': IntegerField,
         'kwargs': {
-            'validators': [DataRequired()],
+            'description': "Leave blank for boorus which don't exist on Danbooru.",
         },
     },
     'current_name': {
@@ -87,7 +88,7 @@ def get_booru_form(**kwargs):
 
 def uniqueness_check(dataparams, artist):
     danbooru_id = dataparams.get('danbooru_id', artist.danbooru_id)
-    if danbooru_id != artist.danbooru_id:
+    if danbooru_id is not None and danbooru_id != artist.danbooru_id:
         return Booru.query.filter_by(danbooru_id=danbooru_id).one_or_none()
 
 
@@ -298,4 +299,36 @@ def check_artists_html(id):
         flash(results['message'], 'error')
     else:
         flash("Booru updated.")
+    return redirect(url_for('booru.show_html', id=id))
+
+
+@bp.route('/boorus/<int:id>/add_artist', methods=['POST'])
+def add_artist_html(id):
+    booru = get_or_abort(Booru, id)
+    artist_id = request.values.get('artist_id', type=int)
+    artist = Artist.find(artist_id)
+    if artist is not None:
+        if artist.id not in booru.artist_ids:
+            booru_append_artist(booru, artist)
+            flash("Artist added.")
+        else:
+            flash(f'{artist.shortlink} already added to {booru.shortlink}.', 'error')
+    else:
+        flash(f'artist #{artist_id} not found.', 'error')
+    return redirect(url_for('booru.show_html', id=id))
+
+
+@bp.route('/boorus/<int:id>/remove_artist', methods=['DELETE'])
+def remove_artist_html(id):
+    booru = get_or_abort(Booru, id)
+    artist_id = request.values.get('artist_id', type=int)
+    artist = Artist.find(artist_id)
+    if artist is not None:
+        if artist.id in booru.artist_ids:
+            booru_remove_artist(booru, artist)
+            flash("Artist removed.")
+        else:
+            flash(f'{artist.shortlink} not associated with {booru.shortlink}.')
+    else:
+        flash(f'artist #{artist_id} not found.')
     return redirect(url_for('booru.show_html', id=id))

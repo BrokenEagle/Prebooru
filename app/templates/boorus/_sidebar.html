@@ -4,7 +4,7 @@
 {% from "notations/_macros.html" import notations_section %}
 
 <div id="booru-sidebar">
-    {{ artists_section(booru.artists, 'booru-artists') }}
+    {{ artists_section(booru.artists, 'booru-artists', booru) }}
     {{ illusts_display(helpers.booru.illust_search(booru), booru.illust_count, 'booru-illusts') }}
     {{ timestamps_section(booru, 'booru-timestamps') }}
     {{ notations_section(booru.notations, 'booru-notations') }}
@@ -13,6 +13,7 @@
         <ul>
             <li>{{ helpers.booru.query_update_link(booru) }}</li>
             <li>{{ helpers.booru.check_artists_link(booru) }}</li>
+            <li>{{ helpers.booru.add_artist_link(booru) }}</li>
             <li>{{ helpers.booru.add_notation_link(booru) }}</li>
         </ul>
     </section>

@@ -30,7 +30,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account'
 
 BOORU_SUBQUERY = Artist.query\
     .join(Booru, Artist.boorus)\
-    .filter(Booru.deleted.is_(False))\
+    .filter(Booru.deleted.is_(False), Booru.danbooru_id.is_not(None))\
     .with_entities(Artist.id)
 BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 

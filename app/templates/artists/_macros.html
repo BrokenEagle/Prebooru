@@ -1,4 +1,4 @@
-{% macro artists_section(artists, section_id) -%}
+{% macro artists_section(artists, section_id, booru=None) -%}
     {% if artists is not none %}
         {% if artists is not iterable %}
             {% set artists = [artists] %}
@@ -31,6 +31,11 @@
                                 <li>
                                     <strong>Links:</strong> {{ helpers.artist.artist_links(artist) }}
                                 </li>
+                                {% if booru is not none %}
+                                    <li>
+                                        <strong>( {{ helpers.booru.remove_artist_link(booru, artist) }} )</strong>
+                                    </li>
+                                {% endif %}
                             </ul>
                         </li>
                     {% endfor %}
