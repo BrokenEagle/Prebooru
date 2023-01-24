@@ -183,7 +183,7 @@ def disk_file_link(post):
 
 
 def add_notation_link(post):
-    return general_link("Add notation", url_for('notation.new_html', post_id=post.id))
+    return general_link("Add notation", url_for('notation.new_html', post_id=post.id, redirect='true'))
 
 
 def add_tag_link(post):

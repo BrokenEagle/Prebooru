@@ -89,4 +89,4 @@ def append_notation_to_item(notation, append_key, dataparams):
     else:
         setattr(notation, table_name + '_id', item.id)
     SESSION.commit()
-    return {'error': False}
+    return {'error': False, 'append_item': item.to_json(), 'append_type': item.model_name}
