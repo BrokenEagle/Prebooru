@@ -165,6 +165,7 @@ def initialize_migrate():
     # The environment variables need to be set for this to work, which can be done by executing
     # the setup.bat script, then running "flask db" will show all of the available commands.
     PREOBOORU_MIGRATE = Migrate(PREBOORU_APP, DB, render_as_batch=True)  # noqa: F841
+    os.environ['USE_ENUMS'] = 'false'
 
 
 # #### Main execution functions
