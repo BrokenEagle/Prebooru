@@ -765,7 +765,7 @@ def twitter_request(url, method='GET', wait=True):
             print_error("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, response.reason, response.text))
             if DEBUG_MODE:
                 log_network_error('sources.twitter.twitter_request', response)
-            return {'error': True, 'message': "HTTP %d - %s" % (response.status_code, response.reason)}
+            return {'error': True, 'message': "HTTP %d - %s" % (response.status_code, response.reason), 'response': response}
     else:
         print_error("Connection errors exceeded!")
         return {'error': True, 'message': repr(error)}
