@@ -73,6 +73,12 @@ section#artist-labels {
     width: 25%;
 }
 
+section#artist-labels > ul,
+section#artist-webpages > ul {
+    overflow-y: auto;
+    height: 8em;
+}
+
 section#artist-webpages {
     line-height: 90%;
     margin-left: 1em;
