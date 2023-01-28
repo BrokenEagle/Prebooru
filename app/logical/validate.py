@@ -3,6 +3,7 @@
 # ## PYTHON IMPORTS
 import os
 import sys
+import sqlite3
 import logging
 import itertools
 
@@ -86,6 +87,9 @@ def validate_foreign_keys(conn):
 
 
 def validate_alembic_table(conn):
+    if sqlite3.sqlite_version_info[1] < 37:
+        print_warning("Unable to check alembic_version table. Upgrade SQLite to version 3.37.0 or greater.")
+        return
     table_info = conn.execute("PRAGMA table_list(alembic_version)").fetchone()
     if table_info[4] == 1:
         print_info("\nAlembic Version table: OK\n")
