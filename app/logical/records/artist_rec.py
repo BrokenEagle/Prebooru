@@ -3,6 +3,9 @@
 # ## PYTHON IMPORTS
 import itertools
 
+# ## PACKAGE IMPORTS
+from utility.data import inc_dict_entry
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..utility import set_error
@@ -64,9 +67,9 @@ def add_danbooru_artists(url, danbooru_artists, booru_dict, db_artists, status):
                 }
             booru = create_booru_from_parameters(params)
             booru_dict[data['id']] = booru
-            status['created'] += 1
+            inc_dict_entry(status, 'created')
         booru_append_artist(booru, artist)
-        status['total'] += 1
+        inc_dict_entry(status, 'total')
 
 
 def get_or_create_artist_from_source(site_artist_id, source):

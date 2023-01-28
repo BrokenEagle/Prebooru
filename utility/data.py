@@ -126,6 +126,10 @@ def add_dict_entry(indict, key, entry):
     indict[key] = indict[key] + [entry] if key in indict else [entry]
 
 
+def inc_dict_entry(indict, key):
+    indict[key] = indict[key] + 1 if key in indict else 1
+
+
 def merge_dicts(a, b):
     for key in b:
         if key in a and isinstance(a[key], dict) and isinstance(b[key], dict):
