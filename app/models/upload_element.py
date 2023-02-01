@@ -1,5 +1,8 @@
 # APP/MODELS/UPLOAD_ELEMENT.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy.ext.associationproxy import association_proxy
+
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import upload_element_status
@@ -24,6 +27,9 @@ class UploadElement(JsonModel):
                              backref=DB.backref('upload_element', lazy=True, uselist=False))
     # (MtO) upload [Upload]
     # (MtO) illust_url [IllustUrl]
+
+    # ## Association proxies
+    post = association_proxy('illust_url', 'post')
 
     # ## Instance properties
 

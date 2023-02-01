@@ -1,0 +1,43 @@
+/** APP/STATIC/STYLES/UPLOAD_ELEMENTS.CSS **/
+
+/**** MACROS ****/
+
+div.upload-elements {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/**** INDEX Page ****/
+
+div.no-post {
+    background: #F0F0F0;
+    border: 1px solid #AAA;
+    height: 80px;
+    margin: 1em;
+    padding-top: 1em;
+    text-align: center;
+    width: 200px;
+}
+
+table#upload-elements-table article.post {
+    height: 204px;
+    width: 204px;
+}
+
+table#upload-elements-table article.post.no-post {
+    height: 75px;
+}
+
+table#upload-elements-table article.post img {
+    height: auto;
+    max-height: 200px;
+    max-width: 200px;
+    width: auto;
+}
+
+/**** SHOW Page ****/
+
+div#upload-element-heading {
+    font-size: 28px;
+    margin-top: 1em;
+}
