@@ -1,6 +1,7 @@
 {% extends "uploads/_base.html" %}
 {% from "layouts/_macros.html" import page_navigation %}
 {% from "posts/_macros.html" import multi_post_preview %}
+{% from "errors/_macros.html" import errors_block %}
 
 {% block title %}
     Uploads
@@ -41,19 +42,7 @@
                             <em>none</em>
                         {% endfor %}
                     </td>
-                    <td>
-                        {% for error in upload.errors %}
-                            <div>
-                                <strong>{{ error.module }}:</strong>
-                                <br>
-                                &emsp;{{ error.message }}
-                                <br>
-                                &emsp;@ {{ helpers.base.format_timestamp(error.created) }}
-                            </div>
-                        {% else %}
-                            <em>none</em>
-                        {% endfor %}
-                    </td>
+                    <td>{{ errors_block(upload.errors) }}</td>
                     <td>{{ upload.status.name }}</td>
                     <td>{{ helpers.base.format_timestamp(upload.created) }}</td>
                 </tr>
