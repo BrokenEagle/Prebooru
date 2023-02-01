@@ -40,6 +40,11 @@ Repository for downloading and storing artist data and images prior to being upl
 
     This allows the downloader to verify the dimensions and streams of MP4 videos before saving them to disk.
 
+7. Install updated SQlite version (optional)
+
+    Got to https://www.sqlite.org/download.html and download the latest binary for your OS. Replace the sqlite3.dll file in the DLLs folder
+    of the current Python installation. This is the **DLLs** folder under the directory of the `python.exe` executable.
+
 # Supported sites
 
 There are currently only a few sites supported for automatic uploading. The following lists these sites and their supported request URL.
@@ -123,71 +128,3 @@ HAS_EXTERNAL_IMAGE_SERVER = True
 An example configuration file (`nginx.conf`) is present under the **misc\\** folder. The **listen** line contains the port number, and by default it binds to **0.0.0.0**, so it will listen on all network adapters. The **root** line is the base directory where the images will reside (as determined by the Prebooru config file), and the filepath needs to use Linux-style directory separators "/" instead of Windows-style "\\".
 
 Additionally, there is also a `nginx.bat` batch file there which can be modified as necessary as an aid to quickly starting or stopping this service.
-
-## Userscript
-
-### PrebooruFileUpload
-
-A userscript for uploading illusts with dead sources to danbooru.
-
-- **Page:** https://gist.github.com/BrokenEagle/35f46ecfb4f9c13bc97efc968bcf396e
-- **Download:** https://gist.github.com/BrokenEagle/35f46ecfb4f9c13bc97efc968bcf396e/raw/PrebooruFileUpload.user.js
-
-### NTISAS
-
-A userscript which shows Tweets already uploaded to Danbooru as well as provides other additional functionality.
-
-- **Info:** https://github.com/BrokenEagle/JavaScripts/wiki/Twitter-Image-Searches-and-Stuff
-- **Forum page:** https://danbooru.donmai.us/forum_topics/16342
-
-There is a branch of NTISAS under development which adds support for uploading and querying data from Prebooru.
-
-- **Download:** https://raw.githubusercontent.com/BrokenEagle/JavaScripts/ntisas-prebooru/New_Twitter_Image_Searches_and_Stuff.user.js
-
-### NPISAS
-
-(Under development)
-
-# To-Do
-
-1. Add usage wikis.
-2. Add tests for the code.
-3. Pool reorder page.
-4. Add order filters to searchable.
-5. User tags for posts. (\*\*DONE\*\*)
-6. Tag categories, and maybe illust/post count.
-7. Generalized query parameter which would use query arguments parameterized by logical operators instead of being hamstrung by URL arguments.
-8. Add automatic artist webpage URL unshortening.
-9. Pool elements, similarity matches, similarity data INDEX page(s). (\*\*PARTIALLY DONE\*\*)
-10. Drop unused columns or those used mostly for testing. (\*\*PARTIALLY DONE\*\*)
-11. Server status page and ping functions.
-12. Network upload link for unuploaded illust URLs.
-13. Add series column and navigation to pools. (\*\*DONE\*\*)
-14. Add full URL to illust URL JSON. (\*\*DONE\*\*)
-15. Subscribe to artists. (\*\*DONE\*\*)
-    - Mandatory recheck interval.
-    - Optional expiration, with either hard deletion or archiving.
-    - Posts created with subscriptions will be segregated from those created via user interaction.
-16. Archive posts/illusts/artists/boorus. (\*\*DONE\*\*)
-17. Add `parent_id` and `updated` column to posts.
-   - To allow parent/child relationships.
-18. On uploads select, have an asynchronous process download all of the images. (\*\*DONE\*\*)
-    - Currently the user is forced to wait until all of the previews have been downloaded.
-19. Have pagination for uploads/illusts, since some Pixiv artworks can have well over 10 images.
-20. Add `banned` column to boorus which will match the artist's status on Danbooru. (\*\*DONE\*\*)
-21. Backup/export/import the DB from the script itself.
-22. Add delete method to more types.
-    - Save JSON of data in a separate table when this is done to allow for delete operations to be undone.
-    - Have a configuratble expiration time for when the data will be purged, to include immediate or never.
-23. Add support for Pixiv ugoiras.
-24. Use video container for MP4 videos and run them in a loop.
-25. Add helper script to generate NTISAS/NPISAS import files to quickly populate the data.
-26. Add include and only parameters for json endpoints.
-    - Includes will chain include relationship models.
-    - Only will limit the values returned.
-27. Connect multiple Preboorus together as an Overbooru.
-28. Sequential pagination
-    - i.e. Danbooru style with 'a' or 'b' prefixes.
-29. Other selection mechanics, such as drag-select.
-
-*And much, much, more...*
