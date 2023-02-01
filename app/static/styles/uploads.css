@@ -65,7 +65,7 @@ div#upload-posts {
     margin-top: 2em;
 }
 
-div#media-posts-container {
+div#upload-elements-container {
     display: flex;
     flex-wrap: wrap;
 }
@@ -75,14 +75,14 @@ div.status-heading {
     padding-left: 0.5em;
 }
 
-div.media-post {
+div.upload-element {
     margin-top: 1em;
     width: 25%;
     height: 420px;
     overflow-y: auto;
 }
 
-div.media-post-info div.errors-list {
+div.upload-element-info div.errors-list {
     border: 1px solid #ddd;
     margin-top: 0.5em;
     overflow-x: hidden;
@@ -111,7 +111,9 @@ div.upload-preview > article.upload-post {
 
 div.upload-preview > article.overflow {
     background-color: grey;
+    height: 140px;
     padding: 5px;
+    width: 140px;
 }
 
 div.upload-preview > article.overflow > span {

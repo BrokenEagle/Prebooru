@@ -51,6 +51,7 @@ def initialize_controllers():
     PREBOORU_APP.register_blueprint(controllers.artist_url.bp)
     PREBOORU_APP.register_blueprint(controllers.booru.bp)
     PREBOORU_APP.register_blueprint(controllers.upload.bp)
+    PREBOORU_APP.register_blueprint(controllers.upload_element.bp)
     PREBOORU_APP.register_blueprint(controllers.post.bp)
     PREBOORU_APP.register_blueprint(controllers.subscription.bp)
     PREBOORU_APP.register_blueprint(controllers.subscription_element.bp)

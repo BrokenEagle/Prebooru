@@ -217,6 +217,11 @@ span.explanation {
     font-style: italic;
 }
 
+span.small-caps {
+    font-variant: small-caps;
+    letter-spacing: 1px;
+}
+
 span.narrow {
     font-family: "Arial Narrow", sans-serif;
 }
