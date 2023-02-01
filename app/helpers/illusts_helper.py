@@ -82,8 +82,8 @@ def post_search_link(illust):
     return general_link('»', search_url_for('post.index_html', illust_urls={'illust_id': illust.id}))
 
 
-def illust_url_search_link(illust):
-    return general_link("«search»", search_url_for('illust_url.index_html', illust_id=illust.id))
+def illust_url_search_link(illust, text):
+    return general_link(text, search_url_for('illust_url.index_html', illust_id=illust.id))
 
 
 # ###### SHOW

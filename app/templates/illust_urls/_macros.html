@@ -15,9 +15,13 @@
     </div>
 {%- endmacro %}
 
-{% macro media_urls_section(illust_urls, illust) -%}
+{% macro media_urls_section(illust_urls, illust_url_count, illust) -%}
     <section id="media-posts">
-        <h3>Media URLs</h3>
+        <div id="recent-posts-heading" class="large-2 heading">
+            <u>Media URLs</u>
+            (&thinsp;{{ illust_url_count }}&thinsp;)
+            {{ helpers.illust.illust_url_search_link(illust, "»") }}
+        </div>
         <div id="media-posts-container">
             {% for illust_url in illust_urls %}
                 <div class="media-post">

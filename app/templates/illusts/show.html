@@ -1,4 +1,5 @@
 {% extends "illusts/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
 {% from "illust_urls/_macros.html" import media_urls_section %}
 
 {% block linkscript %}
@@ -17,9 +18,13 @@
         {% include "illusts/_site_content.html" %}
     </div>
     <div id="illust-posts">
-        {% if illust.urls | length > 0 %}{{ media_urls_section(illust.ordered_urls, illust) }}{% endif %}
+        {% if illust.urls | length > 0 %}{{ media_urls_section(illust_urls.items, illust_urls.count, illust) }}{% endif %}
     </div>
 {% endblock content %}
+
+{% block pages %}
+    {{ page_navigation(illust_urls) }}
+{% endblock pages %}
 
 {% block pagescript %}
     Prebooru.initializeLazyLoad('.media-post-preview');
