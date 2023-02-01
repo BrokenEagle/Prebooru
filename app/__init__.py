@@ -6,6 +6,7 @@ import re
 import sys
 import json
 import uuid
+import time
 import atexit
 import sqlite3
 import logging
@@ -118,6 +119,19 @@ def _fk_open_connections():
         for uid in DATABASE_INFO.connections[key]:
             printer('    %s' % uid)
     printer.print()
+
+
+def _fk_before_cursor_execute(dbapi_connection, cursor, statement, params, context, executemany):
+    if DEBUG_LOG:
+        dbapi_connection.info.setdefault('query_start_time', [])
+        dbapi_connection.info['query_start_time'].append(time.perf_counter())
+
+
+def _fk_after_cursor_execute(dbapi_connection, cursor, statement, params, context, executemany):
+    if DEBUG_LOG:
+        start_time = dbapi_connection.info['query_start_time'].pop(-1)
+        duration = 1000 * (time.perf_counter() - start_time)
+        print("Execution time: %0.2fms" % duration)
 
 
 def _before_request():
@@ -262,6 +276,8 @@ event.listen(DB.get_engine(bind=None).engine, 'connect', lambda conn, rec: _fk_p
 event.listen(DB.get_engine(bind='jobs').engine, 'connect', lambda conn, rec: _fk_pragma_on_connect(conn, rec, 'jobs'))
 event.listen(DB.get_engine(bind=None).engine, 'close', lambda conn, rec: _fk_pragma_on_close(conn, rec, 'prebooru'))
 event.listen(DB.get_engine(bind='jobs').engine, 'close', lambda conn, rec: _fk_pragma_on_close(conn, rec, 'jobs'))
+event.listen(DB.get_engine(bind=None).engine, 'before_cursor_execute', _fk_before_cursor_execute)
+event.listen(DB.get_engine(bind=None).engine, 'after_cursor_execute', _fk_after_cursor_execute)
 
 PREBOORU_APP.wsgi_app = MethodRewriteMiddleware(PREBOORU_APP.wsgi_app)
 PREBOORU_APP.before_request(_before_request)
