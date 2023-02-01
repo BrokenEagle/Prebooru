@@ -39,3 +39,17 @@
         </div>
     {% endif %}
 {%- endmacro %}
+
+{% macro errors_block(errors) -%}
+    {% for error in errors %}
+        <div>
+            <strong>{{ error.module }}:</strong>
+            <br>
+            &emsp;{{ error.message }}
+            <br>
+            &emsp;@ {{ helpers.base.format_timestamp(error.created) }}
+        </div>
+    {% else %}
+        <em>none</em>
+    {% endfor %}
+{%- endmacro %}
