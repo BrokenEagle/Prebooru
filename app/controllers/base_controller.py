@@ -166,8 +166,10 @@ def get_page(request):
     return int(request.args['page']) if 'page' in request.args else 1
 
 
-def get_limit(request, max_limit=MAXIMUM_PAGINATE_LIMIT):
-    return min(int(request.args['limit']), max_limit) if 'limit' in request.args else DEFAULT_PAGINATE_LIMIT
+def get_limit(request, max_limit=None):
+    default_limit = min(max_limit, DEFAULT_PAGINATE_LIMIT) if max_limit is not None else DEFAULT_PAGINATE_LIMIT
+    max_limit = max_limit if max_limit is not None else MAXIMUM_PAGINATE_LIMIT
+    return min(int(request.args['limit']), max_limit) if 'limit' in request.args else default_limit
 
 
 def process_request_values(values_dict):
