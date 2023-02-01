@@ -65,6 +65,38 @@ div#upload-posts {
     margin-top: 2em;
 }
 
+div#media-posts-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+div.status-heading {
+    font-size: 1.25em;
+    padding-left: 0.5em;
+}
+
+div.media-post {
+    margin-top: 1em;
+    width: 25%;
+    height: 420px;
+    overflow-y: auto;
+}
+
+div.media-post-info div.errors-list {
+    border: 1px solid #ddd;
+    margin-top: 0.5em;
+    overflow-x: hidden;
+    padding: 5px;
+}
+
+div.no-post-preview {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    height: 310px;
+    text-align: center;
+    width: 310px;
+}
+
 /**** INDEX ****/
 div.upload-preview {
     display: grid;

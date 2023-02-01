@@ -53,6 +53,14 @@ def val_or_none(val):
     return Markup('<em>none</em>') if val is None else val
 
 
+def val_or_na(val, code=False):
+    if val is None:
+        return Markup('<em>N/A</em>')
+    if code:
+        return add_container('code', val)
+    return val
+
+
 def format_json(data):
     return json.dumps(data, indent=4, ensure_ascii=False)
 

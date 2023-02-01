@@ -45,6 +45,19 @@ class Upload(JsonModel):
 
     # ## Instance properties
 
+    def elements_paginate(self, page=None, per_page=None, options=None):
+        def _get_options(options):
+            if options is None:
+                return (lazyload('*'),)
+            if type(options) is tuple:
+                return options
+            return (options,)
+        query = self._elements_query
+        query = query.options(*_get_options(options))
+        query = query.order_by(UploadElement.id.asc())
+        return query.count_paginate(per_page=per_page, page=page)
+
+
     @memoized_property
     def illust_urls(self):
         self._populate_illust_urls()
@@ -137,6 +150,10 @@ class Upload(JsonModel):
         return super().json_attributes + ['image_urls', 'post_ids', 'complete_post_ids', 'duplicate_post_ids', 'errors']
 
     # ## Private
+
+    @property
+    def _elements_query(self):
+        return UploadElement.query.filter_by(upload_id=self.id)
 
     @memoized_property
     def _source(self):
