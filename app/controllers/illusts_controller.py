@@ -21,7 +21,7 @@ from ..logical.database.illust_db import create_illust_from_parameters, update_i
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
     hide_input, int_or_blank, nullify_blanks, set_default, check_param_requirements, parse_array_parameter,\
-    parse_bool_parameter
+    parse_bool_parameter, get_page, get_limit
 
 
 # ## GLOBAL VARIABLES
@@ -56,8 +56,11 @@ SHOW_HTML_OPTIONS = (
     selectinload(Illust.artist).selectinload(Artist.boorus),
     selectinload(Illust.notations),
     selectinload(Illust._pools).selectinload(PoolIllust.pool),
-    selectinload(Illust.urls).selectinload(IllustUrl.post).lazyload('*'),
     selectin_polymorphic(Illust.site_data, [TwitterData, PixivData]),
+)
+
+SHOW_URLS_HTML_OPTIONS = (
+    selectinload(IllustUrl.post).lazyload('*'),
 )
 
 INDEX_HTML_OPTIONS = (
@@ -349,7 +352,10 @@ def show_json(id):
 @bp.route('/illusts/<int:id>', methods=['GET'])
 def show_html(id):
     illust = get_or_abort(Illust, id, options=SHOW_HTML_OPTIONS)
-    return render_template("illusts/show.html", illust=illust)
+    illust_urls = illust.urls_paginate(page=get_page(request),
+                                       per_page=get_limit(request, max_limit=8),
+                                       options=SHOW_URLS_HTML_OPTIONS)
+    return render_template("illusts/show.html", illust=illust, illust_urls=illust_urls)
 
 
 # ###### INDEX

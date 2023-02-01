@@ -85,9 +85,17 @@ class Illust(JsonModel):
 
     # ## Instance properties
 
-    @memoized_property
-    def ordered_urls(self):
-        return sorted(self.urls, key=lambda x: x.order)
+    def urls_paginate(self, page=None, per_page=None, options=None):
+        def _get_options(options):
+            if options is None:
+                return (lazyload('*'),)
+            if type(options) is tuple:
+                return options
+            return (options,)
+        query = self._urls_query
+        query = query.options(*_get_options(options))
+        query = query.order_by(IllustUrl.order)
+        return query.count_paginate(per_page=per_page, page=page)
 
     @memoized_property
     def posts(self):
@@ -134,6 +142,10 @@ class Illust(JsonModel):
         return super().json_attributes + ['urls', 'tags', 'commentaries', 'site_data']
 
     # ## Private
+
+    @property
+    def _urls_query(self):
+        return IllustUrl.query.filter_by(illust_id=self.id)
 
     __table_args__ = (
         DB.UniqueConstraint('site_illust_id', 'site_id'),
