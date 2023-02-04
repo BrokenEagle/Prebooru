@@ -5,6 +5,9 @@ __pycache__/
 *.env
 
 config/local.py
+migrations/enum_versions/local/
+app/logical/enums/local.py
+
 db/
 temp/
 junk/
