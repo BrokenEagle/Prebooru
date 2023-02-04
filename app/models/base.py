@@ -213,7 +213,7 @@ class IntEnum(DB.TypeDecorator):
             return value.id
         if value is None and self._nullable:
             return None
-        msg = f"Illegal value {repr(value)} to bind for enum {self._enumname} to {self._tblname}:{self._colname}."
+        msg = f"Illegal value {repr(value)} to bind for enum {self._enumname} to [{self._tblname}:{self._colname}]."
         raise ValueError(msg)
 
     def process_result_value(self, value, dialect):
@@ -221,7 +221,7 @@ class IntEnum(DB.TypeDecorator):
             return self._enumtype(value)
         if value is None and self._nullable:
             return None
-        msg = f"Illegal value {repr(value)} found in DB for enum {self._enumname} on {self._tblname}:{self._colname}."
+        msg = f"Illegal value {repr(value)} found in DB for enum {self._enumname} on [{self._tblname}:{self._colname}]."
         raise ValueError(msg)
 
 
