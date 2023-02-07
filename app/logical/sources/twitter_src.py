@@ -12,6 +12,7 @@ import datetime
 
 # ## EXTERNAL IMPORTS
 import requests
+import httpx
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN
@@ -174,6 +175,11 @@ https?://t\.co                         # Hostname
 REQUEST_METHODS = {
     'GET': requests.get,
     'POST': requests.post
+}
+
+XREQUEST_METHODS = {
+    'GET': httpx.get,
+    'POST': httpx.post
 }
 
 TWITTER_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
@@ -742,13 +748,14 @@ def check_request_wait(wait):
 
 
 @check_guest_auth
-def twitter_request(url, method='GET', wait=True):
+def twitter_request(url, method='GET', wait=True, use_httpx=False):
     check_request_wait(wait)
     reauthenticated = False
+    rq_methods = REQUEST_METHODS if not use_httpx else XREQUEST_METHODS
     for i in range(3):
         try:
-            response = REQUEST_METHODS[method](url, headers=TWITTER_HEADERS, timeout=10)
-        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
+            response = rq_methods[method](url, headers=TWITTER_HEADERS, timeout=10)
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError, httpx.ConnectTimeout) as e:
             print_warning("Pausing for network timeout...")
             error = e
             time.sleep(5)
@@ -870,7 +877,7 @@ def get_search_page(query, cursor=None):
     if cursor is not None:
         params['cursor'] = cursor
     url_params = urllib.parse.urlencode(params)
-    return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params)
+    return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params, use_httpx=True)
 
 
 def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
