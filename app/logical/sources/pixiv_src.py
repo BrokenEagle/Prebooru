@@ -439,6 +439,7 @@ def get_artist_parameters_from_pxuser(pxuser, artwork):
         'site_created': None,
         'current_site_account': artwork['userAccount'] if artwork is not None else None,
         'active': True,
+        'primary': True,
         'names': [pxuser['name']],
         'site_accounts': [artwork['userAccount']] if artwork is not None else [],
         'profiles': fixup_crlf(pxuser['comment']) or None,

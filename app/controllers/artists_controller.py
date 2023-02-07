@@ -128,6 +128,12 @@ FORM_CONFIG = {
             'default': True,
         },
     },
+    'primary': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': True,
+        },
+    },
 }
 
 
@@ -155,6 +161,7 @@ def convert_data_params(dataparams):
     params['names'] = parse_array_parameter(dataparams, 'names', 'name_string', r'\r?\n')
     params['webpages'] = parse_array_parameter(dataparams, 'webpages', 'webpage_string', r'\r?\n')
     params['active'] = parse_bool_parameter(dataparams, 'active')
+    params['primary'] = parse_bool_parameter(dataparams, 'primary')
     params = nullify_blanks(params)
     return params
 
@@ -162,6 +169,7 @@ def convert_data_params(dataparams):
 def convert_create_params(dataparams):
     createparams = convert_data_params(dataparams)
     set_default(createparams, 'active', True)
+    set_default(createparams, 'primary', True)
     createparams['profiles'] = [dataparams['profile']]
     createparams['profiles'] = [dataparams['profile']] if len(dataparams['profile']) else None
     return createparams
