@@ -17,7 +17,12 @@
                             {% set li_class = 'artist-deleted' %}
                         {% endif %}
                         <li class="{{ li_class }}">
-                            <span class="item-heading">{{ artist.show_link }} {{ helpers.artist.post_search_link(artist) }}</span>
+                            <span class="item-heading">
+                                {{ artist.show_link }} {{ helpers.artist.post_search_link(artist) }}
+                                {% if not artist.primary %}
+                                    <span style="color: #888; font-size: 0.8em;">(nonprimary)</span>
+                                {% endif %}
+                            </span>
                             <ul>
                                 <li>
                                     <strong>{{ helpers.artist.site_artist_link(artist) }}</strong>

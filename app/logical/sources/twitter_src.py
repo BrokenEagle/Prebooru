@@ -1128,6 +1128,7 @@ def get_artist_parameters_from_twuser(twuser):
         'site_created': process_twitter_timestring(twuser['created_at']),
         'current_site_account': twuser['screen_name'],
         'active': True,
+        'primary': True,
         'names': [twuser['name']],
         'site_accounts': [twuser['screen_name']],
         'profiles': get_twuser_profile(twuser) or None,

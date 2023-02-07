@@ -54,6 +54,7 @@ class Artist(JsonModel):
     current_site_account = DB.Column(DB.String(255), nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     active = DB.Column(DB.Boolean, nullable=False)
+    primary = DB.Column(DB.Boolean, nullable=False)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
