@@ -2,141 +2,83 @@
 
 """For logic which is to be done on a schedule or asynchronously."""
 
-# WORKER CONFIG
+# ## PACKAGE IMPORTS
+from config import EXPUNGE_CACHE_RECORDS, EXPUNGE_ARCHIVE_RECORDS, GENERATE_MISSING_IMAGE_HASHES,\
+    CALCULATE_SIMILARITY_MATCHES, CHECK_ALL_BOORUS, CHECK_ALL_ARTISTS_FOR_BOORUS,\
+    CHECK_ALL_POSTS_FOR_DANBOORU_ID, CHECK_PENDING_SUBSCRIPTIONS, CHECK_PENDING_DOWNLOADS,\
+    UNLINK_EXPIRED_SUBSCRIPTION_ELEMENTS, DELETE_EXPIRED_SUBSCRIPTION_ELEMENTS,\
+    ARCHIVE_EXPIRED_SUBSCRIPTION_ELEMENTS, RECALCULATE_POOL_POSITIONS, RELOCATE_OLD_POSTS,\
+    DELETE_ORPHAN_IMAGES, VACUUM_ANALYZE_DATABASE
+
+
+# ## GLOBAL VARIABLES
+
+# #### WORKER CONFIG
 
 WORKER_LOCKS = ['process_subscription_manual']
 
-# SCHEDULE_CONFIG
+# #### SCHEDULE_CONFIG
+
+JOB_ITEMS = [{
+    'name': 'expunge_cache_records',
+    'config': EXPUNGE_CACHE_RECORDS,
+    },{
+    'name': 'expunge_archive_records',
+    'config': EXPUNGE_ARCHIVE_RECORDS,
+    },{
+    'name': 'generate_missing_image_hashes',
+    'config': GENERATE_MISSING_IMAGE_HASHES,
+    },{
+    'name': 'calculate_similarity_matches',
+    'config': CALCULATE_SIMILARITY_MATCHES,
+    },{
+    'name': 'check_all_boorus',
+    'config': CHECK_ALL_BOORUS,
+    },{
+    'name': 'check_all_artists_for_boorus',
+    'config': CHECK_ALL_ARTISTS_FOR_BOORUS,
+    },{
+    'name': 'check_all_posts_for_danbooru_id',
+    'config': CHECK_ALL_POSTS_FOR_DANBOORU_ID,
+    },{
+    'name': 'check_pending_subscriptions',
+    'config': CHECK_PENDING_SUBSCRIPTIONS,
+    },{
+    'name': 'check_pending_downloads',
+    'config': CHECK_PENDING_DOWNLOADS,
+    },{
+    'name': 'unlink_expired_subscription_elements',
+    'config': UNLINK_EXPIRED_SUBSCRIPTION_ELEMENTS,
+    },{
+    'name': 'delete_expired_subscription_elements',
+    'config': DELETE_EXPIRED_SUBSCRIPTION_ELEMENTS,
+    },{
+    'name': 'archive_expired_subscription_elements',
+    'config': ARCHIVE_EXPIRED_SUBSCRIPTION_ELEMENTS,
+    },{
+    'name': 'recalculate_pool_positions',
+    'config': RECALCULATE_POOL_POSITIONS,
+    },{
+    'name': 'relocate_old_posts',
+    'config': RELOCATE_OLD_POSTS,
+    },{
+    'name': 'delete_orphan_images',
+    'config': DELETE_ORPHAN_IMAGES,
+    },{
+    'name': 'vacuum_analyze_database',
+    'config': VACUUM_ANALYZE_DATABASE,
+}]
 
 JOB_CONFIG = {
-    'expunge_cache_records': {
+    item['name']: {
         'config': {
-            'id': 'expunge_cache_records',
-            'hours': 8,
-            'jitter': 3600,
+            'id': item['name'],
+            item['config'][0]: item['config'][1],
+            'jitter': item['config'][2],
         },
-        'leeway': 60,
-    },
-    'expunge_archive_records': {
-        'config': {
-            'id': 'expunge_archive_records',
-            'hours': 12,
-            'jitter': 3600,
-        },
-        'leeway': 180,
-    },
-    'generate_missing_image_hashes': {
-        'config': {
-            'id': 'generate_missing_image_hashes',
-            'days': 2,
-            'jitter': 3600,
-        },
-        'leeway': 180,
-    },
-    'calculate_similarity_matches': {
-        'config': {
-            'id': 'calculate_similarity_matches',
-            'days': 1,
-            'jitter': 3600,
-        },
-        'leeway': 180,
-    },
-    'check_all_boorus': {
-        'config': {
-            'id': 'check_all_boorus',
-            'days': 1,
-            'jitter': 3600,
-        },
-        'leeway': 300,
-    },
-    'check_all_artists_for_boorus': {
-        'config': {
-            'id': 'check_all_artists_for_boorus',
-            'days': 1,
-            'jitter': 3600,
-        },
-        'leeway': 300,
-    },
-    'check_all_posts_for_danbooru_id': {
-        'config': {
-            'id': 'check_all_posts_for_danbooru_id',
-            'days': 1,
-            'jitter': 3600,
-        },
-        'leeway': 600,
-    },
-    'check_pending_subscriptions': {
-        'config': {
-            'id': 'check_pending_subscriptions',
-            'hours': 1,
-            'jitter': 300,
-        },
-        'leeway': 180,
-    },
-    'check_pending_downloads': {
-        'config': {
-            'id': 'check_pending_downloads',
-            'hours': 1,
-            'jitter': 300,
-        },
-        'leeway': 180,
-    },
-    'unlink_expired_subscription_elements': {
-        'config': {
-            'id': 'unlink_expired_subscription_elements',
-            'hours': 8,
-            'jitter': 1200,
-        },
-        'leeway': 600,
-    },
-    'delete_expired_subscription_elements': {
-        'config': {
-            'id': 'delete_expired_subscription_elements',
-            'hours': 2,
-            'jitter': 1200,
-        },
-        'leeway': 600,
-    },
-    'archive_expired_subscription_elements': {
-        'config': {
-            'id': 'archive_expired_subscription_elements',
-            'hours': 4,
-            'jitter': 1200,
-        },
-        'leeway': 600,
-    },
-    'recalculate_pool_positions': {
-        'config': {
-            'id': 'recalculate_pool_positions',
-            'days': 1,
-            'jitter': 3600,
-        },
-        'leeway': 600,
-    },
-    'relocate_old_posts': {
-        'config': {
-            'id': 'relocate_old_posts',
-            'hours': 4,
-            'jitter': 1200,
-        },
-        'leeway': 600,
-    },
-    'delete_orphan_images': {
-        'config': {
-            'id': 'delete_orphan_images',
-            'weeks': 1,
-            'jitter': 3600,
-        },
-        'leeway': 300,
-    },
-    'vacuum_analyze_database': {
-        'config': {
-            'id': 'vacuum_analyze_database',
-            'weeks': 1,
-            'jitter': 900,
-        },
-        'leeway': 60,
-    },
+        'leeway': item['config'][3],
+    }
+    for item in JOB_ITEMS
 }
 
 # ## JOB DB VARIABLES
