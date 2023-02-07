@@ -4,7 +4,8 @@
 from flask import url_for, request, Markup
 
 # ## PACKAGE IMPORTS
-from config import MAXIMUM_PROCESS_SUBSCRIPTIONS, DOWNLOAD_POSTS_PER_PAGE, DOWNLOAD_POSTS_PAGE_LIMIT
+from config import MAXIMUM_PROCESS_SUBSCRIPTIONS, DOWNLOAD_POSTS_PER_PAGE, DOWNLOAD_POSTS_PAGE_LIMIT,\
+    UNLINK_ELEMENTS_PER_PAGE, DELETE_ELEMENTS_PER_PAGE, ARCHIVE_ELEMENTS_PER_PAGE, EXPIRE_ELEMENTS_PAGE_LIMIT
 from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
@@ -18,6 +19,14 @@ from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
 from .base_helper import general_link, url_for_with_params
 
+
+# ## GLOBAL VARIABLES
+
+ELEMENTS_PER_BATCH = {
+    'unlink': UNLINK_ELEMENTS_PER_PAGE * EXPIRE_ELEMENTS_PAGE_LIMIT,
+    'delete': DELETE_ELEMENTS_PER_PAGE * EXPIRE_ELEMENTS_PAGE_LIMIT,
+    'archive': ARCHIVE_ELEMENTS_PER_PAGE * EXPIRE_ELEMENTS_PAGE_LIMIT,
+}
 
 # ## FUNCTIONS
 
@@ -131,8 +140,10 @@ def download_iterator():
 def expires_iterator():
     for key in ['unlink', 'delete', 'archive']:
         hours = _hours_from_config(JOB_CONFIG[f'{key}_expired_subscription_elements']['config'])
+        per_batch = ELEMENTS_PER_BATCH[key]
         pending = expired_subscription_elements(key).get_count()
-        yield key, hours, pending
+        completion = (pending / per_batch) * hours
+        yield key, hours, per_batch, pending, completion
 
 
 # ###### Other functions

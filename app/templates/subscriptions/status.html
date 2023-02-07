@@ -55,12 +55,14 @@
         <div id="subscription-expirations">
             <div class="heading">Expirations</div>
             <div id="subscription-expirations-section">
-                {% for task, hours, pending in helpers.subscription.expires_iterator() %}
+                {% for task, hours, per_batch, pending, completion in helpers.subscription.expires_iterator() %}
                     <div>
                         <div class="heading">{{ task | title }}:</div>
                         <ul>
                             <li>Interval: {{ hours }} hours</li>
+                            <li>Per batch: {{ per_batch }} elements</li>
                             <li>Pending: {{ pending }} elements</li>
+                            <li>Completion: {{ completion }} hours</li>
                         </ul>
                     </div>
                 {% endfor %}
