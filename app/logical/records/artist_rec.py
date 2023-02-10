@@ -146,22 +146,8 @@ def relink_archived_artist(data, artist=None):
 # #### Private functions
 
 def _archive_artist_data(artist, retdata):
-    data = {
-        'body': artist.archive_dict(),
-        'scalars': {
-            'profiles': list(artist.profiles),
-            'names': list(artist.names),
-            'site_accounts': list(artist.site_accounts),
-        },
-        'relations': {
-            'webpages': [webpage.archive_dict() for webpage in artist.webpages],
-            'notations': [notation.archive_dict() for notation in artist.notations],
-        },
-        'links': {
-            'boorus': [booru.danbooru_id for booru in artist.boorus],
-        },
-    }
-    data_key = '%d-%d' % (artist.site, artist.site_artist_id)
+    data = artist.archive()
+    data_key = artist.key
     archive = get_archive('artist', data_key)
     try:
         if archive is None:

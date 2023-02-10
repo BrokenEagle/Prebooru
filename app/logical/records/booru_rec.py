@@ -107,15 +107,8 @@ def recreate_archived_booru(data):
 # #### Private functions
 
 def _archive_booru_data(booru, retdata):
-    data = {
-        'body': booru.archive_dict(),
-        'scalars': {
-            'names': list(booru.names),
-        },
-        'relations': {},
-        'links': {},
-    }
-    data_key = '%d' % (booru.danbooru_id)
+    data = booru.archive()
+    data_key = booru.key
     archive = get_archive('booru', data_key)
     try:
         if archive is None:

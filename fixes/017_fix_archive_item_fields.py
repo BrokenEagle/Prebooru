@@ -18,12 +18,13 @@ ARCHIVEKEY_RG = re.compile(r'(\d+)-(\d+)')
 # ## FUNCTIONS
 
 def initialize():
-    global SESSION, Archive, post_type, site_descriptor, get_directory_listing, put_get_json
+    global SESSION, Archive, ArchiveType, post_type, site_descriptor, get_directory_listing, put_get_json, SOURCES
     sys.path.append(os.path.abspath('.'))
     from utility.file import get_directory_listing, put_get_json
     from app import SESSION
     from app.models import Archive
     from app.enum_imports import post_type, site_descriptor
+    from app.logical.sources import SOURCES
 
 
 def get_migrations():
@@ -139,18 +140,43 @@ def update_archive_enums():
         page = page.next()
 
 
+def fix_post_archives():
+    query = Archive.query.enum_join(Archive.type_enum)
+    query = query.filter(Archive.type_filter('name', '__eq__', 'post'))
+    query = query.order_by(Archive.id.asc())
+    page = query.count_paginate(per_page=100)
+    while True:
+        print(f"fix_post_archives: {page.first} - {page.last} / Total({page.count})")
+        for arch in page.items:
+            dirty = False
+            for url_data in arch.data['links']['illusts']:
+                for source in SOURCES:
+                    if source.is_partial_media_url(url_data['url']):
+                        domain = source.get_domain_from_partial_url(url_data['url'])
+                        url_data.pop('site', None)
+                        url_data.pop('site_id', None)
+                        url_data['domain'] = domain
+                        dirty = True
+                        break
+            if dirty:
+                attributes.flag_modified(arch, 'data')
+                SESSION.flush()
+        SESSION.commit()
+        if not page.has_next:
+            break
+        page = page.next()
+
+
 def main(args):
     if args.type == 'post':
-        update_post_archives()
-    elif args.type == 'enum':
-        update_archive_enums()
+        fix_post_archives()
 
 
 # ##EXECUTION START
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Fix script to rewrite all archive fields to their current representation.")
-    parser.add_argument('type', choices=['post', 'enum'], help="Choose item to update.")
+    parser.add_argument('type', choices=['post', 'illust', 'artist'], help="Choose item to update.")
     args = parser.parse_args()
 
     initialize()

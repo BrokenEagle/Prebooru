@@ -6,6 +6,7 @@ import enum
 import json
 import zlib
 import datetime
+from collections.abc import Iterable
 
 # ## EXTERNAL IMPORTS
 from flask import url_for, Markup
@@ -33,7 +34,10 @@ ISODATETIME_RG = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
 # #### JSON functions
 
 def json_serialize(record, attr):
-    value = getattr(record, attr)
+    if isinstance(attr, str):
+        value = getattr(record, attr)
+    elif callable(attr):
+        value = attr(record)
     if isinstance(value, datetime.datetime):
         value = value.isoformat()
     return value
@@ -300,8 +304,63 @@ class JsonModel(DB.Model):
     def column_dict(self):
         return {k: getattr(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
 
+    def archive(self):
+        return {
+            'body': self.archive_dict(),
+            'scalars': self.archive_scalar_dict(),
+            'relations': self.archive_relation_dict(),
+            'links': self.archive_link_dict(),
+        }
+
     def archive_dict(self):
-        return {k: json_serialize(self, k) for k in self.archive_columns if hasattr(self, k)}
+        attributes = self.archive_columns - self.archive_excludes | self.archive_includes
+        data = {}
+        for m in attributes:
+            if isinstance(m, str):
+                key = attr = m
+            elif isinstance(m, tuple):
+                key, attr = m
+            if not callable(attr) and not hasattr(self, attr):
+                continue
+            data[key] = json_serialize(self, attr)
+        return _sorted_dict(data)
+
+    def archive_scalar_dict(self):
+        data = {}
+        for item in self.archive_scalars:
+            if isinstance(item, str):
+                key, rel = item, item
+            elif isinstance(item, tuple):
+                key, rel = item
+            data[key] = list(getattr(self, rel))
+        return _sorted_dict(data)
+
+    def archive_relation_dict(self):
+        data = {}
+        for attr in self.archive_relations:
+            if isinstance(attr, str):
+                key, rel = attr, attr
+            elif isinstance(attr, tuple):
+                key, rel = attr
+            rel_value = getattr(self, rel)
+            if isinstance(rel_value, Iterable):
+                data[key] = [item.archive_dict() for item in rel_value]
+            else:
+                data[key] = rel_value.archive_dict()
+        return _sorted_dict(data)
+
+    def archive_link_dict(self):
+        data = {}
+        for item in self.archive_links:
+            if callable(item[1]):
+                data[item[0]] = item[1](self)
+                continue
+            if len(item) == 3:
+                key, rel, attr = item
+            elif len(item) == 2:
+                key, rel, attr = item[0], item[0], item[1]
+            data[key] = [json_serialize(item, attr) for item in getattr(self, rel)]
+        return _sorted_dict(data)
 
     def basic_json(self, id_enum=False):
         return self._json(self.basic_attributes, id_enum)
@@ -372,7 +431,13 @@ class JsonModel(DB.Model):
 
     @classproperty(cached=True)
     def archive_columns(cls):
-        return [k for k in cls.base_columns if k != 'id']
+        return {k for k in cls.base_columns if k != 'id'}
+
+    archive_excludes = set()
+    archive_includes = set()
+    archive_scalars = []
+    archive_relations = []
+    archive_links = []
 
     @classproperty(cached=True)
     def basic_attributes(cls):
@@ -553,3 +618,7 @@ def _enum_filter(enm, rel, relattr, op, *args):
     else:
         arg = args[0]
     return enum_op(arg, *args[1:])
+
+
+def _sorted_dict(data):
+    return dict(sorted(data.items(), key=lambda x: x[0]))

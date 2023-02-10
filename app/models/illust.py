@@ -2,6 +2,7 @@
 
 # ## EXTERNAL LINKS
 from sqlalchemy.util import memoized_property
+from sqlalchemy.orm import lazyload
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
@@ -97,6 +98,10 @@ class Illust(JsonModel):
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)
 
+    @property
+    def active_urls(self):
+        return [url for url in self.urls if url.post is not None]
+
     @memoized_property
     def posts(self):
         return [post for post in self._posts if post is not None]
@@ -123,6 +128,10 @@ class Illust(JsonModel):
     def site_domain(self):
         return self.site.domain
 
+    @property
+    def key(self):
+        return '%s-%d' % (self.site.name, self.site_illust_id)
+
     def delete(self):
         pools = [pool for pool in self.pools]
         DB.session.delete(self)
@@ -132,10 +141,14 @@ class Illust(JsonModel):
                 pool._elements.reorder()
             DB.session.commit()
 
-    def archive_dict(self):
-        return {k: v for (k, v) in super().archive_dict().items() if k not in ['site', 'site_id']}
-
     # ## Class properties
+
+    archive_excludes = {'site', 'site_id'}
+    archive_includes = {('site', lambda x: x.site.name)}
+    archive_scalars = ['commentaries', 'tags']
+    archive_relations = ['urls', ('data', 'site_data'), 'notations']
+    archive_links = [('artist', lambda x: x.artist.site_artist_id),
+                     ('posts', 'active_urls', lambda x: {'md5': x.post.md5, 'key': x.key})]
 
     @classproperty(cached=True)
     def json_attributes(cls):

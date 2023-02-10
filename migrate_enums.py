@@ -243,7 +243,6 @@ def apply_current_enums(config, model_enums):
 
 
 def reorder_local_enums_field_classes_single(config, model_enums):
-    model = config['model']
     enum = config['enum']
     table_info = config['tables'][0]
     table = table_info['table']
@@ -258,7 +257,7 @@ def reorder_local_enums_field_classes_single(config, model_enums):
 def reorder_local_enum_field_class_multiple(config, model_enums):
     model = config['model']
     enum = config['enum']
-    unique_column = 'unique_' + config['model']._model_name()
+    unique_column = 'unique_' + model._model_name()
     unions = []
     for table_info in config['tables']:
         table = table_info['table']
@@ -277,7 +276,7 @@ def reorder_local_enum_field_class_multiple(config, model_enums):
 def migrate_tables(next_migration, prev_migration):
     for config in ENUMS_CONFIG:
         model = config['model']
-        model_name = config['model']._model_name()
+        model_name = model._model_name()
         if model_name not in next_migration['tables']:
             print("Skipping enum:", model_name)
         print("Converting enum:", model_name)
@@ -449,7 +448,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Fix script to load/modify enum and dependant tables.")
-    parser.add_argument('action', choices=['render', 'generate', 'upgrade', 'downgrade'], help="Choose which action to perform.")
+    parser.add_argument('action', choices=['render', 'generate', 'upgrade', 'downgrade'],
+                        help="Choose which action to perform.")
     parser.add_argument('--local', required=False, action="store_true", default=False)
     parser.add_argument('--actual', required=False, action="store_true", default=False)
     args = parser.parse_args()

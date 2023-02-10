@@ -35,7 +35,9 @@ class Error(JsonModel):
 
     __table_args__ = (
         DB.CheckConstraint(
-            "((upload_element_id IS NULL) + (subscription_id IS NULL) + (subscription_element_id IS NULL) + (upload_id IS NULL) + (upload_element_id IS NULL)) in (4, 5)",
+            "((upload_element_id IS NULL) + (subscription_id IS NULL) + "
+            + "(subscription_element_id IS NULL) + (upload_id IS NULL) + "
+            + "(upload_element_id IS NULL)) in (4, 5)",
             name="attachments"),
     )
 

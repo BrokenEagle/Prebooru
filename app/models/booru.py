@@ -59,6 +59,10 @@ class Booru(JsonModel):
 
     # ## Instance properties
 
+    @property
+    def other_names(self):
+        return [name for name in self.names if name != self.current_name]
+
     @memoized_property
     def recent_posts(self):
         q = self._post_query
@@ -83,6 +87,10 @@ class Booru(JsonModel):
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)\
                    .join(Booru, Artist.boorus).filter(Booru.id == self.id)
 
+    @property
+    def key(self):
+        return '%d' % self.danbooru_id
+
     def delete(self):
         self._names.clear()
         self.artists.clear()
@@ -90,6 +98,10 @@ class Booru(JsonModel):
         DB.session.commit()
 
     # ## Class properties
+
+    archive_scalars = [('names', 'other_names')]
+    archive_relations = ['notations']
+    archive_links = [('artists', 'key')]
 
     @classproperty(cached=True)
     def json_attributes(cls):

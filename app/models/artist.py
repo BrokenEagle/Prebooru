@@ -82,6 +82,10 @@ class Artist(JsonModel):
 
     # ## Instance properties
 
+    @property
+    def other_site_accounts(self):
+        return [account for account in self.site_accounts if account != self.current_site_account]
+
     @memoized_property
     def recent_posts(self):
         q = self._post_query
@@ -109,6 +113,10 @@ class Artist(JsonModel):
     def booru_search_url(self):
         return self.site.source.artist_booru_search_url(self)
 
+    @property
+    def key(self):
+        return '%s-%d' % (self.site.name, self.site_artist_id)
+
     def delete(self):
         self._names.clear()
         self._profiles.clear()
@@ -116,10 +124,13 @@ class Artist(JsonModel):
         DB.session.delete(self)
         DB.session.commit()
 
-    def archive_dict(self):
-        return {k: v for (k, v) in super().archive_dict().items() if k not in ['site', 'site_id']}
-
     # ## Class properties
+
+    archive_excludes = {'site', 'site_id', 'current_site_account'}
+    archive_includes = {('site', lambda x: x.site.name), ('current_account', 'current_site_account')}
+    archive_scalars = ['profiles', 'names', ('accounts', 'other_site_accounts')]
+    archive_relations = ['notations']
+    archive_links = [('boorus', 'danbooru_id')]
 
     @classproperty(cached=True)
     def json_attributes(cls):

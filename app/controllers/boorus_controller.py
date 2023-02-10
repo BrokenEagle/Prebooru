@@ -4,7 +4,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField, StringField, BooleanField
-from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
 from ..models import Booru, Artist

@@ -278,22 +278,12 @@ def relocate_old_posts_to_alternate(manual):
 # #### Private functions
 
 def _archive_post_data(post, retdata, expires):
-    data = {
-        'body': post.archive_dict(),
-        'scalars': {},
-        'relations': {
-            'notations': [notation.archive_dict() for notation in post.notations],
-            'errors': [error.archive_dict() for error in post.errors],
-        },
-        'links': {
-            'illusts': [{'url': illust_url.url, 'site': illust_url.site}
-                        for illust_url in post.illust_urls],
-        },
-    }
-    archive = get_archive('post', post.md5)
+    data = post.archive()
+    data_key = post.key
+    archive = get_archive('post', data_key)
     try:
         if archive is None:
-            archive = create_archive('post', post.md5, data, expires)
+            archive = create_archive('post', data_key, data, expires)
         else:
             update_archive(archive, data, expires)
     except Exception as e:

@@ -10,7 +10,7 @@ from utility.time import get_current_time
 from ... import SESSION
 from ...enum_imports import upload_status
 from ...models import Upload, UploadUrl
-from .base_db import update_column_attributes, update_relationship_collections
+from .base_db import update_column_attributes
 
 
 # ## GLOBAL VARIABLES

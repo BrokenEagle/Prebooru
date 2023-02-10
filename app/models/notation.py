@@ -43,6 +43,10 @@ class Notation(JsonModel):
     def append_type(self):
         return self.append_item.table_name if self.append_item is not None else None
 
+    # ## Class properties
+
+    archive_excludes = {'no_pool'}
+
     # ## Private
 
     @property

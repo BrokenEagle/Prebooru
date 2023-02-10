@@ -103,27 +103,8 @@ def relink_archived_illust(data, illust=None):
 # #### Private functions
 
 def _archive_illust_data(illust, retdata):
-    data = {
-        'body': illust.archive_dict(),
-        'scalars': {
-            'commentaries': list(illust.commentaries),
-            'tags': list(illust.tags),
-        },
-        'relations': {
-            'illust_urls': [illust_url.archive_dict() for illust_url in illust.urls],
-            'site_data': illust.site_data.archive_dict() if illust.site_data is not None else None,
-            'notations': [notation.archive_dict() for notation in illust.notations],
-        },
-        'links': {
-            'artist': {
-                'site': illust.artist.site,
-                'site_artist_id': illust.artist.site_artist_id,
-            },
-            'posts': [{'md5': illust_url.post.md5, 'url': illust_url.url, 'site': illust_url.site}
-                      for illust_url in illust.urls if illust_url.post is not None],
-        },
-    }
-    data_key = '%d-%d' % (illust.site, illust.site_illust_id)
+    data = illust.archive()
+    data_key = illust.key
     archive = get_archive('illust', data_key)
     try:
         if archive is None:

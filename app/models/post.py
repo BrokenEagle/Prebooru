@@ -210,6 +210,10 @@ class Post(JsonModel):
                                SimilarityMatch.reverse_id.desc())
         return query.limit(10).all()
 
+    @property
+    def key(self):
+        return self.md5
+
     def delete_pool(self, pool_id):
         pool_element_delete(pool_id, self)
 
@@ -222,12 +226,12 @@ class Post(JsonModel):
                 pool._elements.reorder()
             DB.session.commit()
 
-    def archive_dict(self):
-        data = {k: v for (k, v) in super().archive_dict().items() if k not in ['type', 'type_id']}
-        data['type'] = self.type.name
-        return data
-
     # ## Class properties
+
+    archive_excludes = {'type', 'type_id', 'simcheck', 'alternate'}
+    archive_includes = {('type', lambda x: x.type.name)}
+    archive_relations = ['notations', 'errors']
+    archive_links = [('illusts', 'illust_urls', 'full_url')]
 
     @classproperty(cached=True)
     def json_attributes(cls):
