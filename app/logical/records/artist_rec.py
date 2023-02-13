@@ -14,7 +14,8 @@ from ..database.artist_db import create_artist_from_parameters, update_artist_fr
     recreate_artist_relations
 from ..database.booru_db import get_booru, get_boorus, create_booru_from_parameters, booru_append_artist
 from ..database.notation_db import create_notation_from_json
-from ..database.archive_db import get_archive, create_archive, update_archive
+from .base_rec import delete_data
+from .archive_rec import archive_record
 
 
 # ## FUNCTIONS
@@ -99,10 +100,12 @@ def update_artist_from_source(artist):
 
 def archive_artist_for_deletion(artist):
     retdata = {'error': False}
-    retdata = _archive_artist_data(artist, retdata)
-    if retdata['error']:
-        return retdata
-    return _delete_artist_data(artist, retdata)
+    archive = archive_record(artist, 30, retdata)
+    if archive is None:
+        msg = f"Error archiving data [{record.shortlink}]: {repr(e)}"
+        print_error(msg)
+        return set_error(retdata, msg)
+    return delete_data(artist, delete_artist, retdata)
 
 
 def recreate_archived_artist(data):
@@ -131,6 +134,28 @@ def recreate_archived_artist(data):
     return retdata
 
 
+def recreate_archived_artist2(data):
+    def webpage_params(data, artist, updateparams):
+        updateparams['webpages'] = [('' if webpage['active'] else '-') + webpage['url']
+                                    for webpage in data['relations']['webpages']]
+
+    def notation_params(data, artist, update_params):
+        for notation_data in data:
+            notation = create_notation_from_json(notation_data)
+            notation.artist_id = artist.id
+            SESSION.flush()
+
+    retdata, artist = recreate_record(data, get_site_artist, create_artist_from_json,
+                                      ['site_artist_id', 'site'], {'error': False})
+    if retdata['error']:
+        return retdata
+    recreate_relations(data, artist, recreate_artist_relations,
+                       {'webpages': webpage_params, 'notations': notation_params})
+    relink_relations(data, artist, {'boorus': get_booru})
+    retdata['item'] = artist.to_json()
+    return retdata
+
+
 def relink_archived_artist(data, artist=None):
     if artist is None:
         artist = get_site_artist(data['body']['site_artist_id'], data['body']['site_id'])
@@ -139,30 +164,5 @@ def relink_archived_artist(data, artist=None):
     for danbooru_id in data['links']['boorus']:
         booru = get_booru(danbooru_id)
         if booru is None:
-            return
+            continue
         artist_append_booru(artist, booru)
-
-
-# #### Private functions
-
-def _archive_artist_data(artist, retdata):
-    data = artist.archive()
-    data_key = artist.key
-    archive = get_archive('artist', data_key)
-    try:
-        if archive is None:
-            create_archive('artist', data_key, data, 30)
-        else:
-            update_archive(archive, data, 30)
-    except Exception as e:
-        return set_error(retdata, "Error archiving data: %s" % str(e))
-    return retdata
-
-
-def _delete_artist_data(artist, retdata):
-    try:
-        delete_artist(artist)
-    except Exception as e:
-        SESSION.rollback()
-        return set_error(retdata, "Error deleting artist: %s" % str(e))
-    return retdata

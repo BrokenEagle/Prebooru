@@ -228,9 +228,14 @@ class Post(JsonModel):
 
     # ## Class properties
 
+    @classmethod
+    def find_by_key(cls, key):
+        return cls.query.filter(cls.md5 == key)\
+                        .one_or_none()
+
     archive_excludes = {'type', 'type_id', 'simcheck', 'alternate'}
     archive_includes = {('type', lambda x: x.type.name)}
-    archive_relations = ['notations', 'errors']
+    archive_attachments = ['notations', 'errors']
     archive_links = [('illusts', 'illust_urls', 'full_url')]
 
     @classproperty(cached=True)

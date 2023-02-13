@@ -13,8 +13,9 @@ from ..database.illust_db import create_illust_from_parameters, update_illust_fr
 from ..database.illust_url_db import get_illust_url_by_url, set_url_site
 from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.notation_db import create_notation_from_json
-from ..database.archive_db import get_archive, create_archive, update_archive
+from .base_rec import delete_data
 from .artist_rec import get_or_create_artist_from_source
+from .archive_rec import archive_record
 
 
 # ## FUNCTIONS
@@ -48,10 +49,10 @@ def update_illust_from_source(illust):
 
 def archive_illust_for_deletion(illust):
     retdata = {'error': False}
-    retdata = _archive_illust_data(illust, retdata)
+    retdata, _archive = archive_record(illust, 30, retdata)
     if retdata['error']:
         return retdata
-    return _delete_illust_data(illust, retdata)
+    return delete_data(illust, delete_illust, retdata)
 
 
 def recreate_archived_illust(data):
@@ -94,32 +95,7 @@ def relink_archived_illust(data, illust=None):
     for link_data in data['links']['posts']:
         illust_url = get_illust_url_by_url(site=link_data['site'], partial_url=link_data['url'])
         if illust_url is None:
-            return
+            continue
         post = get_post_by_md5(link_data['md5'])
         if post is not None:
             post_append_illust_url(post, illust_url)
-
-
-# #### Private functions
-
-def _archive_illust_data(illust, retdata):
-    data = illust.archive()
-    data_key = illust.key
-    archive = get_archive('illust', data_key)
-    try:
-        if archive is None:
-            create_archive('illust', data_key, data, 30)
-        else:
-            update_archive(archive, data, 30)
-    except Exception as e:
-        return set_error(retdata, "Error archiving data: %s" % str(e))
-    return retdata
-
-
-def _delete_illust_data(illust, retdata):
-    try:
-        delete_illust(illust)
-    except Exception as e:
-        SESSION.rollback()
-        return set_error(retdata, "Error deleting illust: %s" % str(e))
-    return retdata

@@ -99,8 +99,17 @@ class Booru(JsonModel):
 
     # ## Class properties
 
+    @classmethod
+    def find_by_key(cls, key):
+        if isinstance(key, str):
+            danbooru_id = int(key)
+        elif isinstance(key, int):
+            danbooru_id = key
+        return cls.query.filter(cls.danbooru_id == danbooru_id)\
+                        .one_or_none()
+
     archive_scalars = [('names', 'other_names')]
-    archive_relations = ['notations']
+    archive_attachments = ['notations']
     archive_links = [('artists', 'key')]
 
     @classproperty(cached=True)

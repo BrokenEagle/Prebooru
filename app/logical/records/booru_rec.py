@@ -2,13 +2,16 @@
 
 # ## LOCAL IMPORTS
 from ... import SESSION
+from ...enum_imports import site_descriptor
 from ..utility import set_error
 from ..sources.base_src import get_artist_id_source
 from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
     get_booru, create_booru_from_json, delete_booru, get_all_boorus_page, recreate_booru_relations
-from ..database.archive_db import get_archive, create_archive, update_archive
+from ..database.notation_db import create_notation_from_json
+from .base_rec import delete_data
+from .archive_rec import archive_record
 
 
 # ## FUNCTIONS
@@ -86,10 +89,10 @@ def update_booru_artists_from_source(booru):
 
 def archive_booru_for_deletion(booru):
     retdata = {'error': False}
-    retdata = _archive_booru_data(booru, retdata)
+    retdata, _archive = archive_record(booru, 30, retdata)
     if retdata['error']:
         return retdata
-    return _delete_booru_data(booru, retdata)
+    return delete_data(booru, delete_booru, retdata)
 
 
 def recreate_archived_booru(data):
@@ -101,29 +104,43 @@ def recreate_archived_booru(data):
     if len(data['scalars']['names']):
         recreate_booru_relations(booru, {'names': data['scalars']['names']})
     retdata['item'] = booru.to_json()
+    relink_archived_booru(data, booru)
+    for notation_data in data['relations']['notations']:
+        notation = create_notation_from_json(notation_data)
+        booru.notations.append(notation)
+        SESSION.commit()
     return retdata
 
 
-# #### Private functions
-
-def _archive_booru_data(booru, retdata):
-    data = booru.archive()
-    data_key = booru.key
-    archive = get_archive('booru', data_key)
-    try:
-        if archive is None:
-            create_archive('booru', data_key, data, 30)
-        else:
-            update_archive(archive, data, 30)
-    except Exception as e:
-        return set_error(retdata, "Error archiving data: %s" % str(e))
+def recreate_archived_booru2(data):
+    retdata, booru = recreate_record(data, get_booru, create_booru_from_json,
+                                     ['site_artist_id', 'site'], {'error': False})
+    if retdata['error']:
+        return retdata
+    recreate_relations(data, booru, recreate_booru_relations, {})
+    relink_relations(data, booru, {'boorus': })
+    
+    if len(data['scalars']['names']):
+        recreate_booru_relations(booru, {'names': data['scalars']['names']})
+    retdata['item'] = booru.to_json()
+    relink_archived_booru(data, booru)
+    for notation_data in data['relations']['notations']:
+        notation = create_notation_from_json(notation_data)
+        booru.notations.append(notation)
+        SESSION.commit()
     return retdata
 
 
-def _delete_booru_data(booru, retdata):
-    try:
-        delete_booru(booru)
-    except Exception as e:
-        SESSION.rollback()
-        return set_error(retdata, "Error deleting booru: %s" % str(e))
-    return retdata
+def relink_archived_booru(data, booru=None):
+    if booru is None:
+        booru = get_booru(data['body']['danbooru_id'])
+        if booru is None:
+            return "No booru found with Danbooru ID %d" % data['body']['danbooru_id']
+    for artist_key in data['links']['artists']:
+        site_name, site_artist_id = artist_key.split('-')
+        site_id = site_descriptor[site_name].value
+        site_artist_id = int(site_artist_id)
+        artist = get_site_artist(site_artist_id, site_id)
+        if artist is None:
+            continue
+        booru_append_artist(booru, artist)

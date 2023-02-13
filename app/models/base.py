@@ -337,7 +337,7 @@ class JsonModel(DB.Model):
 
     def archive_relation_dict(self):
         data = {}
-        for attr in self.archive_relations:
+        for attr in self.archive_attachments:
             if isinstance(attr, str):
                 key, rel = attr, attr
             elif isinstance(attr, tuple):
@@ -433,11 +433,17 @@ class JsonModel(DB.Model):
     def archive_columns(cls):
         return {k for k in cls.base_columns if k != 'id'}
 
+    @classmethod
+    def loads(cls, data):
+        return cls(**{k: json_deserialize(v) for (k, v) in data.items()})
+
     archive_excludes = set()
     archive_includes = set()
     archive_scalars = []
-    archive_relations = []
+    archive_attachments = []
     archive_links = []
+    scalar_relationships = []
+    record_relationships = []
 
     @classproperty(cached=True)
     def basic_attributes(cls):
@@ -523,10 +529,6 @@ class JsonModel(DB.Model):
         basic_columns.sort(key=lambda x: column_positions[x])
         setattr(cls, '__all_columns', basic_columns)
         setattr(cls, '__relations', relations)
-
-    @classmethod
-    def loads(cls, data):
-        return cls(**{k: json_deserialize(v) for (k, v) in data.items()})
 
     @classmethod
     def _model_name(cls):

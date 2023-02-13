@@ -143,10 +143,19 @@ class Illust(JsonModel):
 
     # ## Class properties
 
+    @classmethod
+    def find_by_key(cls, key):
+        site_name, site_illust_id_str = key.split('-')
+        enum_filter = cls.site_filter('name', '__eq__', site_name)
+        id_filter = cls.site_illust_id == int(site_illust_id_str)
+        return cls.query.enum_join(cls.site_enum)\
+                        .filter(enum_filter, id_filter)\
+                        .one_or_none()
+
     archive_excludes = {'site', 'site_id'}
     archive_includes = {('site', lambda x: x.site.name)}
     archive_scalars = ['commentaries', 'tags']
-    archive_relations = ['urls', ('data', 'site_data'), 'notations']
+    archive_attachments = ['urls', ('data', 'site_data'), 'notations']
     archive_links = [('artist', lambda x: x.artist.site_artist_id),
                      ('posts', 'active_urls', lambda x: {'md5': x.post.md5, 'key': x.key})]
 

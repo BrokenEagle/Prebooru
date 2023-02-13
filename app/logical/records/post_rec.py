@@ -11,7 +11,6 @@ from sqlalchemy.orm import selectinload
 from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
 from utility.data import get_buffer_checksum
 from utility.file import create_directory, put_get_raw, copy_file, delete_file
-from utility.uprint import print_error, exception_print
 
 # ### LOCAL IMPORTS
 from ... import SESSION
@@ -26,9 +25,11 @@ from ..database.post_db import create_post_from_json, delete_post, post_append_i
 from ..database.illust_url_db import get_illust_url_by_url
 from ..database.notation_db import create_notation_from_json
 from ..database.error_db import create_error_from_json, create_error
-from ..database.archive_db import get_archive, create_archive, update_archive, set_archive_temporary
+from ..database.archive_db import set_archive_temporary
+from .base_rec import delete_data
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
+from .archive_rec import archive_record
 
 
 # ## GLOBAL VARIABLES
@@ -119,7 +120,7 @@ def delete_post_and_media(post):
     """Hard delete. Continue as long as post record gets deleted."""
     retdata = {'error': False, 'is_deleted': False}
     temppost = post.copy()
-    retdata = _delete_post_data(post, retdata)
+    retdata = delete_data(post, delete_post, retdata)
     if retdata['error']:
         print("delete_post_and_media-error:", retdata)
         return retdata
@@ -133,14 +134,14 @@ def archive_post_for_deletion(post, expires):
     """Soft delete. Preserve data at all costs."""
     retdata = {'error': False, 'is_deleted': False}
     temppost = post.copy()
-    retdata, archive = _archive_post_data(post, retdata, expires)
+    retdata, archive = archive_record(post, expires, retdata)
     if retdata['error']:
         return retdata
     retdata = _copy_media_files(post, archive, retdata, True, False)
     if retdata['error']:
         return retdata
     retdata['is_deleted'] = True
-    retdata = _delete_post_data(post, retdata)
+    retdata = delete_data(post, delete_post, retdata)
     if retdata['error']:
         return retdata
     return _delete_media_files(temppost, retdata)
@@ -276,31 +277,6 @@ def relocate_old_posts_to_alternate(manual):
 
 
 # #### Private functions
-
-def _archive_post_data(post, retdata, expires):
-    data = post.archive()
-    data_key = post.key
-    archive = get_archive('post', data_key)
-    try:
-        if archive is None:
-            archive = create_archive('post', data_key, data, expires)
-        else:
-            update_archive(archive, data, expires)
-    except Exception as e:
-        print_error("Error archiving data: %s" % str(e))
-        exception_print(e)
-        return set_error(retdata, "Error archiving data: %s" % repr(e)), None
-    return retdata, archive
-
-
-def _delete_post_data(post, retdata):
-    try:
-        delete_post(post)
-    except Exception as e:
-        SESSION.rollback()
-        return set_error(retdata, "Error deleting post: %s" % str(e))
-    return retdata
-
 
 def _copy_media_files(post, archive, retdata, copy_preview, reverse):
     from_item, to_item = (post, archive) if not reverse else (archive, post)

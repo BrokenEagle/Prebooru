@@ -126,11 +126,30 @@ class Artist(JsonModel):
 
     # ## Class properties
 
+    @classmethod
+    def find_by_key(cls, key):
+        site_name, site_artist_id_str = key.split('-')
+        enum_filter = cls.site_filter('name', '__eq__', site_name)
+        id_filter = cls.site_artist_id == int(site_artist_id_str)
+        return cls.query.enum_join(cls.site_enum)\
+                        .filter(enum_filter, id_filter)\
+                        .one_or_none()
+
     archive_excludes = {'site', 'site_id', 'current_site_account'}
     archive_includes = {('site', lambda x: x.site.name), ('current_account', 'current_site_account')}
     archive_scalars = ['profiles', 'names', ('accounts', 'other_site_accounts')]
-    archive_relations = ['notations']
+    archive_attachments = ['webpages', 'notations']
     archive_links = [('boorus', 'danbooru_id')]
+
+    recreate_mapping = {'site': ('site_id', lambda x: Artist.site_enum[x].id),
+                        'current_account': 'current_site_account'}
+    scalar_relationships =\
+        {
+            'accounts': ('_site_accounts', 'name', lambda x, names: names + [x.current_site_account]),
+            'names': ('_names', 'name'),
+            'profiles': ('_profiles', 'body'),
+        }
+    link_relationships = [('boorus', 'danbooru_id')]
 
     @classproperty(cached=True)
     def json_attributes(cls):
