@@ -24,6 +24,16 @@ class ApiData(JsonModel):
     data = DB.Column(CompressedJSON(), nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
+    # ## Instance methods
+
+    @property
+    def site_name(self):
+        return self.site.name
+
+    @site_name.setter
+    def site_name(self, name):
+        self.site_id = getattr(self.site_enum, name).id
+
     # ## Class properties
 
     @classproperty(cached=True)

@@ -11,10 +11,10 @@ from utility.obj import classproperty
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import site_descriptor
-from .tag import SiteTag
+from .tag import SiteTag, site_tag_creator
 from .illust_url import IllustUrl
 from .site_data import SiteData
-from .description import Description
+from .description import Description, description_creator
 from .notation import Notation
 from .pool_element import PoolIllust
 from .base import JsonModel, EpochTimestamp, secondarytable, polymorphic_accessor_factory, get_relation_definitions
@@ -71,8 +71,8 @@ class Illust(JsonModel):
     # (OtO) artist [Artist]
 
     # ## Association proxies
-    tags = association_proxy('_tags', 'name')
-    commentaries = association_proxy('_commentaries', 'body')
+    tags = association_proxy('_tags', 'name', creator=site_tag_creator)
+    commentaries = association_proxy('_commentaries', 'body', creator=description_creator)
     pools = association_proxy('_pools', 'pool')
     _posts = association_proxy('urls', 'post')
     boorus = association_proxy('artist', 'boorus')
@@ -97,6 +97,14 @@ class Illust(JsonModel):
         query = query.options(*_get_options(options))
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)
+
+    @property
+    def site_name(self):
+        return self.site.name
+
+    @site_name.setter
+    def site_name(self, name):
+        self.site_id = getattr(self.site_enum, name).id
 
     @property
     def active_urls(self):
@@ -152,11 +160,24 @@ class Illust(JsonModel):
                         .filter(enum_filter, id_filter)\
                         .one_or_none()
 
+    @classmethod
+    def find_rel_by_key(cls, rel, key, value):
+        from .artist import Artist
+        from .post import Post
+        if rel == 'artist':
+            site_name = key.split('-')[0]
+            return Artist.query.filter(Artist.site_filter('name', '__eq__', site_name),
+                                       Artist.site_artist_id == value).one_or_none()
+        if rel == 'posts':
+            return Post.query.filter(Post.md5.in_(k['md5'] for k in key)).all()
+
     archive_excludes = {'site', 'site_id'}
-    archive_includes = {('site', lambda x: x.site.name)}
+    archive_includes = {('site', 'site_name')}
     archive_scalars = ['commentaries', 'tags']
     archive_attachments = ['urls', ('data', 'site_data'), 'notations']
-    archive_links = [('artist', lambda x: x.artist.site_artist_id),
+    #archive_links = [('artist', lambda x: x.artist.site_artist_id),
+    #                 ('posts', 'active_urls', lambda x: {'md5': x.post.md5, 'key': x.key})]
+    archive_links = [('artist', 'site_artist_id'),
                      ('posts', 'active_urls', lambda x: {'md5': x.post.md5, 'key': x.key})]
 
     @classproperty(cached=True)

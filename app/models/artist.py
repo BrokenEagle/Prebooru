@@ -8,12 +8,12 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
-from .. import DB
+from .. import DB, SESSION
 from ..enum_imports import site_descriptor
 from .artist_url import ArtistUrl
 from .illust import Illust
-from .label import Label
-from .description import Description
+from .label import Label, label_creator
+from .description import Description, description_creator
 from .subscription import Subscription
 from .post import Post
 from .illust_url import IllustUrl
@@ -76,15 +76,23 @@ class Artist(JsonModel):
     # (MtM) boorus [Booru]
 
     # ## Association proxies
-    site_accounts = association_proxy('_site_accounts', 'name')
-    names = association_proxy('_names', 'name')
-    profiles = association_proxy('_profiles', 'body')
+    site_accounts = association_proxy('_site_accounts', 'name', creator=label_creator)
+    names = association_proxy('_names', 'name', creator=label_creator)
+    profiles = association_proxy('_profiles', 'body', creator=description_creator)
 
     # ## Instance properties
 
     @property
     def other_site_accounts(self):
         return [account for account in self.site_accounts if account != self.current_site_account]
+
+    @property
+    def site_name(self):
+        return self.site.name
+
+    @site_name.setter
+    def site_name(self, name):
+        self.site_id = getattr(self.site_enum, name).id
 
     @memoized_property
     def recent_posts(self):
@@ -136,19 +144,14 @@ class Artist(JsonModel):
                         .one_or_none()
 
     archive_excludes = {'site', 'site_id', 'current_site_account'}
-    archive_includes = {('site', lambda x: x.site.name), ('current_account', 'current_site_account')}
-    archive_scalars = ['profiles', 'names', ('accounts', 'other_site_accounts')]
+    archive_includes = {('site', 'site_name'), ('current_account', 'current_site_account')}
+    archive_scalars = ['profiles', 'names', ('accounts', 'other_site_accounts', 'site_accounts',
+                                             lambda x: x.site_accounts.append(x.current_site_account))]
     archive_attachments = ['webpages', 'notations']
     archive_links = [('boorus', 'danbooru_id')]
 
     recreate_mapping = {'site': ('site_id', lambda x: Artist.site_enum[x].id),
                         'current_account': 'current_site_account'}
-    scalar_relationships =\
-        {
-            'accounts': ('_site_accounts', 'name', lambda x, names: names + [x.current_site_account]),
-            'names': ('_names', 'name'),
-            'profiles': ('_profiles', 'body'),
-        }
     link_relationships = [('boorus', 'danbooru_id')]
 
     @classproperty(cached=True)

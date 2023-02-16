@@ -5,7 +5,9 @@ from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
 from ... import SESSION
+from ...models import Illust
 from ..utility import set_error
+from ..logger import handle_error_message
 from ..sources.base_src import get_media_source
 from ..database.artist_db import get_site_artist, get_blank_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust,\
@@ -15,7 +17,7 @@ from ..database.post_db import post_append_illust_url, get_post_by_md5
 from ..database.notation_db import create_notation_from_json
 from .base_rec import delete_data
 from .artist_rec import get_or_create_artist_from_source
-from .archive_rec import archive_record
+from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
 
 
 # ## FUNCTIONS
@@ -47,55 +49,30 @@ def update_illust_from_source(illust):
         SESSION.commit()
 
 
-def archive_illust_for_deletion(illust):
-    retdata = {'error': False}
-    retdata, _archive = archive_record(illust, 30, retdata)
-    if retdata['error']:
-        return retdata
-    return delete_data(illust, delete_illust, retdata)
+def archive_illust_for_deletion(illust, expires=30):
+    archive = archive_record(illust, expires)
+    if archive is None:
+        return handle_error_message(f"Error archiving data [{illust.shortlink}]: {repr(e)}")
+    return delete_data(illust, delete_illust)
 
 
-def recreate_archived_illust(data):
-    retdata = {'error': False}
-    illust_data = data['body']
-    illust = get_site_illust(illust_data['site_illust_id'], illust_data['site_id'])
-    if illust is not None:
-        return set_error(retdata, "Illust already exists: illust #%d" % illust.id)
-    artist_data = data['links']['artist']
-    artist = get_site_artist(artist_data['site_artist_id'], artist_data['site_id'])
-    if artist is None:
-        return set_error(retdata, "Artist for illust does not exist.")
-    illust_data['artist_id'] = artist.id
-    illust = create_illust_from_json(illust_data)
-    updateparams = (data['relations'].get('site_data') or {}).copy()
-    if len(data['scalars']['tags']):
-        updateparams['tags'] = data['scalars']['tags']
-    if len(data['scalars']['commentaries']):
-        updateparams['commentaries'] = data['scalars']['commentaries']
-    if len(data['relations']['illust_urls']):
-        updateparams['illust_urls'] = data['relations']['illust_urls']
-        for illust_url_data in updateparams['illust_urls']:
-            source = get_media_source(illust_url_data['url'])
-            set_url_site(illust_url_data, source)
-    recreate_illust_relations(illust, updateparams)
-    retdata['item'] = illust.to_json()
-    relink_archived_illust(data, illust)
-    for notation_data in data['relations']['notations']:
-        notation = create_notation_from_json(notation_data)
-        illust.notations.append(notation)
+def recreate_archived_illust(archive):
+    try:
+        illust = recreate_record(Illust, archive.key, archive.data)
+        recreate_scalars(illust, archive.data)
+        recreate_attachments(illust, archive.data)
+        recreate_links(illust, archive.data)
+    except Exception as e:
+        retdata = handle_error_message(str(e))
+        SESSION.rollback()
+    else:
+        retdata = {'error': False, 'item': illust.to_json()}
         SESSION.commit()
     return retdata
 
 
-def relink_archived_illust(data, illust=None):
-    if illust is None:
-        illust = get_site_illust(data['body']['site_illust_id'], data['body']['site_id'])
-        if illust is None:
-            return "No illust found with site ID %d" % data['body']['site_illust_id']
-    for link_data in data['links']['posts']:
-        illust_url = get_illust_url_by_url(site=link_data['site'], partial_url=link_data['url'])
-        if illust_url is None:
-            continue
-        post = get_post_by_md5(link_data['md5'])
-        if post is not None:
-            post_append_illust_url(post, illust_url)
+def relink_archived_illust(archive):
+    illust = Illust.find_by_key(archive.key)
+    if artist is None:
+        return f"No illust found with key {archive.key}"
+    recreate_links(illust, archive.data)

@@ -5,12 +5,11 @@ from utility.uprint import print_error
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import set_error
 
 
 # ## FUNCTIONS
 
-def delete_data(record, delete_func, retdata):
+def delete_data(record, delete_func):
     try:
         delete_func(record)
     except Exception as e:
@@ -18,5 +17,5 @@ def delete_data(record, delete_func, retdata):
         SESSION.rollback()
         msg = f"Error deleting data [{record.shortlink}]: {repr(e)}"
         print_error(msg)
-        return set_error(retdata, msg)
-    return retdata
+        return {'error': True, 'message': msg}
+    return {'error': False}

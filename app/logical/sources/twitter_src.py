@@ -808,7 +808,7 @@ def twitter_request(url, method='GET', wait=True, httpx=False):
     for i in range(3):
         try:
             response = rq_methods[method](url, headers=TWITTER_HEADERS, timeout=10)
-        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError, httpx.ConnectTimeout) as e:
             print_warning("Pausing for network timeout...")
             error = e
             time.sleep(5)

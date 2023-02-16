@@ -49,6 +49,22 @@ class IllustUrl(JsonModel):
 
     # ## Instance properties
 
+    @property
+    def site_name(self):
+        return self.site.name
+
+    @site_name.setter
+    def site_name(self, name):
+        self.site_id = getattr(self.site_enum, name).id
+
+    @property
+    def sample_site_name(self):
+        return self.sample_site.name
+
+    @site_name.setter
+    def sample_site_name(self, name):
+        self.sample_site_id = getattr(self.sample_site_enum, name).id
+
     @memoized_property
     def type(self):
         if self.site.source.video_url_mapper(self):

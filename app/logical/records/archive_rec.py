@@ -4,6 +4,9 @@
 import os
 import logging
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance
+
 # ## PACKAGE IMPORTS
 from utility.uprint import exception_print, print_error
 from utility.file import delete_file
@@ -37,64 +40,72 @@ def recreate_record(model, key, data):
     if record is not None:
         raise Exception(f"Record already exists: {record.shortlink}")
     recreate_data = {}
-    for field in data['body']:
-        if field in model.recreate_mapping:
-            mapping = model.recreate_mapping[field]
-            if isinstance(mapping, str):
-                recreate_data[mapping] = data['body'][field]
-            elif isinstance(mapping, tuple):
-                name, mapper = mapping
-                recreate_data[name] = mapper(data['body'][field])
+    for rel in model.mandatory_fk_relations:
+        if rel not in data['links']:
+            raise Exception(f"Mandatory link to {rel} not found in archive data.")
+        value = data['links'][rel]
+        rel_record = model.find_rel_by_key(rel, key, value)
+        if rel_record is None:
+            raise Exception(f"Mandatory link to {rel} using key {value} not found in database.")
+        relcol = next(iter(getattr(model, rel).property.local_columns))
+        recreate_data[relcol.key] = rel_record.id
+    for attr in data['body']:
+        mapping = next((incl for incl in model.archive_includes if incl[0] == attr), None)
+        if mapping is not None:
+            key, field = mapping
         else:
-            recreate_data[field] = data['body'][field]
-    record = record_from_json(model, recreate_data)
-    return record
+            key, field = attr, attr
+        recreate_data[field] = data['body'][key]
+    return record_from_json(model, recreate_data)
 
 
 def recreate_scalars(record, data):
     model = record.__class__
-    for scalar in data['scalars']:
-        if scalar not in model.scalar_relationships:
+    for scalar in model.archive_scalars:
+        if isinstance(scalar, str):
+            key = scalar
+            attr = scalar
+        elif isinstance(scalar, tuple):
+            key = scalar[0]
+            attr = scalar[2]
+        if key not in data['scalars']:
             continue
-        scalar_config = model.scalar_relationships[scalar]
-        if len(scalar_config) == 3:
-            attr, scalar_attr, mapper = scalar_config
-        elif len(scalar_config) == 2:
-            attr, scalar_attr = scalar_config
-            mapper = lambda x: x
-        scalar_model = getattr(model, attr).property.entity.class_
-        for value in data['scalars'][scalar]:
-            append_record = scalar_model.query.filter(getattr(scalar_model, scalar_attr) == value).one_or_none()
-            if append_record is None:
-                append_record = record_from_json(scalar_model, {scalar_attr: value})
-            getattr(record, attr).append(append_record)
-            SESSION.flush()
+        for value in data['scalars'][key]:
+            getattr(record, attr).append(value)
+        if isinstance(scalar, tuple) and len(scalar) > 3:
+            scalar[3](record)
+    SESSION.flush()
 
 
-
-def recreate_attachments(model, data):
-    for attribute, scalar_key, scalar_model in model.scalar_relationships:
-        data_key = attribute.strip('_')
-        for value in data['scalars'][data_key]:
-            append_record = scalar_model.query.filter(getattr(scalar_model, scalar_key) == value).one_or_none()
-            if append_record is None:
-                append_record = scalar_model.from_json({scalar_key: value})
-            getattr(record, attribute).append(append_record)
-            SESSION.flush()
-    table_name = model._table_name()
-    for attribute, attach_model in attach_relationships:
-        for item in data['relations'][attribute]:
+def recreate_attachments(record, data):
+    model = record.__class__
+    for attr in model.archive_attachments:
+        if attr not in data['attachments']:
+            continue
+        attach_model = getattr(model, attr).property.entity.class_
+        reverse_attr = getattr(model, attr).property.back_populates
+        for item in data['attachments'][attr]:
             attach_record = attach_model.loads(item)
-            setattr(attach_record, table_name, record)
+            SESSION.add(attach_record)
+            attach_record.attach(reverse_attr, record)
             SESSION.flush()
-    for attribute, link_key in link_relationships:
-        link_model = getattr(model, attribute).property.entity.class_
-        link_record = link_model.query.filter(getattr(link_model, link_key)).one_or_none()
-        if link_record is not None:
-            getattr(record, attribute).append(link_record)
-            SESSION.flush()
-    SESSION.commit()
-    return record
+
+
+def recreate_links(record, data):
+    model = record.__class__
+    for attr, link_key in model.archive_links:
+        if attr not in data['links']:
+            continue
+        if attr in model.mandatory_fk_relations:
+            continue
+        link_model = getattr(model, attr).property.entity.class_
+        link_attr = getattr(link_model, link_key)
+        for value in data['links'][attr]:
+            link_record = link_model.query.filter(link_attr == value).one_or_none()
+            if link_record is not None:
+                getattr(record, attr).append(link_record)
+                SESSION.flush()
+
 
 """
 def recreate_record(data, find_func, create_func, unique_keys, retdata=None):

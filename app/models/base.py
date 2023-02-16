@@ -257,6 +257,14 @@ class JsonModel(DB.Model):
             kwargs = {cls.primary_keys[i]: args[i] for i in range(len(args))}
         return cls.query.filter_by(**kwargs).one_or_none()
 
+    @classmethod
+    def find_by_key(cls, key):
+        return None
+
+    @classmethod
+    def find_rel_by_key(cls, rel, key, value):
+        return None
+
     @property
     def model_name(self):
         return self._model_name()
@@ -308,7 +316,7 @@ class JsonModel(DB.Model):
         return {
             'body': self.archive_dict(),
             'scalars': self.archive_scalar_dict(),
-            'relations': self.archive_relation_dict(),
+            'attachments': self.archive_attachment_dict(),
             'links': self.archive_link_dict(),
         }
 
@@ -319,7 +327,7 @@ class JsonModel(DB.Model):
             if isinstance(m, str):
                 key = attr = m
             elif isinstance(m, tuple):
-                key, attr = m
+                key, attr, *args = m
             if not callable(attr) and not hasattr(self, attr):
                 continue
             data[key] = json_serialize(self, attr)
@@ -331,11 +339,11 @@ class JsonModel(DB.Model):
             if isinstance(item, str):
                 key, rel = item, item
             elif isinstance(item, tuple):
-                key, rel = item
+                key, rel, *args = item
             data[key] = list(getattr(self, rel))
         return _sorted_dict(data)
 
-    def archive_relation_dict(self):
+    def archive_attachment_dict(self):
         data = {}
         for attr in self.archive_attachments:
             if isinstance(attr, str):
@@ -343,7 +351,9 @@ class JsonModel(DB.Model):
             elif isinstance(attr, tuple):
                 key, rel = attr
             rel_value = getattr(self, rel)
-            if isinstance(rel_value, Iterable):
+            if rel_value is None:
+                data[key] = None
+            elif isinstance(rel_value, Iterable):
                 data[key] = [item.archive_dict() for item in rel_value]
             else:
                 data[key] = rel_value.archive_dict()
@@ -372,10 +382,22 @@ class JsonModel(DB.Model):
         """Return an uncommitted copy of the record."""
         return self.__class__(**self.column_dict())
 
+    def attach(self, attr, record):
+        setattr(self, attr, record)
+
     @classproperty(cached=False)
     def relations(cls):
         cls._populate_attributes()
         return getattr(cls, '__relations')
+
+    @classproperty(cached=True)
+    def mandatory_fk_relations(cls):
+        mandatory = []
+        for rel in cls.fk_relations():
+            relcol = next(iter(getattr(cls, rel).property.local_columns))
+            if not relcol.nullable:
+                mandatory.append(rel)
+        return mandatory
 
     @classmethod
     def fk_relations(cls):
@@ -442,8 +464,6 @@ class JsonModel(DB.Model):
     archive_scalars = []
     archive_attachments = []
     archive_links = []
-    scalar_relationships = []
-    record_relationships = []
 
     @classproperty(cached=True)
     def basic_attributes(cls):

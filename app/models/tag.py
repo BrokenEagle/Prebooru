@@ -8,9 +8,27 @@ from sqlalchemy.util import memoized_property
 from config import USE_ENUMS
 
 # ## LOCAL IMPORTS
-from .. import DB
+from .. import DB, SESSION
 from ..enum_imports import tag_type
 from .base import JsonModel, get_relation_definitions
+
+
+# ## FUNCTIONS
+
+def site_tag_creator(name):
+    tag = SiteTag.query.filter_by(name=name).one_or_none()
+    if tag is None:
+        tag = SiteTag(name=name)
+        SESSION.add(tag)
+    return tag
+
+
+def user_tag_creator(name):
+    tag = UserTag.query.filter_by(name=name).one_or_none()
+    if tag is None:
+        tag = UserTag(name=name)
+        SESSION.add(tag)
+    return tag
 
 
 # ## CLASSES

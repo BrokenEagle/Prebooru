@@ -22,8 +22,7 @@ NETWORK_ERROR_LOG_FILE = os.path.join(DATA_DIRECTORY, 'network_error_log.json')
 
 def log_error(module, message):
     all_errors = load_default(ERROR_LOG_FILE, [])
-    exc_type, exc_value, exc_tb = sys.exc_info()
-    error = traceback.format_exception(exc_type, exc_value, exc_tb)
+    error = get_traceback()
     all_errors.append({
         'module': module,
         'message': message,
@@ -49,3 +48,13 @@ def log_network_error(module, response):
         'time': time.ctime(),
     })
     put_get_json(NETWORK_ERROR_LOG_FILE, 'w', all_errors)
+
+
+def handle_error_message(message):
+    print_error(message)
+    return {'error': True, 'message': message}
+
+
+def get_traceback():
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    return traceback.format_exception(exc_type, exc_value, exc_tb)
