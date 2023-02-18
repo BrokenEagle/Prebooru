@@ -5,6 +5,7 @@ import os
 import itertools
 
 # ## EXTERNAL IMPORTS
+from flask import has_app_context
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.util import memoized_property
@@ -114,27 +115,37 @@ class Post(JsonModel):
 
     @property
     def file_url(self):
+        if not has_app_context():
+            return None
         return image_server_url('data' + self._partial_network_path + self.file_ext, subtype=self.suburl_path)
 
     @property
     def sample_url(self):
+        if not has_app_context():
+            return None
         if self.has_sample:
             return image_server_url('sample' + self._partial_network_path + 'jpg', subtype=self.suburl_path)
         return self.file_url
 
     @property
     def preview_url(self):
+        if not has_app_context():
+            return None
         if self.has_preview:
             return image_server_url('preview' + self._partial_network_path + 'jpg', subtype=self.suburl_path)
         return self.file_url
 
     @property
     def video_sample_url(self):
+        if not has_app_context():
+            return None
         if self.is_video:
             return image_server_url('video_sample' + self._partial_network_path + 'webm', subtype=self.suburl_path)
 
     @property
     def video_preview_url(self):
+        if not has_app_context():
+            return None
         if self.is_video:
             return image_server_url('video_preview' + self._partial_network_path + 'webp', subtype=self.suburl_path)
 
