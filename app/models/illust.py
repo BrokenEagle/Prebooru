@@ -10,10 +10,10 @@ from utility.obj import classproperty
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import site_descriptor
-from .tag import SiteTag
+from .tag import SiteTag, site_tag_creator
 from .illust_url import IllustUrl
 from .site_data import SiteData
-from .description import Description
+from .description import Description, description_creator
 from .notation import Notation
 from .pool_element import PoolIllust
 from .base import JsonModel, EpochTimestamp, secondarytable, polymorphic_accessor_factory, get_relation_definitions
@@ -70,8 +70,8 @@ class Illust(JsonModel):
     # (OtO) artist [Artist]
 
     # ## Association proxies
-    tags = association_proxy('_tags', 'name')
-    commentaries = association_proxy('_commentaries', 'body')
+    tags = association_proxy('_tags', 'name', creator=site_tag_creator)
+    commentaries = association_proxy('_commentaries', 'body', creator=description_creator)
     pools = association_proxy('_pools', 'pool')
     _posts = association_proxy('urls', 'post')
     boorus = association_proxy('artist', 'boorus')
