@@ -162,6 +162,10 @@ class Illust(JsonModel):
             return Post.query.filter(Post.md5.in_(k['md5'] for k in key)).all()
 
     @classproperty(cached=True)
+    def load_columns(cls):
+        return super().load_columns + ['site_name']
+
+    @classproperty(cached=True)
     def json_attributes(cls):
         return super().json_attributes + ['urls', 'tags', 'commentaries', 'site_data']
 

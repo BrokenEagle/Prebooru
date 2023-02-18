@@ -386,6 +386,14 @@ class JsonModel(DB.Model):
     def archive_columns(cls):
         return [k for k in cls.base_columns if k != 'id']
 
+    @classproperty(cached=False)
+    def load_columns(cls):
+        return cls.all_columns
+
+    @classmethod
+    def loads(cls, data, *args):
+        return cls(**{k: json_deserialize(v) for (k, v) in data.items() if k in cls.load_columns})
+
     @classproperty(cached=True)
     def basic_attributes(cls):
         cls._populate_attributes()
@@ -470,10 +478,6 @@ class JsonModel(DB.Model):
         basic_columns.sort(key=lambda x: column_positions[x])
         setattr(cls, '__all_columns', basic_columns)
         setattr(cls, '__relations', relations)
-
-    @classmethod
-    def loads(cls, data):
-        return cls(**{k: json_deserialize(v) for (k, v) in data.items()})
 
     @classmethod
     def _model_name(cls):

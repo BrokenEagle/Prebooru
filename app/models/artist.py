@@ -135,6 +135,10 @@ class Artist(JsonModel):
                         .one_or_none()
 
     @classproperty(cached=True)
+    def load_columns(cls):
+        return super().load_columns + ['site_name']
+
+    @classproperty(cached=True)
     def json_attributes(cls):
         return super().json_attributes + ['site_accounts', 'names', 'webpages', 'profiles']
 

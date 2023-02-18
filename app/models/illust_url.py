@@ -97,6 +97,18 @@ class IllustUrl(JsonModel):
         partial = site.source.partial_media_url(full_url)
         return cls.query.filter(cls.column_map['site_id'] == site.id, cls.url == partial).one_or_none()
 
+    @classmethod
+    def loads(cls, data, *args):
+        if 'url' in data and data['url'].startswith('http'):
+            site = site_descriptor.get_site_from_url(data['url'])
+            data['site_id'] = site.id
+            data['url'] = site.source.partial_media_url(data['url'])
+        if 'sample' in data and data['sample'] is not None and data['sample'].startswith('http'):
+            site = site_descriptor.get_site_from_url(data['sample'])
+            data['sample_site_id'] = site.id
+            data['sample_url'] = site.source.partial_media_url(data['sample'])
+        return super().loads(data)
+
     @classproperty(cached=True)
     def json_attributes(cls):
         return super().json_attributes + ['full_url', 'site_domain']

@@ -43,6 +43,14 @@ class Notation(JsonModel):
     def append_type(self):
         return self.append_item.table_name if self.append_item is not None else None
 
+    # ## Class properties
+
+    @classmethod
+    def loads(cls, data, *args):
+        record = super().loads(data)
+        record.no_pool = False
+        return record
+
     # ## Private
 
     @property
