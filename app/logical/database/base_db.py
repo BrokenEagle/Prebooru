@@ -136,6 +136,14 @@ def append_relationship_collections(item, relationships, updateparams, commit=Tr
     return is_dirty
 
 
+def record_from_json(model, data):
+    record = model.loads(data)
+    SESSION.add(record)
+    SESSION.flush()
+    print(f"[{record.shortlink}]: created")
+    return record
+
+
 # #### Private functions
 
 def _safe_db_commit(item, func_name, message, commit=True):
