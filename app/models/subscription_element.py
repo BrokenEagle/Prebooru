@@ -16,11 +16,11 @@ class SubscriptionElement(JsonModel):
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    keep, keep_id, keep_enum, keep_filter, keep_col =\
+    keep, keep_id, keep_name, keep_enum, keep_filter, keep_col =\
         get_relation_definitions(subscription_element_keep, relname='keep', relcol='id', colname='keep_id',
                                  tblname='subscription_element', nullable=True)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    status, status_id, status_enum, status_filter, status_col =\
+    status, status_id, status_name, status_enum, status_filter, status_col =\
         get_relation_definitions(subscription_element_status, relname='status', relcol='id', colname='status_id',
                                  tblname='subscription_element', nullable=False)
 

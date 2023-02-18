@@ -14,10 +14,10 @@ from .base import JsonModel, CompressedJSON, EpochTimestamp, get_relation_defini
 class ApiData(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    type, type_id, type_enum, type_filter, type_col =\
+    type, type_id, type_name, type_enum, type_filter, type_col =\
         get_relation_definitions(api_data_type, relname='type', relcol='id', colname='type_id',
                                  tblname='api_data', nullable=False)
-    site, site_id, site_enum, site_filter, site_col =\
+    site, site_id, site_name, site_enum, site_filter, site_col =\
         get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
                                  tblname='api_data', nullable=False)
     data_id = DB.Column(DB.Integer, nullable=False)

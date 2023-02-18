@@ -496,6 +496,15 @@ def _get_relation_definitions_use_enums(enm, relname=None, colname=None, tblname
     def idval(self, value):
         setattr(self, relname, enm(value) if value is not None else None)
 
+    @property
+    def nameval(self):
+        attr = getattr(self, relname)
+        return attr.name if attr is not None else None
+
+    @nameval.setter
+    def nameval(self, value):
+        setattr(self, relname, enm[value] if value is not None else None)
+
     @classmethod
     def filter(cls, relattr, op, *args):
         if relattr is None:
@@ -508,7 +517,7 @@ def _get_relation_definitions_use_enums(enm, relname=None, colname=None, tblname
     def colval(cls):
         return getattr(cls, relname)
 
-    return baseval, idval, enm, filter, colval
+    return baseval, idval, nameval, enm, filter, colval
 
 
 def _get_relation_definitions_use_models(rel, colname=None, relcol=None, backname=None, nullable=None, **kwargs):
@@ -523,6 +532,15 @@ def _get_relation_definitions_use_models(rel, colname=None, relcol=None, backnam
         relation_kw['backref'] = DB.backref(backname, lazy=True)
     baseval = DB.relation(rel, **relation_kw)
 
+    @property
+    def nameval(self):
+        id = getattr(self, colname)
+        return rel.by_id(id).name if id is not None else None
+
+    @nameval.setter
+    def nameval(self, value):
+        setattr(self, colname, rel.by_name(value).id if value is not None else None)
+
     @classmethod
     def filter(cls, relattr, op, *args):
         if relattr is None:
@@ -535,7 +553,7 @@ def _get_relation_definitions_use_models(rel, colname=None, relcol=None, backnam
     def colval(cls):
         return getattr(cls, colname)
 
-    return baseval, idval, rel, filter, colval
+    return baseval, idval, nameval, rel, filter, colval
 
 
 def _enum_filter(enm, rel, relattr, op, *args):

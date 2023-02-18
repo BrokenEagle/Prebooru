@@ -25,7 +25,7 @@ class Subscription(JsonModel):
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
     interval = DB.Column(DB.Float, nullable=False)
     expiration = DB.Column(DB.Float, nullable=True)
-    status, status_id, status_enum, status_filter, status_col =\
+    status, status_id, status_name, status_enum, status_filter, status_col =\
         get_relation_definitions(subscription_status, relname='status', relcol='id', colname='status_id',
                                  tblname='subscription', nullable=False)
     last_id = DB.Column(DB.Integer, nullable=True)
