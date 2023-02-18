@@ -83,6 +83,10 @@ class Booru(JsonModel):
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)\
                    .join(Booru, Artist.boorus).filter(Booru.id == self.id)
 
+    @property
+    def key(self):
+        return '%d' % self.danbooru_id
+
     def delete(self):
         self._names.clear()
         self.artists.clear()
@@ -90,6 +94,15 @@ class Booru(JsonModel):
         DB.session.commit()
 
     # ## Class properties
+
+    @classmethod
+    def find_by_key(cls, key):
+        if isinstance(key, str):
+            danbooru_id = int(key)
+        elif isinstance(key, int):
+            danbooru_id = key
+        return cls.query.filter(cls.danbooru_id == danbooru_id)\
+                        .one_or_none()
 
     @classproperty(cached=True)
     def json_attributes(cls):

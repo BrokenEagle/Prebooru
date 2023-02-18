@@ -221,6 +221,10 @@ class Post(JsonModel):
                                SimilarityMatch.reverse_id.desc())
         return query.limit(10).all()
 
+    @property
+    def key(self):
+        return self.md5
+
     def delete_pool(self, pool_id):
         pool_element_delete(pool_id, self)
 
@@ -239,6 +243,11 @@ class Post(JsonModel):
         return data
 
     # ## Class properties
+
+    @classmethod
+    def find_by_key(cls, key):
+        return cls.query.filter(cls.md5 == key)\
+                        .one_or_none()
 
     @classproperty(cached=True)
     def json_attributes(cls):

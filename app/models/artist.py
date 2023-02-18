@@ -109,6 +109,10 @@ class Artist(JsonModel):
     def booru_search_url(self):
         return self.site.source.artist_booru_search_url(self)
 
+    @property
+    def key(self):
+        return '%s-%d' % (self.site.name, self.site_artist_id)
+
     def delete(self):
         self._names.clear()
         self._profiles.clear()
@@ -120,6 +124,15 @@ class Artist(JsonModel):
         return {k: v for (k, v) in super().archive_dict().items() if k not in ['site', 'site_id']}
 
     # ## Class properties
+
+    @classmethod
+    def find_by_key(cls, key):
+        site_name, site_artist_id_str = key.split('-')
+        enum_filter = cls.site_filter('name', '__eq__', site_name)
+        id_filter = cls.site_artist_id == int(site_artist_id_str)
+        return cls.query.enum_join(cls.site_enum)\
+                        .filter(enum_filter, id_filter)\
+                        .one_or_none()
 
     @classproperty(cached=True)
     def json_attributes(cls):

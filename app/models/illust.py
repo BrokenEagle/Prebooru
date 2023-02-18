@@ -123,6 +123,10 @@ class Illust(JsonModel):
     def site_domain(self):
         return self.site.domain
 
+    @property
+    def key(self):
+        return '%s-%d' % (self.site.name, self.site_illust_id)
+
     def delete(self):
         pools = [pool for pool in self.pools]
         DB.session.delete(self)
@@ -136,6 +140,26 @@ class Illust(JsonModel):
         return {k: v for (k, v) in super().archive_dict().items() if k not in ['site', 'site_id']}
 
     # ## Class properties
+
+    @classmethod
+    def find_by_key(cls, key):
+        site_name, site_illust_id_str = key.split('-')
+        enum_filter = cls.site_filter('name', '__eq__', site_name)
+        id_filter = cls.site_illust_id == int(site_illust_id_str)
+        return cls.query.enum_join(cls.site_enum)\
+                        .filter(enum_filter, id_filter)\
+                        .one_or_none()
+
+    @classmethod
+    def find_rel_by_key(cls, rel, key, value):
+        from .artist import Artist
+        from .post import Post
+        if rel == 'artist':
+            site_name = key.split('-')[0]
+            return Artist.query.filter(Artist.site_filter('name', '__eq__', site_name),
+                                       Artist.site_artist_id == value).one_or_none()
+        if rel == 'posts':
+            return Post.query.filter(Post.md5.in_(k['md5'] for k in key)).all()
 
     @classproperty(cached=True)
     def json_attributes(cls):
