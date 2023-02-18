@@ -32,6 +32,16 @@ class SiteData(JsonModel):
 
     # ## Class properties
 
+    @classmethod
+    def loads(cls, data, record):
+        if cls._model_name() == 'site_data':
+            if record.site_name == 'twitter':
+                return TwitterData.loads(data, None)
+            if record.site_name == 'pixiv':
+                return PixivData.loads(data, None)
+        else:
+            return super(SiteData, cls).loads(data)
+
     polymorphic_base = True
 
     # ## Private
