@@ -1,8 +1,18 @@
 # APP/MODELS/DESCRIPTION.PY
 
 # ## LOCAL IMPORTS
-from .. import DB
+from .. import DB, SESSION
 from .base import JsonModel
+
+
+# ## FUNCTIONS
+
+def description_creator(body):
+    description = Description.query.filter_by(body=body).one_or_none()
+    if description is None:
+        description = Description(body=body)
+        SESSION.add(description)
+    return description
 
 
 # ## CLASSES

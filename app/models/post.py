@@ -23,7 +23,7 @@ from .error import Error
 from .illust_url import IllustUrl
 from .subscription_element import SubscriptionElement
 from .notation import Notation
-from .tag import UserTag
+from .tag import UserTag, user_tag_creator
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
@@ -84,7 +84,7 @@ class Post(JsonModel):
                                                  foreign_keys=[SimilarityMatch.reverse_id])
 
     # ## Association proxies
-    tags = association_proxy('_tags', 'name')
+    tags = association_proxy('_tags', 'name', creator=user_tag_creator)
     pools = association_proxy('_pools', 'pool')
 
     # ## Instance properties

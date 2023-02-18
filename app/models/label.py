@@ -1,8 +1,18 @@
 # APP/MODELS/LABEL.PY
 
 # ## LOCAL IMPORTS
-from .. import DB
+from .. import DB, SESSION
 from .base import JsonModel
+
+
+# ## FUNCTIONS
+
+def label_creator(name):
+    label = Label.query.filter_by(name=name).one_or_none()
+    if label is None:
+        label = Label(name=name)
+        SESSION.add(label)
+    return label
 
 
 # ## CLASSES

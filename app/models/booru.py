@@ -14,7 +14,7 @@ from .illust import Illust
 from .illust_url import IllustUrl
 from .post import Post
 from .notation import Notation
-from .label import Label
+from .label import Label, label_creator
 from .base import JsonModel, EpochTimestamp, secondarytable
 
 
@@ -54,7 +54,7 @@ class Booru(JsonModel):
                                 backref=DB.backref('booru', lazy=True, uselist=False))
 
     # ## Association proxies
-    names = association_proxy('_names', 'name')
+    names = association_proxy('_names', 'name', creator=label_creator)
     artist_ids = association_proxy('artists', 'id')
 
     # ## Instance properties

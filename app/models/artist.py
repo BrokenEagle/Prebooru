@@ -12,8 +12,8 @@ from .. import DB
 from ..enum_imports import site_descriptor
 from .artist_url import ArtistUrl
 from .illust import Illust
-from .label import Label
-from .description import Description
+from .label import Label, label_creator
+from .description import Description, description_creator
 from .subscription import Subscription
 from .post import Post
 from .illust_url import IllustUrl
@@ -76,9 +76,9 @@ class Artist(JsonModel):
     # (MtM) boorus [Booru]
 
     # ## Association proxies
-    site_accounts = association_proxy('_site_accounts', 'name')
-    names = association_proxy('_names', 'name')
-    profiles = association_proxy('_profiles', 'body')
+    site_accounts = association_proxy('_site_accounts', 'name', creator=label_creator)
+    names = association_proxy('_names', 'name', creator=label_creator)
+    profiles = association_proxy('_profiles', 'body', creator=description_creator)
 
     # ## Instance properties
 
