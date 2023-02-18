@@ -456,7 +456,12 @@ class JsonModel(DB.Model):
             elif type(value) is bytes:
                 data[attr] = value.hex()
             elif isinstance(value, enum.Enum):
-                data[attr] = value.name if not id_enum else value.id
+                if id_enum:
+                    key = attr if attr.endswith('_id') else attr + '_id'
+                    data[key] = value.id
+                else:
+                    key = attr.strip('_id')
+                    data[key] = value.name
             elif type(value) is _AssociationList:
                 data[attr] = list(value)
             elif type(value) is InstrumentedList:
