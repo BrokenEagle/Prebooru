@@ -73,6 +73,10 @@ class IllustUrl(JsonModel):
     def site_domain(self):
         return self.site.domain
 
+    @property
+    def key(self):
+        return self.full_url
+
     def archive_dict(self):
         data = {
             'url': self.full_url,
@@ -86,6 +90,12 @@ class IllustUrl(JsonModel):
         return data
 
     # ## Class properties
+
+    @classmethod
+    def find_by_key(cls, full_url):
+        site = site_descriptor.get_site_from_url(full_url)
+        partial = site.source.partial_media_url(full_url)
+        return cls.query.filter(cls.column_map['site_id'] == site.id, cls.url == partial).one_or_none()
 
     @classproperty(cached=True)
     def json_attributes(cls):

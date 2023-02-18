@@ -253,6 +253,18 @@ class JsonModel(DB.Model):
             kwargs = {cls.primary_keys[i]: args[i] for i in range(len(args))}
         return cls.query.filter_by(**kwargs).one_or_none()
 
+    @classmethod
+    def find_by_key(cls, key):
+        return None
+
+    @classmethod
+    def find_rel_by_key(cls, rel, key, value):
+        return None
+
+    @property
+    def key(self):
+        return None
+
     @property
     def model_name(self):
         return self._model_name()
