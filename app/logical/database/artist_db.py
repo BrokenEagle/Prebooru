@@ -186,10 +186,13 @@ def artist_delete_profile(artist, description_id):
 
 # #### Query functions
 
-def get_site_artist(site_artist_id, site_id):
+def get_site_artist(site_artist_id, site):
+    if isinstance(site, int):
+        enum_filter = Artist.site_filter('id', '__eq__', site)
+    elif isinstance(site, str):
+        enum_filter = Artist.site_filter('name', '__eq__', site)
     return Artist.query.enum_join(Artist.site_enum)\
-                       .filter(Artist.site_filter('id', '__eq__', site_id),
-                               Artist.site_artist_id == site_artist_id)\
+                       .filter(enum_filter, Artist.site_artist_id == site_artist_id)\
                        .one_or_none()
 
 
