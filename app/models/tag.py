@@ -19,7 +19,7 @@ class Tag(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
-    type, type_id, type_enum, type_filter, type_col =\
+    type, type_id, type_name, type_enum, type_filter, type_col =\
         get_relation_definitions(tag_type, relname='type', relcol='id', colname='type_id',
                                  tblname='tag', nullable=False)
 

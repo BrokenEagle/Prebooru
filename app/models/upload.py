@@ -25,7 +25,7 @@ class Upload(JsonModel):
     request_url = DB.Column(DB.String(255), nullable=True)
     successes = DB.Column(DB.Integer, nullable=False)
     failures = DB.Column(DB.Integer, nullable=False)
-    status, status_id, status_enum, status_filter, status_col =\
+    status, status_id, status_name, status_enum, status_filter, status_col =\
         get_relation_definitions(upload_status, relname='status', relcol='id', colname='status_id',
                                  tblname='upload', nullable=False)
     media_filepath = DB.Column(DB.String(255), nullable=True)

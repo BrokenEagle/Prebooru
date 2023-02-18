@@ -41,7 +41,7 @@ IllustCommentaries = secondarytable(
 class Illust(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site, site_id, site_enum, site_filter, site_col =\
+    site, site_id, site_name, site_enum, site_filter, site_col =\
         get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
                                  tblname='illust', nullable=False)
     site_illust_id = DB.Column(DB.Integer, nullable=False)
