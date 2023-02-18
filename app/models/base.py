@@ -325,6 +325,9 @@ class JsonModel(DB.Model):
         """Return an uncommitted copy of the record."""
         return self.__class__(**self.column_dict())
 
+    def attach(self, attr, record):
+        setattr(self, attr, record)
+
     @classproperty(cached=False)
     def relations(cls):
         cls._populate_attributes()
