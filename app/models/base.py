@@ -333,6 +333,15 @@ class JsonModel(DB.Model):
         cls._populate_attributes()
         return getattr(cls, '__relations')
 
+    @classproperty(cached=True)
+    def mandatory_fk_relations(cls):
+        mandatory = []
+        for rel in cls.fk_relations():
+            relcol = next(iter(getattr(cls, rel).property.local_columns))
+            if not relcol.nullable:
+                mandatory.append(rel)
+        return mandatory
+
     @classmethod
     def fk_relations(cls):
         relations = []
