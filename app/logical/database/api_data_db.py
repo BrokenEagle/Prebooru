@@ -6,7 +6,6 @@ from utility.time import get_current_time, days_from_now
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import ApiData
-from ...enum_imports import api_data_type
 
 
 # ## FUNCTIONS
@@ -44,13 +43,13 @@ def delete_expired_api_data():
 
 # #### Query functions
 
-def get_api_data(data_ids, site_id, type_id):
+def get_api_data(data_ids, site, type):
     current_time = get_current_time()
     has_deleted = False
     cache_data = []
     for i in range(0, len(data_ids), 100):
         sublist = data_ids[i: i + 100]
-        cache_data += _get_api_data(sublist, site_id, type_id)
+        cache_data += _get_api_data(sublist, site, type)
     ret_data = []
     for cache in cache_data:
         if cache.expires < current_time:
@@ -63,13 +62,13 @@ def get_api_data(data_ids, site_id, type_id):
     return ret_data
 
 
-def get_api_artist(site_artist_id, site_id):
-    cache = get_api_data([site_artist_id], site_id, api_data_type.artist.id)
+def get_api_artist(site_artist_id, site):
+    cache = get_api_data([site_artist_id], site, 'artist')
     return cache[0].data if len(cache) else None
 
 
-def get_api_illust(site_illust_id, site_id):
-    cache = get_api_data([site_illust_id], site_id, api_data_type.illust.id)
+def get_api_illust(site_illust_id, site):
+    cache = get_api_data([site_illust_id], site, 'illust')
     return cache[0].data if len(cache) else None
 
 
@@ -79,10 +78,17 @@ def expired_api_data_count():
 
 # #### Private functions
 
-def _get_api_data(data_ids, site_id, type_id):
+def _get_api_data(data_ids, site, type):
+    if isinstance(site, int):
+        site_enum_filter = ApiData.site_filter('id', '__eq__', site)
+    elif isinstance(site, str):
+        site_enum_filter = ApiData.site_filter('name', '__eq__', site)
+    if isinstance(type, int):
+        type_enum_filter = ApiData.type_filter('id', '__eq__', type)
+    elif isinstance(type, str):
+        type_enum_filter = ApiData.type_filter('name', '__eq__', type)
     q = ApiData.query.enum_join(ApiData.site_enum).enum_join(ApiData.type_enum)\
-                     .filter(ApiData.site_filter('id', '__eq__', site_id),
-                             ApiData.type_filter('id', '__eq__', type_id))
+                     .filter(site_enum_filter, type_enum_filter)
     if len(data_ids) == 1:
         q = q.filter(ApiData.data_id == data_ids[0])
     else:

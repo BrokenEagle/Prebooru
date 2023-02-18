@@ -45,10 +45,13 @@ def update_illust_url_from_parameters(illust_url, updateparams):
 
 # #### Query
 
-def get_illust_url_by_url(site_id, partial_url):
+def get_illust_url_by_url(site, partial_url):
+    if isinstance(site, int):
+        enum_filter = IllustUrl.site_filter('id', '__eq__', site)
+    elif isinstance(site, str):
+        enum_filter = IllustUrl.site_filter('name', '__eq__', site)
     return IllustUrl.query.enum_join(IllustUrl.site_enum)\
-                          .filter(IllustUrl.site_filter('id', '__eq__', site_id),
-                                  IllustUrl.url == partial_url)\
+                          .filter(enum_filter, IllustUrl.url == partial_url)\
                           .one_or_none()
 
 

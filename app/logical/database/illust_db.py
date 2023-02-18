@@ -145,20 +145,18 @@ def illust_delete_commentary(illust, description_id):
 
 # #### Query functions
 
-def get_site_illust(site_illust_id, site_id):
+def get_site_illust(site_illust_id, site):
     return Illust.query.enum_join(Illust.site_enum)\
-                       .filter(Illust.site_filter('id', '__eq__', site_id),
-                               Illust.site_illust_id == site_illust_id)\
+                       .filter(_enum_filter(site), Illust.site_illust_id == site_illust_id)\
                        .one_or_none()
 
 
-def get_site_illusts(site_id, site_illust_ids, load_urls=False):
+def get_site_illusts(site, site_illust_ids, load_urls=False):
     q = Illust.query
     if load_urls:
         q = q.options(selectinload(Illust.urls))
     return q.enum_join(Illust.site_enum)\
-            .filter(Illust.site_filter('id', '__eq__', site_id),
-                    Illust.site_illust_id.in_(site_illust_ids))\
+            .filter(_enum_filter(site), Illust.site_illust_id.in_(site_illust_ids))\
             .all()
 
 
@@ -179,3 +177,10 @@ def _update_relations(illust, updateparams, overwrite=None, create=None):
     if 'illust_urls' in updateparams:
         update_results.append(update_illust_urls(illust, updateparams['illust_urls']))
     return any(update_results)
+
+
+def _enum_filter(site):
+    if isinstance(site, int):
+        return Illust.site_filter('id', '__eq__', site)
+    elif isinstance(site, str):
+        return Illust.site_filter('name', '__eq__', site)
