@@ -71,7 +71,8 @@ class IllustUrl(JsonModel):
 
     @memoized_property
     def full_sample_url(self):
-        return self.site.source.get_sample_url(self)
+        if self.type == 'video':
+            return self.site.source.get_sample_url(self)
 
     @property
     def site_domain(self):
