@@ -57,66 +57,59 @@ HAS_TAG_SEARCH = True
 
 # #### Regex variables
 
-TWEET_RG = re.compile(r"""
-^https?://twitter\.com                  # Hostname
+# ###### Hostname regexes
+
+TWITTER_HOST_RG = re.compile(r'^https?://twitter\.com', re.IGNORECASE)
+TWIMG_HOST_RG = re.compile('^https?://pbs\.twimg\.com', re.IGNORECASE)
+TWVIDEO_HOST_RG = re.compile('^https?://video\.twimg\.com', re.IGNORECASE)
+
+# ###### Partial URL regexes
+
+TWEET1_PARTIAL_RG = re.compile(rf"""
 /[\w-]+                                 # Account
 /status
 /(\d+)                                  # ID
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
-"""https://twitter.com/danboorubot"""
+TWEET2_PARTIAL_RG = re.compile(rf"""
+/i/web/status
+/(\d+)                                  # ID
+(\?|$)                                  # End
+""", re.X | re.IGNORECASE)
 
-USERS1_RG = re.compile(r"""
-^https?://twitter\.com                  # Hostname
+USERS1_PARTIAL_RG = re.compile(rf"""
 /([\w-]+)                               # Account
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
-"""https://twitter.com/intent/user?user_id=2807221321"""
-
-USERS2_RG = re.compile(r"""
-^https?://twitter\.com                  # Hostname
+USERS2_PARTIAL_RG = re.compile(rf"""
 /intent/user\?user_id=
 (\d+)                                   # User ID
 $                                       # End
 """, re.X | re.IGNORECASE)
 
-"""https://twitter.com/i/user/994169624659804161"""
-
-USERS3_RG = re.compile(r"""
-^https?://twitter\.com                  # Hostname
+USERS3_PARTIAL_RG = re.compile(rf"""
 /i/user
 /(\d+)                                  # User ID
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
-"""https://pbs.twimg.com/media/Es5NR-YVgAQzpJP.jpg:orig"""
-"""http://pbs.twimg.com/tweet_video_thumb/EiWHH0HVgAAbEcF.jpg"""
-
-IMAGE1_RG = re.compile(r"""
-^https?://pbs\.twimg\.com               # Hostname
+IMAGE1_PARTIAL_RG = re.compile(rf"""
 /(media|tweet_video_thumb)
 /([^.]+)                               # Image key
 \.(jpg|png|gif)                         # Extension
 (?::(orig|large|medium|small|thumb))?   # Size
 """, re.X | re.IGNORECASE)
 
-"""https://pbs.twimg.com/media/Es5NR-YVgAQzpJP?format=jpg&name=900x900"""
-
-IMAGE2_RG = re.compile(r"""
-^https?://pbs\.twimg\.com               # Hostname
+IMAGE2_PARTIAL_RG = re.compile(rf"""
 /(media|tweet_video_thumb)
 /([\w-]+)                               # Image key
 \?format=(jpg|png|gif)                  # Extension
 (?:&name=(\w+))?$                       # Size
 """, re.X | re.IGNORECASE)
 
-"""http://pbs.twimg.com/ext_tw_video_thumb/1270031579470061568/pu/img/cLxRLtYjq_D10ome.jpg"""
-"""https://pbs.twimg.com/amplify_video_thumb/1096312943845593088/img/VE7v_9MVr3tqZMNH.jpg"""
-
-IMAGE3_RG = re.compile(r"""
-^https?://pbs\.twimg\.com                   # Hostname
+IMAGE3_PARTIAL_RG = re.compile(rf"""
 /(ext_tw_video_thumb|amplify_video_thumb)   # Type
 /(\d+)                                      # Twitter ID
 (/\w+)?                                     # Path
@@ -126,10 +119,7 @@ IMAGE3_RG = re.compile(r"""
 (?::(orig|large|medium|small|thumb))?       # Size
 """, re.X | re.IGNORECASE)
 
-"""https://pbs.twimg.com/ext_tw_video_thumb/1440389658647490560/pu/img/tZehLN5THk3Yyedt?format=jpg&name=orig"""
-
-IMAGE4_RG = re.compile(r"""
-^https?://pbs\.twimg\.com                   # Hostname
+IMAGE4_PARTIAL_RG = re.compile(rf"""
 /(ext_tw_video_thumb|amplify_video_thumb)   # Type
 /(\d+)                                      # Twitter ID
 (/\w+)?                                     # Path
@@ -139,22 +129,13 @@ IMAGE4_RG = re.compile(r"""
 (?:&name=(\w+))?$                           # Size
 """, re.X | re.IGNORECASE)
 
-
-"""https://video.twimg.com/tweet_video/EiWHH0HVgAAbEcF.mp4"""
-
-VIDEO1_RG = re.compile(r"""
-https?://video\.twimg\.com              # Hostname
+VIDEO1_PARTIAL_RG = re.compile(rf"""
 /tweet_video
 /([^.]+)                                  # Video key
 \.(mp4)                                 # Extension
 """, re.X | re.IGNORECASE)
 
-
-"""https://video.twimg.com/ext_tw_video/1270031579470061568/pu/vid/640x640/M54mOuT519Rb5eXs.mp4"""
-"""https://video.twimg.com/amplify_video/1296680886113456134/vid/1136x640/7_ps073yayavGQUe.mp4"""
-
-VIDEO2_RG = re.compile(r"""
-https?://video\.twimg\.com              # Hostname
+VIDEO2_PARTIAL_RG = re.compile(rf"""
 /(ext_tw_video|amplify_video)           # Type
 /(\d+)                                  # Twitter ID
 (?:/\w+)?
@@ -163,6 +144,55 @@ https?://video\.twimg\.com              # Hostname
 /([^.]+)                               # Video key
 \.(mp4)                                 # Extension
 """, re.X | re.IGNORECASE)
+
+# ###### Full URL regexes
+
+"""https://twitter.com/danboorubot/status/1617004230505537536"""
+
+TWEET1_RG = re.compile(f'{TWITTER_HOST_RG.pattern}{TWEET1_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""https://twitter.com/i/web/status/1479489096045281283"""
+
+TWEET2_RG = re.compile(f'{TWITTER_HOST_RG.pattern}{TWEET2_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""https://twitter.com/danboorubot"""
+
+USERS1_RG = re.compile(f'{TWITTER_HOST_RG.pattern}{USERS1_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""https://twitter.com/intent/user?user_id=2807221321"""
+
+USERS2_RG = re.compile(f'{TWITTER_HOST_RG.pattern}{USERS2_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""https://twitter.com/i/user/994169624659804161"""
+
+USERS3_RG = re.compile(f'{TWITTER_HOST_RG.pattern}{USERS3_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""https://pbs.twimg.com/media/Es5NR-YVgAQzpJP.jpg:orig"""
+"""http://pbs.twimg.com/tweet_video_thumb/EiWHH0HVgAAbEcF.jpg"""
+
+IMAGE1_RG = re.compile(f'{TWIMG_HOST_RG.pattern}{IMAGE1_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""https://pbs.twimg.com/media/Es5NR-YVgAQzpJP?format=jpg&name=900x900"""
+
+IMAGE2_RG = re.compile(f'{TWIMG_HOST_RG.pattern}{IMAGE2_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""http://pbs.twimg.com/ext_tw_video_thumb/1270031579470061568/pu/img/cLxRLtYjq_D10ome.jpg"""
+"""https://pbs.twimg.com/amplify_video_thumb/1096312943845593088/img/VE7v_9MVr3tqZMNH.jpg"""
+
+IMAGE3_RG = re.compile(f'{TWIMG_HOST_RG.pattern}{IMAGE3_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""https://pbs.twimg.com/ext_tw_video_thumb/1440389658647490560/pu/img/tZehLN5THk3Yyedt?format=jpg&name=orig"""
+
+IMAGE4_RG = re.compile(f'{TWIMG_HOST_RG.pattern}{IMAGE4_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""https://video.twimg.com/tweet_video/EiWHH0HVgAAbEcF.mp4"""
+
+VIDEO1_RG = re.compile(f'{TWVIDEO_HOST_RG.pattern}{VIDEO1_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+"""https://video.twimg.com/ext_tw_video/1270031579470061568/pu/vid/640x640/M54mOuT519Rb5eXs.mp4"""
+"""https://video.twimg.com/amplify_video/1296680886113456134/vid/1136x640/7_ps073yayavGQUe.mp4"""
+
+VIDEO2_RG = re.compile(f'{TWVIDEO_HOST_RG.pattern}{VIDEO2_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
 
 SHORT_URL_REPLACE_RG = re.compile(r"""
 https?://t\.co                         # Hostname
@@ -349,7 +379,7 @@ def is_artist_id_url(url):
 
 
 def is_post_url(url):
-    return bool(TWEET_RG.match(url))
+    return bool(TWEET1_RG.match(url))
 
 
 def partial_media_url(url):
@@ -359,12 +389,35 @@ def partial_media_url(url):
     return parse.path + query_addon
 
 
+def is_media_url(url):
+    return is_image_url(url) or is_video_url(url)
+
+
+def is_partial_media_url(url):
+    return is_partial_image_url(url) or is_partial_video_url(url)
+
+
 def is_image_url(url):
     return bool(IMAGE1_RG.match(url) or IMAGE2_RG.match(url) or IMAGE3_RG.match(url) or IMAGE4_RG.match(url))
 
 
+def is_partial_image_url(url):
+    return bool(IMAGE1_PARTIAL_RG.match(url) or IMAGE2_PARTIAL_RG.match(url) or IMAGE3_PARTIAL_RG.match(url) or IMAGE4_PARTIAL_RG.match(url))
+
+
 def is_video_url(url):
     return bool(VIDEO1_RG.match(url) or VIDEO2_RG.match(url))
+
+
+def is_partial_video_url(url):
+    return bool(VIDEO1_PARTIAL_RG.match(url) or VIDEO2_PARTIAL_RG.match(url))
+
+
+def get_domain_from_partial_url(url):
+    if is_partial_image_url(url):
+        return 'pbs.twimg.com'
+    if is_partial_video_url(url):
+        return 'video.twimg.com'
 
 
 def is_request_url(request_url):
@@ -372,7 +425,7 @@ def is_request_url(request_url):
 
 
 def get_illust_id(request_url):
-    return int(TWEET_RG.match(request_url).group(1))
+    return int(TWEET1_RG.match(request_url).group(1))
 
 
 def get_artist_id_url_id(artist_url):
