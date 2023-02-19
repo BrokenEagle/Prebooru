@@ -269,14 +269,15 @@ def process_html(id):
         return redirect(request.referrer)
     update_subscription_status(subscription, 'manual')
     job_id = "process_subscription_manual-%d" % subscription.id
-    job_status = {
+    job_status = get_job_status_data(job_id) or {}
+    job_status.update({
         'stage': None,
         'range': None,
         'records': 0,
         'illusts': 0,
         'elements': 0,
         'downloads': 0,
-    }
+    })
     create_or_update_job_status(job_id, job_status)
     SESSION.commit()
     SCHEDULER.add_job(job_id, process_subscription_manual, args=(subscription.id, job_id))
