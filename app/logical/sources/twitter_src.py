@@ -1243,27 +1243,32 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
     job_status = get_job_status_data(job_id) or {}
     job_status['stage'] = 'querying'
     update_job_status(job_id, job_status)
-    tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id, job_id=job_id, job_status=job_status)
-    if is_error(tweet_ids):
-        return tweet_ids
-    # Only the media timeline is checked for errors on empty, as the search timeline will likely have empty results
-    if tweet_ids is None:
-        twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
-        if is_error(twuser):
-            inactivate_artist(artist)
-            return twuser
-        # The timeline was empty of any tweets
-        return []
-    # Only continue on if this is the initial full process (last ID is null)
-    if len(tweet_ids) == 0 or last_id is not None:
-        # No tweet IDs means that no new results were found, but the timeline was not empty
-        return tweet_ids
-    # Update the artist current user account in case it has changed since creating the artist
-    update_artist_from_source(artist)
+    if job_status.get('ids') is None:
+        tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id, job_id=job_id, job_status=job_status)
+        if is_error(tweet_ids):
+            return tweet_ids
+        # Only the media timeline is checked for errors on empty, as the search timeline will likely have empty results
+        if tweet_ids is None:
+            twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
+            if is_error(twuser):
+                inactivate_artist(artist)
+                return twuser
+            # The timeline was empty of any tweets
+            return []
+        # Only continue on if this is the initial full process (last ID is null)
+        if len(tweet_ids) == 0 or last_id is not None:
+            # No tweet IDs means that no new results were found, but the timeline was not empty
+            return tweet_ids
+        # Update the artist current user account in case it has changed since creating the artist
+        update_artist_from_source(artist)
+        job_status['ids'] = tweet_ids = list(set(job_status['ids']).union(tweet_ids))
+    else:
+        tweet_ids = job_status['ids']
     lowest_tweet_id = min(tweet_ids)
     timestamp = snowflake_to_epoch(lowest_tweet_id)
     timeval = datetime_from_epoch(timestamp)
     timeval = add_days(timeval, 1)  # Add a day since the media timeline can end partway through a day
+    job_status['ids'] = tweet_ids
     while timeval > artist.site_created:
         next_timeval = add_days(timeval, -90)  # Get 3 months at a time
         until_date = get_date(timeval)
@@ -1277,6 +1282,7 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
         if is_error(temp_ids):
             return temp_ids
         tweet_ids += temp_ids if temp_ids is not None else []
+        job_status['ids'] = tweet_ids
         timeval = next_timeval
     update_job_status(job_id, job_status)
     return tweet_ids
