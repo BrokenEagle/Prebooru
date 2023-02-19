@@ -19,55 +19,73 @@ WORKER_LOCKS = ['process_subscription_manual']
 
 # #### SCHEDULE_CONFIG
 
-JOB_ITEMS = [{
-    'name': 'expunge_cache_records',
-    'config': EXPUNGE_CACHE_RECORDS,
-    },{
-    'name': 'expunge_archive_records',
-    'config': EXPUNGE_ARCHIVE_RECORDS,
-    },{
-    'name': 'generate_missing_image_hashes',
-    'config': GENERATE_MISSING_IMAGE_HASHES,
-    },{
-    'name': 'calculate_similarity_matches',
-    'config': CALCULATE_SIMILARITY_MATCHES,
-    },{
-    'name': 'check_all_boorus',
-    'config': CHECK_ALL_BOORUS,
-    },{
-    'name': 'check_all_artists_for_boorus',
-    'config': CHECK_ALL_ARTISTS_FOR_BOORUS,
-    },{
-    'name': 'check_all_posts_for_danbooru_id',
-    'config': CHECK_ALL_POSTS_FOR_DANBOORU_ID,
-    },{
-    'name': 'check_pending_subscriptions',
-    'config': CHECK_PENDING_SUBSCRIPTIONS,
-    },{
-    'name': 'check_pending_downloads',
-    'config': CHECK_PENDING_DOWNLOADS,
-    },{
-    'name': 'unlink_expired_subscription_elements',
-    'config': UNLINK_EXPIRED_SUBSCRIPTION_ELEMENTS,
-    },{
-    'name': 'delete_expired_subscription_elements',
-    'config': DELETE_EXPIRED_SUBSCRIPTION_ELEMENTS,
-    },{
-    'name': 'archive_expired_subscription_elements',
-    'config': ARCHIVE_EXPIRED_SUBSCRIPTION_ELEMENTS,
-    },{
-    'name': 'recalculate_pool_positions',
-    'config': RECALCULATE_POOL_POSITIONS,
-    },{
-    'name': 'relocate_old_posts',
-    'config': RELOCATE_OLD_POSTS,
-    },{
-    'name': 'delete_orphan_images',
-    'config': DELETE_ORPHAN_IMAGES,
-    },{
-    'name': 'vacuum_analyze_database',
-    'config': VACUUM_ANALYZE_DATABASE,
-}]
+JOB_ITEMS =\
+    [
+        {
+            'name': 'expunge_cache_records',
+            'config': EXPUNGE_CACHE_RECORDS,
+        },
+        {
+            'name': 'expunge_archive_records',
+            'config': EXPUNGE_ARCHIVE_RECORDS,
+        },
+        {
+            'name': 'generate_missing_image_hashes',
+            'config': GENERATE_MISSING_IMAGE_HASHES,
+        },
+        {
+            'name': 'calculate_similarity_matches',
+            'config': CALCULATE_SIMILARITY_MATCHES,
+        },
+        {
+            'name': 'check_all_boorus',
+            'config': CHECK_ALL_BOORUS,
+        },
+        {
+            'name': 'check_all_artists_for_boorus',
+            'config': CHECK_ALL_ARTISTS_FOR_BOORUS,
+        },
+        {
+            'name': 'check_all_posts_for_danbooru_id',
+            'config': CHECK_ALL_POSTS_FOR_DANBOORU_ID,
+        },
+        {
+            'name': 'check_pending_subscriptions',
+            'config': CHECK_PENDING_SUBSCRIPTIONS,
+        },
+        {
+            'name': 'check_pending_downloads',
+            'config': CHECK_PENDING_DOWNLOADS,
+        },
+        {
+            'name': 'unlink_expired_subscription_elements',
+            'config': UNLINK_EXPIRED_SUBSCRIPTION_ELEMENTS,
+        },
+        {
+            'name': 'delete_expired_subscription_elements',
+            'config': DELETE_EXPIRED_SUBSCRIPTION_ELEMENTS,
+        },
+        {
+            'name': 'archive_expired_subscription_elements',
+            'config': ARCHIVE_EXPIRED_SUBSCRIPTION_ELEMENTS,
+        },
+        {
+            'name': 'recalculate_pool_positions',
+            'config': RECALCULATE_POOL_POSITIONS,
+        },
+        {
+            'name': 'relocate_old_posts',
+            'config': RELOCATE_OLD_POSTS,
+        },
+        {
+            'name': 'delete_orphan_images',
+            'config': DELETE_ORPHAN_IMAGES,
+        },
+        {
+            'name': 'vacuum_analyze_database',
+            'config': VACUUM_ANALYZE_DATABASE,
+        },
+    ]
 
 JOB_CONFIG = {
     item['name']: {

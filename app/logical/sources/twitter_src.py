@@ -60,56 +60,56 @@ HAS_TAG_SEARCH = True
 # ###### Hostname regexes
 
 TWITTER_HOST_RG = re.compile(r'^https?://twitter\.com', re.IGNORECASE)
-TWIMG_HOST_RG = re.compile('^https?://pbs\.twimg\.com', re.IGNORECASE)
-TWVIDEO_HOST_RG = re.compile('^https?://video\.twimg\.com', re.IGNORECASE)
+TWIMG_HOST_RG = re.compile(r'^https?://pbs\.twimg\.com', re.IGNORECASE)
+TWVIDEO_HOST_RG = re.compile(r'^https?://video\.twimg\.com', re.IGNORECASE)
 
 # ###### Partial URL regexes
 
-TWEET1_PARTIAL_RG = re.compile(rf"""
+TWEET1_PARTIAL_RG = re.compile(r"""
 /[\w-]+                                 # Account
 /status
 /(\d+)                                  # ID
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
-TWEET2_PARTIAL_RG = re.compile(rf"""
+TWEET2_PARTIAL_RG = re.compile(r"""
 /i/web/status
 /(\d+)                                  # ID
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
-USERS1_PARTIAL_RG = re.compile(rf"""
+USERS1_PARTIAL_RG = re.compile(r"""
 /([\w-]+)                               # Account
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
-USERS2_PARTIAL_RG = re.compile(rf"""
+USERS2_PARTIAL_RG = re.compile(r"""
 /intent/user\?user_id=
 (\d+)                                   # User ID
 $                                       # End
 """, re.X | re.IGNORECASE)
 
-USERS3_PARTIAL_RG = re.compile(rf"""
+USERS3_PARTIAL_RG = re.compile(r"""
 /i/user
 /(\d+)                                  # User ID
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
-IMAGE1_PARTIAL_RG = re.compile(rf"""
+IMAGE1_PARTIAL_RG = re.compile(r"""
 /(media|tweet_video_thumb)
 /([^.]+)                               # Image key
 \.(jpg|png|gif)                         # Extension
 (?::(orig|large|medium|small|thumb))?   # Size
 """, re.X | re.IGNORECASE)
 
-IMAGE2_PARTIAL_RG = re.compile(rf"""
+IMAGE2_PARTIAL_RG = re.compile(r"""
 /(media|tweet_video_thumb)
 /([\w-]+)                               # Image key
 \?format=(jpg|png|gif)                  # Extension
 (?:&name=(\w+))?$                       # Size
 """, re.X | re.IGNORECASE)
 
-IMAGE3_PARTIAL_RG = re.compile(rf"""
+IMAGE3_PARTIAL_RG = re.compile(r"""
 /(ext_tw_video_thumb|amplify_video_thumb)   # Type
 /(\d+)                                      # Twitter ID
 (/\w+)?                                     # Path
@@ -119,7 +119,7 @@ IMAGE3_PARTIAL_RG = re.compile(rf"""
 (?::(orig|large|medium|small|thumb))?       # Size
 """, re.X | re.IGNORECASE)
 
-IMAGE4_PARTIAL_RG = re.compile(rf"""
+IMAGE4_PARTIAL_RG = re.compile(r"""
 /(ext_tw_video_thumb|amplify_video_thumb)   # Type
 /(\d+)                                      # Twitter ID
 (/\w+)?                                     # Path
@@ -129,13 +129,13 @@ IMAGE4_PARTIAL_RG = re.compile(rf"""
 (?:&name=(\w+))?$                           # Size
 """, re.X | re.IGNORECASE)
 
-VIDEO1_PARTIAL_RG = re.compile(rf"""
+VIDEO1_PARTIAL_RG = re.compile(r"""
 /tweet_video
 /([^.]+)                                  # Video key
 \.(mp4)                                 # Extension
 """, re.X | re.IGNORECASE)
 
-VIDEO2_PARTIAL_RG = re.compile(rf"""
+VIDEO2_PARTIAL_RG = re.compile(r"""
 /(ext_tw_video|amplify_video)           # Type
 /(\d+)                                  # Twitter ID
 (?:/\w+)?
@@ -216,7 +216,7 @@ TWITTER_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
                "Zz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
 
 TWITTER_USER_HEADERS = {
-    'user-agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',  # noqa: E501
     'authorization': 'Bearer ' + TWITTER_AUTH,
     'x-csrf-token': TWITTER_CSRF_TOKEN,
     'cookie': f'auth_token={TWITTER_USER_TOKEN}; ct0={TWITTER_CSRF_TOKEN}'
@@ -299,7 +299,7 @@ TWITTER_BASE_PARAMS = {
     "send_error_codes": "true",
     "simple_quoted_tweet": "true",
     "count": "20",
-    "ext": "mediaStats,highlightedLabel,hasNftAvatar,voiceInfo,birdwatchPivot,enrichments,superFollowMetadata,unmentionInfo,editControl,collab_control,vibe",
+    "ext": "mediaStats,highlightedLabel,hasNftAvatar,voiceInfo,birdwatchPivot,enrichments,superFollowMetadata,unmentionInfo,editControl,collab_control,vibe",  # noqa: E501
 }
 
 TWITTER_SEARCH_PARAMS = {
@@ -402,7 +402,8 @@ def is_image_url(url):
 
 
 def is_partial_image_url(url):
-    return bool(IMAGE1_PARTIAL_RG.match(url) or IMAGE2_PARTIAL_RG.match(url) or IMAGE3_PARTIAL_RG.match(url) or IMAGE4_PARTIAL_RG.match(url))
+    return bool(IMAGE1_PARTIAL_RG.match(url) or IMAGE2_PARTIAL_RG.match(url)
+                or IMAGE3_PARTIAL_RG.match(url) or IMAGE4_PARTIAL_RG.match(url))
 
 
 def is_video_url(url):
@@ -825,7 +826,8 @@ def twitter_request(url, method='GET', wait=True, use_httpx=False):
             print_error("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, response.reason, response.text))
             if DEBUG_MODE:
                 log_network_error('sources.twitter.twitter_request', response)
-            return {'error': True, 'message': "HTTP %d - %s" % (response.status_code, response.reason), 'response': response}
+            msg = "HTTP %d - %s" % (response.status_code, response.reason)
+            return {'error': True, 'message': msg, 'response': response}
     else:
         print_error("Connection errors exceeded!")
         return {'error': True, 'message': repr(error)}

@@ -6,15 +6,9 @@ from utility.uprint import print_warning
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Illust
-from ..utility import set_error
 from ..logger import handle_error_message
-from ..sources.base_src import get_media_source
-from ..database.artist_db import get_site_artist, get_blank_artist
-from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust,\
-    get_site_illust, create_illust_from_json, recreate_illust_relations
-from ..database.illust_url_db import get_illust_url_by_url, set_url_site
-from ..database.post_db import post_append_illust_url, get_post_by_md5
-from ..database.notation_db import create_notation_from_json
+from ..database.artist_db import get_blank_artist
+from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
 from .artist_rec import get_or_create_artist_from_source
@@ -53,7 +47,7 @@ def update_illust_from_source(illust):
 def archive_illust_for_deletion(illust, expires=30):
     archive = archive_record(illust, expires)
     if archive is None:
-        return handle_error_message(f"Error archiving data [{illust.shortlink}]: {repr(e)}")
+        return handle_error_message(f"Error archiving data [{illust.shortlink}].")
     retdata = {'item': archive.to_json()}
     retdata.update(delete_data(illust, delete_illust))
     return retdata

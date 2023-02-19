@@ -9,13 +9,10 @@ from utility.data import inc_dict_entry
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Artist
-from ..utility import set_error
 from ..logger import handle_error_message
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, get_site_artist,\
-    create_artist_from_json, artist_append_booru, delete_artist, get_artists_without_boorus_page,\
-    recreate_artist_relations
-from ..database.booru_db import get_booru, get_boorus, create_booru_from_parameters, booru_append_artist
-from ..database.notation_db import create_notation_from_json
+    delete_artist, get_artists_without_boorus_page
+from ..database.booru_db import get_boorus, create_booru_from_parameters, booru_append_artist
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
 from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
@@ -104,7 +101,7 @@ def update_artist_from_source(artist):
 def archive_artist_for_deletion(artist, expires=30):
     archive = archive_record(artist, expires)
     if archive is None:
-        return handle_error_message(f"Error archiving data [{artist.shortlink}]: {repr(e)}")
+        return handle_error_message(f"Error archiving data [{artist.shortlink}].")
     retdata = {'item': archive.to_json()}
     retdata.update(delete_data(artist, delete_artist))
     return retdata

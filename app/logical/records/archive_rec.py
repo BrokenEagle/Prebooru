@@ -4,16 +4,12 @@
 import os
 import logging
 
-# ## EXTERNAL IMPORTS
-from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance
-
 # ## PACKAGE IMPORTS
-from utility.uprint import exception_print, print_error
+from utility.uprint import exception_print
 from utility.file import delete_file
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ..utility import set_error
 from ..database.base_db import record_from_json
 from ..database.archive_db import ARCHIVE_DIRECTORY, get_archive, create_archive, update_archive
 
@@ -30,7 +26,7 @@ def archive_record(record, expires=None):
             archive = create_archive(model_name, data_key, data, expires)
         else:
             update_archive(archive, data, expires)
-    except Exception as e:
+    except Exception:
         return None
     return archive
 
@@ -114,7 +110,6 @@ def recreate_links(record, data):
                     SESSION.flush()
             continue
         link_model = getattr(model, attr).property.entity.class_
-        link_attr = getattr(link_model, link_key)
         for value in data['links'][attr]:
             if isinstance(value, dict):
                 value = value[link_key]

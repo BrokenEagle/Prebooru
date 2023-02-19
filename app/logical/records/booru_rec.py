@@ -3,15 +3,12 @@
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Booru
-from ...enum_imports import site_descriptor
-from ..utility import set_error
 from ..logger import handle_error_message
 from ..sources.base_src import get_artist_id_source
 from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
-    get_booru, create_booru_from_json, delete_booru, get_all_boorus_page, recreate_booru_relations
-from ..database.notation_db import create_notation_from_json
+    delete_booru, get_all_boorus_page
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
 from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
@@ -93,7 +90,7 @@ def update_booru_artists_from_source(booru):
 def archive_booru_for_deletion(booru, expires=30):
     archive = archive_record(booru, expires)
     if archive is None:
-        return handle_error_message(f"Error archiving data [{booru.shortlink}]: {repr(e)}")
+        return handle_error_message(f"Error archiving data [{booru.shortlink}].")
     retdata = {'item': archive.to_json()}
     retdata.update(delete_data(booru, delete_booru))
     return retdata

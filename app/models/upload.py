@@ -2,6 +2,7 @@
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
+from sqlalchemy.orm import lazyload
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
@@ -56,7 +57,6 @@ class Upload(JsonModel):
         query = query.options(*_get_options(options))
         query = query.order_by(UploadElement.id.asc())
         return query.count_paginate(per_page=per_page, page=page)
-
 
     @memoized_property
     def illust_urls(self):

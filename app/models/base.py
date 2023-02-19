@@ -364,9 +364,9 @@ class JsonModel(DB.Model):
         data = {}
         for link in self.archive_links:
             if len(link) >= 3:
-                key, rel, attr, *_args = link
+                key, rel, attr, *_ = link
             elif len(link) == 2:
-                key, rel, attr, *_args = link[0], link[0], link[1]
+                key, rel, attr, *_ = link[0], link[0], link[1]
             rel_value = getattr(self, rel)
             if isinstance(rel_value, Iterable):
                 data[key] = [json_serialize(item, attr) for item in getattr(self, rel)]

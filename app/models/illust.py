@@ -2,6 +2,7 @@
 
 # ## EXTERNAL LINKS
 from sqlalchemy.util import memoized_property
+from sqlalchemy.orm import lazyload
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
