@@ -59,6 +59,10 @@ class Booru(JsonModel):
 
     # ## Instance properties
 
+    @property
+    def other_names(self):
+        return [name for name in self.names if name != self.current_name]
+
     @memoized_property
     def recent_posts(self):
         q = self._post_query
@@ -103,6 +107,11 @@ class Booru(JsonModel):
             danbooru_id = key
         return cls.query.filter(cls.danbooru_id == danbooru_id)\
                         .one_or_none()
+
+    archive_scalars = [('names', 'other_names', 'names',
+                        lambda x: x.names.append(x.current_name))]
+    archive_attachments = ['notations']
+    archive_links = [('artists', 'key')]
 
     @classproperty(cached=True)
     def json_attributes(cls):

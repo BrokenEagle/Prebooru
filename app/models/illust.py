@@ -97,6 +97,10 @@ class Illust(JsonModel):
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)
 
+    @property
+    def active_urls(self):
+        return [url for url in self.urls if url.post is not None]
+
     @memoized_property
     def posts(self):
         return [post for post in self._posts if post is not None]
@@ -127,6 +131,19 @@ class Illust(JsonModel):
     def key(self):
         return '%s-%d' % (self.site.name, self.site_illust_id)
 
+    def get_url_by_key(self, key):
+        return next((illust_url for illust_url in self.urls if illust_url.key == key), None)
+
+    def attach_post_by_link_key(self, link_key):
+        from .post import Post
+        post = Post.query.filter_by(md5=link_key['md5']).one_or_none()
+        if post is not None:
+            illust_url = self.get_url_by_key(link_key['key'])
+            if illust_url is not None:
+                illust_url.post = post
+                return True
+        return False
+
     def delete(self):
         pools = [pool for pool in self.pools]
         DB.session.delete(self)
@@ -135,9 +152,6 @@ class Illust(JsonModel):
             for pool in pools:
                 pool._elements.reorder()
             DB.session.commit()
-
-    def archive_dict(self):
-        return {k: v for (k, v) in super().archive_dict().items() if k not in ['site', 'site_id']}
 
     # ## Class properties
 
@@ -164,6 +178,13 @@ class Illust(JsonModel):
     @classproperty(cached=True)
     def load_columns(cls):
         return super().load_columns + ['site_name']
+
+    archive_excludes = {'site', 'site_id'}
+    archive_includes = {('site', 'site_name')}
+    archive_scalars = ['commentaries', 'tags']
+    archive_attachments = ['urls', ('data', 'site_data'), 'notations']
+    archive_links = [('artist', 'site_artist_id'),
+                     ('posts', 'active_urls', 'link_key', 'attach_post_by_link_key')]
 
     @classproperty(cached=True)
     def json_attributes(cls):

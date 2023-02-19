@@ -25,11 +25,6 @@ class SiteData(JsonModel):
     # ## Relations
     # (OtO) illust [Illust]
 
-    # ## Instance properties
-
-    def archive_dict(self):
-        return {k: v for (k, v) in super().archive_dict().items() if k not in ['type', 'type_id']}
-
     # ## Class properties
 
     @classmethod
@@ -41,6 +36,8 @@ class SiteData(JsonModel):
                 return PixivData.loads(data, None)
         else:
             return super(SiteData, cls).loads(data)
+
+    archive_excludes = {'type', 'type_id'}
 
     polymorphic_base = True
 

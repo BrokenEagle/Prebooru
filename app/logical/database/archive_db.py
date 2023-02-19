@@ -50,9 +50,12 @@ def set_archive_permenant(item):
     SESSION.commit()
 
 
-def set_archive_temporary(item, days):
+def set_archive_temporary(item, days, commit=False):
     item.expires = days_from_now(days)
-    SESSION.commit()
+    if commit:
+        SESSION.commit()
+    else:
+        SESSION.flush()
 
 
 # ###### DELETE

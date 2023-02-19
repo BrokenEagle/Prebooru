@@ -59,6 +59,8 @@ class Notation(JsonModel):
         record.no_pool = False
         return record
 
+    archive_excludes = {'no_pool'}
+
     # ## Private
 
     @property

@@ -82,6 +82,6 @@ def set_temporary_link(archive):
 
 def has_relink(archive):
     for key in archive.data['links']:
-        if len(archive.data['links'][key]) > 0:
+        if isinstance(archive.data['links'], list) and len(archive.data['links'][key]) > 0:
             return True
     return False

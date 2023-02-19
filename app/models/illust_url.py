@@ -1,5 +1,9 @@
 # APP/MODELS/ILLUST_URL.PY
 
+# ## PYTHON IMPORTS
+import base64
+import hashlib
+
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
@@ -77,17 +81,14 @@ class IllustUrl(JsonModel):
     def key(self):
         return self.full_url
 
-    def archive_dict(self):
-        data = {
-            'url': self.full_url,
-            'width': self.width,
-            'height': self.height,
-            'order': self.order,
-            'active': self.active,
-        }
-        if self.type == 'video':
-            data['sample'] = self.full_sample_url
-        return data
+    @property
+    def hash_key(self):
+        digest = hashlib.md5(self.full_url.encode('utf')).digest()[:3]
+        return base64.b64encode(digest).decode()
+
+    @property
+    def link_key(self):
+        return {'md5': self.post.md5, 'key': self.hash_key}
 
     # ## Class properties
 
@@ -108,6 +109,9 @@ class IllustUrl(JsonModel):
             data['sample_site_id'] = site.id
             data['sample_url'] = site.source.partial_media_url(data['sample'])
         return super().loads(data)
+
+    archive_excludes = {'url', 'site', 'site_id', 'sample', 'sample_url', 'sample_site_id'}
+    archive_includes = {('url', 'full_url'), ('sample', 'full_sample_url'), ('key', 'hash_key')}
 
     @classproperty(cached=True)
     def json_attributes(cls):

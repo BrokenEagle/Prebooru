@@ -2,13 +2,19 @@
 
 # ## LOCAL IMPORTS
 from ... import SESSION
+from ...models import Booru
+from ...enum_imports import site_descriptor
 from ..utility import set_error
+from ..logger import handle_error_message
 from ..sources.base_src import get_artist_id_source
 from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
     get_booru, create_booru_from_json, delete_booru, get_all_boorus_page, recreate_booru_relations
-from ..database.archive_db import get_archive, create_archive, update_archive
+from ..database.notation_db import create_notation_from_json
+from ..database.archive_db import set_archive_temporary
+from .base_rec import delete_data
+from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
 
 
 # ## FUNCTIONS
@@ -84,53 +90,33 @@ def update_booru_artists_from_source(booru):
     return {'error': False}
 
 
-def archive_booru_for_deletion(booru):
-    retdata = {'error': False}
-    retdata = _archive_booru_data(booru, retdata)
-    if retdata['error']:
-        return retdata
-    return _delete_booru_data(booru, retdata)
-
-
-def recreate_archived_booru(data):
-    retdata = {'error': False}
-    booru = get_booru(data['body']['danbooru_id'])
-    if booru is not None:
-        return set_error(retdata, "Booru already exists: booru #%d" % booru.id)
-    booru = create_booru_from_json(data['body'])
-    if len(data['scalars']['names']):
-        recreate_booru_relations(booru, {'names': data['scalars']['names']})
-    retdata['item'] = booru.to_json()
+def archive_booru_for_deletion(booru, expires=30):
+    archive = archive_record(booru, expires)
+    if archive is None:
+        return handle_error_message(f"Error archiving data [{booru.shortlink}]: {repr(e)}")
+    retdata = {'item': archive.to_json()}
+    retdata.update(delete_data(booru, delete_booru))
     return retdata
 
 
-# #### Private functions
-
-def _archive_booru_data(booru, retdata):
-    data = {
-        'body': booru.archive_dict(),
-        'scalars': {
-            'names': list(booru.names),
-        },
-        'relations': {},
-        'links': {},
-    }
-    data_key = '%d' % (booru.danbooru_id)
-    archive = get_archive('booru', data_key)
+def recreate_archived_booru(archive):
     try:
-        if archive is None:
-            create_archive('booru', data_key, data, 30)
-        else:
-            update_archive(archive, data, 30)
+        booru = recreate_record(Booru, archive.key, archive.data)
+        recreate_scalars(booru, archive.data)
+        recreate_attachments(booru, archive.data)
+        recreate_links(booru, archive.data)
     except Exception as e:
-        return set_error(retdata, "Error archiving data: %s" % str(e))
-    return retdata
-
-
-def _delete_booru_data(booru, retdata):
-    try:
-        delete_booru(booru)
-    except Exception as e:
+        retdata = handle_error_message(str(e))
         SESSION.rollback()
-        return set_error(retdata, "Error deleting booru: %s" % str(e))
+    else:
+        retdata = {'error': False, 'item': booru.to_json()}
+        set_archive_temporary(archive, 7)
+        SESSION.commit()
     return retdata
+
+
+def relink_archived_booru(archive):
+    booru = Booru.find_by_key(archive.key)
+    if booru is None:
+        return f"No booru found with key {archive.key}"
+    recreate_links(booru, archive.data)
