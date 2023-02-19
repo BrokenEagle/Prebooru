@@ -1,7 +1,7 @@
 [flake8]
 max-line-length = 120
 ignore = W503
-exclude = migrations/versions*,migrations/env.py,config/local.py
+exclude = migrations/database_versions/*,migrations/enum_versions/*,migrations/env.py,config/local.py,node_modules/
 classmethod-decorators = classmethod,classproperty
 max-complexity = 10
 per-file-ignores =

@@ -1,4 +1,4 @@
-# APP/CONTROLLERS/ILLUST_URLS_CONTROLLER.PY
+# APP/CONTROLLERS/UPLOAD_ELEMENTS_CONTROLLER.PY
 
 # ## PYTHON IMPORTS
 from flask import Blueprint, request, render_template
@@ -67,4 +67,5 @@ def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
     upload_elements = paginate(q, request)
-    return render_template("upload_elements/index.html", upload_elements=upload_elements, upload_element=UploadElement())
+    return render_template("upload_elements/index.html", upload_elements=upload_elements,
+                           upload_element=UploadElement())

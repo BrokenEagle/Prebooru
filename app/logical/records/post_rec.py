@@ -2,7 +2,6 @@
 
 # ### PYTHON IMPORTS
 import os
-import threading
 
 # ### EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
@@ -21,12 +20,10 @@ from ..logger import handle_error_message
 from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm
-from ..database.post_db import create_post_from_json, delete_post, post_append_illust_url, get_post_by_md5,\
+from ..database.post_db import delete_post,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, set_post_alternate, alternate_posts_query,\
     get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id
-from ..database.illust_url_db import get_illust_url_by_url
-from ..database.notation_db import create_notation_from_json
-from ..database.error_db import create_error_from_json, create_error
+from ..database.error_db import create_error
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
 from .image_hash_rec import generate_post_image_hashes
@@ -138,7 +135,7 @@ def archive_post_for_deletion(post, expires=30):
     temppost = post.copy()
     archive = archive_record(post, expires)
     if archive is None:
-        msg = f"Error archiving data [{post.shortlink}]: {repr(e)}"
+        msg = f"Error archiving data [{post.shortlink}]."
         return handle_error_message(msg, retdata)
     retdata['item'] = archive.to_json()
     error = _copy_media_files(post, archive, True, False)
@@ -157,7 +154,8 @@ def archive_post_for_deletion(post, expires=30):
 
 def recreate_archived_post(archive):
     try:
-        post = recreate_record(Post, archive.key, merge_dicts(archive.data, {'body': {'alternate': False, 'simcheck': False}}))
+        recreate_data = merge_dicts(archive.data, {'body': {'alternate': False, 'simcheck': False}})
+        post = recreate_record(Post, archive.key, recreate_data)
         recreate_scalars(post, archive.data)
         recreate_attachments(post, archive.data)
         recreate_links(post, archive.data)
@@ -174,8 +172,8 @@ def recreate_archived_post(archive):
     retdata = create_sample_preview_files(post)
     if post.is_video:
         SessionThread(target=create_video_sample_preview_files,
-                         args=(post.file_path, post.video_preview_path,
-                               post.video_sample_path, create_sample)).start()
+                      args=(post.file_path, post.video_preview_path,
+                            post.video_sample_path, create_sample)).start()
     SessionThread(target=process_image_matches, args=([post.id],)).start()
     retdata['item'] = post.to_json()
     set_archive_temporary(archive, 7)
