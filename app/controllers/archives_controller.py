@@ -6,7 +6,10 @@ from flask import Blueprint, request, render_template, url_for, redirect, flash
 # ## LOCAL IMPORTS
 from ..models import Archive
 from ..logical.database.archive_db import set_archive_permenant, set_archive_temporary
-from ..logical.records.archive_rec import relink_archive_item, reinstantiate_archive_item
+from ..logical.records.booru_rec import recreate_archived_booru, relink_archived_booru
+from ..logical.records.artist_rec import recreate_archived_artist, relink_archived_artist
+from ..logical.records.illust_rec import recreate_archived_illust, relink_archived_illust
+from ..logical.records.post_rec import recreate_archived_post, relink_archived_post
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort
 
@@ -15,6 +18,19 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("archive", __name__)
 
+RECREATE_ARCHIVE_FUNCS = {
+    'booru': recreate_archived_booru,
+    'artist': recreate_archived_artist,
+    'illust': recreate_archived_illust,
+    'post': recreate_archived_post,
+}
+
+RELINK_ARCHIVE_FUNCS = {
+    'booru': relink_archived_booru,
+    'artist': relink_archived_artist,
+    'illust': relink_archived_illust,
+    'post': relink_archived_post,
+}
 
 # ## FUNCTIONS
 
@@ -64,7 +80,7 @@ def index_html():
 @bp.route('/archives/<int:id>/reinstantiate', methods=['POST'])
 def reinstantiate_item_html(id):
     archive = get_or_abort(Archive, id)
-    retdata = reinstantiate_archive_item(archive)
+    retdata = RECREATE_ARCHIVE_FUNCS[archive.type.name](archive)
     if retdata['error']:
         flash(retdata['message'], 'error')
     else:
@@ -77,7 +93,7 @@ def reinstantiate_item_html(id):
 @bp.route('/archives/<int:id>/relink', methods=['POST'])
 def relink_item_html(id):
     archive = get_or_abort(Archive, id)
-    retdata = relink_archive_item(archive)
+    retdata = RELINK_ARCHIVE_FUNCS[archive.type.name](archive)
     if retdata['error']:
         flash(retdata['message'], 'error')
     else:
@@ -97,5 +113,5 @@ def set_permenant_html(id):
 @bp.route('/archives/<int:id>/set_temporary', methods=['POST'])
 def set_temporary_html(id):
     archive = get_or_abort(Archive, id)
-    set_archive_temporary(archive, 30)  # Eventually add model specific delay times here
+    set_archive_temporary(archive, 30, commit=True)  # Eventually add model specific delay times here
     return redirect(request.referrer)

@@ -4,50 +4,124 @@
 import os
 import logging
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance
+
 # ## PACKAGE IMPORTS
-from utility.uprint import exception_print
+from utility.uprint import exception_print, print_error
 from utility.file import delete_file
 
 # ## LOCAL IMPORTS
+from ... import SESSION
 from ..utility import set_error
-from ..database.archive_db import ARCHIVE_DIRECTORY
-from .post_rec import recreate_archived_post, relink_archived_post
-from .illust_rec import recreate_archived_illust, relink_archived_illust
-from .artist_rec import recreate_archived_artist, relink_archived_artist
-from .booru_rec import recreate_archived_booru
+from ..database.base_db import record_from_json
+from ..database.archive_db import ARCHIVE_DIRECTORY, get_archive, create_archive, update_archive
 
 
 # ## FUNCTIONS
 
-def reinstantiate_archive_item(archive):
-    # Make these switchers
-    retdata = {'error': False}
-    if archive.type.name == 'post':
-        return recreate_archived_post(archive, True)
-    elif archive.type.name == 'illust':
-        return recreate_archived_illust(archive.data)
-    elif archive.type.name == 'artist':
-        return recreate_archived_artist(archive.data)
-    elif archive.type.name == 'booru':
-        return recreate_archived_booru(archive.data)
-    else:
-        return set_error(retdata, "Recreating %s not handled yet." % archive.type.name)
+def archive_record(record, expires=None):
+    data = record.archive()
+    data_key = record.key
+    model_name = record.model_name
+    archive = get_archive(model_name, data_key)
+    try:
+        if archive is None:
+            archive = create_archive(model_name, data_key, data, expires)
+        else:
+            update_archive(archive, data, expires)
+    except Exception as e:
+        return None
+    return archive
 
 
-def relink_archive_item(archive):
-    # Make these switches
-    retdata = {'error': False}
-    if archive.type.name == 'post':
-        error = relink_archived_post(archive)
-    elif archive.type.name == 'illust':
-        error = relink_archived_illust(archive.data)
-    elif archive.type.name == 'artist':
-        error = relink_archived_artist(archive.data)
-    else:
-        return set_error(retdata, "Relinking %s not handled yet." % archive.type.name)
-    if error is not None:
-        return set_error(retdata, error)
-    return retdata
+def recreate_record(model, key, data):
+    record = model.find_by_key(key)
+    if record is not None:
+        raise Exception(f"Record already exists: {record.shortlink}")
+    recreate_data = {}
+    for rel in model.mandatory_fk_relations:
+        if rel not in data['links']:
+            raise Exception(f"Mandatory link to {rel} not found in archive data.")
+        value = data['links'][rel]
+        rel_record = model.find_rel_by_key(rel, key, value)
+        if rel_record is None:
+            raise Exception(f"Mandatory link to {rel} using key {value} not found in database.")
+        relcol = next(iter(getattr(model, rel).property.local_columns))
+        recreate_data[relcol.key] = rel_record.id
+    for attr in data['body']:
+        mapping = next((incl for incl in model.archive_includes if incl[0] == attr), None)
+        if mapping is not None:
+            key, field = mapping
+        else:
+            key, field = attr, attr
+        recreate_data[field] = data['body'][key]
+    return record_from_json(model, recreate_data)
+
+
+def recreate_scalars(record, data):
+    model = record.__class__
+    for scalar in model.archive_scalars:
+        if isinstance(scalar, str):
+            key = scalar
+            attr = scalar
+        elif isinstance(scalar, tuple):
+            key = scalar[0]
+            attr = scalar[2]
+        if key not in data['scalars']:
+            continue
+        for value in data['scalars'][key]:
+            getattr(record, attr).append(value)
+        if isinstance(scalar, tuple) and len(scalar) > 3:
+            scalar[3](record)
+    SESSION.flush()
+
+
+def recreate_attachments(record, data):
+    model = record.__class__
+    for attachment in model.archive_attachments:
+        if isinstance(attachment, tuple):
+            key, attr, *args = attachment
+        else:
+            key, attr, *args = attachment, attachment
+        if key not in data['attachments']:
+            continue
+        if len(args):
+            attach_model = getattr(record, args[0])
+        else:
+            attach_model = getattr(model, attr).property.entity.class_
+        reverse_attr = getattr(model, attr).property.back_populates
+        attachments = data['attachments'][key]
+        attachments = [attachments] if isinstance(attachments, dict) else attachments
+        for item in attachments:
+            attach_record = attach_model.loads(item, record)
+            SESSION.add(attach_record)
+            attach_record.attach(reverse_attr, record)
+            SESSION.flush()
+
+
+def recreate_links(record, data):
+    model = record.__class__
+    for attr, link_key, *args in model.archive_links:
+        if attr not in data['links']:
+            continue
+        if attr in model.mandatory_fk_relations:
+            continue
+        if len(args) == 2:
+            link_func = getattr(record, args[1])
+            for value in data['links'][attr]:
+                if link_func(value):
+                    SESSION.flush()
+            continue
+        link_model = getattr(model, attr).property.entity.class_
+        link_attr = getattr(link_model, link_key)
+        for value in data['links'][attr]:
+            if isinstance(value, dict):
+                value = value[link_key]
+            link_record = link_model.find_by_key(value)
+            if link_record is not None:
+                getattr(record, attr).append(link_record)
+                SESSION.flush()
 
 
 def remove_archive_media_file(archive):

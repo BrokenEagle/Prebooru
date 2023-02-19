@@ -228,6 +228,13 @@ class Post(JsonModel):
     def delete_pool(self, pool_id):
         pool_element_delete(pool_id, self)
 
+    def attach_illust_url_by_full_url(self, full_url):
+        illust_url = IllustUrl.find_by_key(full_url)
+        if illust_url is not None:
+            illust_url.post = self
+            return True
+        return False
+
     def delete(self):
         pools = [pool for pool in self.pools]
         DB.session.delete(self)
@@ -236,11 +243,6 @@ class Post(JsonModel):
             for pool in pools:
                 pool._elements.reorder()
             DB.session.commit()
-
-    def archive_dict(self):
-        data = {k: v for (k, v) in super().archive_dict().items() if k not in ['type', 'type_id']}
-        data['type'] = self.type.name
-        return data
 
     # ## Class properties
 
@@ -252,6 +254,11 @@ class Post(JsonModel):
     @classproperty(cached=True)
     def load_columns(cls):
         return super().load_columns + ['type_name']
+
+    archive_excludes = {'type', 'type_id', 'simcheck', 'alternate'}
+    archive_includes = {('type', 'type_name')}
+    archive_attachments = ['notations', 'errors']
+    archive_links = [('illusts', 'illust_urls', 'full_url', 'attach_illust_url_by_full_url')]
 
     @classproperty(cached=True)
     def json_attributes(cls):

@@ -8,13 +8,17 @@ from utility.data import inc_dict_entry
 
 # ## LOCAL IMPORTS
 from ... import SESSION
+from ...models import Artist
 from ..utility import set_error
+from ..logger import handle_error_message
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, get_site_artist,\
     create_artist_from_json, artist_append_booru, delete_artist, get_artists_without_boorus_page,\
     recreate_artist_relations
 from ..database.booru_db import get_booru, get_boorus, create_booru_from_parameters, booru_append_artist
 from ..database.notation_db import create_notation_from_json
-from ..database.archive_db import get_archive, create_archive, update_archive
+from ..database.archive_db import set_archive_temporary
+from .base_rec import delete_data
+from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
 
 
 # ## FUNCTIONS
@@ -97,86 +101,33 @@ def update_artist_from_source(artist):
     update_artist_from_parameters(artist, params)
 
 
-def archive_artist_for_deletion(artist):
-    retdata = {'error': False}
-    retdata = _archive_artist_data(artist, retdata)
-    if retdata['error']:
-        return retdata
-    return _delete_artist_data(artist, retdata)
+def archive_artist_for_deletion(artist, expires=30):
+    archive = archive_record(artist, expires)
+    if archive is None:
+        return handle_error_message(f"Error archiving data [{artist.shortlink}]: {repr(e)}")
+    retdata = {'item': archive.to_json()}
+    retdata.update(delete_data(artist, delete_artist))
+    return retdata
 
 
-def recreate_archived_artist(data):
-    retdata = {'error': False}
-    artist = get_site_artist(data['body']['site_artist_id'], data['body']['site_id'])
-    if artist is not None:
-        return set_error(retdata, "Artist already exists: artist #%d" % artist.id)
-    artist = create_artist_from_json(data['body'])
-    updateparams = {}
-    if len(data['scalars']['names']):
-        updateparams['names'] = data['scalars']['names']
-    if len(data['scalars']['site_accounts']):
-        updateparams['site_accounts'] = data['scalars']['site_accounts']
-    if len(data['scalars']['profiles']):
-        updateparams['profiles'] = data['scalars']['profiles']
-    if len(data['relations']['webpages']):
-        updateparams['webpages'] = [('' if webpage['active'] else '-') + webpage['url']
-                                    for webpage in data['relations']['webpages']]
-    recreate_artist_relations(artist, updateparams)
-    retdata['item'] = artist.to_json()
-    relink_archived_artist(data, artist)
-    for notation_data in data['relations']['notations']:
-        notation = create_notation_from_json(notation_data)
-        artist.notations.append(notation)
+def recreate_archived_artist(archive):
+    try:
+        artist = recreate_record(Artist, archive.key, archive.data)
+        recreate_scalars(artist, archive.data)
+        recreate_attachments(artist, archive.data)
+        recreate_links(artist, archive.data)
+    except Exception as e:
+        retdata = handle_error_message(str(e))
+        SESSION.rollback()
+    else:
+        retdata = {'error': False, 'item': artist.to_json()}
+        set_archive_temporary(archive, 7)
         SESSION.commit()
     return retdata
 
 
-def relink_archived_artist(data, artist=None):
+def relink_archived_artist(archive):
+    artist = Artist.find_by_key(archive.key)
     if artist is None:
-        artist = get_site_artist(data['body']['site_artist_id'], data['body']['site_id'])
-        if artist is None:
-            return "No artist found with site ID %d" % data['body']['site_artist_id']
-    for danbooru_id in data['links']['boorus']:
-        booru = get_booru(danbooru_id)
-        if booru is None:
-            return
-        artist_append_booru(artist, booru)
-
-
-# #### Private functions
-
-def _archive_artist_data(artist, retdata):
-    data = {
-        'body': artist.archive_dict(),
-        'scalars': {
-            'profiles': list(artist.profiles),
-            'names': list(artist.names),
-            'site_accounts': list(artist.site_accounts),
-        },
-        'relations': {
-            'webpages': [webpage.archive_dict() for webpage in artist.webpages],
-            'notations': [notation.archive_dict() for notation in artist.notations],
-        },
-        'links': {
-            'boorus': [booru.danbooru_id for booru in artist.boorus],
-        },
-    }
-    data_key = '%d-%d' % (artist.site, artist.site_artist_id)
-    archive = get_archive('artist', data_key)
-    try:
-        if archive is None:
-            create_archive('artist', data_key, data, 30)
-        else:
-            update_archive(archive, data, 30)
-    except Exception as e:
-        return set_error(retdata, "Error archiving data: %s" % str(e))
-    return retdata
-
-
-def _delete_artist_data(artist, retdata):
-    try:
-        delete_artist(artist)
-    except Exception as e:
-        SESSION.rollback()
-        return set_error(retdata, "Error deleting artist: %s" % str(e))
-    return retdata
+        return f"No artist found with key {archive.key}"
+    recreate_links(artist, archive.data)
