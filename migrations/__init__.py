@@ -12,8 +12,12 @@ from config import NAMING_CONVENTION
 
 # ## FUNCTIONS
 
+def get_bind():
+    return op.get_bind()
+
+
 def get_inspector():
-    conn = op.get_bind()
+    conn = get_bind()
     return sa.inspect(conn)
 
 

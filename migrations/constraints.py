@@ -1,7 +1,7 @@
 # MIGRATIONS/CONSTRAINTS.PY
 
-# PACKAGE IMPORTS
-from migrations import batch_alter_table
+# LOCAL IMPORTS
+from . import batch_alter_table
 
 
 # ## FUNCTIONS

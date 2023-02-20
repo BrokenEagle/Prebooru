@@ -4,11 +4,8 @@
 import alembic.op as op
 import sqlalchemy as sa
 
-# PACKAGE IMPORTS
-from migrations import batch_alter_table
-
 # LOCAL IMPORTS
-from . import get_inspector
+from . import batch_alter_table, get_bind, get_inspector
 
 
 # ## FUNCTIONS
@@ -61,7 +58,7 @@ def transfer_columns(table_name, from_config, to_config):
     t = sa.Table(table_name, sa.MetaData(), sa.Column('id', sa.Integer), *columns)
     all_names = ['id'] + from_names
     base_statement = sa.select([t.c.id] + [getattr(t.c, name) for name in from_names]).limit(1000)
-    connection = op.get_bind()
+    connection = get_bind()
     index = 0
     while True:
         statement = base_statement.offset(index * 1000)
@@ -95,8 +92,8 @@ def alter_column(table_name, column_name, column_type, alter_args, **kwargs):
 
 
 def set_column_default(table_name, **kwargs):
-    set_statement_str = ', '.join([f'{k}={v}' for (k, v) in kwargs.items()])
-    connection = op.get_bind()
+    set_statement_str = ', '.join([f'"{k}" = {v}' for (k, v) in kwargs.items()])
+    connection = get_bind()
     connection.execute(sa.text(f'UPDATE {table_name} SET {set_statement_str}'))
 
 
@@ -112,7 +109,7 @@ def initialize_column(table_name, column_name, column_type, *extra_columns):
     select = [t.c.id, getattr(t.c, column_name)]
     for (colname, _) in extra_columns:
         select.append(getattr(t.c, colname))
-    connection = op.get_bind()
+    connection = get_bind()
     index = 0
     while True:
         statement = sa.select(select).limit(1000).offset(index * 1000)
@@ -141,7 +138,7 @@ def transfer_column(table_name, from_column, to_column):
         sa.Column(from_name, getattr(sa, from_type)),
         sa.Column(to_name, getattr(sa, to_type)),
     )
-    connection = op.get_bind()
+    connection = get_bind()
     index = 0
     while True:
         statement = sa.select([t.c.id, getattr(t.c, from_name)])\
