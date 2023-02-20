@@ -106,10 +106,10 @@ def downgrade(engine_name):
 
 
 def upgrade_():
-    drop_index('post_illust_urls', 'ix_post_illust_urls_illust_url_id_post_id')
     conn = op.get_bind()
     conn.execute(sa.text(CREATE_UPGRADE_ILLUST_URL_TABLE.strip()))
     conn.execute(sa.text(INSERT_UPGRADE_ILLUST_URL_TABLE.strip()))
+    drop_index('post_illust_urls', 'ix_post_illust_urls_illust_url_id_post_id')
     op.drop_table('illust_url')
     op.drop_table('post_illust_urls')
     op.rename_table('illust_url_t', 'illust_url')
@@ -120,12 +120,12 @@ def upgrade_():
 
 
 def downgrade_():
-    drop_index('illust_url', 'ix_illust_url_post_id')
     conn = op.get_bind()
     conn.execute(sa.text(CREATE_DOWNGRADE_ILLUST_URL_TABLE.strip()))
     conn.execute(sa.text(CREATE_DOWNGRADE_POST_ILLUST_URLS_TABLE.strip()))
     conn.execute(sa.text(INSERT_DOWNGRADE_ILLUST_URL_TABLE.strip()))
     conn.execute(sa.text(INSERT_DOWNGRADE_POST_ILLUST_URLS_TABLE.strip()))
+    drop_index('illust_url', 'ix_illust_url_post_id')
     op.drop_table('illust_url')
     op.rename_table('illust_url_t', 'illust_url')
     create_index('post_illust_urls', 'ix_post_illust_urls_illust_url_id_post_id', ['illust_url_id', 'post_id'], True)
