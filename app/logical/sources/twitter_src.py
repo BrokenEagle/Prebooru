@@ -11,6 +11,7 @@ import urllib
 import datetime
 
 # ## EXTERNAL IMPORTS
+import httpx
 import requests
 
 # ## PACKAGE IMPORTS
@@ -174,6 +175,11 @@ https?://t\.co                         # Hostname
 REQUEST_METHODS = {
     'GET': requests.get,
     'POST': requests.post
+}
+
+XREQUEST_METHODS = {
+    'GET': httpx.get,
+    'POST': httpx.post
 }
 
 TWITTER_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
@@ -742,13 +748,14 @@ def check_request_wait(wait):
 
 
 @check_guest_auth
-def twitter_request(url, method='GET', wait=True):
+def twitter_request(url, method='GET', wait=True, use_httpx=False):
     check_request_wait(wait)
+    rq_methods = REQUEST_METHODS if not use_httpx else XREQUEST_METHODS
     reauthenticated = False
     for i in range(3):
         try:
-            response = REQUEST_METHODS[method](url, headers=TWITTER_HEADERS, timeout=10)
-        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
+            response = rq_methods[method](url, headers=TWITTER_HEADERS, timeout=10)
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError, httpx.ConnectTimeout) as e:
             print_warning("Pausing for network timeout...")
             error = e
             time.sleep(5)
@@ -870,7 +877,7 @@ def get_search_page(query, cursor=None):
     if cursor is not None:
         params['cursor'] = cursor
     url_params = urllib.parse.urlencode(params)
-    return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params)
+    return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params, use_httpx=True)
 
 
 def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
@@ -1180,23 +1187,27 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
     job_status = get_job_status_data(job_id) or {}
     job_status['stage'] = 'querying'
     update_job_status(job_id, job_status)
-    tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id, job_id=job_id, job_status=job_status)
-    if is_error(tweet_ids):
-        return tweet_ids
-    # Only the media timeline is checked for errors on empty, as the search timeline will likely have empty results
-    if tweet_ids is None:
-        twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
-        if is_error(twuser):
-            inactivate_artist(artist)
-            return twuser
-        # The timeline was empty of any tweets
-        return []
-    # Only continue on if this is the initial full process (last ID is null)
-    if len(tweet_ids) == 0 or last_id is not None:
-        # No tweet IDs means that no new results were found, but the timeline was not empty
-        return tweet_ids
-    # Update the artist current user account in case it has changed since creating the artist
-    update_artist_from_source(artist)
+    if job_status.get('ids') is None:
+        tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id, job_id=job_id, job_status=job_status)
+        if is_error(tweet_ids):
+            return tweet_ids
+        # Only the media timeline is checked for errors on empty, as the search timeline will likely have empty results
+        if tweet_ids is None:
+            twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
+            if is_error(twuser):
+                inactivate_artist(artist)
+                return twuser
+            # The timeline was empty of any tweets
+            return []
+        # Only continue on if this is the initial full process (last ID is null)
+        if len(tweet_ids) == 0 or last_id is not None:
+            # No tweet IDs means that no new results were found, but the timeline was not empty
+            return tweet_ids
+        # Update the artist current user account in case it has changed since creating the artist
+        update_artist_from_source(artist)
+        job_status['ids'] = tweet_ids = list(set(job_status['ids']).union(tweet_ids))
+    else:
+        tweet_ids = job_status['ids']
     lowest_tweet_id = min(tweet_ids)
     timestamp = snowflake_to_epoch(lowest_tweet_id)
     timeval = datetime_from_epoch(timestamp)
@@ -1214,6 +1225,7 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
         if is_error(temp_ids):
             return temp_ids
         tweet_ids += temp_ids if temp_ids is not None else []
+        job_status['ids'] = tweet_ids
         timeval = next_timeval
     update_job_status(job_id, job_status)
     return tweet_ids
