@@ -119,13 +119,13 @@ def delete_post_and_media(post):
     """Hard delete. Continue as long as post record gets deleted."""
     retdata = {'error': False, 'is_deleted': False}
     temppost = post.copy()
-    retdata = delete_data(post, delete_post, retdata)
+    retdata.update(delete_data(post, delete_post))
     if retdata['error']:
-        print("delete_post_and_media-error:", retdata)
         return retdata
-    retdata = _delete_media_files(temppost, retdata)
-    if not retdata['error']:
-        retdata['is_deleted'] = True
+    error = _delete_media_files(temppost)
+    if error is not None:
+        return handle_error_message(error, retdata)
+    retdata['is_deleted'] = True
     return retdata
 
 
