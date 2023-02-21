@@ -855,9 +855,14 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
     retdata = retdata or {'tweets': {}, 'retweets': {}, 'users': {}, 'cursors': {}}
     for key in data:
         if key == '__typename':
-            if data[key] == 'Tweet' and 'legacy' in data:
-                key = 'tweets' if 'retweeted_status_result' not in data['legacy'] else 'retweets'
+            if data[key] == 'TweetWithVisibilityResults' and 'tweet' in data:
+                node_data = data['tweet']
+                key = 'tweets' if 'retweeted_status_result' not in node_data['legacy'] else 'retweets'
+            elif data[key] == 'Tweet' and 'legacy' in data:
+                node_data = data
+                key = 'tweets' if 'retweeted_status_result' not in node_data['legacy'] else 'retweets'
             elif data[key] == 'User' and 'legacy' in data:
+                node_data = data
                 key = 'users'
             elif data[key] == "TimelineTimelineCursor":
                 cursor_key = data['cursorType'].lower()
@@ -865,9 +870,9 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
                 continue
             else:
                 continue
-            item = data['legacy']
-            id_str = item['id_str'] = data['rest_id']
-            retdata[key][id_str] = data['legacy']
+            item = node_data['legacy']
+            id_str = item['id_str'] = node_data['rest_id']
+            retdata[key][id_str] = node_data['legacy']
         elif type(data[key]) is list:
             for i in range(len(data[key])):
                 if type(data[key][i]) is dict:
