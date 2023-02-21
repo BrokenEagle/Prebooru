@@ -1261,7 +1261,7 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
             return tweet_ids
         # Update the artist current user account in case it has changed since creating the artist
         update_artist_from_source(artist)
-        job_status['ids'] = tweet_ids = list(set(job_status['ids']).union(tweet_ids))
+        job_status['ids'] = tweet_ids
     else:
         tweet_ids = job_status['ids']
     lowest_tweet_id = min(tweet_ids)
