@@ -280,7 +280,34 @@ def process_html(id):
     })
     create_or_update_job_status(job_id, job_status)
     SESSION.commit()
-    SCHEDULER.add_job(job_id, process_subscription_manual, args=(subscription.id, job_id))
+    SCHEDULER.add_job(job_id, process_subscription_manual, args=(subscription.id, job_id, False))
+    flash("Subscription started.")
+    return redirect(url_for('subscription.show_html', id=subscription.id, job=job_id))
+
+
+@bp.route('/subscriptions/<int:id>/recheck', methods=['POST'])
+def recheck_html(id):
+    if not get_subscriptions_ready():
+        flash("Subscriptions not yet initialized.", 'error')
+        return redirect(request.referrer)
+    subscription = get_or_abort(Subscription, id)
+    if subscription.status.name != 'idle':
+        flash("Subscription currently processing.", 'error')
+        return redirect(request.referrer)
+    update_subscription_status(subscription, 'manual')
+    job_id = "process_subscription_manual-%d" % subscription.id
+    job_status = get_job_status_data(job_id) or {}
+    job_status.update({
+        'stage': None,
+        'range': None,
+        'records': 0,
+        'illusts': 0,
+        'elements': 0,
+        'downloads': 0,
+    })
+    create_or_update_job_status(job_id, job_status)
+    SESSION.commit()
+    SCHEDULER.add_job(job_id, process_subscription_manual, args=(subscription.id, job_id, True))
     flash("Subscription started.")
     return redirect(url_for('subscription.show_html', id=subscription.id, job=job_id))
 

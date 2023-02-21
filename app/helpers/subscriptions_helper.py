@@ -65,6 +65,11 @@ def process_subscription_link(subscription):
     return general_link("Process subscription", url, method="POST")
 
 
+def recheck_subscription_link(subscription):
+    url = url_for('subscription.recheck_html', id=subscription.id)
+    return general_link("Recheck subscription", url, method="POST")
+
+
 def delay_subscription_link(subscription):
     url = url_for('subscription.delay_html', id=subscription.id)
     addons = {'onclick': 'return Subscriptions.delaySubscriptionElements(this)'}

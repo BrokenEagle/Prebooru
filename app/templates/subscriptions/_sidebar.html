@@ -11,7 +11,10 @@
     <section id="subscription-options">
         <h4>Options</h4>
         <ul>
-            {% if subscription.status.name == 'idle' %}<li>{{ helpers.subscription.process_subscription_link(subscription) }}</li>{% endif %}
+            {% if subscription.status.name == 'idle' %}
+                <li>{{ helpers.subscription.process_subscription_link(subscription) }}</li>
+                <li>{{ helpers.subscription.recheck_subscription_link(subscription) }}</li>
+            {% endif %}
             <li>{{ helpers.subscription.delay_subscription_link(subscription) }}</li>
             <li>{{ helpers.subscription.get_last_job_status_link(subscription) }}</li>
             {% if subscription.status.name != 'retired' %}<li>{{ helpers.subscription.retire_link(subscription) }}</li>{% endif %}

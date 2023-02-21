@@ -1312,7 +1312,8 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
     job_status['stage'] = 'querying'
     update_job_status(job_id, job_status)
     if job_status.get('ids') is None:
-        tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id, job_id=job_id, job_status=job_status)
+        timeline_last_id = last_id if last_id is not True else None
+        tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, timeline_last_id, job_id=job_id, job_status=job_status)
         if is_error(tweet_ids):
             return tweet_ids
         # Only the media timeline is checked for errors on empty, as the search timeline will likely have empty results
@@ -1324,7 +1325,7 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
             # The timeline was empty of any tweets
             return []
         # Only continue on if this is the initial full process (last ID is null)
-        if len(tweet_ids) == 0 or last_id is not None:
+        if len(tweet_ids) == 0 or last_id is not None or last_id is True:
             # No tweet IDs means that no new results were found, but the timeline was not empty
             return tweet_ids
         # Update the artist current user account in case it has changed since creating the artist
