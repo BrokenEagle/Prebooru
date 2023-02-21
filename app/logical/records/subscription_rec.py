@@ -52,7 +52,7 @@ WAITING_THREADS = {
 
 # #### Primary task functions
 
-def process_subscription_manual(subscription_id, job_id):
+def process_subscription_manual(subscription_id, job_id, recheck):
     printer = buffered_print("Process Subscription")
     subscription = None
     start_illusts = 0
@@ -69,7 +69,7 @@ def process_subscription_manual(subscription_id, job_id):
         starting_post_ids = [post.id for post in subscription.posts]
         update_job_by_id('job_lock', 'process_subscription_manual', {'locked': True})
         SESSION.commit()
-        sync_missing_subscription_illusts(subscription, job_id)
+        sync_missing_subscription_illusts(subscription, job_id, recheck=recheck)
         populate_subscription_elements(subscription, job_id)
         download_subscription_elements(subscription, job_id)
         job_status = get_job_status_data(job_id)
@@ -107,11 +107,12 @@ def process_subscription_manual(subscription_id, job_id):
     SESSION.remove()
 
 
-def sync_missing_subscription_illusts(subscription, job_id=None):
+def sync_missing_subscription_illusts(subscription, job_id=None, recheck=False):
     update_subscription_requery(subscription, hours_from_now(4))
     artist = subscription.artist
     source = artist.site.source
-    site_illust_ids = source.populate_all_artist_illusts(artist, subscription.last_id, job_id)
+    last_id = subscription.last_id if not recheck else True
+    site_illust_ids = source.populate_all_artist_illusts(artist, last_id, job_id)
     if is_error(site_illust_ids):
         add_subscription_error(subscription, site_illust_ids)
         return
