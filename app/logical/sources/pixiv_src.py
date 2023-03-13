@@ -522,12 +522,15 @@ def get_artist_data(site_artist_id):
     artwork = None
     if not is_error(profile_data):
         artwork_ids = [int(artwork_id) for artwork_id in (safe_get(profile_data, 'profile', 'illusts') or {}).keys()]
+        artwork_ids += [int(artwork_id) for artwork_id in (safe_get(profile_data, 'profile', 'manga') or {}).keys()]
         if len(artwork_ids):
             artworks = get_api_data(artwork_ids, SITE.id, api_data_type.illust.id)
             if len(artworks):
                 artwork = artworks[0].data
             else:
                 artwork = get_illust_api_data(artwork_ids[0])
+    if artwork is None:
+        raise Exception(f"Unable to find artwork for pxuser #{site_artist_id}")
     return get_artist_parameters_from_pxuser(pxuser, artwork)
 
 
