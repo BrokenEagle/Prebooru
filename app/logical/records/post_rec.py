@@ -200,7 +200,7 @@ def calculate_similarity_matches(manual):
     query = query.options(selectinload(Post.image_hashes))
     page = query.limit_paginate(per_page=50)
     while page.count > 0:
-        print(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
+        print(f"\calculate_similarity_matches: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
             generate_similarity_matches(post)
         SESSION.commit()
