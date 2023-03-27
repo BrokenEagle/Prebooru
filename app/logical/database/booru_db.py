@@ -19,7 +19,7 @@ ASSOCIATION_ATTRIBUTES = ['names']
 NORMALIZED_ASSOCIATE_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
 
 CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
-UPDATE_ALLOWED_ATTRIBUTES = ['current_name', 'banned', 'deleted', '_names']
+UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
 
 
 # ## FUNCTIONS
