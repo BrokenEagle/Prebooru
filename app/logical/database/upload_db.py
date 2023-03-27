@@ -37,11 +37,13 @@ def create_upload_from_parameters(createparams):
     upload = Upload(**data)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(upload, update_columns, createparams)
+    update_column_attributes(upload, update_columns, createparams, commit=False)
     if 'image_urls' in createparams and len(createparams['image_urls']):
         _update_illust_urls(upload, createparams['image_urls'])
     print("[%s]: created" % upload.shortlink)
-    return upload
+    data = upload.to_json()
+    SESSION.commit()
+    return data
 
 
 # #### Misc functions
