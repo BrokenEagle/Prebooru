@@ -26,11 +26,11 @@ def last_page_link(pool):
 
 
 def prev_navigation(pool_element):
-    return _pool_navigation('«', 'pool_element.previous_html', pool_element)
+    return _pool_navigation('«&nbsp;', 'pool_element.previous_html', pool_element)
 
 
 def next_navigation(pool_element):
-    return _pool_navigation('»', 'pool_element.next_html', pool_element)
+    return _pool_navigation('&nbsp;»', 'pool_element.next_html', pool_element)
 
 
 def page_navigation(pool_element):
