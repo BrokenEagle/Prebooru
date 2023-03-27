@@ -87,7 +87,12 @@ def index():
     q = Post.query
     q = search_filter(q, search, negative_search)
     q = pool_filter(q, search)
-    q = default_order(q, search)
+    if search.get('order') == 'site':
+        q = q.unique_join(IllustUrl, Post.illust_urls)\
+             .unique_join(Illust, IllustUrl.illust)\
+             .order_by(Illust.site_created.desc())
+    else:
+        q = default_order(q, search)
     return q
 
 
