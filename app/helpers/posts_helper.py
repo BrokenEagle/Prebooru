@@ -182,6 +182,10 @@ def disk_file_link(post):
     return general_link("Copy file link", "#", **addons)
 
 
+def find_similar_link(post):
+    return general_link("Find similar", url_for('image_hashes.check_html', post_id=post.id))
+
+
 def add_notation_link(post):
     return general_link("Add notation", url_for('notation.new_html', post_id=post.id, redirect='true'))
 

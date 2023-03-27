@@ -108,6 +108,21 @@ def check_media_file_image_matches(media_file, min_score, include_posts=False, s
     return final_results
 
 
+def check_post_image_matches(post, min_score, include_posts=False, sim_clause=None):
+    final_results = []
+    for image_hash in post.image_hashes:
+        imghash_matches = get_image_hash_matches(image_hash.hash, image_hash.ratio, sim_clause=sim_clause, post_id=post.id)
+        score_results = check_image_match_scores(imghash_matches, image_hash.hash, min_score)
+        final_results += filter_score_results(score_results)
+    if include_posts:
+        post_ids = [result['post_id'] for result in final_results]
+        posts = get_posts_by_id(post_ids)
+        for result in final_results:
+            post = next(filter(lambda x: x.id == result['post_id'], posts), None)
+            result['post'] = post.to_json() if post is not None else post
+    return final_results
+
+
 # #### Main execution functions
 
 def generate_post_image_hashes(post, printer=print):
@@ -170,3 +185,20 @@ def check_all_image_urls_for_matches(image_urls, min_score, size, include_posts=
             }
         image_match_results.append(image_match_result)
     return image_match_results
+
+
+def check_all_post_ids_for_matches(post_ids, min_score, size, include_posts=False, sim_clause=None):
+    posts = get_posts_by_id(post_ids)
+    post_results = []
+    for post in posts:
+        result = check_post_image_matches(post, min_score, include_posts=include_posts,
+                                          sim_clause=sim_clause)
+        post_result = {
+            'image_url': post.file_url,
+            'download_url': None,
+            'post_results': result,
+            'media_file': post,
+            'error': False,
+        }
+        post_results.append(post_result)
+    return post_results

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, flash, redirect
-from wtforms import TextAreaField, FloatField, SelectField
+from wtforms import TextAreaField, FloatField, SelectField, StringField
 from wtforms.validators import DataRequired
 
 # ## LOCAL IMPORTS
@@ -15,7 +15,8 @@ from ..logical.utility import set_error
 from ..logical.database.post_db import get_posts_by_id
 from ..logical.database.image_hash_db import delete_image_hash_by_post_id
 from ..logical.database.similarity_match_db import delete_similarity_matches_by_post_id
-from ..logical.records.image_hash_rec import check_all_image_urls_for_matches, generate_post_image_hashes
+from ..logical.records.image_hash_rec import check_all_image_urls_for_matches, generate_post_image_hashes,\
+    check_all_post_ids_for_matches
 from ..logical.records.similarity_match_rec import generate_similarity_matches
 from .base_controller import process_request_values, parse_type, parse_string_list, nullify_blanks, set_default,\
     check_param_requirements, eval_bool_string, jsonify_data, get_form
@@ -33,8 +34,14 @@ FORM_CONFIG = {
         'name': 'Urls',
         'field': TextAreaField,
         'kwargs': {
-            'validators': [DataRequired()],
             'description': "Separated by carriage returns.",
+        },
+    },
+    'post_ids_string': {
+        'name': 'Post IDs',
+        'field': StringField,
+        'kwargs': {
+            'description': "Separated by spaces.",
         },
     },
     'score': {
@@ -77,7 +84,13 @@ def convert_data_params(dataparams):
     elif 'urls_string' in params:
         params['urls'] = parse_string_list(params, 'urls_string', r'\r?\n')
     else:
-        params['urls'] = None
+        params['urls'] = []
+    if 'post_ids' in dataparams:
+        params['post_ids'] = dataparams['post_ids']
+    elif 'post_ids_string' in params:
+        params['post_ids'] = parse_string_list(params, 'post_ids_string', ' ')
+    else:
+        params['post_ids'] = []
     params['score'] = parse_type(dataparams, 'score', float)
     params = nullify_blanks(params)
     set_default(params, 'score', 90.0)
@@ -92,13 +105,19 @@ def check(include_posts):
     params = process_request_values(request.args)
     dataparams = convert_data_params(params)
     retdata = {'error': False, 'data': dataparams, 'params': params}
+    if len(dataparams['urls']) == 0 and len(dataparams['post_ids']) == 0:
+        return set_error(retdata, "Either URLs or post IDs must be specified.")
     errors = check_param_requirements(dataparams, ['urls'])
-    if len(errors) > 0:
-        return set_error(retdata, '\n'.join(errors))
-    dataparams['url_string'] = '\r\n'.join(dataparams['urls'] or [])
-    similar_results = check_all_image_urls_for_matches(dataparams['urls'], dataparams['score'],
-                                                       dataparams['size'], include_posts,
-                                                       sim_clause=dataparams['sim_clause'])
+    if len(dataparams['urls']):
+        dataparams['urls_string'] = '\r\n'.join(dataparams['urls'])
+        similar_results = check_all_image_urls_for_matches(dataparams['urls'], dataparams['score'],
+                                                           dataparams['size'], include_posts,
+                                                           sim_clause=dataparams['sim_clause'])
+    else:
+        dataparams['post_ids_string'] = ' '.join(dataparams['post_ids'])
+        similar_results = check_all_post_ids_for_matches(dataparams['post_ids'], dataparams['score'],
+                                                         dataparams['size'], include_posts,
+                                                         sim_clause=dataparams['sim_clause'])
     retdata['similar_results'] = similar_results
     return retdata
 
