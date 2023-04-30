@@ -28,8 +28,8 @@ def record_outcome(post, record):
         extend_errors(record, valid_errors)
         if record.model_name == 'subscription_element' and record.status.name == 'active':
             update_subscription_element_status(record, 'error')
-        elif record.model_name == 'upload_element' and post.type.name != 'user':
-            update_upload_element_from_parameters(record, {'status': 'error'})
+        elif record.model_name == 'upload_element' and record.status.name == 'pending':
+            update_upload_element_from_parameters(record, {'status': 'error'}, commit=True)
         return False
     if record.model_name == 'upload_element':
         update_upload_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
