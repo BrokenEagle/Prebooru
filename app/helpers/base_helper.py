@@ -231,7 +231,7 @@ def url_for_with_params(endpoint, **kwargs):
         url_args[arg] = request.args[arg]
     if request.endpoint.find('.show_html') >= 0:
         url_args['id'] = int(re.search(r'\d+$', request.path).group(0))
-    return url_for(endpoint, **url_args)
+    return url_for(endpoint, **url_args).replace('&', '&amp;')
 
 
 # #### Navigation functions
