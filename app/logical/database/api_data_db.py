@@ -4,8 +4,8 @@
 from utility.time import get_current_time, days_from_now
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import ApiData
+from .base_db import commit_or_flush, add_record, delete_record
 
 
 # ## FUNCTIONS
@@ -26,19 +26,19 @@ def save_api_data(network_data, id_key, site_id, type_id):
                 'data_id': data_id,
             }
             cache_item = ApiData(**data)
-            SESSION.add(cache_item)
+            add_record(cache_item)
         else:
             print("save_api_data - updating cache item:", type_id, data_id, cache_item.id)
         cache_item.data = data_item
         cache_item.expires = days_from_now(1)
-    SESSION.commit()
+    commit_or_flush(True, safe=True)
 
 
 # ###### DELETE
 
 def delete_expired_api_data():
     ApiData.query.filter(ApiData.expires < get_current_time()).delete()
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 # #### Query functions
@@ -53,12 +53,12 @@ def get_api_data(data_ids, site, type):
     ret_data = []
     for cache in cache_data:
         if cache.expires < current_time:
-            SESSION.delete(cache)
+            delete_record(cache)
             has_deleted = True
         else:
             ret_data.append(cache)
     if has_deleted:
-        SESSION.commit()
+        commit_or_flush(True)
     return ret_data
 
 

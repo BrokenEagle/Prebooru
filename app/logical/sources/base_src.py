@@ -39,22 +39,6 @@ class NoSource():
         return None
 
     @staticmethod
-    def get_media_url(illust_url):
-        return illust_url.url
-
-    @staticmethod
-    def get_preview_url(illust_url):
-        return illust_url.url
-
-    @staticmethod
-    def video_url_mapper(illust_url):
-        return illust_url.sample_site_id is not None and illust_url.sample_url is not None
-
-    @staticmethod
-    def image_url_mapper(illust_url):
-        return illust_url.sample_site_id is None and illust_url.sample_url is None
-
-    @staticmethod
     def get_media_extension(url):
         return get_file_extension(get_http_filename(url)).replace('jpeg', 'jpg')
 

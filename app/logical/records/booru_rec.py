@@ -8,8 +8,8 @@ from ..sources.base_src import get_artist_id_source
 from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
-    delete_booru, get_all_boorus_page, will_update_booru
-from ..database.archive_db import set_archive_temporary
+    delete_booru, get_all_boorus_page
+from ..database.archive_db import update_archive_from_parameters
 from .base_rec import delete_data
 from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
 
@@ -36,8 +36,9 @@ def check_boorus(boorus, status):
     for data in results['artists']:
         booru = next(filter(lambda x: x.danbooru_id == data['id'], boorus))
         updates = {'current_name': data['name'], 'deleted': data['is_deleted'], 'banned': data['is_banned']}
-        if will_update_booru(booru, updates):
-            update_booru_from_parameters(booru, updates)
+        previous_json = str(booru.to_json())
+        update_booru_from_parameters(booru, updates)
+        if str(booru.to_json()) != previous_json:
             status['total'] += 1
     return True
 
@@ -80,7 +81,7 @@ def update_booru_artists_from_source(booru):
         source = get_artist_id_source(artist_url['url'])
         if source is None:
             continue
-        site_artist_id = int(source.get_artist_id_url_id(artist_url['url']))
+        site_artist_id = int(source.get_artist_id_from_url(artist_url['url']))
         artist = get_site_artist(site_artist_id, source.SITE.id)
         if artist is None or artist.id in existing_artist_ids:
             continue
@@ -108,8 +109,7 @@ def recreate_archived_booru(archive):
         SESSION.rollback()
     else:
         retdata = {'error': False, 'item': booru.to_json()}
-        set_archive_temporary(archive, 7)
-        SESSION.commit()
+        update_archive_from_parameters(archive, {'days': 7})
     return retdata
 
 

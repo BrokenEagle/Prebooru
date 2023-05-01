@@ -174,7 +174,7 @@ def update(notation):
     dataparams = get_data_params(request, 'notation')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
-    update_notation_from_parameters(notation, updateparams)
+    update_notation_from_parameters(notation, updateparams, update=True)
     if notation.append_type is None:
         retdata.update(append_new_items(notation, updateparams))
     retdata['item'] = notation.to_json()

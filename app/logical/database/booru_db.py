@@ -4,93 +4,68 @@
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Booru, Label
-from .base_db import update_column_attributes, update_relationship_collections, set_association_attributes,\
-    will_update_record
+from .base_db import set_column_attributes, set_relationship_collections, set_association_attributes,\
+    commit_or_flush, save_record, add_record, delete_record
 
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted']
 UPDATE_SCALAR_RELATIONSHIPS = [('_names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = []
 ALL_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['names']
-NORMALIZED_ASSOCIATE_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
 
-CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
-UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
-
-UPDATE_ALLOWED_COLUMNS = set(COLUMN_ATTRIBUTES).intersection(UPDATE_ALLOWED_ATTRIBUTES)
+ANY_WRITABLE_COLUMNS = ['danbooru_id', 'current_name', 'banned', 'deleted']
+NULL_WRITABLE_ATTRIBUTES = []
 
 
 # ## FUNCTIONS
 
-# #### Helper functions
+# #### Create
 
-def set_all_names(params, booru):
-    if 'current_name' in params and params['current_name']:
-        booru_names = list(booru.names) if booru is not None else []
-        params['names'] = params.get('names', booru_names)
-        params['names'] = list(set(params['names'] + [params['current_name']]))
-
-
-# #### Router helper functions
-
-# ###### Create
-
-def create_booru_from_parameters(createparams):
-    current_time = get_current_time()
-    set_all_names(createparams, None)
-    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
-    booru = Booru(created=current_time, updated=current_time)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(booru, update_columns, createparams)
-    _update_relations(booru, createparams, create=True)
-    print("[%s]: created" % booru.shortlink)
-    return booru
+def create_booru_from_parameters(createparams, commit=True):
+    return set_booru_from_parameters(Booru(), createparams, commit, 'created', False)
 
 
 def create_booru_from_json(data):
     booru = Booru.loads(data)
-    SESSION.add(booru)
-    SESSION.commit()
-    print("[%s]: created" % booru.shortlink)
+    add_record(booru)
+    save_record(booru, True, 'created', safe=True)
     return booru
 
 
 # ###### Update
 
-def update_booru_from_parameters(booru, updateparams):
-    update_results = []
-    set_all_names(updateparams, booru)
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(booru, update_columns, updateparams))
-    update_results.append(_update_relations(booru, updateparams, create=False))
-    if any(update_results):
-        print("[%s]: updated" % booru.shortlink)
-        booru.updated = get_current_time()
-        SESSION.commit()
-        return True
-    return False
+def update_booru_from_parameters(booru, updateparams, commit=True, update=False):
+    return set_booru_from_parameters(booru, updateparams, commit, 'updated', update)
 
 
 def recreate_booru_relations(booru, updateparams):
-    _update_relations(booru, updateparams, create=False)
+    _set_relations(booru, updateparams)
+    commit_or_flush(True)
 
 
-def will_update_booru(booru, data):
-    return will_update_record(booru, data, UPDATE_ALLOWED_COLUMNS)
+# #### Set
+
+def set_booru_from_parameters(booru, setparams, commit, action, update):
+    _set_all_names(setparams, booru)
+    col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update)
+    if col_result:
+        commit_or_flush(False, safe=True)
+    rel_result = _set_relations(booru, setparams)
+    if update and rel_result:
+        booru.updated = get_current_time()
+    if col_result or rel_result:
+        save_record(booru, commit, action)
+    return booru
 
 
 # ###### Delete
 
 def delete_booru(booru):
-    SESSION.delete(booru)
-    SESSION.commit()
+    delete_record(booru)
+    commit_or_flush(True)
 
 
 # #### Misc functions
@@ -98,15 +73,13 @@ def delete_booru(booru):
 def booru_append_artist(booru, artist):
     print("[%s]: Adding %s" % (booru.shortlink, artist.shortlink))
     booru.artists.append(artist)
-    booru.updated = get_current_time()
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 def booru_remove_artist(booru, artist):
     print("[%s]: Removing %s" % (booru.shortlink, artist.shortlink))
     booru.artists.remove(artist)
-    booru.updated = get_current_time()
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 # #### Query functions
@@ -125,9 +98,12 @@ def get_all_boorus_page(limit):
 
 # #### Private functions
 
-def _update_relations(booru, updateparams, create=None):
-    set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    allowed_attributes = CREATE_ALLOWED_ATTRIBUTES if create else UPDATE_ALLOWED_ATTRIBUTES
-    settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)
-    update_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    return update_relationship_collections(booru, update_relationships, updateparams)
+def _set_all_names(params, booru):
+    if isinstance(params.get('current_name'), str):
+        names = set(params.get('names', list(booru.names)) + [params['current_name']])
+        params['names'] = list(names)
+
+
+def _set_relations(booru, setparams, create=None):
+    set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
+    return set_relationship_collections(booru, ALL_SCALAR_RELATIONSHIPS, setparams)

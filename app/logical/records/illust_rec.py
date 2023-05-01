@@ -9,7 +9,7 @@ from ...models import Illust
 from ..logger import handle_error_message
 from ..database.artist_db import get_blank_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust
-from ..database.archive_db import set_archive_temporary
+from ..database.archive_db import update_archive_from_parameters
 from .base_rec import delete_data
 from .artist_rec import get_or_create_artist_from_source
 from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
@@ -64,8 +64,7 @@ def recreate_archived_illust(archive):
         SESSION.rollback()
     else:
         retdata = {'error': False, 'item': illust.to_json()}
-        set_archive_temporary(archive, 7)
-        SESSION.commit()
+        update_archive_from_parameters(archive, {'days': 7})
     return retdata
 
 

@@ -1,6 +1,7 @@
 # APP/MODELS/SUBSCRIPTION.PY
 
 # ## EXTERNAL IMPORTS
+from sqlalchemy.orm import load_only
 from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
@@ -10,9 +11,10 @@ from utility.time import average_timedelta, days_ago, get_current_time
 from .. import DB
 from ..enum_imports import subscription_status, subscription_element_status, subscription_element_keep
 from .illust import Illust
-from .illust import IllustUrl
+from .illust_url import IllustUrl
 from .post import Post
 from .notation import Notation
+from .media_asset import MediaAsset
 from .error import Error
 from .subscription_element import SubscriptionElement
 from .base import JsonModel, EpochTimestamp, get_relation_definitions
@@ -93,6 +95,11 @@ class Subscription(JsonModel):
     def alternate_bytes(self):
         self._populate_storage_sizes()
         return self._alternate_bytes
+
+    @property
+    def archive_bytes(self):
+        self._populate_storage_sizes()
+        return self._archive_bytes
 
     @memoized_property
     def element_count(self):
@@ -186,16 +193,26 @@ class Subscription(JsonModel):
                          .join(Artist, Illust.artist)\
                          .filter(Artist.id == self.artist_id, Post.type_filter('name', '__eq__', 'subscription'))
 
+    @property
+    def _media_query(self):
+        return MediaAsset.query.join(SubscriptionElement)\
+                               .join(Subscription)\
+                               .filter(Subscription.id == self.id,
+                                       SubscriptionElement.media_asset_id.is_not(None))
+
     def _populate_storage_sizes(self):
         if hasattr(self, '_total_bytes'):
             return
         if self.post_count == 0:
             self._total_bytes = self._main_bytes = self._alternate_bytes = 0
         else:
-            filesizes = self._post_query.with_entities(Post.size, Post.alternate).all()
-            self._total_bytes = sum([x[0] for x in filesizes])
-            self._main_bytes = sum([x[0] for x in filesizes if x[1] is False])
-            self._alternate_bytes = sum([x[0] for x in filesizes if x[1] is True])
+            assets = self._media_query.options(load_only(MediaAsset.size, MediaAsset.location_col()))\
+                                      .filter(MediaAsset.size.is_not(None))\
+                                      .all()
+            self._total_bytes = sum([x.size for x in assets])
+            self._main_bytes = sum([x.size for x in assets if x.location.name == 'primary'])
+            self._alternate_bytes = sum([x.size for x in assets if x.location.name == 'alternate'])
+            self._archive_bytes = sum([x.size for x in assets if x.location.name == 'archive'])
 
     def _populate_keep_counts(self):
         if hasattr(self, '_keep_counts'):

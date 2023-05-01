@@ -27,6 +27,14 @@ class ArchiveTypeEnum(AttrEnum):
     unknown = 127
 
 
+class MediaAssetLocationEnum(AttrEnum):
+    primary = 0
+    alternate = 1
+    archive = 2
+    cache = 3
+    unknown = 127
+
+
 class PostTypeEnum(AttrEnum):
     user = 0
     subscription = 1

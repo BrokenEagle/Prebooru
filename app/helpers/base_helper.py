@@ -135,7 +135,7 @@ def add_container(tagname, markup_text, classlist=[], **attrs):
     attrs['class'] = ' '.join(classlist) if len(classlist) > 0 else None
     valid_attrs = {key: val for (key, val) in attrs.items() if val is not None}
     attr_string = ' ' + ' '.join(['%s="%s"' % attr for attr in valid_attrs.items()]) if len(valid_attrs) else ''
-    return Markup('<%s%s>' % (tagname, attr_string)) + markup_text + Markup('</%s>' % tagname)
+    return Markup(f'<{tagname}{attr_string}>{markup_text}</{tagname}>')
 
 
 def external_link(text, url, **addons):

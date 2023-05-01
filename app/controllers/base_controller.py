@@ -223,7 +223,7 @@ def process_request_values(values_dict):
             currenthash = currenthash[token]
         finaltoken = alltokens[-1]
         currenthash[finaltoken] = value
-        merge_dicts(params, addhash)
+        params = merge_dicts(params, addhash)
     return params
 
 

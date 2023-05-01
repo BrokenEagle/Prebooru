@@ -287,7 +287,7 @@ def update(illust):
     if check_illust is not None:
         retdata['item'] = check_illust.to_json()
         return set_error(retdata, "Illust already exists: %s" % check_illust.shortlink)
-    update_illust_from_parameters(illust, updateparams)
+    update_illust_from_parameters(illust, updateparams, update=True)
     retdata['item'] = illust.to_json()
     return retdata
 
