@@ -74,14 +74,14 @@ def load_image(buffer):
     return image
 
 
-def create_preview(image, preview_path, downsample=True):
+def create_preview(image, preview_path, downsample=True, filetype='JPEG'):
     try:
         preview = image.copy().convert("RGB")
         if downsample:
             preview.thumbnail(PREVIEW_DIMENSIONS)
         create_directory(preview_path)
         print("Saving preview:", preview_path)
-        preview.save(preview_path, "JPEG")
+        preview.save(preview_path, filetype)
     except Exception as e:
         return "Error creating preview: %s" % repr(e)
 
