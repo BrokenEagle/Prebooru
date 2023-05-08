@@ -99,20 +99,37 @@ div#subscription-posts {
 }
 
 /**** STATUS Page ****/
+
+div#subscription-pending-elements table {
+    font-size: 16px;
+    margin-top: 0;
+    margin-left: 0.5em;
+}
+
+div#subscription-pending-elements td.subscription-column {
+    width: 70%;
+}
+
+div#subscription-pending-elements td.elements-column {
+    width: 30%;
+    text-align: right;
+}
+
 div#subscription-status > div {
     margin-bottom: 2em;
 }
 
-div#subscription-main-tasks,
+div#subscription-main-tasks > div,
 div#subscription-expirations-section {
     display: flex;
 }
 
-div#subscription-main-tasks > div {
+div#subscription-main-tasks > div > div {
     width: 20%;
 }
 
-div#subscription-main-tasks div.heading,
+div#subscription-pending-elements > div.heading,
+div#subscription-main-tasks > div.heading,
 div#subscription-slots-per-hour > div.heading,
 div#subscription-expirations > div.heading {
     font-size: 24px;
@@ -122,6 +139,8 @@ div#subscription-expirations-section > div {
     width: 12%;
 }
 
+div#subscription-populate-task > div.heading,
+div#subscription-download-task > div.heading,
 div#subscription-expirations-section div.heading {
     font-size: 18px;
 }
