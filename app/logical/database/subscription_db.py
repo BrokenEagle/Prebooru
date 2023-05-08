@@ -22,6 +22,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
 
 DISTINCT_ILLUST_COUNT = func.count(Illust.id.distinct())
 AVERAGE_INTERVAL_CLAUSE = (Subscription.checked - func.min(Illust.site_created)) / DISTINCT_ILLUST_COUNT
+DISTINCT_ELEMENT_COUNT = func.count(SubscriptionElement.id.distinct())
 
 
 # ## FUNCTIONS
@@ -107,6 +108,19 @@ def check_processing_subscriptions():
 
 def get_subscription_by_ids(subscription_ids):
     return Subscription.query.filter(Subscription.id.in_(subscription_ids)).all()
+
+
+def ordered_subscriptions_by_pending_elements(limit):
+    return SubscriptionElement.query.enum_join(SubscriptionElement.status_enum)\
+                                    .with_entities(SubscriptionElement.subscription_id, DISTINCT_ELEMENT_COUNT)\
+                                    .filter(SubscriptionElement.keep_filter('name', 'is_', None),
+                                            SubscriptionElement.status_filter('name', '__eq__', 'active')
+                                            )\
+                                    .group_by(SubscriptionElement.subscription_id)\
+                                    .having(DISTINCT_ELEMENT_COUNT > 0)\
+                                    .order_by(DISTINCT_ELEMENT_COUNT.desc())\
+                                    .limit(limit)\
+                                    .all()
 
 
 # #### Misc

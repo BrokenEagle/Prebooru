@@ -5,16 +5,19 @@ from flask import url_for, request, Markup
 
 # ## PACKAGE IMPORTS
 from config import MAXIMUM_PROCESS_SUBSCRIPTIONS, DOWNLOAD_POSTS_PER_PAGE, DOWNLOAD_POSTS_PAGE_LIMIT,\
-    UNLINK_ELEMENTS_PER_PAGE, DELETE_ELEMENTS_PER_PAGE, ARCHIVE_ELEMENTS_PER_PAGE, EXPIRE_ELEMENTS_PAGE_LIMIT
+    UNLINK_ELEMENTS_PER_PAGE, DELETE_ELEMENTS_PER_PAGE, ARCHIVE_ELEMENTS_PER_PAGE, EXPIRE_ELEMENTS_PAGE_LIMIT,\
+    SHOW_SUBSCRIPTIONS_WITH_PENDING_ELEMENTS
 from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from ..logical.database.subscription_db import get_average_interval_for_subscriptions, get_available_subscriptions_query
+from ..logical.database.subscription_db import get_average_interval_for_subscriptions,\
+    get_available_subscriptions_query, ordered_subscriptions_by_pending_elements
 from ..logical.database.subscription_element_db import expired_subscription_elements,\
     pending_subscription_downloads_query
 from ..logical.records.subscription_rec import subscription_slots_needed_per_hour
 from ..logical.tasks import JOB_CONFIG
+from ..models.subscription import Subscription
 from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
 from .base_helper import general_link, url_for_with_params
@@ -45,7 +48,9 @@ def illust_search(subscription):
 
 
 def element_search(item):
-    if item.model_name == 'subscription':
+    if isinstance(item, int):
+        subscription_id = item
+    elif item.model_name == 'subscription':
         subscription_id = item.id
     elif item.model_name == 'subscription_element':
         subscription_id = item.subscription_id
@@ -112,7 +117,13 @@ def element_status_link(subscription, status):
 
 # ###### Iterator functions
 
-def subscriptions_iterator():
+def pending_elements_iterator():
+    for subscription_id, pending_element_count in ordered_subscriptions_by_pending_elements(10):
+        temp_subscription = Subscription(id=subscription_id)
+        yield temp_subscription.show_link, general_link(pending_element_count, element_search(subscription_id))
+
+
+def populate_iterator():
     hours = _hours_from_config(JOB_CONFIG['check_pending_subscriptions']['config'])
     output = {
         "Slots Per Interval": MAXIMUM_PROCESS_SUBSCRIPTIONS,
@@ -122,12 +133,6 @@ def subscriptions_iterator():
     }
     for key, value in output.items():
         yield key, value
-
-
-def slots_per_hour_iterator():
-    needed = subscription_slots_needed_per_hour()
-    for i in range(4, 28, 4):
-        yield "%0.2f" % ((24 / i) * needed)
 
 
 def download_iterator():
@@ -141,6 +146,12 @@ def download_iterator():
     }
     for key, value in output.items():
         yield key, value
+
+
+def slots_per_hour_iterator():
+    needed = subscription_slots_needed_per_hour()
+    for i in range(4, 28, 4):
+        yield "%0.2f" % ((24 / i) * needed)
 
 
 def expires_iterator():
