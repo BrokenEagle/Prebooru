@@ -195,7 +195,7 @@ def unlink_expired_subscription_elements_task():
             data = safe_db_execute('unlink_expired_subscription_elements', 'tasks.schedule', printer=printer,
                                    try_func=(lambda data: unlink_expired_subscription_elements(manual)))
             printer("Unlinked subscription elements:", data)
-            return {'available': total, 'total': data}
+            return {'available': total, 'total': len(data), 'ids': data}
         else:
             printer("No subscriptions elements to process.")
 
@@ -211,8 +211,8 @@ def delete_expired_subscription_elements_task():
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('delete_expired_subscription_elements', 'tasks.schedule', printer=printer,
                                    try_func=(lambda data: delete_expired_subscription_elements(manual)))
-            printer("Deleted subscription elements:", data)
-            return {'available': total, 'total': data}
+            printer("Deleted subscription elements:", len(data))
+            return {'available': total, 'total': len(data), 'ids': data}
         else:
             printer("No subscriptions elements to process.")
 
@@ -229,7 +229,7 @@ def archive_expired_subscription_elements_task():
             data = safe_db_execute('archive_expired_subscription_elements', 'tasks.schedule', printer=printer,
                                    try_func=(lambda data: archive_expired_subscription_elements(manual)))
             printer("Archived subscription elements:", data)
-            return {'available': total, 'total': data}
+            return {'available': total, 'total': len(data), 'ids': data}
         else:
             printer("No subscriptions elements to process.")
 
