@@ -190,7 +190,7 @@ def download_missing_elements(manual=False):
 
 
 def unlink_expired_subscription_elements(manual):
-    unlink_count = 0
+    unlinked_elements = []
     max_pages = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
     q = expired_subscription_elements('unlink')
     q = q.order_by(SubscriptionElement.id.desc())
@@ -200,15 +200,15 @@ def unlink_expired_subscription_elements(manual):
         for element in page.items:
             print(f"Unlinking {element.shortlink}")
             unlink_subscription_post(element)
-            unlink_count += 1
+            unlinked_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
-    return unlink_count
+    return unlinked_elements
 
 
 def delete_expired_subscription_elements(manual):
-    delete_count = 0
+    deleted_elements = []
     max_pages = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
     q = expired_subscription_elements('delete')
     q = q.order_by(SubscriptionElement.id.desc())
@@ -218,15 +218,15 @@ def delete_expired_subscription_elements(manual):
         for element in page.items:
             print(f"Deleting post of {element.shortlink}")
             delete_subscription_post(element)
-            delete_count += 1
+            deleted_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
-    return delete_count
+    return deleted_elements
 
 
 def archive_expired_subscription_elements(manual):
-    archive_count = 0
+    archived_elements = []
     max_pages = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
     q = expired_subscription_elements('archive')
     q = q.order_by(SubscriptionElement.id.desc())
@@ -236,11 +236,11 @@ def archive_expired_subscription_elements(manual):
         for element in page.items:
             print(f"Archiving post of {element.shortlink}")
             archive_subscription_post(element)
-            archive_count += 1
+            archived_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
-    return archive_count
+    return archived_elements
 
 
 def populate_subscription_elements(subscription, job_id=None):
