@@ -61,6 +61,7 @@ class Post(JsonModel):
     duration = DB.Column(DB.Float, nullable=True)
     audio = DB.Column(DB.Boolean, nullable=True)
     simcheck = DB.Column(DB.Boolean, nullable=False)
+    media_asset_id = DB.Column(DB.INTEGER, DB.ForeignKey('media_asset.id'), nullable=False)
 
     # ## Relationships
     illust_urls = DB.relationship(IllustUrl, lazy=True, uselist=True,
