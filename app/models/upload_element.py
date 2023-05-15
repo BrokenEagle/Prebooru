@@ -21,6 +21,7 @@ class UploadElement(JsonModel):
     status, status_id, status_name, status_enum, status_filter, status_col =\
         get_relation_definitions(upload_element_status, relname='status', relcol='id', colname='status_id',
                                  tblname='upload_element', nullable=False)
+    media_asset_id = DB.Column(DB.INTEGER, DB.ForeignKey('media_asset.id'), nullable=True)
 
     # ## Relationships
     errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
