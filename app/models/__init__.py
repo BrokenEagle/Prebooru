@@ -26,7 +26,7 @@ def load_all():
         SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,\
         Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,\
         IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
-        Booru, BooruNames, BooruArtists, Error, Post,\
+        Booru, BooruNames, BooruArtists, MediaAsset, Error, Post,\
         PostTags, UploadUrl, Upload, Notation, Pool, PoolElement, PoolPost,\
         PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
         ImageHash, SimilarityMatch, ApiData, Archive,\
@@ -52,6 +52,7 @@ def load_all():
     from .booru import Booru, BooruNames, BooruArtists
 
     # #### Local data
+    from .media_asset import MediaAsset
     from .error import Error
     from .post import Post, PostTags
     from .upload import Upload
@@ -99,7 +100,7 @@ def initialize():
             SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,
             Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,
             IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
-            Booru, BooruNames, BooruArtists, Error, Post,
+            Booru, BooruNames, BooruArtists, MediaAsset, Error, Post,
             PostTags, UploadUrl, Upload, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionElement,
             ImageHash, SimilarityMatch, ApiData, Archive,

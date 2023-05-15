@@ -26,6 +26,7 @@ class MediaFile(JsonModel):
     file_ext = DB.Column(DB.String(255), nullable=False)
     media_url = DB.Column(DB.String(255), nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    media_asset_id = DB.Column(DB.INTEGER, DB.ForeignKey('media_asset.id'), nullable=False)
 
     # ## Instance properties
 
