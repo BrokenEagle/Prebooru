@@ -26,6 +26,7 @@ DIRECTORIES = {
 @bp.route('/media/<subtype>/<path:path>')
 def send_file(subtype, path):
     directory = DIRECTORIES[subtype]
+    print(subtype, directory, path)
     return send_from_directory(directory, path)
 
 

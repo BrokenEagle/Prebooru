@@ -110,6 +110,42 @@ class SiteDescriptor(EnumModel):
     }
 
 
+class MediaAssetLocation(EnumModel):
+    # ## Columns
+    id = DB.Column(DB.INTEGER, primary_key=True)
+    name = DB.Column(DB.TEXT, nullable=False)
+
+    # ## Private
+
+    @classproperty(cached=True)
+    def primary(cls):
+        return cls.by_name('primary')
+
+    @classproperty(cached=True)
+    def alternate(cls):
+        return cls.by_name('alternate')
+
+    @classproperty(cached=True)
+    def archive(cls):
+        return cls.by_name('archive')
+
+    @classproperty(cached=True)
+    def cache(cls):
+        return cls.by_name('cache')
+
+    # ## Private
+
+    __initial_mapping__ = {
+        'primary': 0,
+        'alternate': 1,
+        'archive': 2,
+        'cache': 3,
+    }
+    __mandatory_mapping__ = {
+        'unknown': 127,
+    }
+
+
 class ApiDataType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)

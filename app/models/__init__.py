@@ -26,7 +26,7 @@ def load_all():
         SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,\
         Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,\
         IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
-        Booru, BooruNames, BooruArtists, MediaAsset, Error, Post,\
+        Booru, BooruNames, BooruArtists, MediaAsset, MediaAssetLocation, Error, Post,\
         PostTags, UploadUrl, Upload, Notation, Pool, PoolElement, PoolPost,\
         PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
         ImageHash, SimilarityMatch, ApiData, Archive,\
@@ -38,7 +38,7 @@ def load_all():
     # #### Enum data
     from .model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
         SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType,\
-        SiteDataType, TagType
+        SiteDataType, TagType, MediaAssetLocation
 
     # #### Site data
     from .tag import Tag, SiteTag, UserTag

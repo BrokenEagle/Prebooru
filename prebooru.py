@@ -393,7 +393,7 @@ def check_other_execs():
     if exec_name == 'flask':
         command = sys.argv[1]
         subcommand = sys.argv[2]
-        if command == 'db' and subcommand == 'migrate':
+        if command == 'db':
             os.environ['USE_ENUMS'] = 'false'
         else:
             os.environ['USE_ENUMS'] = 'true'

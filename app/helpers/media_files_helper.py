@@ -13,7 +13,7 @@ from .base_helper import render_tag
 def file_link(media_file):
     addons = {
         'alt': media_file.shortlink,
-        'src': media_file.file_url,
+        'src': media_file.media.original_file_url,
         'onerror': 'return Prebooru.onImageError(this)',
     }
     return render_tag('img', None, addons)

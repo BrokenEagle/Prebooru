@@ -182,7 +182,7 @@ class Illust(JsonModel):
             return Artist.query.filter(Artist.site_filter('name', '__eq__', site_name),
                                        Artist.site_artist_id == value).one_or_none()
         if rel == 'posts':
-            return Post.query.filter(Post.md5.in_(k['md5'] for k in key)).all()
+            return Post.query.join(MediaAsset).filter(MediaAsset.md5.in_(k['md5'] for k in key)).all()
 
     @classproperty(cached=True)
     def load_columns(cls):

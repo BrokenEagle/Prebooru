@@ -138,7 +138,7 @@ def get_posts_by_md5s(md5s):
     posts = []
     for i in range(0, len(md5s), 100):
         sublist = md5s[i: i + 100]
-        posts += Post.query.filter(Post.md5.in_(sublist)).all()
+        posts += Post.query.join(MediaAsset).filter(MediaAsset.md5.in_(sublist)).all()
     return posts
 
 
@@ -147,7 +147,9 @@ def get_post_by_md5(md5):
 
 
 def alternate_posts_query(days):
-    return Post.query.filter(Post.created < days_ago(days), Post.alternate.is_(False))
+    return Post.query.join(MediaAsset).enum_join(MediaAsset.location_enum)
+                     .filter(Post.created < days_ago(days),
+                             MediaAsset.location_filter('name', '__eq__', 'alternate'))
 
 
 def missing_image_hashes_query():

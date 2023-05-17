@@ -19,6 +19,7 @@ from utility.obj import classproperty
 from .. import DB
 from ..enum_imports import post_type
 from ..logical.utility import unique_objects
+from .media_asset import MediaAsset
 from .error import Error
 from .illust_url import IllustUrl
 from .subscription_element import SubscriptionElement
@@ -46,24 +47,26 @@ PostTags = secondarytable(
 class Post(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    width = DB.Column(DB.Integer, nullable=False)
-    height = DB.Column(DB.Integer, nullable=False)
-    file_ext = DB.Column(DB.String(6), nullable=False)
-    md5 = DB.Column(BlobMD5(nullable=False), index=True, unique=True, nullable=False)
-    size = DB.Column(DB.Integer, nullable=False)
+    #width = DB.Column(DB.Integer, nullable=False)
+    #height = DB.Column(DB.Integer, nullable=False)
+    #file_ext = DB.Column(DB.String(6), nullable=False)
+    #md5 = DB.Column(BlobMD5(nullable=False), index=True, unique=True, nullable=False)
+    #size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     type, type_id, type_name, type_enum, type_filter, type_col =\
         get_relation_definitions(post_type, relname='type', relcol='id', colname='type_id',
                                  tblname='post', nullable=False)
-    alternate = DB.Column(DB.Boolean, nullable=False)
-    pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    duration = DB.Column(DB.Float, nullable=True)
-    audio = DB.Column(DB.Boolean, nullable=True)
+    #alternate = DB.Column(DB.Boolean, nullable=False)
+    #pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
+    #duration = DB.Column(DB.Float, nullable=True)
+    #audio = DB.Column(DB.Boolean, nullable=True)
     simcheck = DB.Column(DB.Boolean, nullable=False)
     media_asset_id = DB.Column(DB.INTEGER, DB.ForeignKey('media_asset.id'), nullable=False)
 
     # ## Relationships
+    media = DB.relationship(MediaAsset, lazy='selectin', uselist=False,
+                            backref=DB.backref('post', lazy=True, uselist=False))
     illust_urls = DB.relationship(IllustUrl, lazy=True, uselist=True,
                                   backref=DB.backref('post', uselist=False, lazy=True))
     errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
@@ -85,98 +88,75 @@ class Post(JsonModel):
                                                  foreign_keys=[SimilarityMatch.reverse_id])
 
     # ## Association proxies
+    width = association_proxy('media', 'width')
+    height = association_proxy('media', 'height')
+    size = association_proxy('media', 'size')
+    md5 = association_proxy('media', 'md5')
+    file_ext = association_proxy('media', 'file_ext')
+    pixel_md5 = association_proxy('media', 'pixel_md5')
+    duration = association_proxy('media', 'duration')
+    audio = association_proxy('media', 'audio')
+    location = association_proxy('media', 'location')
+    file_path = association_proxy('media', 'original_file_path')
+    file_url = association_proxy('media', 'original_file_url')
     tags = association_proxy('_tags', 'name', creator=user_tag_creator)
     pools = association_proxy('_pools', 'pool')
 
     # ## Instance properties
 
-    @property
-    def is_video(self):
-        return self.file_ext not in ['jpg', 'png', 'gif']
-
     @memoized_property
     def has_sample(self):
-        return self.width > SAMPLE_DIMENSIONS[0] or self.height > SAMPLE_DIMENSIONS[1] or self.is_video
+        return self.width > SAMPLE_DIMENSIONS[0] or self.height > SAMPLE_DIMENSIONS[1] or self.media.is_video
 
     @memoized_property
     def has_preview(self):
-        return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1] or self.is_video
+        return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1] or self.media.is_video
 
     @memoized_property
     def video_sample_exists(self):
-        return os.path.exists(self.video_sample_path)
-
-    @property
-    def is_alternate(self):
-        return self.alternate and ALTERNATE_MEDIA_DIRECTORY is not None
-
-    @property
-    def suburl_path(self):
-        return 'main' if not self.is_alternate else 'alternate'
-
-    @property
-    def file_url(self):
-        if not has_app_context():
-            return None
-        return image_server_url('data' + self._partial_network_path + self.file_ext, subtype=self.suburl_path)
+        return os.path.exists(self.media.video_sample_path)
 
     @property
     def sample_url(self):
-        if not has_app_context():
-            return None
         if self.has_sample:
-            return image_server_url('sample' + self._partial_network_path + 'jpg', subtype=self.suburl_path)
+            return self.media.image_sample_url
         return self.file_url
 
     @property
     def preview_url(self):
-        if not has_app_context():
-            return None
         if self.has_preview:
-            return image_server_url('preview' + self._partial_network_path + 'jpg', subtype=self.suburl_path)
+            return self.media.image_preview_url
         return self.file_url
 
     @property
     def video_sample_url(self):
-        if not has_app_context():
-            return None
-        if self.is_video:
-            return image_server_url('video_sample' + self._partial_network_path + 'webm', subtype=self.suburl_path)
+        if self.media.is_video:
+            return self.media.video_sample_url
 
     @property
     def video_preview_url(self):
-        if not has_app_context():
-            return None
-        if self.is_video:
-            return image_server_url('video_preview' + self._partial_network_path + 'webp', subtype=self.suburl_path)
-
-    @property
-    def subdirectory_path(self):
-        return MEDIA_DIRECTORY if not self.is_alternate else ALTERNATE_MEDIA_DIRECTORY
-
-    @property
-    def file_path(self):
-        return os.path.join(self.subdirectory_path, 'data', self._partial_file_path + self.file_ext)
+        if self.media.is_video:
+            return self.media.video_preview_url
 
     @property
     def sample_path(self):
         if self.has_sample:
-            return os.path.join(self.subdirectory_path, 'sample', self._partial_file_path + 'jpg')
+            return self.media.image_sample_path
 
     @property
     def preview_path(self):
         if self.has_preview:
-            return os.path.join(self.subdirectory_path, 'preview', self._partial_file_path + 'jpg')
+            return self.media.image_preview_path
 
     @property
     def video_sample_path(self):
-        if self.is_video:
-            return os.path.join(self.subdirectory_path, 'video_sample', self._partial_file_path + 'webm')
+        if self.media.is_video:
+            return self.media.video_sample_path
 
     @property
     def video_preview_path(self):
-        if self.is_video:
-            return os.path.join(self.subdirectory_path, 'video_preview', self._partial_file_path + 'webp')
+        if self.media.is_video:
+            return self.media.video_preview_path
 
     @property
     def similarity_matches(self):
@@ -268,18 +248,6 @@ class Post(JsonModel):
         return super().json_attributes + ['preview_url', 'sample_url', 'file_url', 'illust_urls', 'errors']
 
     # ## Private
-
-    @memoized_property
-    def _partial_network_path(self):
-        return '/%s/%s/%s.' % (self.md5[0:2], self.md5[2:4], self.md5)
-
-    @memoized_property
-    def _partial_file_path(self):
-        return os.path.join(self.md5[0:2], self.md5[2:4], self._file_name)
-
-    @memoized_property
-    def _file_name(self):
-        return '%s.' % (self.md5)
 
     @property
     def _similar_match_query(self):
