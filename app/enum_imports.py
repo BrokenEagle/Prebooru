@@ -5,6 +5,7 @@ from config import USE_ENUMS
 
 if USE_ENUMS:
     from .logical.enums import SiteDescriptorEnum as site_descriptor
+    from .logical.enums import MediaAssetLocationEnum as media_asset_location
     from .logical.enums import ApiDataTypeEnum as api_data_type
     from .logical.enums import ArchiveTypeEnum as archive_type
     from .logical.enums import PostTypeEnum as post_type
@@ -17,6 +18,7 @@ if USE_ENUMS:
     from .logical.enums import SiteDataTypeEnum as site_data_type
     from .logical.enums import TagTypeEnum as tag_type
 else:
+    from .models.model_enums import MediaAssetLocation as media_asset_location
     from .models.model_enums import ApiDataType as api_data_type
     from .models.model_enums import ArchiveType as archive_type
     from .models.model_enums import PostType as post_type

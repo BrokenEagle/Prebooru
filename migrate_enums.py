@@ -32,9 +32,9 @@ def initialize_enums_config(args):
     global ENUMS_CONFIG
     from app.models.model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
         SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType,\
-        SiteDataType, TagType
+        SiteDataType, TagType, MediaAssetLocation
     from app.models import ApiData, Archive, Artist, Illust, IllustUrl, PoolElement, Post, SiteData,\
-        Subscription, SubscriptionElement, Upload, UploadElement, Tag
+        Subscription, SubscriptionElement, Upload, UploadElement, Tag, MediaAsset
     if args.local:
         try:
             from app.logical.enums import local as enums
@@ -55,6 +55,13 @@ def initialize_enums_config(args):
             'enum': enums.ArchiveTypeEnum,
             'tables': [{
                 'table': Archive,
+                'field': 'type',
+            }],
+        }, {
+            'model': MediaAssetLocation,
+            'enum': enums.MediaAssetLocationEnum,
+            'tables': [{
+                'table': MediaAsset,
                 'field': 'type',
             }],
         }, {
@@ -279,8 +286,18 @@ def migrate_tables(next_migration, prev_migration):
         model_name = model._model_name()
         if model_name not in next_migration['tables']:
             print("Skipping enum:", model_name)
-        print("Converting enum:", model_name)
         next_values = next_migration['tables'][model_name]
+        current_values = model.query.all()
+        if len(next_values) == len(current_values):
+            for current in current_values:
+                nextval = next((v for v in next_values if v['id'] == current.id and v['name'] == current.name), None)
+                if nextval is None:
+                    print(current, next_values)
+                    break
+            else:
+                print("Skipping enum:", model_name)
+                continue
+        print("Converting enum:", model_name)
         model.query.delete()
         for row in next_values:
             SESSION.add(model(**row))
@@ -304,6 +321,7 @@ def migrate_tables(next_migration, prev_migration):
             table = table_info['table']
             field = table_info['field']
             field_attr = getattr(table, field)
+            print(mapping, field_attr, case_kw)
             table.query.update({field: case(mapping, value=field_attr, **case_kw)})
 
 

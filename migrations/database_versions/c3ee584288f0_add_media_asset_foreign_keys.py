@@ -30,6 +30,13 @@ SET media_asset_id = (
     SELECT media_asset.id FROM media_asset WHERE {0}.md5 = media_asset.md5
 )"""
 
+UPDATE_ARCHIVE_MEDIA_ASSET_ID = """
+UPDATE archive
+SET media_asset_id = media_asset.id
+FROM media_asset
+WHERE media_asset.md5 = unhex(archive."key")
+"""
+
 
 # ## FUNCTIONS
 
@@ -43,13 +50,17 @@ def downgrade(engine_name):
 
 def upgrade_():
     print("Adding columns")
-    with op.batch_alter_table('media_file', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
-        batch_op.create_foreign_key(batch_op.f('fk_media_file_media_asset_id_media_asset'), 'media_asset', ['media_asset_id'], ['id'])
-
     with op.batch_alter_table('post', schema=None) as batch_op:
         batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
         batch_op.create_foreign_key(batch_op.f('fk_post_media_asset_id_media_asset'), 'media_asset', ['media_asset_id'], ['id'])
+
+    with op.batch_alter_table('archive', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
+        batch_op.create_foreign_key(batch_op.f('fk_archive_media_asset_id_media_asset'), 'media_asset', ['media_asset_id'], ['id'])
+
+    with op.batch_alter_table('media_file', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
+        batch_op.create_foreign_key(batch_op.f('fk_media_file_media_asset_id_media_asset'), 'media_asset', ['media_asset_id'], ['id'])
 
     with op.batch_alter_table('subscription_element', schema=None) as batch_op:
         batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
@@ -61,10 +72,11 @@ def upgrade_():
 
     print("Populating columns")
     conn = op.get_bind()
-    conn.execute(UPDATE_MEDIA_ASSET_ID.format('post'))
-    conn.execute(UPDATE_MEDIA_ASSET_ID.format('media_file'))
-    conn.execute(UPDATE_MEDIA_ASSET_ID.format('upload_element'))
-    conn.execute(UPDATE_MEDIA_ASSET_ID.format('subscription_element'))
+    conn.execute(sa.text(UPDATE_MEDIA_ASSET_ID.format('post')))
+    conn.execute(sa.text(UPDATE_ARCHIVE_MEDIA_ASSET_ID))
+    conn.execute(sa.text(UPDATE_MEDIA_ASSET_ID.format('media_file')))
+    conn.execute(sa.text(UPDATE_MEDIA_ASSET_ID.format('upload_element')))
+    conn.execute(sa.text(UPDATE_MEDIA_ASSET_ID.format('subscription_element')))
 
     print("Alter columns nullable")
     alter_column('post', 'media_asset_id', 'INTEGER', {'nullable': False})

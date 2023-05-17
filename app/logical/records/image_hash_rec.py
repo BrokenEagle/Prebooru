@@ -93,7 +93,7 @@ def check_image_match_scores(image_match_results, image_hash, min_score):
 def check_media_file_image_matches(media_file, min_score, include_posts=False, sim_clause=None):
     if type(media_file) is str:
         return media_file
-    image = get_image(media_file.file_path)
+    image = get_image(media_file.media.original_file_path)
     image_hash = get_image_hash(image)
     ratio = round(image.width / image.height, 4)
     imghash_matches = get_image_hash_matches(image_hash, ratio, sim_clause=sim_clause)

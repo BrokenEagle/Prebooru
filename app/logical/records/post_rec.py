@@ -98,7 +98,7 @@ def move_post_media_to_alternate(post, reverse=False):
         copy_file(post.sample_path, temppost.sample_path)
     if post.has_preview:
         copy_file(post.preview_path, temppost.preview_path)
-    if post.is_video:
+    if post.media.is_video:
         copy_file(post.video_sample_path, temppost.video_sample_path)
         copy_file(post.video_preview_path, temppost.video_preview_path)
     # Commit post as alternate location at this point since the files have been safely copied over
@@ -110,7 +110,7 @@ def move_post_media_to_alternate(post, reverse=False):
         delete_file(temppost.sample_path)
     if post.has_preview:
         delete_file(temppost.preview_path)
-    if post.is_video:
+    if post.media.is_video:
         delete_file(temppost.video_sample_path)
         delete_file(temppost.video_preview_path)
 
@@ -170,7 +170,7 @@ def recreate_archived_post(archive):
         return handle_error_message(error)
     # Once the file move is successful, keep going even if there are errors.
     retdata = create_sample_preview_files(post)
-    if post.is_video:
+    if post.media.is_video:
         SessionThread(target=create_video_sample_preview_files,
                       args=(post.file_path, post.video_preview_path,
                             post.video_sample_path, create_sample)).start()
@@ -225,7 +225,7 @@ def create_sample_preview_files(post, retdata=None):
     retdata = retdata or {'error': False}
     errors = []
     buffer = None
-    if post.is_video:
+    if post.media.is_video:
         buffer = _get_video_thumb_binary(post)
     if buffer is not None:
         has_sample = has_preview = True
