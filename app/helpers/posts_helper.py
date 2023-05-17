@@ -77,7 +77,7 @@ def post_preview_link(post, lazyload):
     }
     if not lazyload:
         addons['src'] = post.preview_url
-    if post.is_video:
+    if post.media.is_video:
         addons['data-video'] = post.video_preview_url
     return render_tag('img', None, addons)
 

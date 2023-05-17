@@ -12,7 +12,7 @@ from .data import decode_unicode, decode_json, get_buffer_checksum
 
 # ## FUNCTIONS
 
-# #### Filename functions
+# #### Filepath functions
 
 def get_http_filename(webpath):
     start = webpath.rfind('/') + 1
@@ -32,6 +32,10 @@ def no_file_extension(filepath):
 def get_directory_path(filepath):
     return str(pathlib.Path(filepath).parent.resolve())
 
+
+def path_join(*args):
+    if all(isinstance(arg, str) for arg in args):
+        return os.path.join(*args)
 
 # #### File functions
 

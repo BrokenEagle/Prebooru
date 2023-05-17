@@ -16,7 +16,7 @@
     <div id="sidebar-container">
         {% include "posts/_sidebar.html" %}
         <div id="post-content">
-            {% if post.is_video %}
+            {% if post.media.is_video %}
                 <section id="media-container" class="video loading">
                     {{ helpers.post.video_sample_link(post) }}
                     {{ helpers.post.video_picture_link(post) }}
@@ -41,5 +41,5 @@
 {% endblock content %}
 
 {% block pagescript %}
-    {% if post.is_video %}Posts.initializePlay();{% endif %}
+    {% if post.media.is_video %}Posts.initializePlay();{% endif %}
 {% endblock pagescript %}

@@ -15,7 +15,7 @@ from utility.uprint import buffered_print, print_info
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Subscription, SubscriptionElement, Illust, IllustUrl
+from ...models import Subscription, SubscriptionElement, Illust, IllustUrl, MediaAsset
 from ..utility import SessionThread, SessionTimer
 from ..searchable import search_attributes
 from ..media import convert_mp4_to_webp
@@ -313,7 +313,8 @@ def reinstantiate_element(element):
         return {'error': True, 'message': f'Post archive with MD5 {element.md5} does not exist.'}
     results = recreate_archived_post(archive, False)
     if results['error']:
-        unlinked = SubscriptionElement.query.filter(SubscriptionElement.md5 == element.md5,
+        unlinked = SubscriptionElement.query.join(MediaAsset)\
+                                            .filter(SubscriptionElement.md5 == element.md5,
                                                     SubscriptionElement.id.is_not(element.id),
                                                     SubscriptionElement.status_filter('name', '__eq__', 'unlinked'))\
                                             .first()
@@ -393,7 +394,7 @@ def _process_videos(elements):
         printer("Videos processed:", {'mp4': mp4_count})
 
     posts = [element.post for element in elements if element.post is not None]
-    video_posts = [post for post in posts if post.is_video]
+    video_posts = [post for post in posts if post.media.is_video]
     if len(video_posts):
         post_ids = [post.id for post in video_posts]
         thread = SessionThread(target=_process, args=(post_ids,))

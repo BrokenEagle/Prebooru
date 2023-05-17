@@ -165,7 +165,7 @@ def delete_html(id):
 def regenerate_previews_html(id):
     post = get_or_abort(Post, id)
     results = create_sample_preview_files(post)
-    if post.is_video:
+    if post.media.is_video:
         create_sample = post.subscription_element is None
         create_video_sample_preview_files(post, create_sample)
     if results['error']:

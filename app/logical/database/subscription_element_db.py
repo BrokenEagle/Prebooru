@@ -10,7 +10,7 @@ from utility.time import days_from_now, get_current_time
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...enum_imports import subscription_element_status, subscription_element_keep
-from ...models import Subscription, SubscriptionElement, Post
+from ...models import Subscription, SubscriptionElement, Post, MediaAsset
 from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
 from .base_db import update_column_attributes
 
@@ -114,7 +114,8 @@ def get_elements_by_id(id_list):
 
 def check_deleted_subscription_post(md5):
     return SESSION.query(SubscriptionElement.id)\
-                  .filter(SubscriptionElement.md5 == md5,
+                  .join(MediaAsset)
+                  .filter(MediaAsset.md5 == md5,
                           SubscriptionElement.status_filter('name', 'in_', ['deleted', 'archived'])
                           ).first() is not None
 

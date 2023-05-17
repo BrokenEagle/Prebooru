@@ -56,10 +56,10 @@ def create_media(download_url, source):
     extension = source.get_media_extension(download_url)
     media_file = create_media_file_from_parameters({'md5': md5, 'file_ext': extension, 'media_url': download_url})
     try:
-        create_directory(media_file.file_path)
-        put_get_raw(media_file.file_path, 'wb', buffer)
+        create_directory(media_file.media.original_file_path)
+        put_get_raw(media_file.media.original_file_path, 'wb', buffer)
     except Exception as e:
-        delete_file(media_file.file_path)
+        delete_file(media_file.media.original_file_path)
         batch_delete_media_files([media_file])
         return "Exception creating media file on disk: %s" % str(e)
     return media_file
