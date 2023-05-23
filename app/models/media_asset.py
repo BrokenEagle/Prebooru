@@ -110,7 +110,7 @@ class MediaAsset(JsonModel):
     file_ext = DB.Column(DB.TEXT, nullable=True)
     location, location_id, location_name, location_enum, location_filter, location_col =\
         get_relation_definitions(media_asset_location, relname='location', relcol='id', colname='location_id',
-                                 tblname='media_asset', nullable=False)
+                                 tblname='media_asset', nullable=True)
 
     # ## Instance methods
 

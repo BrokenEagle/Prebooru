@@ -82,7 +82,7 @@ def upgrade_():
     print("Creating tables")
     op.create_table('media_asset_location',
         sa.Column('id', sa.INTEGER(), nullable=False),
-        sa.Column('name', sa.TEXT(), nullable=True),
+        sa.Column('name', sa.TEXT(), nullable=False),
         sa.PrimaryKeyConstraint('id', name=op.f('pk_media_asset_location')),
     )
     op.create_table('media_asset',
