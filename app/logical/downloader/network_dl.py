@@ -10,8 +10,8 @@ from utility.file import put_get_raw, delete_file
 # ## LOCAL IMPORTS
 from ..network import get_http_data
 from ..media import get_pixel_hash, create_video_screenshot
-from ...models import Post
-from ..database.post_db import create_post_and_add_illust_url, update_post_from_parameters
+from ...models import Post, MediaAsset
+from ..records.post_rec import create_post_record
 from ..database.error_db import create_error, append_error, extend_errors, is_error
 from .base_dl import load_post_image, check_existing, check_filetype, check_image_dimensions,\
     check_video_info, save_image, save_video, save_thumb, record_outcome
@@ -98,17 +98,19 @@ def create_image_post(record, post_type):
     if is_error(image):
         return post_errors + [image]
     image_width, image_height = check_image_dimensions(image, illust_url, post_errors)
-    temppost = Post(md5=md5, file_ext=image_file_ext, width=image_width, height=image_height)
+    temppost = Post()
+    temppost.media = MediaAsset(md5=md5, file_ext=image_file_ext, width=image_width, height=image_height, location='primary')
     if not save_image(buffer, image, temppost, post_errors):
         return post_errors
     pixel_md5 = get_pixel_hash(image)
     if record.model_name == 'post':
-        update_post_from_parameters(record, {'md5': md5, 'width': image_width, 'height': image_height,
-                                             'size': len(buffer), 'file_ext': image_file_ext, 'pixel_md5': pixel_md5})
-        post = record
+        pass # use update media asset function directly instead
+        #update_post_from_parameters(record, {'md5': md5, 'width': image_width, 'height': image_height,
+        #                                     'size': len(buffer), 'file_ext': image_file_ext, 'pixel_md5': pixel_md5})
+        #post = record
     else:
-        post = create_post_and_add_illust_url(illust_url, image_width, image_height, image_file_ext, md5, len(buffer),
-                                              post_type, pixel_md5, None, None)
+        post = create_post_record(illust_url, image_width, image_height, image_file_ext, md5, len(buffer), post_type,
+                                  pixel_md5, None, None)
     if len(post_errors):
         extend_errors(post, post_errors)
     return post
@@ -127,7 +129,8 @@ def create_video_post(record, post_type):
         return None
     post_errors = []
     video_file_ext = check_filetype(buffer, file_ext, post_errors)
-    temppost = Post(md5=md5, file_ext=video_file_ext)
+    temppost = Post()
+    temppost.media = MediaAsset(md5=md5, file_ext=video_file_ext)
     error = save_video(buffer, temppost)
     if error is not None:
         return post_errors + [error]
@@ -145,8 +148,8 @@ def create_video_post(record, post_type):
             delete_file(save_path)
     if thumb_binary is not None:
         save_thumb(thumb_binary, temppost, post_errors)
-    post = create_post_and_add_illust_url(illust_url, vinfo['width'], vinfo['height'], video_file_ext, md5, len(buffer),
-                                          post_type, None, vinfo['duration'], vinfo['audio'])
+    post = create_post_record(illust_url, vinfo['width'], vinfo['height'], video_file_ext, md5, len(buffer), post_type,
+                              None, vinfo['duration'], vinfo['audio'])
     if len(post_errors):
         extend_errors(post, post_errors)
     return post

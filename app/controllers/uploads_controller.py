@@ -10,7 +10,7 @@ from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
 from .. import SCHEDULER
-from ..models import Upload, UploadElement, IllustUrl, Illust
+from ..models import Upload, UploadElement, IllustUrl, Illust, Post
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.records.upload_rec import process_upload
@@ -43,7 +43,8 @@ SHOW_ELEMENTS_HTML_OPTIONS = (
 )
 
 INDEX_HTML_OPTIONS = (
-    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.post),
+    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.post).selectinload(Post.media),
+    selectinload(Upload.file_illust_url).selectinload(IllustUrl.post).selectinload(Post.media),
     selectinload(Upload.image_urls),
     selectinload(Upload.errors),
 )
@@ -237,9 +238,11 @@ def index_json():
 
 @bp.route('/uploads', methods=['GET'])
 def index_html():
+    from utility.uprint import print_info
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
     uploads = paginate(q, request)
+    print_info("Before page render")
     return render_template("uploads/index.html", uploads=uploads, upload=Upload())
 
 

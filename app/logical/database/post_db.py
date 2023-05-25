@@ -8,8 +8,9 @@ from utility.time import get_current_time, days_ago
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Post, SubscriptionElement, ImageHash
+from ...models import Post, SubscriptionElement, ImageHash, MediaAsset
 from .base_db import update_column_attributes
+from .media_asset_db import create_or_update_media_asset_from_parameters
 from .pool_element_db import delete_pool_element
 
 
@@ -38,7 +39,8 @@ SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_
 
 def create_post_from_parameters(createparams):
     current_time = get_current_time()
-    post = Post(created=current_time, alternate=False, simcheck=False)
+    media_asset = create_or_update_media_asset_from_parameters(createparams)
+    post = Post(created=current_time, simcheck=False, media=media_asset)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(post, update_columns, createparams)
@@ -103,6 +105,7 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, durati
         'pixel_md5': pixel_md5,
         'duration': duration,
         'audio': has_audio,
+        'location_id': MediaAsset.location_enum.primary.id,
     }
     return create_post_from_parameters(params)
 
@@ -110,13 +113,6 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, durati
 def post_append_illust_url(post, illust_url):
     illust_url.post_id = post.id
     SESSION.commit()
-
-
-def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size, post_type, pixel_md5, duration,
-                                   has_audio):
-    post = create_post(width, height, file_ext, md5, size, post_type, pixel_md5, duration, has_audio)
-    post_append_illust_url(post, illust_url)
-    return post
 
 
 def copy_post(post):
@@ -147,7 +143,7 @@ def get_post_by_md5(md5):
 
 
 def alternate_posts_query(days):
-    return Post.query.join(MediaAsset).enum_join(MediaAsset.location_enum)
+    return Post.query.join(MediaAsset).enum_join(MediaAsset.location_enum)\
                      .filter(Post.created < days_ago(days),
                              MediaAsset.location_filter('name', '__eq__', 'alternate'))
 

@@ -11,6 +11,7 @@ from utility.obj import classproperty
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import site_descriptor
+from ..logical.batch_loader import selectinload_batch_primary
 from .tag import SiteTag, site_tag_creator
 from .illust_url import IllustUrl
 from .site_data import SiteData
@@ -106,12 +107,13 @@ class Illust(JsonModel):
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)
 
-    @property
+    @memoized_property
     def active_urls(self):
-        return [url for url in self.urls if url.post is not None]
+        return [url for url in self.urls if url.post_id is not None]
 
     @memoized_property
     def posts(self):
+        self._populate_posts()
         return [post for post in self._posts if post is not None]
 
     @property
@@ -204,6 +206,16 @@ class Illust(JsonModel):
     @property
     def _urls_query(self):
         return IllustUrl.query.filter_by(illust_id=self.id)
+
+    @property
+    def _post_query(self):
+        from .post import Post
+        return Post.query.join(IllustUrl).filter(IllustUrl.illust_id == self.id)
+
+    def _populate_posts(self):
+        if len(self.urls) and any('post' in url._sa_instance_state.unloaded for url in self.urls):
+            selectinload_batch_primary(self.urls, 'post')
+        self._populate_posts = lambda: None
 
     __table_args__ = (
         DB.UniqueConstraint('site_illust_id', 'site_id'),

@@ -4,15 +4,16 @@
 from ... import SESSION
 from ...enum_imports import upload_element_status
 from ...models import UploadElement
+from .media_asset_db import get_media_asset_by_md5
 from .base_db import update_column_attributes
 
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['upload_id', 'illust_url_id', 'md5', 'status_id']
+COLUMN_ATTRIBUTES = ['upload_id', 'illust_url_id', 'status_id']
 
 CREATE_ALLOWED_ATTRIBUTES = ['upload_id', 'illust_url_id']
-UPDATE_ALLOWED_ATTRIBUTES = ['md5', 'status_id']
+UPDATE_ALLOWED_ATTRIBUTES = ['status_id']
 
 
 # ## FUNCTIONS
@@ -36,8 +37,9 @@ def create_upload_element_from_parameters(createparams, commit=True):
 
 def update_upload_element_from_parameters(upload_element, updateparams, commit=True):
     update_results = []
-    if 'status' in updateparams:
-        updateparams['status_id'] = UploadElement.status_enum.by_name(updateparams['status']).id
+    if 'md5' in updateparams:
+        upload_element.media = get_media_asset_by_md5(updateparams['md5'])
+        update_results.append(True)
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(upload_element, update_columns, updateparams, commit=commit))
