@@ -114,7 +114,7 @@ def get_elements_by_id(id_list):
 
 def check_deleted_subscription_post(md5):
     return SESSION.query(SubscriptionElement.id)\
-                  .join(MediaAsset)
+                  .join(MediaAsset)\
                   .filter(MediaAsset.md5 == md5,
                           SubscriptionElement.status_filter('name', 'in_', ['deleted', 'archived'])
                           ).first() is not None

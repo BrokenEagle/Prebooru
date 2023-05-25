@@ -248,6 +248,12 @@ class CompressedJSON(DB.TypeDecorator):
 class JsonModel(DB.Model):
     __abstract__ = True
 
+    def __init__(self, *args, **kwargs):
+        for col in kwargs:
+            if hasattr(self, col + '_enum') and isinstance(kwargs[col], str):
+                kwargs[col] = getattr(self, col + '_enum').by_name(kwargs[col])
+        super().__init__(*args, **kwargs)
+
     @classmethod
     def find(cls, *args, **kwargs):
         if len(args):

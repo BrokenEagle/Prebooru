@@ -307,14 +307,15 @@ def reset_subscription_status_task():
         update_subscriptions_ready()
         return status
 
-    _execute_scheduled_task(_task, 'reset_subscription_status', has_manual=False, has_enabled=False, has_lock=False)
+    _execute_scheduled_task(_task, 'reset_subscription_status', has_manual=False, has_enabled=False, has_lock=False, record_status=False)
 
 
 # #### Private
 
 # ###### Semaphore
 
-def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_lock=True, busy_check=False):
+def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_lock=True, busy_check=False,
+                            record_status=True):
     def _execute():
         display_name = ' '.join(word.title() for word in id.split('_'))
         if has_lock and not _set_db_semaphore(id):
@@ -345,10 +346,11 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
 
     dirty = False
     start = get_current_time()
-    status = get_job_status_data(id) or []
-    filtered = [item for item in status if datetime_from_epoch(item['processed']) > days_ago(7)]
-    if len(filtered) != len(status):
-        dirty = True
+    if record_status:
+        status = get_job_status_data(id) or []
+        filtered = [item for item in status if datetime_from_epoch(item['processed']) > days_ago(7)]
+        if len(filtered) != len(status):
+            dirty = True
     try:
         info = _execute()
     except Exception as e:
@@ -356,7 +358,7 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
         info = {'error': "%s :\n%s" % (repr(e), tback)}
         print_error(info['error'])
         SESSION.rollback()
-    if info is not None:
+    if info is not None and record_status:
         info['processed'] = int(datetime_to_epoch(start))
         info['duration'] = (get_current_time() - start).seconds
         status.append(info)
