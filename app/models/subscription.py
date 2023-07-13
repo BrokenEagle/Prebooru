@@ -12,6 +12,7 @@ from ..enum_imports import subscription_status, subscription_element_status, sub
 from .illust import Illust
 from .illust import IllustUrl
 from .post import Post
+from .notation import Notation
 from .error import Error
 from .subscription_element import SubscriptionElement
 from .base import JsonModel, EpochTimestamp, get_relation_definitions
@@ -39,6 +40,8 @@ class Subscription(JsonModel):
                                backref=DB.backref('subscription', lazy=True, uselist=False))
     errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
                              backref=DB.backref('subscription', uselist=False, lazy=True))
+    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
+                                backref=DB.backref('subscription', lazy=True, uselist=False))
     # (OtO) artist [Artist]
 
     # ## Instance properties
@@ -70,7 +73,9 @@ class Subscription(JsonModel):
                                       .all()
         if len(datetimes) == 0:
             return
-        datetimes = [get_current_time()] + [x[0] for x in datetimes]
+        datetimes = [x[0] for x in datetimes]
+        if self.undecided_count == 0:
+            datetimes = [get_current_time()] + datetimes
         timedeltas = [datetimes[i - 1] - datetimes[i] for i in range(1, len(datetimes))]
         return average_timedelta(timedeltas)
 

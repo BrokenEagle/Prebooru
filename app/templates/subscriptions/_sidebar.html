@@ -1,11 +1,13 @@
 {% from "boorus/_macros.html" import boorus_section %}
 {% from "artists/_macros.html" import artists_section %}
+{% from "notations/_macros.html" import notations_section %}
 {% from "errors/_macros.html" import errors_section %}
 {% from "layouts/_macros.html" import timestamps_section %}
 
 <div id="subscription-sidebar">
     {{ boorus_section(subscription.artist.boorus, 'subscription-boorus') }}
     {{ artists_section(subscription.artist, 'subscription-artist') }}
+    {{ notations_section(subscription.notations, 'subscription-notations') }}
     {{ errors_section(subscription.errors, 'subscription-errors') }}
     {{ timestamps_section(subscription, 'subscription-timestamps', other_timestamps=['requery']) }}
     <section id="subscription-options">
@@ -15,6 +17,7 @@
                 <li>{{ helpers.subscription.process_subscription_link(subscription) }}</li>
                 <li>{{ helpers.subscription.recheck_subscription_link(subscription) }}</li>
             {% endif %}
+            <li>{{ helpers.subscription.add_notation_link(subscription) }}</li>
             <li>{{ helpers.subscription.delay_subscription_link(subscription) }}</li>
             <li>{{ helpers.subscription.get_last_job_status_link(subscription) }}</li>
             {% if subscription.status.name != 'retired' %}<li>{{ helpers.subscription.retire_link(subscription) }}</li>{% endif %}
