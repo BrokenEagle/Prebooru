@@ -67,7 +67,7 @@ def element_search_link(subscription):
 
 def process_subscription_link(subscription):
     url = url_for('subscription.process_html', id=subscription.id)
-    return general_link("Process subscription", url, method="POST")
+    return general_link("Manual process", url, method="GET")
 
 
 def recheck_subscription_link(subscription):

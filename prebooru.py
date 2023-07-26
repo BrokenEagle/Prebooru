@@ -207,6 +207,8 @@ def start_server(args):
             validate_integrity(conn)
             validate_foreign_keys(conn)
             validate_alembic_table(conn)
+        if DEBUG_MODE:
+            print_debug_info()
         print("\n========== Starting server - Prebooru-%s ==========" % VERSION)
         SERVER_PID = os.getpid()
         put_get_json(SERVER_PID_FILE, 'w', [SERVER_PID])
@@ -286,6 +288,15 @@ def kill_server(args):
 
 
 # #### Auxiliary functions
+
+def print_debug_info():
+    from app.logical.sources import SOURCES
+    for source in SOURCES:
+        print('\n', source.SITE.name.title(), "auth configuration")
+        print("--------------------------------------------")
+        source.print_auth()
+    print('\n')
+
 
 def watchdog_loop(watchdog_info):
     import sys

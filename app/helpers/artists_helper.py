@@ -78,3 +78,13 @@ def artist_links(artist):
         return Markup('<em>N/A</em>')
     all_links = [external_link(name.title(), url) for (name, url) in source.artist_links(artist).items()]
     return Markup(' | '.join(all_links))
+
+
+def last_illust_info(artist):
+    illust = artist.last_illust
+    return (illust.site_illust_id, illust.site_created.isoformat())
+
+
+def first_illust_info(artist):
+    illust = artist.first_illust
+    return (illust.site_illust_id, illust.site_created.isoformat())

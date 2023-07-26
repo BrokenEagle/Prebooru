@@ -1,6 +1,7 @@
 # APP/MODELS/ARTIST.PY
 
 # ## EXTERNAL IMPORTS
+from sqlalchemy import func
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -104,6 +105,14 @@ class Artist(JsonModel):
     @property
     def post_count(self):
         return self._post_query.distinct_count()
+
+    @memoized_property
+    def last_illust(self):
+        return self._illust_query.order_by(Illust.site_illust_id.desc()).first()
+
+    @memoized_property
+    def first_illust(self):
+        return self._illust_query.order_by(Illust.site_illust_id.asc()).first()
 
     @property
     def site_domain(self):

@@ -13,11 +13,12 @@ import datetime
 # ## EXTERNAL IMPORTS
 import requests
 import httpx
+from wtforms import BooleanField, IntegerField, TextField
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN
 from utility.data import safe_get, decode_json, fixup_crlf, safe_check
-from utility.time import get_current_time, datetime_from_epoch, add_days, get_date
+from utility.time import get_current_time, datetime_from_epoch, add_days, get_date, process_utc_timestring
 from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
 from utility.uprint import print_info, print_warning, print_error
 
@@ -342,15 +343,62 @@ TWITTER_SEARCH_TIMELINE_FIELD_TOGGLES = {
     "withArticleRichContentState": False,
 }
 
+# #### Subscription variables
+
+PROCESS_FORM_CONFIG = {
+    'search_all': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': True,
+            'description': "Will search from current time until the artist account creation. Overrides all other form inputs.",
+        },
+    },
+    'media_timeline': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': False,
+            'description': "Will query the media timeline.",
+        },
+    },
+    'last_id': {
+        'name': "Last ID",
+        'field': IntegerField,
+        'kwargs': {
+            'description': "Set as a stopping point for the media timeline.",
+        },
+    },
+    'search_timeline': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': False,
+            'description': "Will query the search timeline.",
+        },
+    },
+    'search_since': {
+        'field': TextField,
+    },
+    'search_until': {
+        'field': TextField,
+    },
+    'filter_media': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': False,
+        },
+    },
+}
+
 # #### Other variables
 
 IMAGE_SERVER = 'https://pbs.twimg.com'
 TWITTER_SIZES = [':orig', ':large', ':medium', ':small']
 
-MINIMUM_QUERY_INTERVAL = 4
+MINIMUM_QUERY_INTERVAL = 10
 
 TOKEN_FILE = os.path.join(DATA_DIRECTORY, 'twittertoken.txt')
 ERROR_TWEET_FILE = os.path.join(DATA_DIRECTORY, 'twittererror.json')
+ERROR_DATA_FILE = os.path.join(DATA_DIRECTORY, 'twittererror-data.json')
+ERROR_NODE_FILE = os.path.join(DATA_DIRECTORY, 'twittererror-node.json')
 
 LAST_QUERY = None
 
@@ -625,6 +673,14 @@ def convert_entity_text(twitter_data, key, url_subkeys, mention_subkeys=None):
     replace_entries.sort(key=lambda x: x['start_index'], reverse=True)
     for entry in replace_entries:
         text = text[:entry['start_index']] + entry['replace'] + text[entry['end_index']:]
+    if 'in_reply_to_status_id_str' in twitter_data:
+        pretext = "Replying to "
+        if 'in_reply_to_screen_name' in twitter_data and 'in_reply_to_user_id_str' in twitter_data:
+            screen_name = twitter_data['in_reply_to_screen_name']
+            user_id_str = twitter_data['in_reply_to_user_id_str']
+            pretext = "@%s (twuser #%s)\r\n" % (screen_name, user_id_str)
+        pretext += "=> twitter #%s" % twitter_data['in_reply_to_status_id_str']
+        text = pretext + '\r\n\r\n' + text
     return html.unescape(text)
 
 
@@ -754,17 +810,31 @@ def timeline_iterator(data, cursor, tweet_ids, user_id=None, last_id=None, v2=Fa
     return False
 
 
-def get_timeline(page_func, **kwargs):
+def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
     page = 1
     cursor = [None]
     tweet_ids = []
+    count = 0
     while True:
         data = page_func(cursor=cursor[0], **kwargs)
         if data['error']:
             return data['message']
-        print(f"Gettime timeline page #{page}")
+        if len(tweet_ids):
+            lowest_tweet_id = min(tweet_ids)
+            timestamp = snowflake_to_epoch(lowest_tweet_id)
+            timeval = datetime_from_epoch(timestamp)
+            bookmark  = f"twitter #{lowest_tweet_id} @ {timeval}"
+        else:
+            bookmark = "initial"
+        print(f"Gettime timeline page #{page} - {bookmark}")
+        if job_id is not None and len(tweet_ids) > count:
+            job_status['temp_ids'] = tweet_ids
+            print_info("Saving temp ids:", job_status['temp_ids'])
+            update_job_status(job_id, job_status)
+            count = len(tweet_ids)
         result = timeline_iterator(data, cursor, tweet_ids, **kwargs)
         if result is None:
+            print(f"No media tweets found on page #{page}")
             return
         elif result:
             return sorted(tweet_ids, key=int, reverse=True)
@@ -852,8 +922,13 @@ def twitter_request(url, method='GET', wait=True, use_httpx=False):
         if not reauthenticated and reauthentication_check(response):
             authenticate_guest(True)
             reauthenticated = True
+        elif response.status_code == 429:
+            print_warning("Pausing for requests exceeded...")
+            error = "HTTP 429: Too many requests - rate limit exceeded."
+            time.sleep(300)
         elif response.status_code in [503]:
             print_warning("Pausing for server error:", response.text)
+            error = "HTTP 503: Server error."
             time.sleep(60)
         else:
             reason = getattr(response, 'reason', "No reason")
@@ -865,7 +940,8 @@ def twitter_request(url, method='GET', wait=True, use_httpx=False):
             return {'error': True, 'message': msg, 'response': response}
     else:
         print_error("Connection errors exceeded!")
-        return {'error': True, 'message': repr(error)}
+        message = error if isinstance(error, str) else repr(error)
+        return {'error': True, 'message': message}
     try:
         data = response.json()
     except Exception:
@@ -905,8 +981,18 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
                 continue
             else:
                 continue
+            if 'rest_id' not in node_data:
+                continue
             item = node_data['legacy']
             id_str = item['id_str'] = node_data['rest_id']
+            """
+            try:
+                
+            except Exception as e:
+                put_get_json(ERROR_DATA_FILE, 'wb', data, unicode=True)
+                put_get_json(ERROR_NODE_FILE, 'wb', node_data, unicode=True)
+                raise e
+            """
             retdata[key][id_str] = node_data['legacy']
         elif type(data[key]) is list:
             for i in range(len(data[key])):
@@ -1002,7 +1088,7 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
 
     count = 100 if last_id is None else 20
     page = 1
-    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, v2=HAS_USER_AUTH)
+    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status, v2=HAS_USER_AUTH)
     return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
@@ -1023,7 +1109,7 @@ def populate_twitter_search_timeline(account, since_date, until_date, job_id=Non
 
     count = 100
     page = 1
-    tweet_ids = get_timeline(page_func, v2=HAS_USER_AUTH, **kwargs)
+    tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, v2=HAS_USER_AUTH, **kwargs)
     return create_error('sources.twitter.populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
@@ -1038,6 +1124,17 @@ def get_twitter_illust(illust_id):
     if len(data['body']) == 0:
         return create_error('sources.twitter.get_twitter_illust', "Tweet not found: %d" % illust_id)
     return data['body'][0]
+
+
+def get_twitter_illust_v2(illust_id):
+    print("Getting twitter #%d" % illust_id)
+    illust_id_str = str(illust_id)
+    twitter_data = get_twitter_illust_timeline(illust_id)
+    for i in range(len(twitter_data)):
+        tweet = safe_get(twitter_data[i], 'result', 'legacy')
+        if tweet is not None and tweet['id_str'] == illust_id_str:
+            return tweet
+    return create_error('sources.twitter.get_twitter_illust_v2', "Tweet not found: %d" % illust_id)
 
 
 def get_twitter_user_id(account):
@@ -1269,7 +1366,7 @@ def get_artist_data(site_artist_id):
 def get_illust_api_data(site_illust_id):
     tweet = get_api_illust(site_illust_id, SITE.id)
     if tweet is None:
-        tweet = get_twitter_illust(site_illust_id)
+        tweet = get_twitter_illust_v2(site_illust_id)
         if is_error(tweet):
             return
         save_api_data([tweet], 'id_str', SITE.id, api_data_type.illust.id)
@@ -1291,8 +1388,42 @@ def get_artist_id_by_illust_id(site_illust_id):
 
 # #### Other
 
+def print_auth():
+    print("AUTH_TOKEN:", TWITTER_USER_TOKEN)
+    print("CT0:", TWITTER_CSRF_TOKEN)
+
+
 def snowflake_to_epoch(snowflake):
     return ((snowflake >> 22) + 1288834974657) / 1000.0
+
+
+def snowflake_to_timestring(snowflake):
+    timestamp = snowflake_to_epoch(snowflake)
+    timeval = datetime_from_epoch(timestamp)
+    return timeval.isoformat()
+
+
+def populate_artist_illusts_from_media_timeline(artist, job_id):
+    job_status = get_job_status_data(job_id) or {}
+    if job_status.get('timeline') != 'media':
+        job_status.pop('ids', None)
+        job_status.pop('temp_ids', None)
+        job_status['timeline'] = 'media'
+    job_status['stage'] = 'querying'
+    timeline_last_id = last_id if last_id is not True else None
+    tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, timeline_last_id, job_id=job_id, job_status=job_status)
+    if is_error(tweet_ids):
+        return tweet_ids
+    if tweet_ids is None:
+        twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
+        if is_error(twuser):
+            inactivate_artist(artist)
+            return twuser
+        # The timeline was empty of any tweets
+        return []
+    if len(tweet_ids) == 0 or last_id is not None or last_id is True:
+        # No tweet IDs means that no new results were found, but the timeline was not empty
+        return tweet_ids
 
 
 def populate_all_artist_illusts(artist, last_id, job_id=None):
@@ -1321,16 +1452,21 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
         job_status['ids'] = tweet_ids
     else:
         tweet_ids = job_status['ids']
-    lowest_tweet_id = min(tweet_ids)
-    timestamp = snowflake_to_epoch(lowest_tweet_id)
-    timeval = datetime_from_epoch(timestamp)
-    timeval = add_days(timeval, 1)  # Add a day since the media timeline can end partway through a day
-    job_status['ids'] = tweet_ids
+    if job_status.get('temp_ids') is not None:
+        tweet_ids.extend(sorted((id for id in job_status['temp_ids'] if id not in tweet_ids), key=int, reverse=True))
+    if 'until_date' in job_status:
+        timeval = process_utc_timestring(job_status['until_date'])
+    else:
+        lowest_tweet_id = min(tweet_ids)
+        timestamp = snowflake_to_epoch(lowest_tweet_id)
+        timeval = datetime_from_epoch(timestamp)
+        timeval = add_days(timeval, 1)  # Add a day since the media timeline can end partway through a day
     while timeval > artist.site_created:
         next_timeval = add_days(timeval, -90)  # Get 3 months at a time
         until_date = get_date(timeval)
         since_date = get_date(next_timeval)
         job_status['records'] = len(tweet_ids)
+        job_status.pop('temp_ids', None)
         update_job_status(job_id, job_status)
         temp_ids = populate_twitter_search_timeline(artist.current_site_account,
                                                     since_date, until_date,
@@ -1338,7 +1474,12 @@ def populate_all_artist_illusts(artist, last_id, job_id=None):
                                                     job_id=job_id, job_status=job_status)
         if is_error(temp_ids):
             return temp_ids
-        tweet_ids += temp_ids if temp_ids is not None else []
+        # Store the until_date as a bookmark if no IDs were found this iteration
+        if isinstance(temp_ids, list) and len(temp_ids):
+            tweet_ids += temp_ids
+            job_status.pop('until_date', None)
+        else:
+            job_status['until_date'] = since_date
         job_status['ids'] = tweet_ids
         timeval = next_timeval
     update_job_status(job_id, job_status)

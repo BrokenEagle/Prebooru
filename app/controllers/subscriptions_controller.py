@@ -36,7 +36,7 @@ VALUES_MAP = {
 
 # #### Form
 
-FORM_CONFIG = {
+ITEM_FORM_CONFIG = {
     'artist_id': {
         'name': 'Artist ID',
         'field': IntegerField,
@@ -65,7 +65,11 @@ FORM_CONFIG = {
 # #### Helper functions
 
 def get_subscription_form(**kwargs):
-    return get_form('subscription', FORM_CONFIG, **kwargs)
+    return get_form('subscription', ITEM_FORM_CONFIG, **kwargs)
+
+
+def get_process_form(config, **kwargs):
+    return get_form('process', config, **kwargs)
 
 
 def parameter_validation(dataparams, is_update):
@@ -257,6 +261,14 @@ def delete_html(id):
 
 
 # ###### Misc
+
+@bp.route('/subscriptions/<int:id>/process', methods=['GET'])
+def process_form_html(id):
+    subscription = get_or_abort(Subscription, id)
+    artist = subscription.artist
+    form = get_process_form(artist.site.source.PROCESS_FORM_CONFIG, last_id=artist.last_illust.site_illust_id)
+    return render_template("subscriptions/process.html", form=form, subscription=subscription)
+
 
 @bp.route('/subscriptions/<int:id>/process', methods=['POST'])
 def process_html(id):
