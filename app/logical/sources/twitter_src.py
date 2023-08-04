@@ -17,7 +17,7 @@ from wtforms import BooleanField, IntegerField, TextField
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN
-from utility.data import safe_get, decode_json, fixup_crlf, safe_check
+from utility.data import safe_get, decode_json, fixup_crlf, safe_check, bool_or_blank, int_or_blank, str_or_blank
 from utility.time import get_current_time, datetime_from_epoch, add_days, get_date, process_utc_timestring
 from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
 from utility.uprint import print_info, print_warning, print_error
@@ -814,13 +814,13 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
     page = 1
     cursor = [None]
     tweet_ids = []
+    lowest_tweet_id = None
     count = 0
     while True:
         data = page_func(cursor=cursor[0], **kwargs)
         if data['error']:
             return data['message']
-        if len(tweet_ids):
-            lowest_tweet_id = min(tweet_ids)
+        if lowest_tweet_id is not None:
             timestamp = snowflake_to_epoch(lowest_tweet_id)
             timeval = datetime_from_epoch(timestamp)
             bookmark  = f"twitter #{lowest_tweet_id} @ {timeval}"
@@ -832,12 +832,15 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
             print_info("Saving temp ids:", job_status['temp_ids'])
             update_job_status(job_id, job_status)
             count = len(tweet_ids)
+        old_tweet_ids = tweet_ids.copy()
         result = timeline_iterator(data, cursor, tweet_ids, **kwargs)
         if result is None:
             print(f"No media tweets found on page #{page}")
             return
         elif result:
             return sorted(tweet_ids, key=int, reverse=True)
+        if len(tweet_ids) > len(old_tweet_ids):
+            lowest_tweet_id = min(id for id in tweet_ids if id not in old_tweet_ids)
         page += 1
 
 
@@ -1093,8 +1096,14 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
         if isinstance(tweet_ids, str) else tweet_ids
 
 
-def populate_twitter_search_timeline(account, since_date, until_date, job_id=None, job_status={}, **kwargs):
-    query = f"from:{account} since:{since_date} until:{until_date}"
+def populate_twitter_search_timeline(account, since_date, until_date, filter_media, job_id=None, job_status={}, **kwargs):
+    query = f"from:{account}"
+    if since_date is not None:
+        query += f" since:{since_date}"
+    if until_date is not None:
+        query += f" until:{until_date}"
+    if filter_media:
+        query += f" filter:media"
     print("Populating from search page: %s" % query)
 
     def page_func(cursor, **kwargs):
@@ -1146,7 +1155,7 @@ def get_twitter_user_id(account):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     request_url = 'https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
                   'UserByScreenNameWithoutResults?%s' % urladdons
-    data = twitter_request(request_url, wait=False)
+    data = twitter_request(request_url, wait=False, use_httpx=True)
     if data['error']:
         return create_error('sources.twitter.get_user_id', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
@@ -1161,7 +1170,7 @@ def get_twitter_artist(artist_id):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     request_url = 'https://twitter.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
                   'UserByRestIdWithoutResults?%s' % urladdons
-    data = twitter_request(request_url)
+    data = twitter_request(request_url, use_httpx=True)
     if data['error']:
         return create_error('sources.twitter.get_twitter_artist', data['message'])
     twitterdata = data['body']
@@ -1403,27 +1412,47 @@ def snowflake_to_timestring(snowflake):
     return timeval.isoformat()
 
 
-def populate_artist_illusts_from_media_timeline(artist, job_id):
+#def convert_process_params(dataparams):
+
+def populate_artist_recheck_active(artist):
+    twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
+    if is_error(twuser):
+        inactivate_artist(artist)
+        return twuser
+    # The timeline was empty of any tweets
+    return []
+
+
+def populate_artist_illusts_from_media_timeline(artist, job_id, last_id):
     job_status = get_job_status_data(job_id) or {}
     if job_status.get('timeline') != 'media':
         job_status.pop('ids', None)
         job_status.pop('temp_ids', None)
         job_status['timeline'] = 'media'
     job_status['stage'] = 'querying'
-    timeline_last_id = last_id if last_id is not True else None
-    tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, timeline_last_id, job_id=job_id, job_status=job_status)
-    if is_error(tweet_ids):
-        return tweet_ids
-    if tweet_ids is None:
-        twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
-        if is_error(twuser):
-            inactivate_artist(artist)
-            return twuser
-        # The timeline was empty of any tweets
-        return []
-    if len(tweet_ids) == 0 or last_id is not None or last_id is True:
-        # No tweet IDs means that no new results were found, but the timeline was not empty
-        return tweet_ids
+    tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id, job_id=job_id, job_status=job_status)
+    return populate_artist_recheck_active(artist) if tweet_ids is None else tweet_ids
+
+
+def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, until_date, filter_media):
+    job_status = get_job_status_data(job_id) or {}
+    if job_status.get('timeline') != 'search':
+        job_status.pop('ids', None)
+        job_status.pop('temp_ids', None)
+        job_status['timeline'] = 'search'
+    job_status['stage'] = 'querying'
+    since_date = since_date if re.match(r'\d{4}-\d{2}-\d{2}', since_date) else None
+    until_date = until_date if re.match(r'\d{4}-\d{2}-\d{2}', until_date) else None
+    tweet_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date, filter_media,
+                                                 user_id=artist.site_artist_id, job_id=job_id, job_status=job_status)
+    return populate_artist_recheck_active(artist) if tweet_ids is None else tweet_ids
+
+
+def populate_all_artist_illusts2(artist, job_id=None, params=None):
+    if params['media_timeline']:
+        return populate_artist_illusts_from_media_timeline(artist, job_id, params['last_id'])
+    if params['search_timeline']:
+        return populate_artist_illusts_from_search_timeline(artist, job_id, params['search_since'], params['search_until'], params['filter_media'])
 
 
 def populate_all_artist_illusts(artist, last_id, job_id=None):

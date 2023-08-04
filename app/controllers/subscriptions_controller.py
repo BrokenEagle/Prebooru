@@ -13,7 +13,7 @@ from utility.data import eval_bool_string
 from .. import SCHEDULER, SESSION
 from ..models import Subscription, Artist
 from ..logical.utility import set_error
-from ..logical.records.subscription_rec import process_subscription_manual
+from ..logical.records.subscription_rec import process_subscription_manual, process_subscription_manual2
 from ..logical.database.subscription_db import create_subscription_from_parameters,\
     update_subscription_from_parameters, update_subscription_status, delay_subscription_elements,\
     delete_subscription, get_average_interval_for_subscriptions
@@ -21,7 +21,7 @@ from ..logical.database.jobs_db import get_job_status_data, create_or_update_job
 from ..logical.database.server_info_db import get_subscriptions_ready
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
-    check_param_requirements, nullify_blanks, set_default, hide_input, parse_type
+    check_param_requirements, nullify_blanks, set_default, hide_input, parse_type, parse_bool_parameter
 
 
 # ## GLOBAL VARIABLES
@@ -70,6 +70,14 @@ def get_subscription_form(**kwargs):
 
 def get_process_form(config, **kwargs):
     return get_form('process', config, **kwargs)
+
+
+def get_process_data(config, raw_params):
+    form = get_process_form(config, **raw_params)
+    for name, field in form._fields.items():
+        if field.type == 'BooleanField':
+            field.data = parse_bool_parameter(raw_params, name)
+    return form.data
 
 
 def parameter_validation(dataparams, is_update):
@@ -266,8 +274,35 @@ def delete_html(id):
 def process_form_html(id):
     subscription = get_or_abort(Subscription, id)
     artist = subscription.artist
-    form = get_process_form(artist.site.source.PROCESS_FORM_CONFIG, last_id=artist.last_illust.site_illust_id)
+    config = artist.site.source.PROCESS_FORM_CONFIG
+    form = get_process_form(config, last_id=artist.last_illust_id)
     return render_template("subscriptions/process.html", form=form, subscription=subscription)
+
+
+@bp.route('/subscriptions/<int:id>/process2', methods=['POST'])
+def process_html2(id):
+    subscription = get_or_abort(Subscription, id)
+    artist = subscription.artist
+    source = artist.site.source
+    raw_params = get_data_params(request, 'process')
+    data_params = get_process_data(source.PROCESS_FORM_CONFIG, raw_params)
+    update_subscription_status(subscription, 'manual')
+    job_id = "process_subscription_manual-%d" % subscription.id
+    job_status = get_job_status_data(job_id) or {}
+    job_status.update({
+        'stage': None,
+        'range': None,
+        'records': 0,
+        'illusts': 0,
+        'elements': 0,
+        'downloads': 0,
+        'params': data_params,
+    })
+    create_or_update_job_status(job_id, job_status)
+    SESSION.commit()
+    SCHEDULER.add_job(job_id, process_subscription_manual2, args=(subscription.id, job_id, data_params))
+    flash("Subscription started.")
+    return redirect(url_for('subscription.show_html', id=subscription.id, job=job_id))
 
 
 @bp.route('/subscriptions/<int:id>/process', methods=['POST'])

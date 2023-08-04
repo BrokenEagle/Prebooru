@@ -76,6 +76,10 @@ def fixup_crlf(text):
     return re.sub(r'(?<!\r)\n', '\r\n', text)
 
 
+def str_or_blank(string):
+    return string if len(string) else None
+
+
 # #### Boolean functions
 
 def is_truthy(string):
@@ -95,6 +99,11 @@ def eval_bool_string(string):
         return False
 
 
+def bool_or_blank(string):
+    print('bool_or_blank', string, eval_bool_string(string))
+    return eval_bool_string(string) if isinstance(string, str) else None
+
+
 # #### Number functions
 
 def set_precision(number, precision):
@@ -104,6 +113,10 @@ def set_precision(number, precision):
 
 def random_id():
     return random.randint(0, MAX_INTEGER)
+
+
+def int_or_blank(string):
+    return int(string) if isinstance(string, str) and string.isdigit() else None
 
 
 # #### Dict functions

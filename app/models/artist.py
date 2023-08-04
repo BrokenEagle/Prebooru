@@ -115,6 +115,14 @@ class Artist(JsonModel):
         return self._illust_query.order_by(Illust.site_illust_id.asc()).first()
 
     @property
+    def last_illust_id(self):
+        return self.last_illust.site_illust_id if self.last_illust is not None else None
+
+    @property
+    def first_illust_id(self):
+        return self.first_illust.site_illust_id if self.first_illust is not None else None
+
+    @property
     def site_domain(self):
         return self.site.domain
 

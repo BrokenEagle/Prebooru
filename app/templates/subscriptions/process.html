@@ -10,15 +10,17 @@
     <div id="subscription-process-info">
         <ul>
             <li><b>{{ subscription.artist.show_link }}</b></li>
-            {% with first_id, first_created = helpers.artist.first_illust_info(subscription.artist) %}
-                <li><b>First:</b> {{ first_id }} @ {{ first_created }}</li>
-            {% endwith %}
-            {% with last_id, last_created = helpers.artist.last_illust_info(subscription.artist) %}
-                <li><b>Last:</b> {{ last_id }} @ {{ last_created }}</li>
-            {% endwith %}
+            {% if subscription.artist.illust_count > 0 %}
+                {% with first_id, first_created = helpers.artist.first_illust_info(subscription.artist) %}
+                    <li><b>First:</b> {{ first_id }} @ {{ first_created }}</li>
+                {% endwith %}
+                {% with last_id, last_created = helpers.artist.last_illust_info(subscription.artist) %}
+                    <li><b>Last:</b> {{ last_id }} @ {{ last_created }}</li>
+                {% endwith %}
+            {% endif %}
         </ul>
     </div>
     <div id="subscription-process-form">
-        {{ render_form(form, 'POST', url_for('subscription.process_html', id=subscription.id)) }}
+        {{ render_form(form, 'POST', url_for('subscription.process_html2', id=subscription.id)) }}
     </div>
 {% endblock content %}

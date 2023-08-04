@@ -108,12 +108,103 @@ def process_subscription_manual(subscription_id, job_id, recheck):
     SESSION.remove()
 
 
-def sync_missing_subscription_illusts(subscription, job_id=None, recheck=False):
+def process_subscription_manual2(subscription_id, job_id, params):
+    printer = buffered_print("Process Subscription")
+    subscription = None
+    start_illusts = 0
+    start_posts = 0
+    start_elements = 0
+    starting_post_ids = []
+
+    def try_func(scope_vars):
+        nonlocal subscription, start_illusts, start_posts, start_elements, starting_post_ids
+        subscription = Subscription.find(subscription_id)
+        start_illusts = subscription.artist.illust_count
+        start_posts = subscription.artist.post_count
+        start_elements = subscription.element_count
+        starting_post_ids = [post.id for post in subscription.posts]
+        update_job_by_id('job_lock', job_id, {'locked': True})
+        SESSION.commit()
+        sync_missing_subscription_illusts2(subscription, job_id, params)
+        populate_subscription_elements(subscription, job_id)
+        download_subscription_elements(subscription, job_id)
+        job_status = get_job_status_data(job_id)
+        job_status['stage'] = 'done'
+        job_status['range'] = None
+        update_job_status(job_id, job_status)
+
+    def msg_func(scope_vars, e):
+        return f"Unhandled exception occurred on subscripton pool #{subscription_id}: {repr(e)}"
+
+    def error_func(scope_vars, e):
+        nonlocal subscription
+        subscription = subscription or Subscription.find(subscription_id)
+        update_subscription_status(subscription, 'error')
+
+    def finally_func(scope_vars, error, data):
+        nonlocal subscription
+        subscription = subscription or Subscription.find(subscription_id)
+        if error is None and subscription.status.name != 'error':
+            update_subscription_status(subscription, 'idle')
+        SessionTimer(15, _query_unlock).start()  # Check later to give the DB time to catch up
+
+    def _query_unlock():
+        if not check_processing_subscriptions():
+            update_job_by_id('job_lock', 'process_subscription_manual', {'locked': False})
+            SESSION.commit()
+
+    safe_db_execute('process_subscription_manual', 'records.subscription_rec',
+                    try_func=try_func, msg_func=msg_func, printer=printer,
+                    error_func=error_func, finally_func=finally_func)
+    printer("Added illusts:", subscription.artist.illust_count - start_illusts)
+    printer("Added posts:", subscription.artist.post_count - start_posts)
+    printer("Added elements:", subscription.element_count - start_elements)
+    printer.print()
+    SESSION.remove()
+
+
+def sync_missing_subscription_illusts(subscription, job_id=None, recheck=None):
     update_subscription_requery(subscription, hours_from_now(4))
     artist = subscription.artist
     source = artist.site.source
     last_id = subscription.last_id if not recheck else True
     site_illust_ids = source.populate_all_artist_illusts(artist, last_id, job_id)
+    if is_error(site_illust_ids):
+        add_subscription_error(subscription, site_illust_ids)
+        return
+    site_illust_ids = sorted(x for x in set(site_illust_ids))
+    job_status = get_job_status_data(job_id) or {'illusts': 0}
+    job_status['stage'] = 'illusts'
+    job_status['records'] = len(site_illust_ids)
+    print(f"sync_missing_subscription_illusts [{subscription.id}]: Total({len(site_illust_ids)})")
+    for (i, item_id) in enumerate(site_illust_ids):
+        if (i % SYNC_MISSING_ILLUSTS_PER_PAGE) == 0:
+            total = len(site_illust_ids)
+            first = i
+            last = min(i + SYNC_MISSING_ILLUSTS_PER_PAGE, total)
+            job_status['range'] = f"({first} - {last}) / {total}"
+            update_job_status(job_id, job_status)
+        data_params = source.get_illust_data(item_id)
+        illust = source.get_site_illust(item_id, artist.site_id)
+        if illust is None:
+            data_params['artist_id'] = artist.id
+            create_illust_from_parameters(data_params)
+        else:
+            update_illust_from_parameters(illust, data_params)
+        job_status['illusts'] += 1
+    update_job_status(job_id, job_status)
+    if len(site_illust_ids):
+        update_subscription_last_info(subscription, max(site_illust_ids))
+    job_status['ids'] = None
+    update_job_status(job_id, job_status)
+    update_subscription_requery(subscription, hours_from_now(subscription.interval))
+
+
+def sync_missing_subscription_illusts2(subscription, job_id=None, params=None):
+    update_subscription_requery(subscription, hours_from_now(4))
+    artist = subscription.artist
+    source = artist.site.source
+    site_illust_ids = source.populate_all_artist_illusts2(artist, job_id, params)
     if is_error(site_illust_ids):
         add_subscription_error(subscription, site_illust_ids)
         return
