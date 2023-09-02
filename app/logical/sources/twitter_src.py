@@ -225,6 +225,33 @@ TWITTER_USER_HEADERS = {
 HAS_USER_AUTH = TWITTER_USER_TOKEN is not None and TWITTER_CSRF_TOKEN is not None
 TWITTER_HEADERS = TWITTER_USER_HEADERS if HAS_USER_AUTH else None
 
+TWITTER_ILLUST_TIMELINE_GRAPHQL_FEATURES = {
+    "rweb_lists_timeline_redesign_enabled":True,
+    "responsive_web_graphql_exclude_directive_enabled":True,
+    "verified_phone_label_enabled":False,
+    "creator_subscriptions_tweet_preview_api_enabled":True,
+    "responsive_web_graphql_timeline_navigation_enabled":True,
+    "responsive_web_graphql_skip_user_profile_image_extensions_enabled":False,
+    "tweetypie_unmention_optimization_enabled":True,
+    "responsive_web_edit_tweet_api_enabled":True,
+    "graphql_is_translatable_rweb_tweet_is_translatable_enabled":True,
+    "view_counts_everywhere_api_enabled":True,
+    "longform_notetweets_consumption_enabled":True,
+    "responsive_web_twitter_article_tweet_consumption_enabled":False,
+    "tweet_awards_web_tipping_enabled":False,
+    "freedom_of_speech_not_reach_fetch_enabled":True,
+    "standardized_nudges_misinfo":True,
+    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":True,
+    "longform_notetweets_rich_text_read_enabled":True,
+    "longform_notetweets_inline_media_enabled":True,
+    "responsive_web_media_download_video_enabled":False,
+    "responsive_web_enhance_cards_enabled":False,
+}
+
+TWITTER_ILLUST_TIMELINE_GRAPHQL_FIELD_TOGGLES = {
+    "withArticleRichContentState": False,
+}
+
 TWITTER_ILLUST_TIMELINE_GRAPHQL = {
     "includePromotedContent": True,
     "withHighlightedLabel": True,
@@ -823,10 +850,11 @@ def twitter_request(url, method='GET', wait=True, use_httpx=False):
             print_warning("Pausing for server error:", response.text)
             time.sleep(60)
         else:
-            print_error("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, response.reason, response.text))
+            reason = getattr(response, 'reason', None)
+            print_error("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, reason, response.text))
             if DEBUG_MODE:
                 log_network_error('sources.twitter.twitter_request', response)
-            msg = "HTTP %d - %s" % (response.status_code, response.reason)
+            msg = "HTTP %d - %s" % (response.status_code, reason)
             return {'error': True, 'message': msg, 'response': response}
     else:
         print_error("Connection errors exceeded!")
@@ -885,10 +913,12 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
 def get_twitter_illust_timeline(illust_id):
     print("Getting twitter #%d" % illust_id)
     illust_id_str = str(illust_id)
-    jsondata = TWITTER_ILLUST_TIMELINE_GRAPHQL.copy()
-    jsondata['focalTweetId'] = illust_id_str
-    urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    data = twitter_request("https://twitter.com/i/api/graphql/uvk82Jn4z84yUPI1rViRsg/TweetDetail?%s" % urladdons)
+    variables = TWITTER_ILLUST_TIMELINE_GRAPHQL.copy()
+    variables['focalTweetId'] = illust_id_str
+    features = TWITTER_ILLUST_TIMELINE_GRAPHQL_FEATURES.copy()
+    field_toggles = TWITTER_ILLUST_TIMELINE_GRAPHQL_FIELD_TOGGLES.copy()
+    urladdons = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features), 'fieldToggles': json.dumps(field_toggles)})
+    data = twitter_request("https://twitter.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons, use_httpx=True)
     try:
         if data['error']:
             return create_error('sources.twitter.get_twitter_illust_timeline', data['message'])
@@ -981,12 +1011,23 @@ def get_twitter_illust(illust_id):
     print("Getting twitter #%d" % illust_id)
     request_url = 'https://api.twitter.com/1.1/statuses/lookup.json?id=%d' % illust_id +\
                   '&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true'
-    data = twitter_request(request_url)
+    data = twitter_request(request_url, use_httpx=True)
     if data['error']:
         return create_error('sources.twitter.get_twitter_illust', data['message'])
     if len(data['body']) == 0:
         return create_error('sources.twitter.get_twitter_illust', "Tweet not found: %d" % illust_id)
     return data['body'][0]
+
+
+def get_twitter_illust_v2(illust_id):
+    print("Getting twitter #%d" % illust_id)
+    illust_id_str = str(illust_id)
+    twitter_data = get_twitter_illust_timeline(illust_id)
+    for i in range(len(twitter_data)):
+        tweet = safe_get(twitter_data[i], 'result', 'legacy')
+        if tweet is not None and tweet['id_str'] == illust_id_str:
+            return tweet
+    return create_error('sources.twitter.get_twitter_illust_v2', "Tweet not found: %d" % illust_id)
 
 
 def get_twitter_user_id(account):
@@ -998,7 +1039,7 @@ def get_twitter_user_id(account):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     request_url = 'https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
                   'UserByScreenNameWithoutResults?%s' % urladdons
-    data = twitter_request(request_url, wait=False)
+    data = twitter_request(request_url, wait=False, use_httpx=True)
     if data['error']:
         return create_error('sources.twitter.get_user_id', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
@@ -1013,7 +1054,7 @@ def get_twitter_artist(artist_id):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     request_url = 'https://twitter.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
                   'UserByRestIdWithoutResults?%s' % urladdons
-    data = twitter_request(request_url)
+    data = twitter_request(request_url, use_httpx=True)
     if data['error']:
         return create_error('sources.twitter.get_twitter_artist', data['message'])
     twitterdata = data['body']
@@ -1218,7 +1259,7 @@ def get_artist_data(site_artist_id):
 def get_illust_api_data(site_illust_id):
     tweet = get_api_illust(site_illust_id, SITE.id)
     if tweet is None:
-        tweet = get_twitter_illust(site_illust_id)
+        tweet = get_twitter_illust_v2(site_illust_id)
         if is_error(tweet):
             return
         save_api_data([tweet], 'id_str', SITE.id, api_data_type.illust.id)
