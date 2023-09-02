@@ -884,7 +884,7 @@ def twitter_request(url, method='GET', wait=True, use_httpx=False):
     try:
         data = response.json()
     except Exception:
-        return {'error': True, 'message': "Error decoding response into JSON."}
+        return {'error': True, 'message': "Error decoding response into JSON.", 'response': response}
     return {'error': False, 'body': data, 'response': response}
 
 
