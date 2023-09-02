@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 # ### PACKAGE IMPORTS
 from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
-from utility.data import get_buffer_checksum, merge_dicts
+from utility.data import get_buffer_checksum, merge_dicts, inc_dict_entry
 from utility.file import create_directory, put_get_raw, copy_file, delete_file
 from utility.uprint import buffered_print
 
@@ -65,7 +65,7 @@ def check_posts_for_danbooru_id(posts, status=None):
                 if danbooru_post is None:
                     continue
                 update_post_from_parameters(post, {'danbooru_id': danbooru_post['id']})
-                status['total'] += 1
+                inc_dict_entry(status, 'total')
     return True
 
 
