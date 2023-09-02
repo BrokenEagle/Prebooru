@@ -162,8 +162,12 @@ def process_network_upload(upload):
         update_artist_from_source(illust.artist)
     all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
     upload_elements = upload.elements
+    image_upload = source.is_image_url(upload.request_url)
+    normalized_request_url = source.normalize_image_url(upload.request_url) if image_upload else None
     for illust_url in illust.urls:
-        if (len(all_upload_urls) > 0) and (illust_url.url not in all_upload_urls):
+        if image_upload and normalized_request_url != illust_url.url:
+            continue
+        elif (len(all_upload_urls) > 0) and (illust_url.url not in all_upload_urls):
             continue
         element = next((element for element in upload_elements if element.illust_url_id == illust_url.id), None)
         if element is None:
@@ -172,6 +176,8 @@ def process_network_upload(upload):
             upload.successes += 1
         else:
             upload.failures += 1
+        if image_upload:
+            break
     set_upload_status(upload, 'complete')
 
 
