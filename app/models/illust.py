@@ -86,6 +86,10 @@ class Illust(JsonModel):
 
     # ## Instance properties
 
+    @property
+    def site_illust_id_str(self):
+        return str(self.site_illust_id)
+
     def urls_paginate(self, page=None, per_page=None, options=None):
         def _get_options(options):
             if options is None:
@@ -189,7 +193,7 @@ class Illust(JsonModel):
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['urls', 'tags', 'commentaries', 'site_data']
+        return super().json_attributes + ['site_illust_id_str', 'urls', 'tags', 'commentaries', 'site_data']
 
     # ## Private
 

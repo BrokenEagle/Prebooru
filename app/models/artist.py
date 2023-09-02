@@ -83,6 +83,10 @@ class Artist(JsonModel):
     # ## Instance properties
 
     @property
+    def site_artist_id_str(self):
+        return str(self.site_artist_id)
+
+    @property
     def other_site_accounts(self):
         return [account for account in self.site_accounts if account != self.current_site_account]
 
@@ -148,7 +152,7 @@ class Artist(JsonModel):
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['site_accounts', 'names', 'webpages', 'profiles']
+        return super().json_attributes + ['site_artist_id_str', 'site_accounts', 'names', 'webpages', 'profiles']
 
     # ## Private
 
