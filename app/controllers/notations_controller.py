@@ -11,8 +11,7 @@ from wtforms.validators import DataRequired
 from utility.data import eval_bool_string, is_falsey
 
 # ## LOCAL IMPORTS
-from ..models import Notation, Pool, Booru, Artist, Illust, Post, PoolNotation
-from ..models import Notation, Pool, Booru, Artist, Illust, Post, PoolNotation, TABLES
+from ..models import Notation, Pool, Subscription, Booru, Artist, Illust, Post, PoolNotation, TABLES
 from ..logical.utility import set_error
 from ..logical.database.notation_db import create_notation_from_parameters, update_notation_from_parameters,\
     append_notation_to_item, delete_notation
@@ -25,7 +24,7 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("notation", __name__)
 
-APPEND_KEYS = ['pool_id', 'booru_id', 'artist_id', 'illust_id', 'post_id']
+APPEND_KEYS = ['pool_id', 'subscription_id', 'booru_id', 'artist_id', 'illust_id', 'post_id']
 
 CREATE_REQUIRED_PARAMS = ['body']
 VALUES_MAP = {
@@ -59,6 +58,10 @@ FORM_CONFIG = {
     },
     'pool_id': {
         'name': 'Pool ID',
+        'field': IntegerField,
+    },
+    'subscription_id': {
+        'name': 'Booru ID',
         'field': IntegerField,
     },
     'booru_id': {
@@ -215,6 +218,8 @@ def new_html():
     form = get_notation_form(**request.args)
     if form.pool_id.data:
         item = Pool.find(form.pool_id.data)
+    elif form.subscription_id.data:
+        item = Subscription.find(form.subscription_id.data)
     elif form.booru_id.data:
         item = Booru.find(form.booru_id.data)
     elif form.artist_id.data:

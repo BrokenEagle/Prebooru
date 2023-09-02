@@ -17,6 +17,7 @@ class Notation(JsonModel):
     body = DB.Column(DB.UnicodeText, nullable=False)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=True)
     booru_id = DB.Column(DB.Integer, DB.ForeignKey('booru.id'), nullable=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=True)
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
@@ -37,7 +38,7 @@ class Notation(JsonModel):
 
     @property
     def append_item(self):
-        return self.booru or self.artist or self.illust or self.post or (self._pool if not self.no_pool else None)
+        return self.subscription or self.booru or self.artist or self.illust or self.post or (self._pool if not self.no_pool else None)
 
     @property
     def append_type(self):

@@ -5,7 +5,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Notation, Pool, Booru, Artist, Illust, Post
+from ...models import Notation, Pool, Subscription, Booru, Artist, Illust, Post
 from .pool_element_db import delete_pool_element
 from .base_db import update_column_attributes
 
@@ -19,6 +19,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['body']
 
 ID_MODEL_DICT = {
     'pool_id': Pool,
+    'subscription_id': Subscription,
     'booru_id': Booru,
     'artist_id': Artist,
     'illust_id': Illust,

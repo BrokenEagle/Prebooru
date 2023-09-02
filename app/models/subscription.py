@@ -12,6 +12,7 @@ from ..enum_imports import subscription_status, subscription_element_status, sub
 from .illust import Illust
 from .illust import IllustUrl
 from .post import Post
+from .notation import Notation
 from .error import Error
 from .subscription_element import SubscriptionElement
 from .base import JsonModel, EpochTimestamp, get_relation_definitions
@@ -39,6 +40,8 @@ class Subscription(JsonModel):
                                backref=DB.backref('subscription', lazy=True, uselist=False))
     errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
                              backref=DB.backref('subscription', uselist=False, lazy=True))
+    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
+                                backref=DB.backref('subscription', lazy=True, uselist=False))
     # (OtO) artist [Artist]
 
     # ## Instance properties
