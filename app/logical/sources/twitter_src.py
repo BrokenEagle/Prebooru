@@ -599,6 +599,17 @@ def process_twitter_timestring(time_string):
 def convert_entity_text(twitter_data, key, url_subkeys, mention_subkeys=None):
     replace_entries = []
     text = twitter_data[key]
+    text_start = 0
+    retweet = False
+    while text_start < len(text):
+        char = text[text_start]
+        if char == '@':
+            retweet = True
+        elif retweet:
+            retweet = char != ' '
+        else:
+            break
+        text_start += 1
     url_entries = safe_get(twitter_data, 'entities', *url_subkeys) or []
     for url_entry in url_entries:
         replace_entries.append({
@@ -609,6 +620,8 @@ def convert_entity_text(twitter_data, key, url_subkeys, mention_subkeys=None):
     if mention_subkeys is not None:
         mention_entries = safe_get(twitter_data, 'entities', *mention_subkeys) or []
         for mention in mention_entries:
+            if mention['indices'][0] < text_start:
+                continue
             user_id = mention['id_str']
             screen_name = mention['screen_name']
             replace_entries.append({
@@ -619,6 +632,15 @@ def convert_entity_text(twitter_data, key, url_subkeys, mention_subkeys=None):
     replace_entries.sort(key=lambda x: x['start_index'], reverse=True)
     for entry in replace_entries:
         text = text[:entry['start_index']] + entry['replace'] + text[entry['end_index']:]
+    text = text[text_start:]
+    if 'in_reply_to_status_id_str' in twitter_data:
+        pretext = "Replying to "
+        if 'in_reply_to_screen_name' in twitter_data and 'in_reply_to_user_id_str' in twitter_data:
+            screen_name = twitter_data['in_reply_to_screen_name']
+            user_id_str = twitter_data['in_reply_to_user_id_str']
+            pretext = "@%s (twuser #%s)\r\n" % (screen_name, user_id_str)
+        pretext += "=> twitter #%s" % twitter_data['in_reply_to_status_id_str']
+        text = pretext + '\r\n\r\n' + text
     return html.unescape(text)
 
 
