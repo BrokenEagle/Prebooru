@@ -116,6 +116,7 @@ def convert_create_params(dataparams):
         createparams['request_url'] = None
         createparams['image_urls'] = []
     elif createparams['request_url']:
+        createparams['request_url'] = createparams['request_url'].split('#')[0]
         createparams['illust_url_id'] = None
     return createparams
 
