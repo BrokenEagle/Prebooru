@@ -183,9 +183,11 @@ class Post(JsonModel):
 
     @memoized_property
     def related_posts(self):
-        illust_posts = [illust.posts for illust in self.illusts]
-        post_generator = (post for post in itertools.chain(*illust_posts) if post is not None)
-        return [post for post in unique_objects(post_generator) if post.id != self.id]
+        query = Post.query.join(IllustUrl, Post.illust_urls)
+        query = query.filter(IllustUrl.illust_id.in_(self.illust_ids), Post.id != self.id)
+        query = query.distinct(Post.id)
+        query = query.order_by(IllustUrl.illust_id.asc(), IllustUrl.order.asc())
+        return query.limit(10).all()
 
     @memoized_property
     def illusts(self):
