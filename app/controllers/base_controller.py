@@ -98,8 +98,8 @@ def default_order(query, search):
 
 
 def paginate(query, request, max_limit=MAXIMUM_PAGINATE_LIMIT, **kwargs):
-    page = get_page(request)
     per_page = get_limit(request, max_limit)
+    page = get_page(request, query, per_page)
     try:
         return query.count_paginate(page=page, per_page=per_page, **kwargs)
     except Exception as e:
@@ -162,8 +162,16 @@ def hide_input(form, attr, value=None):
 
 # #### Param helpers
 
-def get_page(request):
-    return int(request.args['page']) if 'page' in request.args else 1
+def get_page(request, query=None, per_page=None):
+    page = request.args.get('page')
+    if page is None:
+        return 1
+    if page.isdigit():
+        return int(page)
+    if query is not None and per_page is not None and page.lower() == 'last':
+        item_count = query.get_count()
+        return ((item_count - 1) // per_page) + 1 if item_count > 0 else 1
+    return 1
 
 
 def get_limit(request, max_limit=None):
