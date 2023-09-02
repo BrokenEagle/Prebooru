@@ -94,6 +94,7 @@ def generate_missing_image_hashes_task():
 def calculate_similarity_matches_task():
     """Processes newly unlinked subscription posts for similarity matches."""
     def _task(printer):
+        nonlocal manual
         manual = _is_job_manual('calculate_similarity_matches')
         status = calculate_similarity_matches(manual)
         if status['total'] > 0:
@@ -102,7 +103,12 @@ def calculate_similarity_matches_task():
             printer("No post records to update.")
         return status
 
-    _execute_scheduled_task(_task, 'calculate_similarity_matches', True, True)
+    manual = _is_job_manual('calculate_similarity_matches')
+    if not manual and server_is_busy():
+        print("Calculate similarity matches: Server busy, rescheduling....")
+        reschedule_from_child('calculate_similarity_matches')
+    else:
+        _execute_scheduled_task(_task, 'calculate_similarity_matches', True, True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_boorus']['config'])
