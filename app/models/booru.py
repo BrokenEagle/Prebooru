@@ -89,7 +89,7 @@ class Booru(JsonModel):
 
     @property
     def key(self):
-        return '%d' % self.danbooru_id
+        return '%d' % self.danbooru_id if self.danbooru_id is not None else self.current_name
 
     def delete(self):
         self._names.clear()
