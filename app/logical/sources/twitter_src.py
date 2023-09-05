@@ -336,6 +336,39 @@ TWITTER_SEARCH_PARAMS = {
     "spelling_corrections": "1",
 }
 
+TWITTER_SEARCH_TIMELINE_VARIABLES = {
+    "querySource": "typed_query",
+    "product": "Latest",
+}
+
+TWITTER_SEARCH_TIMELINE_FEATURES = {
+    "rweb_lists_timeline_redesign_enabled": True,
+    "responsive_web_graphql_exclude_directive_enabled": True,
+    "verified_phone_label_enabled": True,
+    "creator_subscriptions_tweet_preview_api_enabled": True,
+    "responsive_web_graphql_timeline_navigation_enabled": True,
+    "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+    "tweetypie_unmention_optimization_enabled": True,
+    "responsive_web_edit_tweet_api_enabled": True,
+    "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
+    "view_counts_everywhere_api_enabled": True,
+    "longform_notetweets_consumption_enabled": True,
+    "responsive_web_twitter_article_tweet_consumption_enabled": False,
+    "tweet_awards_web_tipping_enabled": False,
+    "freedom_of_speech_not_reach_fetch_enabled": True,
+    "standardized_nudges_misinfo": True,
+    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
+    "longform_notetweets_rich_text_read_enabled": True,
+    "longform_notetweets_inline_media_enabled": True,
+    "responsive_web_media_download_video_enabled": False,
+    "responsive_web_enhance_cards_enabled": False,
+}
+
+TWITTER_SEARCH_TIMELINE_FIELD_TOGGLES = {
+    "withAuxiliaryUserLabels": False,
+    "withArticleRichContentState": False,
+}
+
 # #### Other variables
 
 IMAGE_SERVER = 'https://pbs.twimg.com'
@@ -992,6 +1025,18 @@ def get_search_page(query, cursor=None):
     return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params, use_httpx=True)
 
 
+def get_search_page_v2(query, count, cursor=None):
+    variables = TWITTER_SEARCH_TIMELINE_VARIABLES.copy()
+    features = TWITTER_SEARCH_TIMELINE_FEATURES.copy()
+    field_toggles = TWITTER_SEARCH_TIMELINE_FIELD_TOGGLES.copy()
+    variables['rawQuery'] = query
+    variables['count'] = count
+    if cursor is not None:
+        variables['cursor'] = cursor
+    url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features), 'fieldToggles': json.dumps(field_toggles)})
+    return twitter_request("https://twitter.com/i/api/graphql/KUnA_SzQ4DMxcwWuYZh9qg/SearchTimeline?" + url_params)
+
+
 def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
     print("Populating from media page: %d" % (user_id))
 
@@ -1012,8 +1057,14 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
         if isinstance(tweet_ids, str) else tweet_ids
 
 
-def populate_twitter_search_timeline(account, since_date, until_date, job_id=None, job_status={}, **kwargs):
-    query = f"from:{account} since:{since_date} until:{until_date}"
+def populate_twitter_search_timeline(account, since_date, until_date, filter_media, job_id=None, job_status={}, **kwargs):
+    query = f"from:{account}"
+    if since_date is not None:
+        query += f" since:{since_date}"
+    if until_date is not None:
+        query += f" until:{until_date}"
+    if filter_media:
+        query += f" filter:media"
     print("Populating from search page: %s" % query)
 
     def page_func(cursor, **kwargs):
@@ -1021,10 +1072,14 @@ def populate_twitter_search_timeline(account, since_date, until_date, job_id=Non
         job_status['range'] = since_date + '..' + until_date + ':' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        return get_search_page(query, cursor)
+        if HAS_USER_AUTH:
+            return get_search_page_v2(query, count, cursor)
+        else:
+            return get_search_page(query, cursor)
 
+    count = 100
     page = 1
-    tweet_ids = get_timeline(page_func, **kwargs)
+    tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, v2=HAS_USER_AUTH, **kwargs)
     return create_error('sources.twitter.populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
