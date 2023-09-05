@@ -1037,7 +1037,7 @@ def get_media_page_v2(user_id, count, cursor=None):
     if cursor is not None:
         variables['cursor'] = cursor
     url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features)})
-    return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params)
+    return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params, use_httpx=True)
 
 
 def get_search_page(query, cursor=None):
