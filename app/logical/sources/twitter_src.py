@@ -374,7 +374,7 @@ TWITTER_SEARCH_TIMELINE_FIELD_TOGGLES = {
 IMAGE_SERVER = 'https://pbs.twimg.com'
 TWITTER_SIZES = [':orig', ':large', ':medium', ':small']
 
-MINIMUM_QUERY_INTERVAL = 4
+MINIMUM_QUERY_INTERVAL = 10
 
 TOKEN_FILE = os.path.join(DATA_DIRECTORY, 'twittertoken.txt')
 ERROR_TWEET_FILE = os.path.join(DATA_DIRECTORY, 'twittererror.json')
@@ -901,8 +901,13 @@ def twitter_request(url, method='GET', wait=True, use_httpx=False):
         if not reauthenticated and reauthentication_check(response):
             authenticate_guest(True)
             reauthenticated = True
+        elif response.status_code == 429:
+            print_warning("Pausing for requests exceeded...")
+            error = "HTTP 429: Too many requests - rate limit exceeded."
+            time.sleep(300)
         elif response.status_code in [503]:
             print_warning("Pausing for server error:", response.text)
+            error = "HTTP 503: Server error."
             time.sleep(60)
         else:
             reason = getattr(response, 'reason', None)
@@ -913,7 +918,8 @@ def twitter_request(url, method='GET', wait=True, use_httpx=False):
             return {'error': True, 'message': msg, 'response': response}
     else:
         print_error("Connection errors exceeded!")
-        return {'error': True, 'message': repr(error)}
+        message = error if isinstance(error, str) else repr(error)
+        return {'error': True, 'message': message}
     try:
         data = response.json()
     except Exception:
