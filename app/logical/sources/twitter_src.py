@@ -803,20 +803,37 @@ def timeline_iterator(data, cursor, tweet_ids, user_id=None, last_id=None, v2=Fa
     return False
 
 
-def get_timeline(page_func, **kwargs):
+def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
     page = 1
     cursor = [None]
     tweet_ids = []
+    lowest_tweet_id = None
+    count = 0
     while True:
         data = page_func(cursor=cursor[0], **kwargs)
         if data['error']:
             return data['message']
-        print(f"Gettime timeline page #{page}")
+        if lowest_tweet_id is not None:
+            timestamp = snowflake_to_epoch(lowest_tweet_id)
+            timeval = datetime_from_epoch(timestamp)
+            bookmark  = f"twitter #{lowest_tweet_id} @ {timeval}"
+        else:
+            bookmark = "initial"
+        print(f"Gettime timeline page #{page} - {bookmark}")
+        if job_id is not None and len(tweet_ids) > count:
+            job_status['temp_ids'] = tweet_ids
+            print_info("Saving temp ids:", job_status['temp_ids'])
+            update_job_status(job_id, job_status)
+            count = len(tweet_ids)
+        old_tweet_ids = tweet_ids.copy()
         result = timeline_iterator(data, cursor, tweet_ids, **kwargs)
         if result is None:
+            print(f"No media tweets found on page #{page}")
             return
         elif result:
             return sorted(tweet_ids, key=int, reverse=True)
+        if len(tweet_ids) > len(old_tweet_ids):
+            lowest_tweet_id = min(id for id in tweet_ids if id not in old_tweet_ids)
         page += 1
 
 
@@ -1058,7 +1075,7 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
 
     count = 100 if last_id is None else 20
     page = 1
-    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, v2=HAS_USER_AUTH)
+    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status, v2=HAS_USER_AUTH)
     return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
