@@ -1303,6 +1303,11 @@ def get_artist_id_by_illust_id(site_illust_id):
 
 # #### Other
 
+def print_auth():
+    print("AUTH_TOKEN:", TWITTER_USER_TOKEN)
+    print("CT0:", TWITTER_CSRF_TOKEN)
+
+
 def snowflake_to_epoch(snowflake):
     return ((snowflake >> 22) + 1288834974657) / 1000.0
 
