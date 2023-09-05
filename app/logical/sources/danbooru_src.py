@@ -87,7 +87,7 @@ def get_artists_by_url(url):
 def get_artists_by_multiple_urls(url_list):
     request_url = '/artist_urls.json'
     params = {
-        'search[url_lower_space]': ' '.join(url_list).lower(),
+        'search[url_matches]': ' '.join(url_list),
         'only': 'url,artist',
         'limit': 1000,
     }
