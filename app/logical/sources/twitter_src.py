@@ -961,7 +961,7 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
     retdata = retdata or {'tweets': {}, 'retweets': {}, 'users': {}, 'cursors': {}}
     for key in data:
         if key == '__typename':
-            if data[key] == 'TweetWithVisibilityResults' and 'tweet' in data:
+            if data[key] == 'TweetWithVisibilityResults' and 'tweet' in data and 'legacy' in data['tweet']:
                 node_data = data['tweet']
                 key = 'tweets' if 'retweeted_status_result' not in node_data['legacy'] else 'retweets'
             elif data[key] == 'Tweet' and 'legacy' in data:
@@ -975,6 +975,8 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
                 retdata['cursors'][cursor_key] = data['value']
                 continue
             else:
+                continue
+            if 'rest_id' not in node_data:
                 continue
             item = node_data['legacy']
             id_str = item['id_str'] = node_data['rest_id']
