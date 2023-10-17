@@ -63,7 +63,11 @@ class CountPaginate():
             return CountPaginate(query=self.query, page=self.page - 1, per_page=self.per_page, distinct=self.distinct)
 
     def _get_items(self):
-        q = self.query.distinct() if self.distinct else self.query
+        if self.distinct:
+            model = self.query.column_descriptions[0]['entity']
+            q = self.query.group_by(*model.pk_cols)
+        else:
+            q = self.query
         return q.limit(self.per_page).offset(self.offset).all()
 
     def _get_count(self):
