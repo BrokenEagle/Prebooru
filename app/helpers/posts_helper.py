@@ -8,10 +8,11 @@ import urllib.parse
 from flask import Markup, url_for, request
 
 # ## PACKAGE IMPORTS
-from config import DANBOORU_HOSTNAME, SAMPLE_DIMENSIONS, PREVIEW_DIMENSIONS
+from config import DANBOORU_HOSTNAME, SAMPLE_DIMENSIONS, PREVIEW_DIMENSIONS, PREBOORU_PORT
 from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
+from .. import SERVER_INFO
 from ..logical.utility import search_url_for
 from .base_helper import general_link, external_link, url_for_with_params, render_tag, get_preview_dimensions
 
@@ -149,7 +150,7 @@ def danbooru_post_bookmarklet_links(post):
         illust = illust_url.illust
         artist = illust.artist
         if not illust.active or not artist.active:
-            url = DANBOORU_HOSTNAME + f'/uploads/new?prebooru_post_id={post.id}&prebooru_illust_id={illust.id}'
+            url = DANBOORU_HOSTNAME + f'/uploads/new?prebooru_post_id={post.id}&prebooru_illust_id={illust.id}&prebooru_server={SERVER_INFO.addr}:{PREBOORU_PORT}'
             image_links.append(external_link(f'file #{illust.id}', url))
             continue
         source = illust.site.source
