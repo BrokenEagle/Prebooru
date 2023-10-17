@@ -382,6 +382,13 @@ def source_prework(site_illust_id):
 
 # ###### ILLUST
 
+def get_artwork_commentary(artwork):
+    description = artwork['description']
+    if len(description) > 0:
+        description = safe_get(artwork, 'extraData', 'meta', 'twitter', 'description')
+    return description if len(description) else None
+
+
 def get_illust_tags(artwork):
     tags = set(tag_data['tag'] for tag_data in (safe_get(artwork, 'tags', 'tags') or []))
     if artwork['isOriginal']:
@@ -444,7 +451,7 @@ def get_illust_parameters_from_artwork(artwork, page_data):
         'replies': artwork['responseCount'],
         'views': artwork['viewCount'],
         'tags': get_illust_tags(artwork),
-        'commentaries': safe_get(artwork, 'extraData', 'meta', 'twitter', 'description') or None,
+        'commentaries': get_artwork_commentary(artwork),
         'illust_urls': illust_urls,
         'active': True,
         'site_artist_id': int(artwork['userId']),
