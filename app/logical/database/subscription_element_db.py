@@ -102,6 +102,7 @@ def duplicate_subscription_post(element, md5):
     element.expires = None
     element.md5 = md5
     element.status_id = subscription_element_status.duplicate.id
+    element.keep_id = subscription_element_keep.unknown.id
     SESSION.commit()
 
 
@@ -153,7 +154,7 @@ def _update_subscription_element_keep(element, value):
         element.expires = days_from_now(1)  # Posts will be unlinked/archived after this period
     elif value == 'no':
         element.expires = days_from_now(7)  # Posts will be deleted after this period
-    elif value == 'maybe':
+    elif value == 'maybe' or value == 'unknown':
         element.expires = None  # Keep the element around until/unless a decision is made on it
     elif value is None:
         element.expires = days_from_now(element.subscription.expiration)  # Reset the expiration

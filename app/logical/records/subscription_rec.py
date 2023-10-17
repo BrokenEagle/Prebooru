@@ -23,7 +23,8 @@ from ..logger import log_error
 from ..downloader.network_dl import convert_network_subscription
 from ..records.post_rec import recreate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
-    update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query
+    update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query,\
+    update_subscription_element_keep
 from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.archive_db import get_archive
@@ -289,6 +290,7 @@ def redownload_element(element):
             return {'error': True, 'message': msg}
         else:
             update_subscription_element_status(element, 'error')
+            update_subscription_element_keep(element, 'unknown')
             new_errors = [error for error in element.errors if error.id not in initial_errors]
             msg = '; '.join(f"{error.module}: {error.message}" for error in new_errors) or "Unknown error."
             return {'error': True, 'message': msg}
@@ -317,6 +319,7 @@ def reinstantiate_element(element):
                                             .first()
         if unlinked is not None:
             update_subscription_element_status(element, 'duplicate')
+            update_subscription_element_keep(element, 'unknown')
         return results
     relink_element(element)
     return {'error': False}
