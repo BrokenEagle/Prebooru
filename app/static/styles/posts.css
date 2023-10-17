@@ -83,6 +83,12 @@ div.post-commentaries-block {
     margin: 0.25em;
 }
 
+div.post-title-block {
+    margin: 0.1em;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
 section#media-container {
     margin-bottom: 1em;
     margin-right: 1em;
