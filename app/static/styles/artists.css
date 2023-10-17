@@ -137,3 +137,8 @@ span.artist-webpage span.active {
 span.artist-webpage span.inactive {
     background-color: lightsalmon;
 }
+
+span.nonprimary-artist {
+    color: #888;
+    font-size: 0.8em;
+}

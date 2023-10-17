@@ -97,6 +97,11 @@ div.no-post-preview {
     width: 310px;
 }
 
+div.no-post-preview > div {
+    margin-top: 1em;
+    color: #888;
+}
+
 /**** INDEX ****/
 div.upload-preview {
     display: grid;
