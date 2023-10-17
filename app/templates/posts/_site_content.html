@@ -36,6 +36,9 @@
         {% for illust in post.illusts %}
             <div class="post-commentaries-container">
                 <strong>{{ illust.header }}:</strong>
+                {% if illust.title is not none %}
+                    <div class="post-title-block">{{ illust.title }}</div>
+                {% endif %}
                 {% call(commentary) items_block(illust._commentaries, '_commentaries', helpers.base.HR) %}
                     <div class="post-commentaries-block">{{ helpers.base.convert_to_html(commentary.body) }}</div>
                 {% endcall %}
