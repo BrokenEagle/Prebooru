@@ -20,7 +20,7 @@ from ..logical.tasks import JOB_CONFIG
 from ..models.subscription import Subscription
 from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
-from .base_helper import general_link, url_for_with_params
+from .base_helper import general_link, url_for_with_params, format_time_ago
 
 
 # ## GLOBAL VARIABLES
@@ -171,11 +171,25 @@ def average_interval_lookup(subscription, average_intervals):
     return "%0.2f" % (interval[1] / 3600)
 
 
-def average_interval(subscription):
-    interval = get_average_interval_for_subscriptions([subscription], 365)
+def average_interval(subscription, days):
+    interval = get_average_interval_for_subscriptions([subscription], days)
     if len(interval) == 0:
         return Markup('<em>N/A</em>')
-    return "%0.2f" % (interval[0][1] / 3600)
+    return "%0.2f hours" % (interval[0][1] / 3600)
+
+
+def last_illust_created(subscription):
+    last_illust = subscription.artist.last_illust
+    if last_illust is None:
+        return Markup('<em>N/A</em>')
+    return format_time_ago(last_illust.site_created)
+
+
+def last_keep_created(subscription):
+    last_keep = subscription.last_keep
+    if last_keep is None:
+        return Markup('<em>N/A</em>')
+    return format_time_ago(last_keep.illust_url.illust.site_created)
 
 
 def storage_bytes(subscription, type=None):

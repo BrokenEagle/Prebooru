@@ -21,7 +21,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration']
 UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
 
 DISTINCT_ILLUST_COUNT = func.count(Illust.id.distinct())
-AVERAGE_INTERVAL_CLAUSE = (Subscription.checked - func.min(Illust.site_created)) / DISTINCT_ILLUST_COUNT
+UNDECIDED_COUNT = func.count(SubscriptionElement.keep_filter('id', 'is_', None))
 DISTINCT_ELEMENT_COUNT = func.count(SubscriptionElement.id.distinct())
 
 
@@ -144,9 +144,11 @@ def delay_subscription_elements(subscription, delay_days):
 
 
 def get_average_interval_for_subscriptions(subscriptions, days):
+    undecided_count_cte = SubscriptionElement.query.filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions])).group_by(SubscriptionElement.subscription_id).with_entities(SubscriptionElement.subscription_id, func.sum(func.iif(SubscriptionElement.keep_filter('id', 'is_', None), 1, 0)).label('count')).cte()
+    AVERAGE_INTERVAL_CLAUSE = (func.iif(undecided_count_cte.c.count == 0, Subscription.checked - func.min(Illust.site_created), func.max(Illust.site_created) - func.min(Illust.site_created))) / DISTINCT_ILLUST_COUNT
     keep_filter = SubscriptionElement.keep_filter('name', '__eq__', 'yes')
     return SubscriptionElement.query.enum_join(SubscriptionElement.keep_enum)\
-                              .join(Subscription).join(IllustUrl).join(Illust)\
+                              .join(Subscription).join(IllustUrl).join(Illust).join(undecided_count_cte)\
                               .with_entities(SubscriptionElement.subscription_id, AVERAGE_INTERVAL_CLAUSE)\
                               .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
                                       Illust.site_created > days_ago(days),

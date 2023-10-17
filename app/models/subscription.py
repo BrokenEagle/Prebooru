@@ -161,6 +161,10 @@ class Subscription(JsonModel):
         self._populate_status_counts()
         return self._status_counts['error']
 
+    @memoized_property
+    def last_keep(self):
+        return self._element_query.enum_join(SubscriptionElement.keep_enum).join(IllustUrl).join(Illust).filter(SubscriptionElement.keep_filter('name', '__eq__', 'yes')).order_by(Illust.site_created.desc()).first()
+
     # ## Private
 
     @property
