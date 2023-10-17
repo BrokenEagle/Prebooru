@@ -349,7 +349,7 @@ def subscription_slots_needed_per_hour():
 def _process_image_matches(elements):
 
     def _process(post_ids):
-        print("Image match semaphore waits:", WAITING_THREADS['image_match'])
+        print("Image match semaphore waits: %d" % WAITING_THREADS['image_match'])
         WAITING_THREADS['image_match'] += 1
         IMAGEMATCH_SEMAPHORE.acquire()
         WAITING_THREADS['image_match'] -= 1
