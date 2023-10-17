@@ -5,7 +5,6 @@
 const Illusts = {};
 
 (function () {
-    Illusts.site_map = {};
     Illusts.createFromUrl = function (obj) {
         return Prebooru.promptArgPost(obj, "Enter the site illust URL to create from:", 'url');
     };
