@@ -80,11 +80,11 @@
                         <li>
                             <strong>[ {{ helpers.subscription.nopost_function_link('reinstantiate', element) }} ]</strong>
                         </li>
-                    {% elif element.status.name == 'unlinked' and element.post_match is not none %}
+                    {% elif element.status_name == 'unlinked' and element.post_match is not none %}
                         <li>
                             <strong>[ {{ helpers.subscription.nopost_function_link('relink', element) }} ]</strong>
                         </li>
-                    {% elif element.post_match is none %}
+                    {% elif element.status_name == 'deleted' and element.post_match is none %}
                         <li>
                             <strong>[ {{ helpers.subscription.nopost_function_link('redownload', element) }} ]</strong>
                         </li>
