@@ -75,6 +75,8 @@ def pool_filter(query, search):
         query = query.filter(subclause)
     elif 'pool_id' in search and search['pool_id'].isdigit():
         query = query.unique_join(PoolPost, Post._pools).filter(PoolPost.pool_id == int(search['pool_id']))
+    elif 'pool_id_not' in search and search['pool_id_not'].isdigit():
+        query = query.unique_join(PoolPost, Post._pools, isouter=True).filter(or_(PoolPost.pool_id != int(search['pool_id_not']), PoolPost.id.is_(None)))
     return query
 
 
