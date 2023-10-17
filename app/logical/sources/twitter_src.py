@@ -31,7 +31,6 @@ from ..database.artist_db import inactivate_artist
 from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
-from ..records.artist_rec import update_artist_from_source
 
 
 # ## GLOBAL VARIABLES
@@ -228,26 +227,26 @@ HAS_USER_AUTH = TWITTER_USER_TOKEN is not None and TWITTER_CSRF_TOKEN is not Non
 TWITTER_HEADERS = TWITTER_USER_HEADERS if HAS_USER_AUTH else None
 
 TWITTER_ILLUST_TIMELINE_GRAPHQL_FEATURES = {
-    "rweb_lists_timeline_redesign_enabled":True,
-    "responsive_web_graphql_exclude_directive_enabled":True,
-    "verified_phone_label_enabled":False,
-    "creator_subscriptions_tweet_preview_api_enabled":True,
-    "responsive_web_graphql_timeline_navigation_enabled":True,
-    "responsive_web_graphql_skip_user_profile_image_extensions_enabled":False,
-    "tweetypie_unmention_optimization_enabled":True,
-    "responsive_web_edit_tweet_api_enabled":True,
-    "graphql_is_translatable_rweb_tweet_is_translatable_enabled":True,
-    "view_counts_everywhere_api_enabled":True,
-    "longform_notetweets_consumption_enabled":True,
-    "responsive_web_twitter_article_tweet_consumption_enabled":False,
-    "tweet_awards_web_tipping_enabled":False,
-    "freedom_of_speech_not_reach_fetch_enabled":True,
-    "standardized_nudges_misinfo":True,
-    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":True,
-    "longform_notetweets_rich_text_read_enabled":True,
-    "longform_notetweets_inline_media_enabled":True,
-    "responsive_web_media_download_video_enabled":False,
-    "responsive_web_enhance_cards_enabled":False,
+    "rweb_lists_timeline_redesign_enabled": True,
+    "responsive_web_graphql_exclude_directive_enabled": True,
+    "verified_phone_label_enabled": False,
+    "creator_subscriptions_tweet_preview_api_enabled": True,
+    "responsive_web_graphql_timeline_navigation_enabled": True,
+    "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+    "tweetypie_unmention_optimization_enabled": True,
+    "responsive_web_edit_tweet_api_enabled": True,
+    "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
+    "view_counts_everywhere_api_enabled": True,
+    "longform_notetweets_consumption_enabled": True,
+    "responsive_web_twitter_article_tweet_consumption_enabled": False,
+    "tweet_awards_web_tipping_enabled": False,
+    "freedom_of_speech_not_reach_fetch_enabled": True,
+    "standardized_nudges_misinfo": True,
+    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
+    "longform_notetweets_rich_text_read_enabled": True,
+    "longform_notetweets_inline_media_enabled": True,
+    "responsive_web_media_download_video_enabled": False,
+    "responsive_web_enhance_cards_enabled": False,
 }
 
 TWITTER_ILLUST_TIMELINE_GRAPHQL_FIELD_TOGGLES = {
@@ -849,7 +848,7 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
         if lowest_tweet_id is not None:
             timestamp = snowflake_to_epoch(lowest_tweet_id)
             timeval = datetime_from_epoch(timestamp)
-            bookmark  = f"twitter #{lowest_tweet_id} @ {timeval}"
+            bookmark = f"twitter #{lowest_tweet_id} @ {timeval}"
         else:
             bookmark = "initial"
         print(f"Gettime timeline page #{page} - {bookmark}")
@@ -1030,8 +1029,11 @@ def get_twitter_illust_timeline(illust_id):
     variables['focalTweetId'] = illust_id_str
     features = TWITTER_ILLUST_TIMELINE_GRAPHQL_FEATURES.copy()
     field_toggles = TWITTER_ILLUST_TIMELINE_GRAPHQL_FIELD_TOGGLES.copy()
-    urladdons = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features), 'fieldToggles': json.dumps(field_toggles)})
-    data = twitter_request("https://twitter.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons, use_httpx=True)
+    urladdons = urllib.parse.urlencode({'variables': json.dumps(variables),
+                                        'features': json.dumps(features),
+                                        'fieldToggles': json.dumps(field_toggles)})
+    data = twitter_request("https://twitter.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons,
+                           use_httpx=True)
     try:
         if data['error']:
             return create_error('sources.twitter.get_twitter_illust_timeline', data['message'])
@@ -1070,7 +1072,8 @@ def get_media_page_v2(user_id, count, cursor=None):
     if cursor is not None:
         variables['cursor'] = cursor
     url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features)})
-    return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params, use_httpx=True)
+    return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params,
+                           use_httpx=True)
 
 
 def get_search_page(query, cursor=None):
@@ -1091,7 +1094,9 @@ def get_search_page_v2(query, count, cursor=None):
     variables['count'] = count
     if cursor is not None:
         variables['cursor'] = cursor
-    url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features), 'fieldToggles': json.dumps(field_toggles)})
+    url_params = urllib.parse.urlencode({'variables': json.dumps(variables),
+                                         'features': json.dumps(features),
+                                         'fieldToggles': json.dumps(field_toggles)})
     return twitter_request("https://twitter.com/i/api/graphql/KUnA_SzQ4DMxcwWuYZh9qg/SearchTimeline?" + url_params)
 
 
@@ -1110,19 +1115,21 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
 
     count = 100 if last_id is None else 20
     page = 1
-    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status, v2=HAS_USER_AUTH)
+    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status,
+                             v2=HAS_USER_AUTH)
     return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
 
-def populate_twitter_search_timeline(account, since_date, until_date, filter_media, job_id=None, job_status={}, **kwargs):
+def populate_twitter_search_timeline(account, since_date, until_date, filter_media,
+                                     job_id=None, job_status={}, **kwargs):
     query = f"from:{account}"
     if since_date is not None:
         query += f" since:{since_date}"
     if until_date is not None:
         query += f" until:{until_date}"
     if filter_media:
-        query += f" filter:media"
+        query += " filter:media"
     print("Populating from search page: %s" % query)
 
     def page_func(cursor, **kwargs):
@@ -1476,7 +1483,8 @@ def populate_all_artist_illusts(artist, job_id=None, params=None):
     if params['type'] == 'media':
         return populate_artist_illusts_from_media_timeline(artist, job_id, params['last_id'])
     if params['type'] == 'search':
-        return populate_artist_illusts_from_search_timeline(artist, job_id, params['search_since'], params['search_until'], params['filter_media'])
+        return populate_artist_illusts_from_search_timeline(artist, job_id, params['search_since'],
+                                                            params['search_until'], params['filter_media'])
     if params['type'] == 'recover':
         job_status = get_job_status_data(job_id) or {}
         return job_status.pop('temp_ids', [])

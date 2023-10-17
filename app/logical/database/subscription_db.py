@@ -23,6 +23,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
 DISTINCT_ILLUST_COUNT = func.count(Illust.id.distinct())
 UNDECIDED_COUNT = func.count(SubscriptionElement.keep_filter('id', 'is_', None))
 DISTINCT_ELEMENT_COUNT = func.count(SubscriptionElement.id.distinct())
+COUNT_UNDECIDED_ELEMENTS = func.sum(func.iif(SubscriptionElement.keep_filter('id', 'is_', None), 1, 0)).label('count')
 
 
 # ## FUNCTIONS
@@ -144,12 +145,21 @@ def delay_subscription_elements(subscription, delay_days):
 
 
 def get_average_interval_for_subscriptions(subscriptions, days):
-    undecided_count_cte = SubscriptionElement.query.filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions])).group_by(SubscriptionElement.subscription_id).with_entities(SubscriptionElement.subscription_id, func.sum(func.iif(SubscriptionElement.keep_filter('id', 'is_', None), 1, 0)).label('count')).cte()
-    AVERAGE_INTERVAL_CLAUSE = (func.iif(undecided_count_cte.c.count == 0, Subscription.checked - func.min(Illust.site_created), func.max(Illust.site_created) - func.min(Illust.site_created))) / DISTINCT_ILLUST_COUNT
+    subscription_ids = [s.id for s in subscriptions]
+    undecided_count_cte = SubscriptionElement.query.filter(SubscriptionElement.subscription_id.in_(subscription_ids))\
+                                                   .group_by(SubscriptionElement.subscription_id)\
+                                                   .with_entities(SubscriptionElement.subscription_id,
+                                                                  COUNT_UNDECIDED_ELEMENTS,
+                                                                  )\
+                                                   .cte()
+    average_interval_clause = (func.iif(undecided_count_cte.c.count == 0,
+                                        Subscription.checked - func.min(Illust.site_created),
+                                        func.max(Illust.site_created) - func.min(Illust.site_created))
+                               ) / DISTINCT_ILLUST_COUNT
     keep_filter = SubscriptionElement.keep_filter('name', '__eq__', 'yes')
     return SubscriptionElement.query.enum_join(SubscriptionElement.keep_enum)\
                               .join(Subscription).join(IllustUrl).join(Illust).join(undecided_count_cte)\
-                              .with_entities(SubscriptionElement.subscription_id, AVERAGE_INTERVAL_CLAUSE)\
+                              .with_entities(SubscriptionElement.subscription_id, average_interval_clause)\
                               .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
                                       Illust.site_created > days_ago(days),
                                       keep_filter,
