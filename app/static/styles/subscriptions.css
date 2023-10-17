@@ -80,11 +80,21 @@ section#subscription-element-status {
 }
 
 div#subscription-site-content-2 {
+    display: flex;
+    width: 50%;
     border: 1px solid #ddd;
     margin-top: 2em;
     margin-left: 0.8em;
     padding: 5px;
     width: 40%;
+}
+
+div#subscription-intervals {
+    width: 50%;
+}
+
+div#subscription-job {
+    width: 50%;
 }
 
 div#subscription-elements,
