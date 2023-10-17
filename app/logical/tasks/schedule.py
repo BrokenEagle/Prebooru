@@ -45,7 +45,7 @@ from . import JOB_CONFIG
 
 @SCHEDULER.task("interval", **JOB_CONFIG['expunge_cache_records']['config'])
 def expunge_cache_records_task():
-    def _task(printer):
+    def _task(printer, *args):
         status = {}
         api_delete_count = expired_api_data_count()
         printer("API data records to delete:", api_delete_count)
@@ -59,12 +59,12 @@ def expunge_cache_records_task():
             status['media'] = len(expired_media_records)
         return status
 
-    _execute_scheduled_task(_task, 'expunge_cache_records', True, True)
+    _execute_scheduled_task(_task, 'expunge_cache_records')
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['expunge_archive_records']['config'])
 def expunge_archive_records_task():
-    def _task(printer):
+    def _task(printer, *args):
         archive_delete_count = expired_archive_count()
         if archive_delete_count > 0:
             printer("Archive records deleted:", archive_delete_count)
@@ -73,59 +73,51 @@ def expunge_archive_records_task():
             return status
         printer("No archive records to delete.")
 
-    _execute_scheduled_task(_task, 'expunge_archive_records', True, True)
+    _execute_scheduled_task(_task, 'expunge_archive_records')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['generate_missing_image_hashes']['config'])
 def generate_missing_image_hashes_task():
-    def _task(printer):
-        manual = _is_job_manual('check_pending_subscriptions')
-        status = generate_missing_image_hashes(manual)
+    def _task(printer, is_manual):
+        status = generate_missing_image_hashes(is_manual)
         if status['total'] > 0:
             printer("Post records updated:", status['total'])
         else:
             printer("No post records to update.")
         return status
 
-    _execute_scheduled_task(_task, 'generate_missing_image_hashes', True, True)
+    _execute_scheduled_task(_task, 'generate_missing_image_hashes')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['calculate_similarity_matches']['config'])
 def calculate_similarity_matches_task():
     """Processes newly unlinked subscription posts for similarity matches."""
-    def _task(printer):
-        nonlocal manual
-        manual = _is_job_manual('calculate_similarity_matches')
-        status = calculate_similarity_matches(manual)
+    def _task(printer, is_manual):
+        status = calculate_similarity_matches(is_manual)
         if status['total'] > 0:
             printer("Post records updated:", status['total'])
         else:
             printer("No post records to update.")
         return status
 
-    manual = _is_job_manual('calculate_similarity_matches')
-    if not manual and server_is_busy():
-        print("Calculate similarity matches: Server busy, rescheduling....")
-        reschedule_from_child('calculate_similarity_matches')
-    else:
-        _execute_scheduled_task(_task, 'calculate_similarity_matches', True, True)
+    _execute_scheduled_task(_task, 'calculate_similarity_matches', busy_check=True)
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_boorus']['config'])
 def check_all_boorus_task():
-    def _task(printer):
+    def _task(printer, *args):
         status = check_all_boorus()
         if status['total'] > 0:
             printer("Boorus updated:", status['total'])
             return status
         printer("No boorus updated.")
 
-    _execute_scheduled_task(_task, 'check_all_boorus', True, True)
+    _execute_scheduled_task(_task, 'check_all_boorus')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_artists_for_boorus']['config'])
 def check_all_artists_for_boorus_task():
-    def _task(printer):
+    def _task(printer, *args):
         status = check_all_artists_for_boorus()
         if status['total'] > 0:
             printer("Artists updated:", status['total'])
@@ -133,27 +125,26 @@ def check_all_artists_for_boorus_task():
             return status
         printer("No artists updated.")
 
-    _execute_scheduled_task(_task, 'check_all_artists_for_boorus', True, True)
+    _execute_scheduled_task(_task, 'check_all_artists_for_boorus')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_all_posts_for_danbooru_id']['config'])
 def check_all_posts_for_danbooru_id_task():
-    def _task(printer):
+    def _task(printer, *args):
         status = check_all_posts_for_danbooru_id()
         if status['total'] > 0:
             printer("Posts updated:", status['total'])
             return status
         printer("No posts updated.")
 
-    _execute_scheduled_task(_task, 'check_all_posts_for_danbooru_id', True, True)
+    _execute_scheduled_task(_task, 'check_all_posts_for_danbooru_id')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_subscriptions']['config'])
 def check_pending_subscriptions_task():
-    def _task(printer):
-        manual = _is_job_manual('check_pending_subscriptions')
+    def _task(printer, is_manual):
         query = get_available_subscriptions_query()
-        if not manual:
+        if not is_manual:
             query = query.limit(MAXIMUM_PROCESS_SUBSCRIPTIONS)
         subscriptions = query.all()
         if len(subscriptions) > 0:
@@ -167,78 +158,74 @@ def check_pending_subscriptions_task():
             printer("No subscriptions to process.")
 
     if _subscriptions_check():
-        _execute_scheduled_task(_task, 'check_pending_subscriptions', True, True)
+        _execute_scheduled_task(_task, 'check_pending_subscriptions')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_downloads']['config'])
 def check_pending_downloads_task():
-    def _task(printer):
+    def _task(printer, is_manual):
         total = total_missing_downloads()
         printer("Missing downloads:", total)
         if total > 0:
-            manual = _is_job_manual('check_pending_downloads')
-            processed = download_missing_elements(manual)
+            processed = download_missing_elements(is_manual)
             printer("Elements processed:", processed)
             return {'available': total, 'total': processed}
 
     if _subscriptions_check():
-        _execute_scheduled_task(_task, 'check_pending_downloads', True, True)
+        _execute_scheduled_task(_task, 'check_pending_downloads')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['unlink_expired_subscription_elements']['config'])
 def unlink_expired_subscription_elements_task():
-    def _task(printer):
+    def _task(printer, is_manual):
         total = expired_subscription_elements('unlink').get_count()
         if total > 0:
-            manual = _is_job_manual('unlink_expired_subscription_elements')
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('unlink_expired_subscription_elements', 'tasks.schedule', printer=printer,
-                                   try_func=(lambda data: unlink_expired_subscription_elements(manual)))
+                                   try_func=(lambda data: unlink_expired_subscription_elements(is_manual)))
             printer("Unlinked subscription elements:", data)
             return {'available': total, 'total': len(data), 'ids': data}
         else:
             printer("No subscriptions elements to process.")
 
-    _execute_scheduled_task(_task, 'unlink_expired_subscription_elements', True, True)
+    _execute_scheduled_task(_task, 'unlink_expired_subscription_elements')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['delete_expired_subscription_elements']['config'])
 def delete_expired_subscription_elements_task():
-    def _task(printer):
+    def _task(printer, is_manual):
         total = expired_subscription_elements('delete').get_count()
         if total > 0:
-            manual = _is_job_manual('delete_expired_subscription_elements')
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('delete_expired_subscription_elements', 'tasks.schedule', printer=printer,
-                                   try_func=(lambda data: delete_expired_subscription_elements(manual)))
+                                   try_func=(lambda data: delete_expired_subscription_elements(is_manual)))
             printer("Deleted subscription elements:", len(data))
             return {'available': total, 'total': len(data), 'ids': data}
         else:
             printer("No subscriptions elements to process.")
 
-    _execute_scheduled_task(_task, 'delete_expired_subscription_elements', True, True)
+    _execute_scheduled_task(_task, 'delete_expired_subscription_elements')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['archive_expired_subscription_elements']['config'])
 def archive_expired_subscription_elements_task():
-    def _task(printer):
+    def _task(printer, is_manual):
         total = expired_subscription_elements('archive').get_count()
         if total > 0:
-            manual = _is_job_manual('archive_expired_subscription_elements')
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('archive_expired_subscription_elements', 'tasks.schedule', printer=printer,
-                                   try_func=(lambda data: archive_expired_subscription_elements(manual)))
+                                   try_func=(lambda data: archive_expired_subscription_elements(is_manual)))
             printer("Archived subscription elements:", data)
             return {'available': total, 'total': len(data), 'ids': data}
         else:
             printer("No subscriptions elements to process.")
 
-    _execute_scheduled_task(_task, 'archive_expired_subscription_elements', True, True)
+    _execute_scheduled_task(_task, 'archive_expired_subscription_elements')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['recalculate_pool_positions']['config'])
 def recalculate_pool_positions_task():
-    def _task(printer):
+    def _task(printer, *args):
         recheck_pools = get_all_recheck_pools()
         if len(recheck_pools):
             for pool in recheck_pools:
@@ -247,14 +234,13 @@ def recalculate_pool_positions_task():
             return {'total': len(recheck_pools)}
         printer("No pools to recalculate.")
 
-    _execute_scheduled_task(_task, 'recalculate_pool_positions', True, True)
+    _execute_scheduled_task(_task, 'recalculate_pool_positions')
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['relocate_old_posts']['config'])
 def relocate_old_posts_task():
-    def _task(printer):
-        manual = _is_job_manual('relocate_old_posts')
-        posts_moved = relocate_old_posts_to_alternate(manual)
+    def _task(printer, is_manual):
+        posts_moved = relocate_old_posts_to_alternate(is_manual)
         if posts_moved is None:
             printer("Alternate move days not configured.")
         elif posts_moved > 0:
@@ -268,12 +254,12 @@ def relocate_old_posts_task():
     elif not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
         print("Alternate media directory not found.")
     else:
-        _execute_scheduled_task(_task, 'relocate_old_posts', True, True)
+        _execute_scheduled_task(_task, 'relocate_old_posts')
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['delete_orphan_images']['config'])
 def delete_orphan_images_task():
-    def _task(printer):
+    def _task(printer, *args):
         dir_listing = get_directory_listing(CACHE_DATA_DIRECTORY)
         dir_md5s = [re.match(r'[0-9a-f]+', x).group(0) for x in dir_listing if re.match(r'[0-9a-f]+\.(jpg|png|gif)', x)]
         cache_md5s = [item.md5 for item in get_all_media_files()]
@@ -291,7 +277,7 @@ def delete_orphan_images_task():
             return {'total': files_deleted}
         printer("No files to delete.")
 
-    _execute_scheduled_task(_task, 'delete_orphan_images', True, True)
+    _execute_scheduled_task(_task, 'delete_orphan_images')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['vacuum_analyze_database']['config'])
@@ -301,18 +287,14 @@ def vacuum_analyze_database_task():
             connection.execute("VACUUM")
             connection.execute("ANALYZE")
 
-    if not _is_job_manual('vacuum_analyze_database') and server_is_busy():
-        print("Vaccuum/Analyze: Server busy, rescheduling....")
-        reschedule_from_child('vacuum_analyze_database')
-    else:
-        _execute_scheduled_task(_task, 'vacuum_analyze_database', True, True)
+    _execute_scheduled_task(_task, 'vacuum_analyze_database', busy_check=True)
 
 
 # #### Startup tasks
 
 @SCHEDULER.task('date', id="reset_subscription_status", next_run_time=seconds_from_now_local(60))
 def reset_subscription_status_task():
-    def _task(printer):
+    def _task(printer, *args):
         subscriptions = get_busy_subscriptions()
         if len(subscriptions):
             for subscription in subscriptions:
@@ -325,26 +307,36 @@ def reset_subscription_status_task():
         update_subscriptions_ready()
         return status
 
-    _execute_scheduled_task(_task, 'reset_subscription_status', False, False)
+    _execute_scheduled_task(_task, 'reset_subscription_status', has_manual=False, has_enabled=False, has_lock=False)
 
 
 # #### Private
 
 # ###### Semaphore
 
-def _execute_scheduled_task(func, id, has_enabled, has_lock):
+def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_lock=True, busy_check=False):
     def _execute():
         display_name = ' '.join(word.title() for word in id.split('_'))
-        if has_enabled and not _is_job_enabled(id):
-            print(f"Task scheduler - {display_name}: disabled")
-            return
         if has_lock and not _set_db_semaphore(id):
             print(f"Task scheduler - {display_name}: already running")
             return
+        if has_manual:
+            print(f"Task scheduler - {display_name}: manually executed")
+            is_manual = _is_job_manual(id)
+        else:
+            is_manual = False
+        if not is_manual:
+            if busy_check and server_is_busy():
+                print(f"Task scheduler - {display_name}: Server busy, rescheduling....")
+                reschedule_from_child(id)
+                return
+            if has_enabled and not _is_job_enabled(id):
+                print(f"Task scheduler - {display_name}: disabled")
+                return
         printer = buffered_print(display_name)
         printer("PID:", os.getpid())
         start_time = time.time()
-        info = func(printer) or {}
+        info = func(printer, is_manual) or {}
         printer("Execution time: %0.2f" % (time.time() - start_time))
         printer.print()
         if has_lock:
