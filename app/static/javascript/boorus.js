@@ -11,7 +11,7 @@ Boorus.createFromId = function (obj) {
 Boorus.addArtist = function (obj) {
     let artist_id = prompt("Enter artist ID to add:");
     if (artist_id !== null) {
-        Prebooru.postRequest(obj.href, {'artist_id': artist_id});
+        Prebooru.postRequest(obj.href, {artist_id});
     }
     return false;
 };
