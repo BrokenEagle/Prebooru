@@ -73,7 +73,9 @@ class Subscription(JsonModel):
                                       .all()
         if len(datetimes) == 0:
             return
-        datetimes = [get_current_time()] + [x[0] for x in datetimes]
+        datetimes = [x[0] for x in datetimes]
+        if self.undecided_count == 0:
+            datetimes = [get_current_time()] + datetimes
         timedeltas = [datetimes[i - 1] - datetimes[i] for i in range(1, len(datetimes))]
         return average_timedelta(timedeltas)
 

@@ -66,13 +66,8 @@ def element_search_link(subscription):
 
 
 def process_subscription_link(subscription):
-    url = url_for('subscription.process_html', id=subscription.id)
-    return general_link("Process subscription", url, method="POST")
-
-
-def recheck_subscription_link(subscription):
-    url = url_for('subscription.recheck_html', id=subscription.id)
-    return general_link("Recheck subscription", url, method="POST")
+    url = url_for('subscription.process_form_html', id=subscription.id)
+    return general_link("Manual process", url, method="GET")
 
 
 def add_notation_link(subscription):

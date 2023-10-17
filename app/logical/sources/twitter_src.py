@@ -13,11 +13,12 @@ import datetime
 # ## EXTERNAL IMPORTS
 import requests
 import httpx
+from wtforms import RadioField, BooleanField, IntegerField, TextField
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN
 from utility.data import safe_get, decode_json, fixup_crlf, safe_check
-from utility.time import get_current_time, datetime_from_epoch, add_days, get_date
+from utility.time import get_current_time, datetime_from_epoch
 from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
 from utility.uprint import print_info, print_warning, print_error
 
@@ -368,6 +369,37 @@ TWITTER_SEARCH_TIMELINE_FEATURES = {
 TWITTER_SEARCH_TIMELINE_FIELD_TOGGLES = {
     "withAuxiliaryUserLabels": False,
     "withArticleRichContentState": False,
+}
+
+# #### Subscription variables
+
+PROCESS_FORM_CONFIG = {
+    'type': {
+        'field': RadioField,
+        'kwargs': {
+            'default': 'media',
+            'choices': ['media', 'search', 'recover'],
+        },
+    },
+    'last_id': {
+        'name': "Last ID",
+        'field': IntegerField,
+        'kwargs': {
+            'description': "Set as a stopping point for the media timeline.",
+        },
+    },
+    'search_since': {
+        'field': TextField,
+    },
+    'search_until': {
+        'field': TextField,
+    },
+    'filter_media': {
+        'field': BooleanField,
+        'kwargs': {
+            'default': False,
+        },
+    },
 }
 
 # #### Other variables
@@ -1395,51 +1427,57 @@ def snowflake_to_epoch(snowflake):
     return ((snowflake >> 22) + 1288834974657) / 1000.0
 
 
-def populate_all_artist_illusts(artist, last_id, job_id=None):
-    job_status = get_job_status_data(job_id) or {}
-    job_status['stage'] = 'querying'
-    update_job_status(job_id, job_status)
-    if job_status.get('ids') is None:
-        timeline_last_id = last_id if last_id is not True else None
-        tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, timeline_last_id, job_id=job_id, job_status=job_status)
-        if is_error(tweet_ids):
-            return tweet_ids
-        # Only the media timeline is checked for errors on empty, as the search timeline will likely have empty results
-        if tweet_ids is None:
-            twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
-            if is_error(twuser):
-                inactivate_artist(artist)
-                return twuser
-            # The timeline was empty of any tweets
-            return []
-        # Only continue on if this is the initial full process (last ID is null)
-        if len(tweet_ids) == 0 or last_id is not None or last_id is True:
-            # No tweet IDs means that no new results were found, but the timeline was not empty
-            return tweet_ids
-        # Update the artist current user account in case it has changed since creating the artist
-        update_artist_from_source(artist)
-        job_status['ids'] = tweet_ids
-    else:
-        tweet_ids = job_status['ids']
-    lowest_tweet_id = min(tweet_ids)
-    timestamp = snowflake_to_epoch(lowest_tweet_id)
+def snowflake_to_timestring(snowflake):
+    timestamp = snowflake_to_epoch(snowflake)
     timeval = datetime_from_epoch(timestamp)
-    timeval = add_days(timeval, 1)  # Add a day since the media timeline can end partway through a day
-    job_status['ids'] = tweet_ids
-    while timeval > artist.site_created:
-        next_timeval = add_days(timeval, -90)  # Get 3 months at a time
-        until_date = get_date(timeval)
-        since_date = get_date(next_timeval)
-        job_status['records'] = len(tweet_ids)
-        update_job_status(job_id, job_status)
-        temp_ids = populate_twitter_search_timeline(artist.current_site_account,
-                                                    since_date, until_date,
-                                                    user_id=artist.site_artist_id,
-                                                    job_id=job_id, job_status=job_status)
-        if is_error(temp_ids):
-            return temp_ids
-        tweet_ids += temp_ids if temp_ids is not None else []
-        job_status['ids'] = tweet_ids
-        timeval = next_timeval
-    update_job_status(job_id, job_status)
-    return tweet_ids
+    return timeval.isoformat()
+
+
+def populate_artist_recheck_active(artist):
+    twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
+    if is_error(twuser):
+        inactivate_artist(artist)
+        return twuser
+    # The timeline was empty of any tweets
+    return []
+
+
+def populate_artist_illusts_from_media_timeline(artist, job_id, last_id):
+    job_status = get_job_status_data(job_id) or {}
+    if job_status.get('timeline') != 'media':
+        job_status.pop('ids', None)
+        job_status.pop('temp_ids', None)
+        job_status['timeline'] = 'media'
+    job_status['stage'] = 'querying'
+    tweet_ids = populate_twitter_media_timeline(artist.site_artist_id, last_id, job_id=job_id, job_status=job_status)
+    return populate_artist_recheck_active(artist) if tweet_ids is None else tweet_ids
+
+
+def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, until_date, filter_media):
+    job_status = get_job_status_data(job_id) or {}
+    if job_status.get('timeline') != 'search':
+        job_status.pop('ids', None)
+        job_status.pop('temp_ids', None)
+        job_status['timeline'] = 'search'
+    job_status['stage'] = 'querying'
+    since_date = since_date if re.match(r'\d{4}-\d{2}-\d{2}', since_date) else None
+    until_date = until_date if re.match(r'\d{4}-\d{2}-\d{2}', until_date) else None
+    tweet_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date, filter_media,
+                                                 user_id=artist.site_artist_id, job_id=job_id, job_status=job_status)
+    return populate_artist_recheck_active(artist) if tweet_ids is None else tweet_ids
+
+
+def populate_all_artist_illusts(artist, job_id=None, params=None):
+    if params is None:
+        params = {
+            'type': 'media',
+            'last_id': artist.last_illust_id,
+        }
+    if params['type'] == 'media':
+        return populate_artist_illusts_from_media_timeline(artist, job_id, params['last_id'])
+    if params['type'] == 'search':
+        return populate_artist_illusts_from_search_timeline(artist, job_id, params['search_since'], params['search_until'], params['filter_media'])
+    if params['type'] == 'recover':
+        job_status = get_job_status_data(job_id) or {}
+        return job_status.pop('temp_ids', [])
+    return []

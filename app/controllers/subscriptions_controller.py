@@ -21,7 +21,7 @@ from ..logical.database.jobs_db import get_job_status_data, create_or_update_job
 from ..logical.database.server_info_db import get_subscriptions_ready
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
-    check_param_requirements, nullify_blanks, set_default, hide_input, parse_type
+    check_param_requirements, nullify_blanks, set_default, hide_input, parse_type, parse_bool_parameter
 
 
 # ## GLOBAL VARIABLES
@@ -36,7 +36,7 @@ VALUES_MAP = {
 
 # #### Form
 
-FORM_CONFIG = {
+ITEM_FORM_CONFIG = {
     'artist_id': {
         'name': 'Artist ID',
         'field': IntegerField,
@@ -65,7 +65,19 @@ FORM_CONFIG = {
 # #### Helper functions
 
 def get_subscription_form(**kwargs):
-    return get_form('subscription', FORM_CONFIG, **kwargs)
+    return get_form('subscription', ITEM_FORM_CONFIG, **kwargs)
+
+
+def get_process_form(config, **kwargs):
+    return get_form('process', config, **kwargs)
+
+
+def get_process_data(config, raw_params):
+    form = get_process_form(config, **raw_params)
+    for name, field in form._fields.items():
+        if field.type == 'BooleanField':
+            field.data = parse_bool_parameter(raw_params, name)
+    return form.data
 
 
 def parameter_validation(dataparams, is_update):
@@ -258,15 +270,22 @@ def delete_html(id):
 
 # ###### Misc
 
+@bp.route('/subscriptions/<int:id>/process', methods=['GET'])
+def process_form_html(id):
+    subscription = get_or_abort(Subscription, id)
+    artist = subscription.artist
+    config = artist.site.source.PROCESS_FORM_CONFIG
+    form = get_process_form(config, last_id=artist.last_illust_id)
+    return render_template("subscriptions/process.html", form=form, subscription=subscription)
+
+
 @bp.route('/subscriptions/<int:id>/process', methods=['POST'])
 def process_html(id):
-    if not get_subscriptions_ready():
-        flash("Subscriptions not yet initialized.", 'error')
-        return redirect(request.referrer)
     subscription = get_or_abort(Subscription, id)
-    if subscription.status.name != 'idle':
-        flash("Subscription currently processing.", 'error')
-        return redirect(request.referrer)
+    artist = subscription.artist
+    source = artist.site.source
+    raw_params = get_data_params(request, 'process')
+    data_params = get_process_data(source.PROCESS_FORM_CONFIG, raw_params)
     update_subscription_status(subscription, 'manual')
     job_id = "process_subscription_manual-%d" % subscription.id
     job_status = get_job_status_data(job_id) or {}
@@ -277,37 +296,11 @@ def process_html(id):
         'illusts': 0,
         'elements': 0,
         'downloads': 0,
+        'params': data_params,
     })
     create_or_update_job_status(job_id, job_status)
     SESSION.commit()
-    SCHEDULER.add_job(job_id, process_subscription_manual, args=(subscription.id, job_id, False))
-    flash("Subscription started.")
-    return redirect(url_for('subscription.show_html', id=subscription.id, job=job_id))
-
-
-@bp.route('/subscriptions/<int:id>/recheck', methods=['POST'])
-def recheck_html(id):
-    if not get_subscriptions_ready():
-        flash("Subscriptions not yet initialized.", 'error')
-        return redirect(request.referrer)
-    subscription = get_or_abort(Subscription, id)
-    if subscription.status.name != 'idle':
-        flash("Subscription currently processing.", 'error')
-        return redirect(request.referrer)
-    update_subscription_status(subscription, 'manual')
-    job_id = "process_subscription_manual-%d" % subscription.id
-    job_status = get_job_status_data(job_id) or {}
-    job_status.update({
-        'stage': None,
-        'range': None,
-        'records': 0,
-        'illusts': 0,
-        'elements': 0,
-        'downloads': 0,
-    })
-    create_or_update_job_status(job_id, job_status)
-    SESSION.commit()
-    SCHEDULER.add_job(job_id, process_subscription_manual, args=(subscription.id, job_id, True))
+    SCHEDULER.add_job(job_id, process_subscription_manual, args=(subscription.id, job_id, data_params))
     flash("Subscription started.")
     return redirect(url_for('subscription.show_html', id=subscription.id, job=job_id))
 

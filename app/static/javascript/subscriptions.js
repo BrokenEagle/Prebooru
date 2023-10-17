@@ -114,3 +114,8 @@ Subscriptions.setAllInputsTimeout = function () {
         });
     }, 500);
 };
+
+Subscriptions.changeProcess = function () {
+    let type = [...document.getElementById("process-type").getElementsByTagName('input')].filter((input) => input.checked)[0].value;
+    document.getElementById('form').className = type + '-timeline';
+};

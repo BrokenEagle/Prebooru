@@ -98,6 +98,33 @@ div#subscription-posts {
     margin-top: 2em;
 }
 
+/**** PROCESS Page ****/
+ul#process-type,
+ul#process-type li,
+ul#process-type label,
+ul#process-type input {
+    display: inline-block;
+}
+
+ul#process-type label {
+    font-size: 16px;
+    margin-right: 1em;
+}
+
+form > div.media-timeline,
+form > div.search-timeline,
+form > div.recover-timeline {
+    display: none;
+}
+
+form.media-timeline > div.media-timeline {
+    display: block;
+}
+
+form.search-timeline > div.search-timeline {
+    display: block;
+}
+
 /**** STATUS Page ****/
 
 div#subscription-pending-elements table {

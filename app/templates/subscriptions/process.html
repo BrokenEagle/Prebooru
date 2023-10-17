@@ -1,0 +1,39 @@
+{% extends "subscriptions/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
+
+{% block title %}
+    Process {{ subscription.header }}
+{% endblock title %}
+
+{% block content %}
+    <div id="subscription-process-heading" class="form-heading heading">Process {{ subscription.header }}</div>
+    <div id="subscription-process-info">
+        <ul>
+            <li><b>{{ subscription.artist.show_link }}</b></li>
+            {% if subscription.artist.illust_count > 0 %}
+                {% with first_id, first_created = helpers.artist.first_illust_info(subscription.artist) %}
+                    <li><b>First:</b> {{ first_id }} @ {{ first_created }}</li>
+                {% endwith %}
+                {% with last_id, last_created = helpers.artist.last_illust_info(subscription.artist) %}
+                    <li><b>Last:</b> {{ last_id }} @ {{ last_created }}</li>
+                {% endwith %}
+            {% endif %}
+        </ul>
+    </div>
+    <div id="subscription-process-form">
+        {% call(field_name, field_input) render_form(form, 'POST', url_for('subscription.process_html', id=subscription.id), class='media-timeline') %}
+            {% if field_name == 'type' %}
+                {{ field_input(onclick="Subscriptions.changeProcess()") }}
+            {% else %}
+                {% set classlist = [] %}
+                {% if field_name in ['last_id'] %}
+                    {% do classlist.append('media-timeline') %}
+                {% endif %}
+                {% if field_name in ['search_since', 'search_until', 'filter_media'] %}
+                    {% do classlist.append('search-timeline') %}
+                {% endif %}
+                {{ field_input(classlist=classlist) }}
+            {% endif %}
+        {% endcall %}
+    </div>
+{% endblock content %}
