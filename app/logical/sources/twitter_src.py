@@ -1126,6 +1126,8 @@ def get_twitter_illust_v2(illust_id):
     print("Getting twitter #%d" % illust_id)
     illust_id_str = str(illust_id)
     twitter_data = get_twitter_illust_timeline(illust_id)
+    if is_error(twitter_data):
+        return twitter_data
     for i in range(len(twitter_data)):
         tweet = safe_get(twitter_data[i], 'result', 'legacy')
         if tweet is not None and tweet['id_str'] == illust_id_str:
