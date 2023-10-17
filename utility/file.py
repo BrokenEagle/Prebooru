@@ -25,6 +25,10 @@ def get_file_extension(filepath):
     return filepath[filepath.rfind('.') + 1:]
 
 
+def no_file_extension(filepath):
+    return filepath[:filepath.rfind('.')]
+
+
 def get_directory_path(filepath):
     return str(pathlib.Path(filepath).parent.resolve())
 

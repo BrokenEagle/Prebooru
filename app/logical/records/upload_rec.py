@@ -6,6 +6,7 @@ import itertools
 # ## PACKAGE IMPORTS
 from utility.time import minutes_ago, days_ago
 from utility.data import add_dict_entry
+from utility.file import no_file_extension
 from utility.uprint import buffered_print, print_warning
 
 # ## LOCAL IMPORTS
@@ -160,14 +161,15 @@ def process_network_upload(upload):
     # The artist will have already been created in the create illust step if it didn't exist
     if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist)
-    all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
+    all_upload_urls = [no_file_extension(source.normalize_image_url(upload_url.url)) for upload_url in upload.image_urls]
     upload_elements = upload.elements
     image_upload = source.is_image_url(upload.request_url)
-    normalized_request_url = source.normalize_image_url(upload.request_url) if image_upload else None
+    normalized_request_url = no_file_extension(source.normalize_image_url(upload.request_url)) if image_upload else None
     for illust_url in illust.urls:
-        if image_upload and normalized_request_url != illust_url.url:
+        normalized_illust_url = no_file_extension(illust_url.url)
+        if image_upload and normalized_request_url != normalized_illust_url:
             continue
-        elif (len(all_upload_urls) > 0) and (illust_url.url not in all_upload_urls):
+        elif (len(all_upload_urls) > 0) and (normalized_illust_url not in all_upload_urls):
             continue
         element = next((element for element in upload_elements if element.illust_url_id == illust_url.id), None)
         if element is None:
