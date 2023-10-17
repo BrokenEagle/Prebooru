@@ -18,7 +18,6 @@ from ..logical.database.subscription_db import create_subscription_from_paramete
     update_subscription_from_parameters, update_subscription_status, delay_subscription_elements,\
     delete_subscription, get_average_interval_for_subscriptions
 from ..logical.database.jobs_db import get_job_status_data, create_or_update_job_status
-from ..logical.database.server_info_db import get_subscriptions_ready
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
     check_param_requirements, nullify_blanks, set_default, hide_input, parse_type, parse_bool_parameter

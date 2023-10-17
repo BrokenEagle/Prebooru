@@ -161,7 +161,8 @@ def process_network_upload(upload):
     # The artist will have already been created in the create illust step if it didn't exist
     if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist)
-    all_upload_urls = [no_file_extension(source.normalize_image_url(upload_url.url)) for upload_url in upload.image_urls]
+    all_upload_urls = [no_file_extension(source.normalize_image_url(upload_url.url))
+                       for upload_url in upload.image_urls]
     upload_elements = upload.elements
     image_upload = source.is_image_url(upload.request_url)
     normalized_request_url = no_file_extension(source.normalize_image_url(upload.request_url)) if image_upload else None

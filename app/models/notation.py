@@ -38,7 +38,8 @@ class Notation(JsonModel):
 
     @property
     def append_item(self):
-        return self.subscription or self.booru or self.artist or self.illust or self.post or (self._pool if not self.no_pool else None)
+        return self.subscription or self.booru or self.artist or self.illust or self.post or\
+            (self._pool if not self.no_pool else None)
 
     @property
     def append_type(self):

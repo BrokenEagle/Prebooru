@@ -150,7 +150,10 @@ def danbooru_post_bookmarklet_links(post):
         illust = illust_url.illust
         artist = illust.artist
         if not illust.active or not artist.active:
-            url = DANBOORU_HOSTNAME + f'/uploads/new?prebooru_post_id={post.id}&prebooru_illust_id={illust.id}&prebooru_server={SERVER_INFO.addr}:{PREBOORU_PORT}'
+            url_parameters = f'prebooru_post_id={post.id}&' +\
+                             f'prebooru_illust_id={illust.id}&' +\
+                             f'prebooru_server={SERVER_INFO.addr}:{PREBOORU_PORT}'
+            url = DANBOORU_HOSTNAME + '/uploads/new?' + url_parameters
             image_links.append(external_link(f'file #{illust.id}', url))
             continue
         source = illust.site.source
