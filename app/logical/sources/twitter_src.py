@@ -1209,15 +1209,15 @@ def get_illust_tags(tweet):
     return list(set(entry['text'].lower() for entry in tag_data))
 
 
-def get_illust_url_info(entry):
+def get_illust_url_info(entry, media_type):
     query_addon = ""
-    if entry['type'] == 'photo':
+    if entry['type'] == 'photo' or (media_type == 'image' and entry['type'] == 'animated_gif'):
         parse = urllib.parse.urlparse(entry['media_url_https'])
         dimensions = (entry['original_info']['width'], entry['original_info']['height'])
         match = IMAGE2_RG.match(entry['media_url_https'])
         if match:
             query_addon = '?format=%s' % match.group(3)
-    elif entry['type'] == 'video' or entry['type'] == 'animated_gif':
+    elif entry['type'] == 'video' or (media_type == 'video' and entry['type'] == 'animated_gif'):
         variants = entry['video_info']['variants']
         valid_variants = [variant for variant in variants if 'bitrate' in variant]
         max_bitrate = max(map(lambda x: x['bitrate'], valid_variants))
@@ -1251,7 +1251,7 @@ def get_tweet_image_urls(tweet):
     illust_urls = []
     url_data = safe_get(tweet, 'entities', 'media') or []
     for i in range(len(url_data)):
-        url, site, dimensions = get_illust_url_info(url_data[i])
+        url, site, dimensions = get_illust_url_info(url_data[i], 'image')
         if url is None:
             continue
         illust_urls.append({
@@ -1271,7 +1271,7 @@ def get_tweet_video_urls(tweet):
     for i in range(len(url_data)):
         if url_data[i]['type'] not in ['animated_gif', 'video']:
             continue
-        url, site, dimensions = get_illust_url_info(url_data[i])
+        url, site, dimensions = get_illust_url_info(url_data[i], 'video')
         if url is None:
             continue
         video_urls.append({
