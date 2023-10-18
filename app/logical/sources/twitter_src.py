@@ -731,8 +731,8 @@ def source_prework(site_illust_id):
     twusers = []
     user_ids = set()
     for i in range(len(twitter_data)):
-        id_str = safe_get(twitter_data[i], 'result', 'core', 'user', 'rest_id')
-        user = safe_get(twitter_data[i], 'result', 'core', 'user', 'legacy')
+        id_str = safe_get(twitter_data[i], 'result', 'core', 'user_results', 'result', 'rest_id')
+        user = safe_get(twitter_data[i], 'result', 'core', 'user_results', 'result', 'legacy')
         if user is None or id_str in user_ids:
             continue
         user['id_str'] = id_str
