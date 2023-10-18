@@ -110,8 +110,8 @@ def upgrade_():
         batch_op.create_index(batch_op.f('ix_media_asset_md5'), ['md5'], unique=True)
 
 def downgrade_():
-    with op.batch_alter_table('media_asset', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_media_asset_md5'))
+    #with op.batch_alter_table('media_asset', schema=None) as batch_op:
+    #    batch_op.drop_index(batch_op.f('ix_media_asset_md5'))
 
     op.drop_table('media_asset')
     op.drop_table('media_asset_location')
