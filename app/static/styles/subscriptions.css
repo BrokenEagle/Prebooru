@@ -94,11 +94,11 @@ div#subscription-site-content-2 {
     padding: 5px;
 }
 
-div#subscription-intervals {
+section#subscription-intervals {
     width: 50%;
 }
 
-div#subscription-job {
+section#subscription-job {
     width: 50%;
 }
 
