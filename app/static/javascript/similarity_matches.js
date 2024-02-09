@@ -40,7 +40,6 @@ SimilarityMatches.updateAllInputs = function() {
 };
 
 SimilarityMatches.submitForm = function (event, type) {
-    event.preventDefault();
     let msg = (type === 'pool' ? "Remove all similarity matches?" : "Remove all selected similarity matches?");
     if (confirm(msg)) {
         document.getElementById('form').submit();
