@@ -65,7 +65,12 @@ def element_search_link(subscription):
     return general_link('»', element_search(subscription))
 
 
-def process_subscription_link(subscription):
+def process_subscription_link_auto(subscription):
+    url = url_for('subscription.process_form_html', id=subscription.id, type="auto")
+    return general_link("Automatic process", url, method="POST")
+
+
+def process_subscription_link_manual(subscription):
     url = url_for('subscription.process_form_html', id=subscription.id)
     return general_link("Manual process", url, method="GET")
 

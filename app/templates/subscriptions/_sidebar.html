@@ -14,7 +14,8 @@
         <h4>Options</h4>
         <ul>
             {% if subscription.status.name == 'idle' %}
-                <li>{{ helpers.subscription.process_subscription_link(subscription) }}</li>
+                <li>{{ helpers.subscription.process_subscription_link_auto(subscription) }}</li>
+                <li>{{ helpers.subscription.process_subscription_link_manual(subscription) }}</li>
             {% endif %}
             <li>{{ helpers.subscription.add_notation_link(subscription) }}</li>
             <li>{{ helpers.subscription.delay_subscription_link(subscription) }}</li>
