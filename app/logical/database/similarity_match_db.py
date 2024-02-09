@@ -46,20 +46,20 @@ def update_similarity_match_from_parameters(similarity_match, updateparams):
 
 # ###### DELETE
 
-def delete_similarity_match(similarity_match):
+def delete_similarity_match(similarity_match, commit=False):
     SESSION.delete(similarity_match)
-    SESSION.flush()
+    _commit_or_flush(commit)
 
 
-def batch_delete_similarity_matches(similarity_matches):
+def batch_delete_similarity_matches(similarity_matches, commit=False):
     for similarity_match in similarity_matches:
         SESSION.delete(similarity_match)
-    SESSION.flush()
+    _commit_or_flush(commit)
 
 
-def delete_similarity_matches_by_post_id(post_id):
+def delete_similarity_matches_by_post_id(post_id, commit=False):
     SimilarityMatch.query.filter(_post_id_clause(post_id)).delete()
-    SESSION.flush()
+    _commit_or_flush(commit)
 
 
 # ###### Query
@@ -72,3 +72,10 @@ def get_similarity_matches_by_post_id(post_id):
 
 def _post_id_clause(post_id):
     return or_(SimilarityMatch.forward_id == post_id, SimilarityMatch.reverse_id == post_id)
+
+
+def _commit_or_flush(commit):
+    if commit:
+        SESSION.commit()
+    else:
+        SESSION.flush()

@@ -9,7 +9,6 @@ from sqlalchemy import and_, or_, tuple_
 from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
-from .. import SESSION
 from ..models import SimilarityMatch
 from ..logical.utility import search_url_for
 from ..logical.searchable import numeric_filters
@@ -101,7 +100,7 @@ def delete_html():
     reverse_id = request.values.get('reverse_id', type=int)
     if isinstance(forward_id, int) and isinstance(reverse_id, int):
         similarity_match = get_or_abort(SimilarityMatch, forward_id, reverse_id)
-        delete_similarity_match(similarity_match)
+        delete_similarity_match(similarity_match, True)
         flash("Removed from post.")
     else:
         flash("Parameters forward_id and reverse_id not included.", 'error')
@@ -118,7 +117,7 @@ def delete_json():
             return element
     else:
         return {'error': True, 'message': "Parameters forward_id and reverse_id not included."}
-    delete_similarity_match(element)
+    delete_similarity_match(element, True)
     return {'error': False}
 
 
@@ -135,8 +134,7 @@ def batch_delete_html():
     if len(similarity_matches) == 0:
         flash("Found no elements to delete with parameters.")
         return redirect(request.referrer)
-    batch_delete_similarity_matches(similarity_matches)
-    SESSION.commit()
+    batch_delete_similarity_matches(similarity_matches, True)
     flash("Removed elements from post.")
     return redirect(request.referrer)
 
