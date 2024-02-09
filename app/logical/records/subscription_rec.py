@@ -280,8 +280,11 @@ def redownload_element(element):
     def try_func(scope_vars):
         nonlocal element
         initial_errors = [error.id for error in element.errors]
-        if convert_network_subscription(element):
+        if convert_network_subscription(element) and element.post_id is not None:
             update_subscription_element_status(element, 'active')
+            if element.post.is_video:
+                SessionThread(target=convert_mp4_to_webp,
+                              args=(element.post.file_path, element.post.video_preview_path)).start()
             return {'error': False}
         elif element.status.name == 'duplicate':
             post = element.illust_url.post
