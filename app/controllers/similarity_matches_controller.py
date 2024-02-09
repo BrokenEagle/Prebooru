@@ -28,6 +28,7 @@ INDEX_HTML_OPTIONS = (
 )
 
 NORMAL_ORDER = (SimilarityMatch.forward_id.desc(), SimilarityMatch.reverse_id.desc())
+REVERSE_ORDER = (SimilarityMatch.reverse_id.desc(), SimilarityMatch.forward_id.desc())
 
 MAX_LIMIT_HTML = 100
 
@@ -55,6 +56,10 @@ def index():
         ))
     if search.get('order') == 'score':
         q = q.order_by(SimilarityMatch.score.desc(), *NORMAL_ORDER)
+    if search.get('order') == 'reverse_score':
+        q = q.order_by(SimilarityMatch.score.desc(), *REVERSE_ORDER)
+    elif search.get('order') == 'reverse':
+        q = q.order_by(*REVERSE_ORDER)
     else:
         q = q.order_by(*NORMAL_ORDER)
     return q
