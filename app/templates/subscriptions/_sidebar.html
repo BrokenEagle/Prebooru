@@ -1,5 +1,6 @@
 {% from "boorus/_macros.html" import boorus_section %}
 {% from "artists/_macros.html" import artists_section %}
+{% from "illusts/_macros.html" import illusts_display %}
 {% from "notations/_macros.html" import notations_section %}
 {% from "errors/_macros.html" import errors_section %}
 {% from "layouts/_macros.html" import timestamps_section %}
@@ -7,6 +8,7 @@
 <div id="subscription-sidebar">
     {{ boorus_section(subscription.artist.boorus, 'subscription-boorus') }}
     {{ artists_section(subscription.artist, 'subscription-artist') }}
+    {{ illusts_display(helpers.subscription.illust_search(subscription), subscription.illust_count, 'subscription-illusts', False) }}
     {{ notations_section(subscription.notations, 'subscription-notations') }}
     {{ errors_section(subscription.errors, 'subscription-errors') }}
     {{ timestamps_section(subscription, 'subscription-timestamps', other_timestamps=['requery']) }}
