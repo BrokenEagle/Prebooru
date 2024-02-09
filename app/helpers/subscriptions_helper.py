@@ -243,7 +243,7 @@ def keep_element_link(subscription_element, value, has_preview):
 
 
 def element_type_link(element_type):
-    active_type = request.args.get('type') or 'undecided'
+    active_type = request.args.get('type') or 'all'
     classes = ['element-type'] + [element_type + '-type'] + (['type-active'] if active_type == element_type else [])
     url = url_for_with_params('subscription_element.index_html', type=element_type, page=None)
     return general_link(element_type.title(), url, **{'class': ' '.join(classes)})

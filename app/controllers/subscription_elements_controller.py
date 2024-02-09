@@ -90,12 +90,12 @@ def index_html():
     q = index()
     element_type = request.args.get('type')
     if request.args.get('search[keep]') is None:
-        if element_type != 'all':
+        if element_type in ['yes', 'no', 'maybe', 'archive', 'undecided']:
             q = q.filter(SubscriptionElement.post_id.__ne__(None))
         q = q.enum_join(SubscriptionElement.keep_enum)
         if element_type in ['yes', 'no', 'maybe', 'archive']:
             q = q.filter(SubscriptionElement.keep_filter('name', '__eq__', element_type))
-        elif element_type == 'undecided' or element_type is None:
+        elif element_type == 'undecided':
             q = q.filter(SubscriptionElement.keep_filter('name', 'is_', None))
     q = q.options(INDEX_HTML_OPTIONS)
     elements = paginate(q, request, MAX_LIMIT_HTML)
