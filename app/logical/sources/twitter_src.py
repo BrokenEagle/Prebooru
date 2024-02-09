@@ -999,7 +999,7 @@ def get_graphql_timeline_entries(data, found_tweets):
 
 
 def get_graphql_timeline_entries_v2(data, retdata=None):
-    retdata = retdata or {'tweets': {}, 'retweets': {}, 'users': {}, 'cursors': {}}
+    retdata = retdata or {'tweets': {}, 'retweets': {}, 'users': {}, 'cursors': {}, 'retweeted_ids': []}
     for key in data:
         if key == '__typename':
             if data[key] == 'TweetWithVisibilityResults' and 'tweet' in data and 'legacy' in data['tweet']:
@@ -1019,14 +1019,20 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
                 continue
             if 'rest_id' not in node_data:
                 continue
+            if key == 'retweets':
+                retweet = get_graphql_timeline_entries_v2(node_data['legacy']['retweeted_status_result'])
+                retweet_id = node_data['legacy']['retweet_id'] = next(key for key in retweet['tweets'])
+                retdata['retweeted_ids'].append(retweet_id)
             item = node_data['legacy']
             id_str = item['id_str'] = node_data['rest_id']
+            if id_str in retdata['retweeted_ids']:
+                continue
             retdata[key][id_str] = node_data['legacy']
         elif type(data[key]) is list:
             for i in range(len(data[key])):
-                if type(data[key][i]) is dict:
+                if type(data[key][i]) is dict and not ('type' in data[key][i] and data[key][i]['type'] == 'TimelinePinEntry'):
                     retdata = get_graphql_timeline_entries_v2(data[key][i], retdata)
-        elif type(data[key]) is dict:
+        elif type(data[key]) is dict and not ('type' in data[key] and data[key]['type'] == 'TimelinePinEntry'):
             retdata = get_graphql_timeline_entries_v2(data[key], retdata)
     return retdata
 
