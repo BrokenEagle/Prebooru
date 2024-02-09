@@ -1126,8 +1126,12 @@ def populate_twitter_search_timeline(account, since_date, until_date, filter_lin
     query = f"from:{account}"
     if since_date is not None:
         query += f" since:{since_date}"
+    else:
+        since_date = ""
     if until_date is not None:
         query += f" until:{until_date}"
+    else:
+        until_date = ""
     if filter_links:
         query += " filter:links"
     print("Populating from search page: %s" % query)
@@ -1467,8 +1471,8 @@ def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, unt
         job_status.pop('temp_ids', None)
         job_status['timeline'] = 'search'
     job_status['stage'] = 'querying'
-    since_date = since_date if re.match(r'\d{4}-\d{2}-\d{2}', since_date) else None
-    until_date = until_date if re.match(r'\d{4}-\d{2}-\d{2}', until_date) else None
+    since_date = since_date if since_date is not None and re.match(r'\d{4}-\d{2}-\d{2}', since_date) else None
+    until_date = until_date if until_date is not None and re.match(r'\d{4}-\d{2}-\d{2}', until_date) else None
     tweet_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date, filter_links,
                                                  user_id=artist.site_artist_id, job_id=job_id, job_status=job_status)
     return populate_artist_recheck_active(artist) if tweet_ids is None else tweet_ids
