@@ -1,8 +1,15 @@
 # APP/LOGICAL/DOWNLOADER/NETWORK_DL.PY
 
+# ## PYTHON IMPORTS
+import os
+
+# ### PACKAGE IMPORTS
+from config import TEMP_DIRECTORY
+from utility.file import put_get_raw, delete_file
+
 # ## LOCAL IMPORTS
 from ..network import get_http_data
-from ..media import get_pixel_hash
+from ..media import get_pixel_hash, create_video_screenshot
 from ...models import Post
 from ..database.post_db import create_post_and_add_illust_url, update_post_from_parameters
 from ..database.error_db import create_error, append_error, extend_errors, is_error
@@ -125,8 +132,17 @@ def create_video_post(record, post_type):
     vinfo = check_video_info(temppost, illust_url, post_errors)
     thumb_binary = download_media(illust_url, record, True)
     if isinstance(thumb_binary, list):
-        return post_errors + thumb_binary
-    save_thumb(thumb_binary, temppost, post_errors)
+        post_errors.extend(thumb_binary)
+        save_path = os.path.join(TEMP_DIRECTORY, temppost.md5 + '.' + 'jpg')
+        error = create_video_screenshot(temppost.file_path, save_path)
+        if error is not None:
+            post_errors.append(error)
+            thumb_binary = None
+        else:
+            thumb_binary = put_get_raw(save_path, 'rb')
+            delete_file(save_path)
+    if thumb_binary is not None:
+        save_thumb(thumb_binary, temppost, post_errors)
     post = create_post_and_add_illust_url(illust_url, vinfo['width'], vinfo['height'], video_file_ext, md5, len(buffer),
                                           post_type, None, vinfo['duration'], vinfo['audio'])
     if len(post_errors):
