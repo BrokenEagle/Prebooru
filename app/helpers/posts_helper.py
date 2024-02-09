@@ -191,8 +191,9 @@ def add_notation_link(post):
 
 
 def add_tag_link(post):
+    url = url_for('tag.append_item_index_json', preview='true')
     addons = {'onclick': "return Prebooru.addTag(this, 'post')", 'data-post-id': post.id}
-    return general_link("Add tag", url_for('tag.append_item_index_html'), **addons)
+    return general_link("Add tag", url, **addons)
 
 
 def add_to_pool_link(post):

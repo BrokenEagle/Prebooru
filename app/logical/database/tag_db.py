@@ -33,7 +33,7 @@ def create_tag_from_parameters(createparams):
 
 
 def append_tag_to_item(tag, append_key, dataparams):
-    retdata = {'error': False}
+    retdata = {'error': False, 'item': tag.to_json()}
     model = ID_MODEL_DICT[append_key]
     item = model.find(dataparams[append_key])
     table_name = model.__table__.name
@@ -44,11 +44,12 @@ def append_tag_to_item(tag, append_key, dataparams):
         return set_error(retdata, "Tag '%s' already added to %s." % (tag.name, item.shortlink))
     item._tags.append(tag)
     SESSION.commit()
+    retdata['append'] = item.to_json()
     return retdata
 
 
 def remove_tag_from_item(tag, remove_key, dataparams):
-    retdata = {'error': False}
+    retdata = {'error': False, 'item': tag.to_json()}
     model = ID_MODEL_DICT[remove_key]
     item = model.find(dataparams[remove_key])
     table_name = model.__table__.name
@@ -59,4 +60,5 @@ def remove_tag_from_item(tag, remove_key, dataparams):
         return set_error(retdata, "Tag '%s' does not exist on %s." % (tag.name, item.shortlink))
     item._tags.remove(tag)
     SESSION.commit()
+    retdata['remove'] = item.to_json()
     return retdata

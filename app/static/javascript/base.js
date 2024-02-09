@@ -71,11 +71,42 @@ Prebooru.deletePool = function(obj) {
 };
 
 Prebooru.addTag = function (obj, type) {
+    let $section = document.querySelector('#tag-list');
     let item_id = obj.dataset[type + 'Id'];
     let tag_name = prompt("Enter tag name to add:");
     if (tag_name !== null) {
-        Prebooru.postRequest(obj.href, {'tag[name]': tag_name, [`tag[${type}_id]`]: item_id});
+        let data = new FormData();
+        data.append('tag[name]', tag_name);
+        data.append(`tag[${type}_id]`, item_id);
+        fetch(obj.href, {method: 'POST', body: data})
+            .then((resp) => resp.json())
+            .then((data) => {
+                if (data.error) {
+                    Prebooru.error(data.message);
+                } else {
+                    Prebooru.message(`Added ${type} #${item_id} to pool.`);
+                    $section.outerHTML = data.html;
+                }
+            });
     }
+    return false;
+};
+
+Prebooru.removeTag = function (obj, type) {
+    let $section = document.querySelector('#tag-list');
+    let item_id = obj.dataset[type + 'Id'];
+    let data = new FormData();
+    data.append(`tag[${type}_id]`, item_id);
+    fetch(obj.href, {method: 'DELETE', body: data})
+        .then((resp) => resp.json())
+        .then((data) => {
+            if (data.error) {
+                Prebooru.error(data.message);
+            } else {
+                Prebooru.message(`Removed tag #${item_id} from ${type} #${item_id}.`);
+                $section.outerHTML = data.html;
+            }
+        });
     return false;
 };
 
