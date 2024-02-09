@@ -71,8 +71,7 @@ def update_subscription_requery(subscription, timeval):
     SESSION.commit()
 
 
-def update_subscription_last_info(subscription, last_id):
-    subscription.last_id = last_id
+def update_subscription_last_info(subscription):
     subscription.checked = get_current_time()
     SESSION.commit()
 
