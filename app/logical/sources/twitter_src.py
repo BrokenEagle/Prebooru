@@ -1259,7 +1259,7 @@ def get_illust_tags(tweet):
 
 def get_illust_url_info(entry, media_type):
     query_addon = ""
-    if entry['type'] == 'photo' or (media_type == 'image' and entry['type'] == 'animated_gif'):
+    if entry['type'] == 'photo' or (media_type == 'image' and entry['type'] in ['animated_gif', 'video']):
         parse = urllib.parse.urlparse(entry['media_url_https'])
         dimensions = (entry['original_info']['width'], entry['original_info']['height'])
         match = IMAGE2_RG.match(entry['media_url_https'])
