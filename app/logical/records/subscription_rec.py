@@ -21,7 +21,6 @@ from ..searchable import search_attributes
 from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..downloader.network_dl import convert_network_subscription
-from ..records.post_rec import recreate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
     update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query,\
     update_subscription_element_keep
@@ -35,6 +34,7 @@ from ..database.subscription_element_db import unlink_subscription_post, delete_
 from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
     add_subscription_error, update_subscription_status, check_processing_subscriptions
 from ..database.base_db import safe_db_execute
+from .post_rec import recreate_archived_post
 from .artist_rec import update_artist
 from .image_hash_rec import generate_post_image_hashes
 
@@ -219,9 +219,9 @@ def delete_expired_subscription_elements(manual):
     while True:
         print(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
-            print(f"Deleting post of {element.shortlink}")
-            delete_subscription_post(element)
-            deleted_elements.append(element.id)
+            if delete_subscription_post(element):
+                print(f"Deleting post of {element.shortlink}")
+                deleted_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
@@ -237,9 +237,9 @@ def archive_expired_subscription_elements(manual):
     while True:
         print(f"\nexpire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
-            print(f"Archiving post of {element.shortlink}")
-            archive_subscription_post(element)
-            archived_elements.append(element.id)
+            if archive_subscription_post(element):
+                print(f"Archiving post of {element.shortlink}")
+                archived_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()

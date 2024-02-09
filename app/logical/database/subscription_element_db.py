@@ -1,10 +1,13 @@
 # APP/LOGICAL/DATABASE/SUBSCRIPTION_ELEMENT_DB.PY
 
+# ## PYTHON IMPORTS
+import os
+
 # ## EXTERNAL IMPORTS
 from sqlalchemy import and_, or_
 
 # ## PACKAGE IMPORTS
-from config import EXPIRED_SUBSCRIPTION
+from config import EXPIRED_SUBSCRIPTION, ALTERNATE_MEDIA_DIRECTORY
 from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
@@ -84,14 +87,19 @@ def unlink_subscription_post(element):
 
 def delete_subscription_post(element):
     if element.post is not None:
+        if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+            return False
         delete_post_and_media(element.post)
     element.expires = None
     element.status_id = subscription_element_status.deleted.id
     SESSION.commit()
+    return True
 
 
 def archive_subscription_post(element):
     if element.post is not None:
+        if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+            return False
         archive_post_for_deletion(element.post, None)
     element.expires = None
     element.status_id = subscription_element_status.archived.id
