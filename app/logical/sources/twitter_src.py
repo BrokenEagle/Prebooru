@@ -393,7 +393,7 @@ PROCESS_FORM_CONFIG = {
     'search_until': {
         'field': TextField,
     },
-    'filter_media': {
+    'filter_links': {
         'field': BooleanField,
         'kwargs': {
             'default': False,
@@ -1121,15 +1121,15 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
         if isinstance(tweet_ids, str) else tweet_ids
 
 
-def populate_twitter_search_timeline(account, since_date, until_date, filter_media,
+def populate_twitter_search_timeline(account, since_date, until_date, filter_links,
                                      job_id=None, job_status={}, **kwargs):
     query = f"from:{account}"
     if since_date is not None:
         query += f" since:{since_date}"
     if until_date is not None:
         query += f" until:{until_date}"
-    if filter_media:
-        query += " filter:media"
+    if filter_links:
+        query += " filter:links"
     print("Populating from search page: %s" % query)
 
     def page_func(cursor, **kwargs):
@@ -1460,7 +1460,7 @@ def populate_artist_illusts_from_media_timeline(artist, job_id, last_id):
     return populate_artist_recheck_active(artist) if tweet_ids is None else tweet_ids
 
 
-def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, until_date, filter_media):
+def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, until_date, filter_links):
     job_status = get_job_status_data(job_id) or {}
     if job_status.get('timeline') != 'search':
         job_status.pop('ids', None)
@@ -1469,7 +1469,7 @@ def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, unt
     job_status['stage'] = 'querying'
     since_date = since_date if re.match(r'\d{4}-\d{2}-\d{2}', since_date) else None
     until_date = until_date if re.match(r'\d{4}-\d{2}-\d{2}', until_date) else None
-    tweet_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date, filter_media,
+    tweet_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date, filter_links,
                                                  user_id=artist.site_artist_id, job_id=job_id, job_status=job_status)
     return populate_artist_recheck_active(artist) if tweet_ids is None else tweet_ids
 
@@ -1484,7 +1484,7 @@ def populate_all_artist_illusts(artist, job_id=None, params=None):
         return populate_artist_illusts_from_media_timeline(artist, job_id, params['last_id'])
     if params['type'] == 'search':
         return populate_artist_illusts_from_search_timeline(artist, job_id, params['search_since'],
-                                                            params['search_until'], params['filter_media'])
+                                                            params['search_until'], params['filter_links'])
     if params['type'] == 'recover':
         job_status = get_job_status_data(job_id) or {}
         return job_status.pop('temp_ids', [])

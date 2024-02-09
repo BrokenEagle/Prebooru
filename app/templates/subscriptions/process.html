@@ -29,7 +29,7 @@
                 {% if field_name in ['last_id'] %}
                     {% do classlist.append('media-timeline') %}
                 {% endif %}
-                {% if field_name in ['search_since', 'search_until', 'filter_media'] %}
+                {% if field_name in ['search_since', 'search_until', 'filter_links'] %}
                     {% do classlist.append('search-timeline') %}
                 {% endif %}
                 {{ field_input(classlist=classlist) }}
