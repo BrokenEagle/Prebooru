@@ -12,7 +12,16 @@
 
 {% macro elements_display(element_search_url, element_count, section_id) -%}
     <div id="{{ section_id }}">
-        <span class="heading">Elements</span> (&thinsp;{{ element_count }}&thinsp;) {{ helpers.base.general_link('»', element_search_url) }}
+        <span class="heading">Elements</span> (&thinsp;{{ element_count }}&thinsp;)
+            <span style="font-size: 0.8em;">
+            [
+                {{ helpers.base.general_link('all', element_search_url + '&type=all') }} |
+                {{ helpers.base.general_link('yes', element_search_url, type='yes') }} |
+                {{ helpers.base.general_link('no', element_search_url + '&type=no') }} |
+                {{ helpers.base.general_link('maybe', element_search_url + '&type=maybe') }} |
+                {{ helpers.base.general_link('undecided', element_search_url + '&type=undecided') }}
+            ]
+            </span>
     </div>
 {%- endmacro %}
 
