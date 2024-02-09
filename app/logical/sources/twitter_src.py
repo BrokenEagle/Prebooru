@@ -31,6 +31,7 @@ from ..database.artist_db import inactivate_artist
 from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
+from ..records.artist_rec import update_artist
 
 
 # ## GLOBAL VARIABLES
@@ -1480,6 +1481,9 @@ def populate_artist_illusts_from_media_timeline(artist, job_id, last_id):
 
 
 def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, until_date, filter_links):
+    # Get the lastest screenname for the search timeline
+    params = get_artist_data(artist.site_artist_id)
+    update_artist(artist, params)
     job_status = get_job_status_data(job_id) or {}
     if job_status.get('timeline') != 'search':
         job_status.pop('ids', None)
