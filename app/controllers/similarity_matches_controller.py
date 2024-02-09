@@ -51,7 +51,7 @@ def index():
             and_(*numeric_filters(SimilarityMatch, 'reverse_id', reverse_params)),
         ))
     if search.get('order') == 'score':
-        q.order_by(SimilarityMatch.score.desc(), *NORMAL_ORDER)
+        q = q.order_by(SimilarityMatch.score.desc(), *NORMAL_ORDER)
     else:
         q = q.order_by(*NORMAL_ORDER)
     return q
