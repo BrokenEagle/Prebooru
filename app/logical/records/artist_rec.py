@@ -90,6 +90,10 @@ def create_artist_from_source(site_artist_id, source):
 def update_artist_from_source(artist):
     source = artist.site.source
     params = source.get_artist_data(artist.site_artist_id)
+    update_artist(artist, params)
+
+
+def update_artist(artist, params):
     if params['active']:
         # These are only removable through the HTML/JSON UPDATE routes
         params['webpages'] += ['-' + w.url for w in artist.webpages if w.url not in params['webpages']]

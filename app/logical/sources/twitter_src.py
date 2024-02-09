@@ -806,7 +806,7 @@ def get_twitter_scroll_bottom_cursor(data):
                 return cursor
 
 
-def timeline_iterator(data, cursor, tweet_ids, user_id=None, last_id=None, v2=False, **kwargs):
+def timeline_iterator(data, cursor, tweet_ids, seen_users, user_id=None, last_id=None, v2=False, **kwargs):
     if v2:
         results = get_graphql_timeline_entries_v2(data['body'])
     else:
@@ -825,8 +825,10 @@ def timeline_iterator(data, cursor, tweet_ids, user_id=None, last_id=None, v2=Fa
     media_tweets = [tweet for tweet in tweets if safe_get(tweet, 'entities', 'media')]
     save_api_data(media_tweets, 'id_str', SITE.id, api_data_type.illust.id)
     user_tweets = [tweet for tweet in media_tweets if user_id is None or tweet['user_id_str'] == str(user_id)]
-    new_ids = [int(tweet['id_str']) for tweet in user_tweets]
-    tweet_ids.extend(new_ids)
+    tweet_ids.extend(int(tweet['id_str']) for tweet in user_tweets)
+    twusers = [twuser for twuser in results['users'].values() if twuser['id_str'] not in seen_users]
+    save_api_data(twusers, 'id_str', SITE.id, api_data_type.artist.id)
+    seen_users.extend(twuser['id_str'] for twuser in twusers)
     if last_id is not None and any(x for x in tweet_ids if x <= last_id):
         valid_ids = [x for x in tweet_ids if x > last_id]
         tweet_ids.clear()
@@ -844,6 +846,7 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
     page = 1
     cursor = [None]
     tweet_ids = []
+    seen_users = []
     lowest_tweet_id = None
     count = 0
     while True:
@@ -863,7 +866,7 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
             update_job_status(job_id, job_status)
             count = len(tweet_ids)
         old_tweet_ids = tweet_ids.copy()
-        result = timeline_iterator(data, cursor, tweet_ids, **kwargs)
+        result = timeline_iterator(data, cursor, tweet_ids, seen_users, **kwargs)
         if result is None:
             print(f"No media tweets found on page #{page}")
             return

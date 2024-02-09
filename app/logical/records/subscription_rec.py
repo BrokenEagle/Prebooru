@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from config import POPULATE_ELEMENTS_PER_PAGE, SYNC_MISSING_ILLUSTS_PER_PAGE, DOWNLOAD_POSTS_PER_PAGE,\
     UNLINK_ELEMENTS_PER_PAGE, DELETE_ELEMENTS_PER_PAGE, ARCHIVE_ELEMENTS_PER_PAGE,\
     DOWNLOAD_POSTS_PAGE_LIMIT, EXPIRE_ELEMENTS_PAGE_LIMIT
-from utility.time import days_from_now, hours_from_now
+from utility.time import days_from_now, hours_from_now, days_ago
 from utility.uprint import buffered_print, print_info
 
 # ## LOCAL IMPORTS
@@ -35,6 +35,7 @@ from ..database.subscription_element_db import unlink_subscription_post, delete_
 from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
     add_subscription_error, update_subscription_status, check_processing_subscriptions
 from ..database.base_db import safe_db_execute
+from .artist_rec import update_artist
 from .image_hash_rec import generate_post_image_hashes
 
 
@@ -116,6 +117,9 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
     if is_error(site_illust_ids):
         add_subscription_error(subscription, site_illust_ids)
         return
+    if artist.updated < days_ago(1):
+        params = source.get_artist_data(artist.site_artist_id)
+        update_artist(artist, params)
     site_illust_ids = sorted(x for x in set(site_illust_ids))
     job_status = get_job_status_data(job_id) or {'illusts': 0}
     job_status['stage'] = 'illusts'
