@@ -75,7 +75,7 @@ def check_existing(buffer, illust_url, record):
         return None
     if record.model_name == 'subscription_element' and record.status_name != 'deleted':
         record.md5 = md5  # Set the MD5 now so that the count function can be used
-        if record.duplicate_element_count > 1:
+        if record.duplicate_element_count > 0:
             duplicate_subscription_post(record, md5)
             return None
     return md5
