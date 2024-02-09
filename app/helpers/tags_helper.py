@@ -41,5 +41,9 @@ def tag_search_links(tag):
 
 def remove_tag_link(tag, item_type, item_id):
     url = url_for('tag.remove_item_show_json', id=tag.id, preview='true')
-    addons = {'onclick': f"return Prebooru.removeTag(this, '{item_type}')", f'data-{item_type}-id': item_id, 'class': 'warning-link'}
+    addons = {
+        'onclick': f"return Prebooru.removeTag(this, '{item_type}')",
+        f'data-{item_type}-id': item_id,
+        'class': 'warning-link'
+    }
     return general_link("remove", url, **addons)

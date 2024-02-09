@@ -1031,7 +1031,8 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
             retdata[key][id_str] = node_data['legacy']
         elif type(data[key]) is list:
             for i in range(len(data[key])):
-                if type(data[key][i]) is dict and not ('type' in data[key][i] and data[key][i]['type'] == 'TimelinePinEntry'):
+                if type(data[key][i]) is dict and not ('type' in data[key][i]
+                                                       and data[key][i]['type'] == 'TimelinePinEntry'):
                     retdata = get_graphql_timeline_entries_v2(data[key][i], retdata)
         elif type(data[key]) is dict and not ('type' in data[key] and data[key]['type'] == 'TimelinePinEntry'):
             retdata = get_graphql_timeline_entries_v2(data[key], retdata)
@@ -1505,7 +1506,10 @@ def populate_all_artist_illusts(artist, job_id=None, params=None):
         }
     elif params['type'] == 'search':
         params['last_id'] = None
-    if params['type'] == 'search' and params['search_since'] is None and params['search_until'] is None and params['last_id'] is None:
+    if params['type'] == 'search'\
+       and params['search_since'] is None\
+       and params['search_until'] is None\
+       and params['last_id'] is None:
         raise Exception("Invalid process parameters for search timeline.")
     if params['type'] == 'media':
         return populate_artist_illusts_from_media_timeline(artist, job_id, params['last_id'])

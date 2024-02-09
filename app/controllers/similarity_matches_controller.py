@@ -14,7 +14,7 @@ from ..logical.utility import search_url_for
 from ..logical.searchable import numeric_filters
 from ..logical.database.similarity_match_db import delete_similarity_match,\
     batch_delete_similarity_matches
-from .base_controller import get_data_params, get_or_abort, parse_list_type, process_request_values, get_params_value,\
+from .base_controller import get_data_params, get_or_abort, process_request_values, get_params_value,\
     search_filter, index_json_response, paginate, get_or_error, show_json_response
 
 
@@ -33,6 +33,7 @@ REVERSE_ORDER = (SimilarityMatch.reverse_id.desc(), SimilarityMatch.forward_id.d
 MAX_LIMIT_HTML = 100
 
 SIMILARITY_MATCH_ID = tuple_(SimilarityMatch.forward_id, SimilarityMatch.reverse_id)
+
 
 # ## FUNCTIONS
 

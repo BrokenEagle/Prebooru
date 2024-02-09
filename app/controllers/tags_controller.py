@@ -202,6 +202,7 @@ def remove_item_show_html(id):
         flash("Tag removed.")
     return redirect(request.referrer)
 
+
 @bp.route('/tags/<int:id>/remove.json', methods=['DELETE'])
 def remove_item_show_json(id):
     tag = get_or_abort(Tag, id)
@@ -214,6 +215,7 @@ def remove_item_show_json(id):
         result['html'] = render_template_ws("tags/_section.html", tags=tags, section_id='tag-list', item_type='post',
                                             item_id=result['remove']['id'])
     return result
+
 
 # #### Private
 

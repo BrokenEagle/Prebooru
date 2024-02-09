@@ -124,7 +124,8 @@ def element_status_link(subscription, status):
 def pending_elements_iterator():
     for subscription_id, pending_element_count in ordered_subscriptions_by_pending_elements(10):
         temp_subscription = Subscription(id=subscription_id)
-        yield temp_subscription.show_link, general_link(pending_element_count, element_search(subscription_id, search_type='undecided'))
+        element_link = general_link(pending_element_count, element_search(subscription_id, search_type='undecided'))
+        yield temp_subscription.show_link, element_link
 
 
 def populate_iterator():
