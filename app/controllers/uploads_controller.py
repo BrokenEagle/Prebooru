@@ -178,6 +178,9 @@ def upload_select():
     dataparams = get_data_params(request, 'upload')
     selectparams = convert_data_params(dataparams)
     retdata = {'error': False, 'data': selectparams, 'params': dataparams}
+    if 'request_url' not in dataparams:
+        return set_error(retdata, "Request URL not specified.")
+    dataparams['request_url'] = dataparams['request_url'].split('#')[0]
     errors = check_create_params(selectparams, True)
     if len(errors):
         return set_error(retdata, '\n'.join(errors))
