@@ -429,6 +429,7 @@ def artist_links(artist):
         'main': artist_main_url(artist),
         'media': artist_media_url(artist),
         'likes': artist_likes_url(artist),
+        'search': artist_search_url(artist),
     }
 
 
@@ -652,6 +653,10 @@ def artist_media_url(artist):
 def artist_likes_url(artist):
     url = artist_main_url(artist)
     return url + '/likes' if len(url) else ""
+
+
+def artist_search_url(artist):
+    return f'https://twitter.com/search?src=typed_query&f=live&q=from%3A{artist.current_site_account}%20filter%3Alinks'
 
 
 def process_twitter_timestring(time_string):
