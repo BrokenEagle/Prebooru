@@ -283,8 +283,12 @@ def process_html(id):
     subscription = get_or_abort(Subscription, id)
     artist = subscription.artist
     source = artist.site.source
-    raw_params = get_data_params(request, 'process')
-    data_params = get_process_data(source.PROCESS_FORM_CONFIG, raw_params)
+    values = process_request_values(request.values)
+    if values.get('type') == 'auto':
+        data_params = None
+    else:
+        raw_params = get_data_params(request, 'process')
+        data_params = get_process_data(source.PROCESS_FORM_CONFIG, raw_params)
     update_subscription_status(subscription, 'manual')
     job_id = "process_subscription_manual-%d" % subscription.id
     job_status = get_job_status_data(job_id) or {}
