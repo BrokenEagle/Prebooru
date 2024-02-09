@@ -1,10 +1,10 @@
 {% macro tags_section(tags, section_id, item_type, item_id) -%}
-    {% if tags | length > 0 %}
-        <section id="{{ section_id }}">
+    <section id="{{ section_id }}" class="tag-section">
+        {% if tags | length > 0 %}
             <h4>User tags</h4>
             <div class="tags-container">{{ tag_list(tags, item_type=item_type, item_id=item_id) }}</div>
-        </section>
-    {% endif %}
+            {% endif %}
+    </section>
 {%- endmacro %}
 
 {% macro tag_list(tags, force=False, item_type=None, item_id=None) -%}

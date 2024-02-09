@@ -3,12 +3,16 @@
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, flash, redirect
 
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string
+
 # ## LOCAL IMPORTS
-from ..models import Tag
+from ..models import Tag, UserTag, Post
 from ..logical.utility import set_error
 from ..logical.database.tag_db import create_tag_from_parameters, append_tag_to_item, remove_tag_from_item
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
-    search_filter, default_order, paginate, get_or_abort, get_data_params, check_param_requirements, parse_type
+    search_filter, default_order, paginate, get_or_abort, get_data_params, check_param_requirements, parse_type,\
+    render_template_ws
 
 
 # ## GLOBAL VARIABLES
@@ -175,7 +179,15 @@ def append_item_index_json():
     tag = _get_user_tag(tag_name)
     if tag is None:
         return {'error': True, 'message': "Tag with name %s not found." % str(tag_name)}
-    return append_item(tag)
+    result = append_item(tag)
+    if result['error']:
+        return result
+    is_preview = request.values.get('preview', type=eval_bool_string, default=False)
+    if is_preview:
+        tags = UserTag.query.join(Post, UserTag.posts).filter(Post.id == result['append']['id']).all()
+        result['html'] = render_template_ws("tags/_section.html", tags=tags, section_id='tag-list', item_type='post',
+                                            item_id=result['append']['id'])
+    return result
 
 
 # ###### REMOVE
@@ -190,6 +202,18 @@ def remove_item_show_html(id):
         flash("Tag removed.")
     return redirect(request.referrer)
 
+@bp.route('/tags/<int:id>/remove.json', methods=['DELETE'])
+def remove_item_show_json(id):
+    tag = get_or_abort(Tag, id)
+    result = remove_item(tag)
+    if result['error']:
+        return result
+    is_preview = request.values.get('preview', type=eval_bool_string, default=False)
+    if is_preview:
+        tags = UserTag.query.join(Post, UserTag.posts).filter(Post.id == result['remove']['id']).all()
+        result['html'] = render_template_ws("tags/_section.html", tags=tags, section_id='tag-list', item_type='post',
+                                            item_id=result['remove']['id'])
+    return result
 
 # #### Private
 
