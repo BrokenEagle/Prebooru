@@ -137,8 +137,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
             update_illust_from_parameters(illust, data_params)
         job_status['illusts'] += 1
     update_job_status(job_id, job_status)
-    if len(site_illust_ids):
-        update_subscription_last_info(subscription, max(site_illust_ids))
+    update_subscription_last_info(subscription)
     job_status['ids'] = None
     update_job_status(job_id, job_status)
     update_subscription_requery(subscription, hours_from_now(subscription.interval))
