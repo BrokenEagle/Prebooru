@@ -84,3 +84,4 @@ def initialize():
     DB.Index(None, Notation.artist_id, unique=False, sqlite_where=Notation.artist_id.is_not(None))
     DB.Index(None, Notation.illust_id, unique=False, sqlite_where=Notation.illust_id.is_not(None))
     DB.Index(None, Notation.post_id, unique=False, sqlite_where=Notation.post_id.is_not(None))
+    DB.Index(None, Notation.subscription_id, unique=False, sqlite_where=Notation.subscription_id.is_not(None))

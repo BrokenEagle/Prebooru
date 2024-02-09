@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from config import POPULATE_ELEMENTS_PER_PAGE, SYNC_MISSING_ILLUSTS_PER_PAGE, DOWNLOAD_POSTS_PER_PAGE,\
     UNLINK_ELEMENTS_PER_PAGE, DELETE_ELEMENTS_PER_PAGE, ARCHIVE_ELEMENTS_PER_PAGE,\
     DOWNLOAD_POSTS_PAGE_LIMIT, EXPIRE_ELEMENTS_PAGE_LIMIT
-from utility.time import days_from_now, hours_from_now
+from utility.time import days_from_now, hours_from_now, days_ago
 from utility.uprint import buffered_print, print_info
 
 # ## LOCAL IMPORTS
@@ -21,7 +21,6 @@ from ..searchable import search_attributes
 from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..downloader.network_dl import convert_network_subscription
-from ..records.post_rec import recreate_archived_post
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
     update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query,\
     update_subscription_element_keep
@@ -35,6 +34,8 @@ from ..database.subscription_element_db import unlink_subscription_post, delete_
 from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
     add_subscription_error, update_subscription_status, check_processing_subscriptions
 from ..database.base_db import safe_db_execute
+from .post_rec import recreate_archived_post
+from .artist_rec import update_artist
 from .image_hash_rec import generate_post_image_hashes
 
 
@@ -116,6 +117,9 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
     if is_error(site_illust_ids):
         add_subscription_error(subscription, site_illust_ids)
         return
+    if artist.updated < days_ago(1):
+        params = source.get_artist_data(artist.site_artist_id)
+        update_artist(artist, params)
     site_illust_ids = sorted(x for x in set(site_illust_ids))
     job_status = get_job_status_data(job_id) or {'illusts': 0}
     job_status['stage'] = 'illusts'
@@ -215,9 +219,9 @@ def delete_expired_subscription_elements(manual):
     while True:
         print(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
-            print(f"Deleting post of {element.shortlink}")
-            delete_subscription_post(element)
-            deleted_elements.append(element.id)
+            if delete_subscription_post(element):
+                print(f"Deleting post of {element.shortlink}")
+                deleted_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
@@ -233,9 +237,9 @@ def archive_expired_subscription_elements(manual):
     while True:
         print(f"\nexpire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
-            print(f"Archiving post of {element.shortlink}")
-            archive_subscription_post(element)
-            archived_elements.append(element.id)
+            if archive_subscription_post(element):
+                print(f"Archiving post of {element.shortlink}")
+                archived_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
@@ -276,8 +280,11 @@ def redownload_element(element):
     def try_func(scope_vars):
         nonlocal element
         initial_errors = [error.id for error in element.errors]
-        if convert_network_subscription(element):
+        if convert_network_subscription(element) and element.post_id is not None:
             update_subscription_element_status(element, 'active')
+            if element.post.is_video:
+                SessionThread(target=convert_mp4_to_webp,
+                              args=(element.post.file_path, element.post.video_preview_path)).start()
             return {'error': False}
         elif element.status.name == 'duplicate':
             post = element.illust_url.post

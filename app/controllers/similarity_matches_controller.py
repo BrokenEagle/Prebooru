@@ -2,7 +2,7 @@
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, flash, redirect, render_template
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, tuple_
 from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
@@ -29,6 +29,7 @@ NORMAL_ORDER = (SimilarityMatch.forward_id.desc(), SimilarityMatch.reverse_id.de
 
 MAX_LIMIT_HTML = 100
 
+SIMILARITY_MATCH_ID = tuple_(SimilarityMatch.forward_id, SimilarityMatch.reverse_id)
 
 # ## FUNCTIONS
 
@@ -123,11 +124,12 @@ def delete_json():
 @bp.route('/similarity_matches/batch_delete', methods=['POST'])
 def batch_delete_html():
     dataparams = get_data_params(request, 'similarity_match')
-    dataparams['id'] = parse_list_type(dataparams, 'id', int)
+    dataparams['id'] = parse_list_type(dataparams, 'id')
     if dataparams['id'] is None or len(dataparams['id']) == 0:
         flash("Must include the IDs of the elements to delete.", 'error')
         return redirect(request.referrer)
-    similarity_matches = SimilarityMatch.query.filter(SimilarityMatch.id.in_(dataparams['id'])).all()
+    query_ids = [tuple(int(id_str) for id_str in duo_id.split('-')) for duo_id in dataparams['id']]
+    similarity_matches = SimilarityMatch.query.filter(SIMILARITY_MATCH_ID.in_(query_ids)).all()
     if len(similarity_matches) == 0:
         flash("Found no elements to delete with parameters.")
         return redirect(request.referrer)

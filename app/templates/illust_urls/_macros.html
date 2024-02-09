@@ -38,7 +38,7 @@
                             </li>
                             {% if illust_url.sample_url is not none %}
                                 <li>
-                                    <strong>Thumb URL:</strong> {{ helpers.base.url_link(illust_url.sample_url, max_len=45) }}
+                                    <strong>Thumb URL:</strong> {{ helpers.base.url_link(illust_url.full_sample_url, max_len=45) }}
                                 </li>
                             {% endif %}
                             <li>

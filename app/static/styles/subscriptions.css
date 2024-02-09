@@ -43,6 +43,12 @@ div#subscription-sidebar > section {
     margin-bottom: 1em;
 }
 
+div#subscription-illusts {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 1em;
+}
+
 div#subscription-site-content {
     width: 70%;
 }
@@ -88,16 +94,15 @@ div#subscription-site-content-2 {
     padding: 5px;
 }
 
-div#subscription-intervals {
+section#subscription-intervals {
     width: 50%;
 }
 
-div#subscription-job {
+section#subscription-job {
     width: 50%;
 }
 
-div#subscription-elements,
-div#subscription-illusts {
+div#subscription-elements {
     font-size: 24px;
     font-weight: bold;
     margin-top: 1em;

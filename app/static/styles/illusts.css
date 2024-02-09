@@ -182,7 +182,7 @@ td article.post {
     width: 260px;
 }
 
-td article.post img {
+td article.post img.preview {
     height: auto;
     max-height: 250px;
     max-width: 250px;
