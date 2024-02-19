@@ -397,7 +397,7 @@ PROCESS_FORM_CONFIG = {
     'filter_links': {
         'field': BooleanField,
         'kwargs': {
-            'default': False,
+            'default': True,
         },
     },
 }
