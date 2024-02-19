@@ -90,7 +90,7 @@ def check_image_match_scores(image_match_results, image_hash, min_score):
     return sorted(found_results, key=lambda x: x['score'], reverse=True)
 
 
-def check_media_file_image_matches(media_file, min_score, include_posts=False, sim_clause=None):
+def check_media_file_image_matches(media_file, min_score, limit, include_posts=False, sim_clause=None):
     if type(media_file) is str:
         return media_file
     image = get_image(media_file.file_path)
@@ -99,6 +99,8 @@ def check_media_file_image_matches(media_file, min_score, include_posts=False, s
     imghash_matches = get_image_hash_matches(image_hash, ratio, sim_clause=sim_clause)
     score_results = check_image_match_scores(imghash_matches, image_hash, min_score)
     final_results = filter_score_results(score_results)
+    if len(final_results) > limit:
+        final_results = final_results[:limit]
     if include_posts:
         post_ids = [result['post_id'] for result in final_results]
         posts = get_posts_by_id(post_ids)
@@ -137,7 +139,7 @@ def generate_post_image_hashes(post, printer=print):
     return imghash_items
 
 
-def check_all_image_urls_for_matches(image_urls, min_score, size, include_posts=False, sim_clause=None):
+def check_all_image_urls_for_matches(image_urls, min_score, size, limit, include_posts=False, sim_clause=None):
     media_sources = [get_media_source(image_url) or NoSource() for image_url in image_urls]
     if size == 'actual':
         download_urls = image_urls
@@ -153,7 +155,7 @@ def check_all_image_urls_for_matches(image_urls, min_score, size, include_posts=
         if isinstance(media, str):
             post_results.append(None)
         else:
-            result = check_media_file_image_matches(media, min_score, include_posts=include_posts,
+            result = check_media_file_image_matches(media, min_score, limit, include_posts=include_posts,
                                                     sim_clause=sim_clause)
             post_results.append(result)
     image_match_results = []

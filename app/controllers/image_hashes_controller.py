@@ -96,8 +96,10 @@ def check(include_posts):
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
     dataparams['url_string'] = '\r\n'.join(dataparams['urls'] or [])
+    limit = params.get('limit', '')
+    limit = min(int(limit) if limit.isdigit() else 20, 100)
     similar_results = check_all_image_urls_for_matches(dataparams['urls'], dataparams['score'],
-                                                       dataparams['size'], include_posts,
+                                                       dataparams['size'], limit, include_posts,
                                                        sim_clause=dataparams['sim_clause'])
     retdata['similar_results'] = similar_results
     return retdata
