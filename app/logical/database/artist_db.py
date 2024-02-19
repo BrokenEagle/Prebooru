@@ -55,6 +55,7 @@ def create_artist_from_parameters(createparams):
         createparams['profiles'] = [createparams['profiles']]
     if 'site' in createparams:
         createparams['site_id'] = Artist.site_enum.by_name(createparams['site']).id
+    createparams['primary'] = createparams['primary'] if 'primary' in createparams else True
     current_time = get_current_time()
     set_timesvalue(createparams, 'site_created')
     set_all_site_accounts(createparams, None)
