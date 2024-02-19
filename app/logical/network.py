@@ -15,6 +15,7 @@ def get_http_data(serverfilepath, method='get', **args):
     if 'timeout' not in args:
         args['timeout'] = 10
     request_method = getattr(requests, method)
+    response = None
     for i in range(4):
         try:
             response = request_method(serverfilepath, **args)
@@ -28,7 +29,10 @@ def get_http_data(serverfilepath, method='get', **args):
             print("Server error; sleeping...")
             time.sleep(15)
             continue
-    return "HTTP %d - %s" % (response.status_code, response.reason)
+    if response is not None:
+        return "HTTP %d - %s" % (response.status_code, response.reason)
+    else:
+        return "Repeated connection timeouts"
 
 
 def send_prebooru_request(path, method, **args):
