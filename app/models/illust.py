@@ -90,7 +90,7 @@ class Illust(JsonModel):
     def site_illust_id_str(self):
         return str(self.site_illust_id)
 
-    def urls_paginate(self, page=None, per_page=None, options=None):
+    def urls_paginate(self, page=None, per_page=None, options=None, url_type=None):
         def _get_options(options):
             if options is None:
                 return (lazyload('*'),)
@@ -98,6 +98,10 @@ class Illust(JsonModel):
                 return options
             return (options,)
         query = self._urls_query
+        if url_type == 'posted':
+            query = query.filter(IllustUrl.post_id.is_not(None))
+        elif url_type == 'unposted':
+            query = query.filter(IllustUrl.post_id.is_(None))
         query = query.options(*_get_options(options))
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)

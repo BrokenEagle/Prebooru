@@ -356,9 +356,11 @@ def show_json(id):
 @bp.route('/illusts/<int:id>', methods=['GET'])
 def show_html(id):
     illust = get_or_abort(Illust, id, options=SHOW_HTML_OPTIONS)
+    url_type = request.args.get('urls')
     illust_urls = illust.urls_paginate(page=get_page(request),
                                        per_page=get_limit(request, max_limit=8),
-                                       options=SHOW_URLS_HTML_OPTIONS)
+                                       options=SHOW_URLS_HTML_OPTIONS,
+                                       url_type=url_type)
     return render_template("illusts/show.html", illust=illust, illust_urls=illust_urls)
 
 

@@ -139,6 +139,15 @@ div#media-posts-container {
     flex-wrap: wrap;
 }
 
+div#media-posts-navigation {
+    font-size: 20px;
+    margin-bottom: 0.5em;
+}
+
+div#media-posts-navigation a.type-active {
+    font-weight: bold;
+}
+
 div.media-post {
     margin-top: 1em;
     width: 25%;

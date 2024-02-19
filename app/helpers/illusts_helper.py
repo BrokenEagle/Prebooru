@@ -4,7 +4,7 @@
 import urllib.parse
 
 # ## EXTERNAL IMPORTS
-from flask import url_for, Markup
+from flask import url_for, Markup, request
 
 # ## PACKAGE IMPORTS
 from config import DANBOORU_HOSTNAME
@@ -126,6 +126,18 @@ def update_artist_link(illust):
 def delete_commentary_link(illust, commentary):
     url = url_for('illust.delete_commentary_html', id=illust.id, description_id=commentary.id)
     return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})
+
+
+def urls_navigation_link(illust, url_type):
+    text = url_type
+    active_type = request.args.get('urls')
+    url = illust.show_url
+    if url_type != 'all':
+        url += '?urls=' + url_type
+    else:
+        url_type = None
+    addons = {'class': 'type-active'} if url_type == active_type else {}
+    return general_link(text, url, **addons)
 
 
 # ###### GENERAL
