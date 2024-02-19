@@ -334,6 +334,7 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
                 return
         else:
             print(f"Task scheduler - {display_name}: manually executed")
+        update_last_activity('server')
         printer = buffered_print(display_name)
         printer("PID:", os.getpid())
         start_time = time.time()
@@ -383,7 +384,6 @@ def _set_db_semaphore(id):
     if item is None or item.locked:
         return False
     update_job_item(item, True)
-    update_last_activity('server')
     SESSION.commit()
     return True
 
