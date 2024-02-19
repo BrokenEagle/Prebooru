@@ -66,6 +66,7 @@ PIXIV_PHPSESSID = None  # PHPSESSID
 # Log into Twitter and get these values
 TWITTER_USER_TOKEN = None  # auth_token
 TWITTER_CSRF_TOKEN = None  # ct0
+TWITTER_MINIMUM_QUERY_INTERVAL = 10
 
 PREBOORU_PORT = 5000
 IMAGE_PORT = 1234

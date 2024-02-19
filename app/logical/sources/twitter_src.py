@@ -16,7 +16,7 @@ import httpx
 from wtforms import RadioField, BooleanField, IntegerField, TextField
 
 # ## PACKAGE IMPORTS
-from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN
+from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN, TWITTER_MINIMUM_QUERY_INTERVAL
 from utility.data import safe_get, decode_json, fixup_crlf, safe_check
 from utility.time import get_current_time, datetime_from_epoch
 from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
@@ -406,8 +406,6 @@ PROCESS_FORM_CONFIG = {
 
 IMAGE_SERVER = 'https://pbs.twimg.com'
 TWITTER_SIZES = [':orig', ':large', ':medium', ':small']
-
-MINIMUM_QUERY_INTERVAL = 10
 
 TOKEN_FILE = os.path.join(DATA_DIRECTORY, 'twittertoken.txt')
 ERROR_TWEET_FILE = os.path.join(DATA_DIRECTORY, 'twittererror.json')
@@ -935,11 +933,11 @@ def check_request_wait(wait):
     if next_wait is not None:
         sleep_time = next_wait - get_current_time().timestamp()
         if sleep_time > 0.0:
-            update_next_wait('twitter', MINIMUM_QUERY_INTERVAL + sleep_time)
+            update_next_wait('twitter', TWITTER_MINIMUM_QUERY_INTERVAL + sleep_time)
             print_info("Twitter request: sleeping -", sleep_time)
             time.sleep(sleep_time)
             return
-    update_next_wait('twitter', MINIMUM_QUERY_INTERVAL)
+    update_next_wait('twitter', TWITTER_MINIMUM_QUERY_INTERVAL)
 
 
 @check_guest_auth
