@@ -6,7 +6,8 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Booru, Label
-from .base_db import update_column_attributes, update_relationship_collections, set_association_attributes
+from .base_db import update_column_attributes, update_relationship_collections, set_association_attributes,\
+    will_update_record
 
 
 # ## GLOBAL VARIABLES
@@ -20,6 +21,8 @@ NORMALIZED_ASSOCIATE_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
 
 CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
 UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
+
+UPDATE_ALLOWED_COLUMNS = set(COLUMN_ATTRIBUTES).intersection(UPDATE_ALLOWED_ATTRIBUTES)
 
 
 # ## FUNCTIONS
@@ -77,6 +80,10 @@ def update_booru_from_parameters(booru, updateparams):
 
 def recreate_booru_relations(booru, updateparams):
     _update_relations(booru, updateparams, create=False)
+
+
+def will_update_booru(booru, data):
+    return will_update_record(booru, data, UPDATE_ALLOWED_COLUMNS)
 
 
 # ###### Delete

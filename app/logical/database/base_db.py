@@ -144,6 +144,15 @@ def record_from_json(model, data):
     return record
 
 
+def will_update_record(record, data, columns):
+    for key in data:
+        if key not in columns:
+            continue
+        if getattr(record, key) != data[key]:
+            return True
+    return False
+
+
 # #### Private functions
 
 def _safe_db_commit(item, func_name, message, commit=True):

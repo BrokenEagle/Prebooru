@@ -8,7 +8,7 @@ from ..sources.base_src import get_artist_id_source
 from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
-    delete_booru, get_all_boorus_page
+    delete_booru, get_all_boorus_page, will_update_booru
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
 from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
@@ -36,7 +36,8 @@ def check_boorus(boorus, status):
     for data in results['artists']:
         booru = next(filter(lambda x: x.danbooru_id == data['id'], boorus))
         updates = {'current_name': data['name'], 'deleted': data['is_deleted'], 'banned': data['is_banned']}
-        if update_booru_from_parameters(booru, updates):
+        if will_update_booru(booru, updates):
+            update_booru_from_parameters(booru, updates)
             status['total'] += 1
     return True
 
