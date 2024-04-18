@@ -16,6 +16,7 @@ from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.records.artist_rec import get_or_create_artist_from_source
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
+from ..logical.sources.base_src import get_post_source
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
     illust_delete_commentary, set_illust_artist
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
@@ -501,4 +502,25 @@ def delete_commentary_html(id):
         flash(results['message'], 'error')
     else:
         flash('Commentary deleted.')
+    return redirect(url_for('illust.show_html', id=id))
+
+
+@bp.route('/illusts/<int:id>/notate', methods=['post'])
+def create_commentary_from_source(id):
+    illust = get_or_abort(Illust, id)
+    source_url = request.values.get('url')
+    if source_url is None:
+        flash("Must include url parameter.", 'error')
+        return redirect(request.referrer)
+    source = get_post_source(source_url)
+    if source is None:
+        flash("Not a valid source.", 'error')
+        return redirect(request.referrer)
+    site_illust_id = source.get_illust_id(source_url)
+    commentary = source.get_illust_commentary(site_illust_id)
+    if commentary is None:
+        flash("No commentaries found at source.", 'error')
+        return redirect(request.referrer)
+    commentary = "From " + (source.ILLUST_SHORTLINK % site_illust_id) + ":\n\n" + commentary
+    update_illust_from_parameters(illust, {'commentaries': commentary})
     return redirect(url_for('illust.show_html', id=id))

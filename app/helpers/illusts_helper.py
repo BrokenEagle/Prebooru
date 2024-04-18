@@ -108,6 +108,12 @@ def add_notation_link(illust):
     return general_link("Add notation", url_for('notation.new_html', illust_id=illust.id, redirect='true'))
 
 
+def add_commentary_link(illust):
+    url = url_for('illust.create_commentary_from_source', id=illust.id)
+    addons = {'onclick': "return Illusts.createCommentary(this)"}
+    return general_link("Add commentary", url, **addons)
+
+
 def add_pool_link(illust):
     url = url_for('pool_element.create_json', preview='true')
     addons = {

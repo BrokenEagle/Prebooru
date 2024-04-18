@@ -15,6 +15,8 @@ const Illusts = {};
     Illusts.updateArtist = function(obj) {
         return Prebooru.promptArgPost(obj, "Enter the artist ID:", 'artist_id');
     };
-
+    Illusts.createCommentary = function (obj) {
+        return Prebooru.promptArgPost(obj, "Enter the site illust URL of commentary:", 'url');
+    };
 })();
 

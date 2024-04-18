@@ -1435,6 +1435,13 @@ def get_illust_data(site_illust_id):
     return get_illust_parameters_from_tweet(tweet)
 
 
+def get_illust_commentary(site_illust_id):
+    tweet = get_illust_api_data(site_illust_id)
+    if tweet is None:
+        return None
+    return get_tweet_commentary(tweet)
+
+
 def get_artist_id_by_illust_id(site_illust_id):
     tweet = get_illust_api_data(site_illust_id)
     site_artist_id = safe_get(tweet, 'user', 'id_str') or safe_get(tweet, 'user_id_str')

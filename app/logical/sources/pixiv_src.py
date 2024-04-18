@@ -560,6 +560,13 @@ def get_illust_data(site_illust_id):
     return get_illust_parameters_from_artwork(artwork, page_data)
 
 
+def get_illust_commentary(site_illust_id):
+    artwork = get_illust_api_data(site_illust_id)
+    if artwork is None:
+        return None
+    return get_artwork_commentary(artwork)
+
+
 def get_artist_id_by_illust_id(site_illust_id):
     artwork = get_illust_api_data(site_illust_id)
     artist_id = safe_get(artwork, 'userId')
