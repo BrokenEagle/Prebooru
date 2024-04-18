@@ -89,9 +89,8 @@ def get_available_subscriptions_query():
     # Return only subscriptions which have already been processed manually (requery is not None)
     status_filter = Subscription.status_filter('name', '__eq__', 'idle')
     return Subscription.query.enum_join(Subscription.status_enum)\
-                             .filter(Subscription.requery < get_current_time(),
-                                     Subscription.last_id.is_not(None),
-                                     status_filter)
+                             .filter(Subscription.requery < get_current_time(), status_filter)\
+                             .order_by(Subscription.requery.asc())
 
 
 def get_busy_subscriptions():
