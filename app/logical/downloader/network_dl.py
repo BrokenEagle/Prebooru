@@ -26,6 +26,8 @@ def convert_network_element(element, post_type):
         post = create_image_post(element, post_type)
     elif element.illust_url.type == 'video':
         post = create_video_post(element, post_type)
+    else:
+        post = None
     if post is not None:
         record_outcome(post, element)
     return post is not None
