@@ -141,7 +141,7 @@ VIDEO2_PARTIAL_RG = re.compile(r"""
 /(\d+)                                      # Twitter ID
 (?:/\w+)?
 /vid
-(?:/avc1)?
+(?:/(?:avc1|hevc))?
 /(\d+)x(\d+)                                # Dimensions
 /([^.]+)                                    # Video key
 \.(mp4)                                     # Extension
