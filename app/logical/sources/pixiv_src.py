@@ -27,7 +27,7 @@ from ..database.server_info_db import get_next_wait, update_next_wait
 # #### Module variables
 
 IMAGE_HEADERS = {
-    'Referer': 'https://app-api.pixiv.net/'
+    'Referer': 'https://www.pixiv.net/'
 }
 
 BAD_ID_TAGS = ['bad_id', 'bad_pixiv_id']
