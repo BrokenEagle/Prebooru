@@ -73,6 +73,16 @@ p(\d+)                                      # Order
 \.(jpg|png|gif|mp4|zip)                     # Extension
 """, re.X | re.IGNORECASE)
 
+UGOIRA_PARTIAL_RG = re.compile(r"""
+(?:/c/\w+)?                                 # Size 1
+/(?:img-original|img-master|custom-thumb)   # Path
+/img
+/(\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2})      # Date
+/(\d+)                                      # ID
+(?:_(?:master|square|custom)1200)?          # Size 2
+\.(jpg|png|gif|mp4|zip)                     # Extension
+""", re.X | re.IGNORECASE)
+
 # ###### Full URL Regexes
 
 ARTWORKS_RG = re.compile(f'{PIXIV_HOST_RG.pattern}{ARTWORKS_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
@@ -80,6 +90,7 @@ ARTWORKS_RG = re.compile(f'{PIXIV_HOST_RG.pattern}{ARTWORKS_PARTIAL_RG.pattern}'
 USERS_RG = re.compile(f'{PIXIV_HOST_RG.pattern}{USERS_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
 
 IMAGE_RG = re.compile(f'{PXIMG_HOST_RG.pattern}{IMAGE_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+UGOIRA_RG = re.compile(f'{PXIMG_HOST_RG.pattern}{UGOIRA_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
 
 # #### Network variables
 
@@ -216,7 +227,7 @@ def get_media_extension(media_url):
 
 
 def is_request_url(request_url):
-    return ARTWORKS_RG.match(request_url) or IMAGE_RG.match(request_url)
+    return ARTWORKS_RG.match(request_url) or IMAGE_RG.match(request_url) or UGOIRA_RG.match(request_url)
 
 
 def is_media_url(url):
@@ -236,11 +247,11 @@ def is_partial_image_url(image_url):
 
 
 def is_video_url(video_url):
-    return False
+    return bool(UGOIRA_RG.match(video_url))
 
 
 def is_partial_video_url(video_url):
-    return False
+    return bool(UGOIRA_PARTIAL_RG.match(video_url))
 
 
 def get_domain_from_partial_url(url):
