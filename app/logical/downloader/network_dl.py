@@ -50,7 +50,7 @@ def get_media_extension(illust_url):
     source = illust_url.site.source
     full_url = source.get_full_url(illust_url)
     file_ext = source.get_media_extension(full_url)
-    if file_ext not in ['jpg', 'png', 'mp4']:
+    if file_ext not in ['jpg', 'png', 'gif', 'mp4']:
         return create_error('downloader.network_dl.get_media_extension', "Unsupported file format: %s" % file_ext)
     else:
         return file_ext

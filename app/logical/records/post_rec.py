@@ -324,7 +324,7 @@ def _delete_media_files(post):
 
 
 def _load_file(post):
-    if post.file_ext in ['jpg', 'png']:
+    if post.file_ext in ['jpg', 'png', 'gif']:
         try:
             buffer = put_get_raw(post.file_path, 'rb')
         except Exception as e:
