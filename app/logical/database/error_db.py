@@ -56,6 +56,12 @@ def create_and_append_error(module_name, message, instance):
     return error
 
 
+# ###### Delete
+def delete_error(error):
+    SESSION.delete(error)
+    SESSION.commit()
+
+
 # ###### Add relationship
 
 def extend_errors(instance, errors):

@@ -5,5 +5,6 @@
     {% if error.id != None %}
         |
         {{ subnav_link_to("Show", 'error.show_html', id=error.id) }}
+        {{ subnav_link_to("Delete", "error.delete_html", id=error.id, attrs={"onclick": "return Prebooru.deleteConfirm(this)"}) }}
     {% endif %}
 </menu>

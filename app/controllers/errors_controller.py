@@ -1,9 +1,13 @@
 # APP/CONTROLLERS/ERRORS_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, flash, redirect, url_for
+
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
+from ..logical.database.error_db import delete_error
 from ..models import Error
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_or_abort
@@ -55,3 +59,16 @@ def index_html():
     q = index()
     errors = paginate(q, request)
     return render_template("errors/index.html", errors=errors, error=Error())
+
+
+# #### DELETE
+
+@bp.route('/errors/<int:id>', methods=['DELETE'])
+def delete_html(id):
+    error = get_or_abort(Error, id)
+    delete_error(error)
+    flash("Notation deleted.")
+    redirect_arg = request.args.get('redirect')
+    if redirect_arg and eval_bool_string(redirect_arg):
+        return redirect(request.referrer)
+    return redirect(url_for('error.index_html'))
