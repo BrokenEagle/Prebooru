@@ -22,7 +22,7 @@ def get_http_filename(webpath):
 
 
 def get_file_extension(filepath):
-    return filepath[filepath.rfind('.') + 1:]
+    return filepath[filepath.rfind('.') + 1:].split(':')[0]
 
 
 def no_file_extension(filepath):

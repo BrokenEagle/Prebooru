@@ -132,19 +132,19 @@ IMAGE4_PARTIAL_RG = re.compile(r"""
 
 VIDEO1_PARTIAL_RG = re.compile(r"""
 /tweet_video
-/([^.]+)                                  # Video key
-\.(mp4)                                 # Extension
+/([^.]+)                                    # Video key
+\.(mp4)                                     # Extension
 """, re.X | re.IGNORECASE)
 
 VIDEO2_PARTIAL_RG = re.compile(r"""
-/(ext_tw_video|amplify_video)           # Type
-/(\d+)                                  # Twitter ID
+/(ext_tw_video|amplify_video)               # Type
+/(\d+)                                      # Twitter ID
 (?:/\w+)?
 /vid
 (?:/avc1)?
-/(\d+)x(\d+)                            # Dimensions
-/([^.]+)                               # Video key
-\.(mp4)                                 # Extension
+/(\d+)x(\d+)                                # Dimensions
+/([^.]+)                                    # Video key
+\.(mp4)                                     # Extension
 """, re.X | re.IGNORECASE)
 
 # ###### Full URL regexes
@@ -444,6 +444,9 @@ def get_media_extension(media_url):
     match = IMAGE1_RG.match(media_url) or IMAGE2_RG.match(media_url)
     if match:
         return match.group(3)
+    match = IMAGE3_RG.match(media_url) or IMAGE4_RG.match(media_url)
+    if match:
+        return match.group(5)
     match = VIDEO1_RG.match(media_url)
     if match:
         return match.group(2)
