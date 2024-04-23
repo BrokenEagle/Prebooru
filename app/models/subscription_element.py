@@ -30,8 +30,8 @@ class SubscriptionElement(JsonModel):
     media_asset_id = DB.Column(DB.INTEGER, DB.ForeignKey('media_asset.id'), nullable=True)
 
     # ## Relationships
-    media = DB.relationship(MediaAsset, lazy=True, uselist='selectin',
-                            backref=DB.backref('subscription_element', lazy=True, uselist=False))
+    media = DB.relationship(MediaAsset, lazy='selectin', uselist=False,
+                            backref=DB.backref('subscription_elements', lazy=True, uselist=True))
     errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
                              backref=DB.backref('subscription_element', lazy=True, uselist=False))
     # (MtO) subscription [Susbscription]

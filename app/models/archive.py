@@ -55,8 +55,6 @@ class Archive(JsonModel):
     duration = association_proxy('media', 'duration')
     audio = association_proxy('media', 'audio')
     location = association_proxy('media', 'location')
-    file_path = association_proxy('media', 'original_file_path')
-    file_url = association_proxy('media', 'original_file_url')
 
     @property
     def is_post_type(self):

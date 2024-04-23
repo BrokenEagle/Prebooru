@@ -2,7 +2,7 @@
 """Add media asset table
 
 Revision ID: 2404c8bbda19
-Revises: 7262282fa74a
+Revises: 02855d70f016
 Create Date: 2023-05-14 12:09:18.044667
 
 """
@@ -19,7 +19,7 @@ from migrations import get_bind
 
 # revision identifiers, used by Alembic.
 revision = '2404c8bbda19'
-down_revision = '7262282fa74a'
+down_revision = '02855d70f016'
 branch_labels = None
 depends_on = None
 
@@ -29,7 +29,7 @@ INSERT INTO media_asset_location VALUES
 (1, 'alternate'),
 (2, 'archive'),
 (3, 'cache'),
-(127, 'unknown'),
+(127, 'unknown')
 """
 
 INSERT_UPGRADE_MEDIA_ASSET_TABLE = """
