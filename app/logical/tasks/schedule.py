@@ -321,11 +321,7 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
         if has_lock and not _set_db_semaphore(id):
             print(f"Task scheduler - {display_name}: already running")
             return
-        if has_manual:
-            print(f"Task scheduler - {display_name}: manually executed")
-            is_manual = _is_job_manual(id)
-        else:
-            is_manual = False
+        is_manual = _is_job_manual(id) if has_manual else False
         if not is_manual:
             if busy_check and server_is_busy():
                 print(f"Task scheduler - {display_name}: Server busy, rescheduling....")
@@ -334,6 +330,8 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
             if has_enabled and not _is_job_enabled(id):
                 print(f"Task scheduler - {display_name}: disabled")
                 return
+        else:
+            print(f"Task scheduler - {display_name}: manually executed")
         printer = buffered_print(display_name)
         printer("PID:", os.getpid())
         start_time = time.time()

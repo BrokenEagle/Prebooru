@@ -392,8 +392,8 @@ def check_other_execs():
     exec_name = os.path.split(sys.argv[0])[-1]
     if exec_name == 'flask':
         command = sys.argv[1]
-        subcommand = sys.argv[2]
-        if command == 'db':
+        subcommand = sys.argv[2] if len(sys.argv) >= 3 else None
+        if command == 'db' and subcommand in ['migrate', 'revision']:
             os.environ['USE_ENUMS'] = 'false'
         else:
             os.environ['USE_ENUMS'] = 'true'
