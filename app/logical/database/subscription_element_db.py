@@ -15,12 +15,10 @@ from ... import SESSION
 from ...enum_imports import subscription_element_status, subscription_element_keep
 from ...models import Subscription, SubscriptionElement, Post, MediaAsset
 from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
-from .base_db import update_column_attributes
+from .base_db import set_column_attributes, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
-
-COLUMN_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'expires']
 
 CREATE_ALLOWED_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'expires']
 
@@ -40,11 +38,12 @@ else:
 
 # ###### CREATE
 
-def create_subscription_element_from_parameters(createparams):
+def create_subscription_element_from_parameters(createparams, commit=True):
     subscription_element = SubscriptionElement(status_id=subscription_element_status.active.id)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(subscription_element, update_columns, createparams)
+    update_columns = settable_keylist.intersection(SubscriptionElement.all_columns)
+    set_column_attributes(subscription_element, update_columns, createparams)
+    commit_or_flush(commit)
     print("[%s]: created" % subscription_element.shortlink)
     return subscription_element
 
@@ -54,70 +53,71 @@ def create_subscription_element_from_parameters(createparams):
 def batch_update_subscription_element_keep(subscription_elements, value):
     for subscription_element in subscription_elements:
         _update_subscription_element_keep(subscription_element, value)
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 def update_subscription_element_keep(subscription_element, value):
     _update_subscription_element_keep(subscription_element, value)
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 def update_subscription_element_status(subscription_element, value):
     subscription_element.status_id = subscription_element_status.by_name(value).id
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 # #### Misc
 
 def link_subscription_post(element, post):
-    element.post = post
-    element.md5 = post.md5
+    element.post_id = post.id
+    element.media_asset_id = post.media_asset_id
     element.status_id = subscription_element_status.active.id
-    element.expires = None
     _update_subscription_element_keep(element, None)
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 def unlink_subscription_post(element):
-    element.post = None
+    element.post_id = None
     element.expires = None
     element.status_id = subscription_element_status.unlinked.id
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 def delete_subscription_post(element):
     if element.post is not None:
-        if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+        if not element.media.has_file_access:
             return False
         delete_post_and_media(element.post)
     element.expires = None
     element.status_id = subscription_element_status.deleted.id
-    SESSION.commit()
+    commit_or_flush(True)
     return True
 
 
 def archive_subscription_post(element):
     if element.post is not None:
-        if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+        if not element.media.has_file_access:
             return False
         archive_post_for_deletion(element.post, None)
-    element.expires = None
-    element.status_id = subscription_element_status.archived.id
-    SESSION.commit()
+    _update_subscription_element_keep(element, 'archived')
+    commit_or_flush(True)
 
 
-def duplicate_subscription_post(element, md5):
-    element.expires = None
-    element.md5 = md5
+def duplicate_subscription_post(element, media_asset):
+    element.media_asset_id = media_asset.id
     element.status_id = subscription_element_status.duplicate.id
-    element.keep_id = subscription_element_keep.unknown.id
-    SESSION.commit()
+    _update_subscription_element_keep(element, 'unknown')
+    commit_or_flush(True)
 
 
 # #### Query
 
 def get_elements_by_id(id_list):
     return SubscriptionElement.query.filter(SubscriptionElement.id.in_(id_list)).all()
+
+
+def get_elements_by_md5(md5):
+    return SubscriptionElement.query.join(MediaAsset).filter(MediaAsset.md5 == md5).all()
 
 
 def check_deleted_subscription_post(md5):

@@ -390,6 +390,11 @@ class JsonModel(DB.Model):
         """Return an uncommitted copy of the record."""
         return self.__class__(**self.column_dict())
 
+    def compare(self, cmp):
+        if self.__class__ != cmp.__class__:
+            return False
+        return all(getattr(self, col) == getattr(cmp, col) for col in self.all_columns)
+
     def attach(self, attr, record):
         setattr(self, attr, record)
 

@@ -9,18 +9,15 @@ from utility.time import get_current_time, days_ago
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Post, SubscriptionElement, ImageHash, MediaAsset
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, commit_or_flush
 from .media_asset_db import create_or_update_media_asset_from_parameters
 from .pool_element_db import delete_pool_element
 
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type_id', 'alternate',
-                     'pixel_md5', 'duration', 'audio']
-CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type_id', 'pixel_md5', 'duration', 'audio']
-UPDATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type_id', 'pixel_md5', 'duration', 'audio',
-                             'danbooru_id']
+CREATE_ALLOWED_ATTRIBUTES = ['type_id', 'media_asset_id']
+UPDATE_ALLOWED_ATTRIBUTES = ['type_id', 'danbooru_id', 'simcheck']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
                                                 .with_entities(SubscriptionElement.post_id)
@@ -37,50 +34,36 @@ SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_
 
 # ###### Create
 
-def create_post_from_parameters(createparams):
+def create_post_from_parameters(createparams, commit=True):
+    if 'type' in createparams:
+        createparams['type_id'] = Post.type_enum.by_name(createparams['type']).id,
     current_time = get_current_time()
-    media_asset = create_or_update_media_asset_from_parameters(createparams)
-    post = Post(created=current_time, simcheck=False, media=media_asset)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(post, update_columns, createparams)
+    post = Post(created=current_time, simcheck=False)
+    update_column_attributes(post, CREATE_ALLOWED_ATTRIBUTES, createparams)
+    commit_or_flush(commit, safe=True)
     print("[%s]: created" % post.shortlink)
     return post
 
 
 def create_post_from_json(data):
     post = Post.loads(data)
-    SESSION.add(post)
-    SESSION.commit()
+    add_record(post)
+    commit_or_flush(True, safe=True)
     print("[%s]: created" % post.shortlink)
     return post
 
 
 # ###### Update
 
-def update_post_from_parameters(post, updateparams):
+def update_post_from_parameters(post, updateparams, commit=True):
     update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(post, update_columns, updateparams))
+    if 'type' in updateparams:
+        updateparams['type_id'] = Post.type_enum.by_name(updateparams['type']).id
+    update_results.append(update_column_attributes(post, UPDATE_ALLOWED_ATTRIBUTES, updateparams))
     if any(update_results):
+        commit_or_flush(commit, safe=True)
         print("[%s]: updated" % post.shortlink)
-        SESSION.commit()
-
-
-def set_post_alternate(post, alternate):
-    post.alternate = alternate
-    SESSION.commit()
-
-
-def set_post_type(post, post_type):
-    post.type_id = Post.type_enum.by_name(post_type).id
-    SESSION.commit()
-
-
-def set_post_simcheck(post, simcheck):
-    post.simcheck = simcheck
-    SESSION.flush()
+    return post
 
 
 # ###### Delete
@@ -88,8 +71,8 @@ def set_post_simcheck(post, simcheck):
 def delete_post(post):
     for pool_element in post._pools:
         delete_pool_element(pool_element)
-    SESSION.delete(post)
-    SESSION.commit()
+    delete_record(post)
+    commit_or_flush(True)
 
 
 # #### Misc functions
@@ -112,7 +95,7 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, durati
 
 def post_append_illust_url(post, illust_url):
     illust_url.post_id = post.id
-    SESSION.commit()
+    commit_or_flush(False)
 
 
 def copy_post(post):

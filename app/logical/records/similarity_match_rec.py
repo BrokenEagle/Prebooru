@@ -1,7 +1,7 @@
 # APP/LOGICAL/RECORDS/SIMILARITY_MATCH_REC.PY
 
 # ## LOCAL IMPORTS
-from ..database.post_db import set_post_simcheck
+from ..database.post_db import update_post_from_parameters
 from ..database.similarity_match_db import create_similarity_match_from_parameters,\
     update_similarity_match_from_parameters
 from .image_hash_rec import get_image_hash_matches, check_image_match_scores, filter_score_results
@@ -12,7 +12,7 @@ from .image_hash_rec import get_image_hash_matches, check_image_match_scores, fi
 def generate_similarity_matches(post, singular=False, printer=print):
     """"Singular indicates that only one post with no similarity matches is being processed."""
     _calculate_similarity_matches(post, singular, printer)
-    set_post_simcheck(post, True)
+    update_post_from_parameters(post, {'simcheck': True}, commit=False)
 
 
 # #### Private

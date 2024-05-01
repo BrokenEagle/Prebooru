@@ -10,12 +10,10 @@ from utility.time import get_current_time
 from ... import SESSION
 from ...enum_imports import upload_status
 from ...models import Upload, UploadUrl
-from .base_db import update_column_attributes
+from .base_db import set_column_attributes, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
-
-COLUMN_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'active']
 
 CREATE_ALLOWED_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'active',
                              'image_urls']
@@ -27,7 +25,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath
 
 # ###### CREATE
 
-def create_upload_from_parameters(createparams):
+def create_upload_from_parameters(createparams, commit=True):
     data = {
         'successes': 0,
         'failures': 0,
@@ -36,14 +34,13 @@ def create_upload_from_parameters(createparams):
     }
     upload = Upload(**data)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(upload, update_columns, createparams, commit=False)
+    update_columns = settable_keylist.intersection(Upload.all_columns)
+    set_column_attributes(upload, update_columns, createparams)
     if 'image_urls' in createparams and len(createparams['image_urls']):
         _update_illust_urls(upload, createparams['image_urls'])
+    commit_or_flush(commit)
     print("[%s]: created" % upload.shortlink)
-    data = upload.to_json()
-    SESSION.commit()
-    return data
+    return upload
 
 
 # #### Misc functions

@@ -7,12 +7,10 @@ from utility.time import get_current_time
 from ... import SESSION
 from ...models import Notation, Pool, Subscription, Booru, Artist, Illust, Post
 from .pool_element_db import delete_pool_element
-from .base_db import update_column_attributes
+from .base_db import set_column_attributes, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
-
-COLUMN_ATTRIBUTES = ['body']
 
 CREATE_ALLOWED_ATTRIBUTES = ['body']
 UPDATE_ALLOWED_ATTRIBUTES = ['body']
@@ -33,12 +31,13 @@ ID_MODEL_DICT = {
 
 # ###### Create
 
-def create_notation_from_parameters(createparams):
+def create_notation_from_parameters(createparams, commit=True):
     current_time = get_current_time()
     notation = Notation(created=current_time, updated=current_time, no_pool=True)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(notation, update_columns, createparams)
+    update_columns = settable_keylist.intersection(Notation.all_columns)
+    set_column_attributes(notation, update_columns, createparams)
+    commit_or_flush(commit)
     print("[%s]: created" % notation.shortlink)
     return notation
 
@@ -53,15 +52,15 @@ def create_notation_from_json(data):
 
 # ###### Update
 
-def update_notation_from_parameters(notation, updateparams):
+def update_notation_from_parameters(notation, updateparams, commit):
     update_results = []
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(notation, update_columns, updateparams))
+    update_results.append(set_column_attributes(notation, update_columns, updateparams))
     if any(update_results):
-        print("[%s]: updated" % notation.shortlink)
         notation.updated = get_current_time()
-        SESSION.commit()
+        commit_or_flush(commit)
+        print("[%s]: updated" % notation.shortlink)
 
 
 # ###### Delete

@@ -7,15 +7,12 @@ from sqlalchemy import func
 from utility.time import get_current_time, hours_from_now, add_days, days_ago
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...enum_imports import subscription_status
 from ...models import Subscription, SubscriptionElement, IllustUrl, Illust
-from .base_db import update_column_attributes
+from .base_db import set_column_attributes, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
-
-COLUMN_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'last_id', 'requery', 'checked']
 
 CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration']
 UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
@@ -32,55 +29,57 @@ COUNT_UNDECIDED_ELEMENTS = func.sum(func.iif(SubscriptionElement.keep_filter('id
 
 # ###### Create
 
-def create_subscription_from_parameters(createparams):
+def create_subscription_from_parameters(createparams, commit=True):
     if 'status' in createparams:
         createparams['status_id'] = Subscription.status_enum.by_name(createparams['status']).id
     current_time = get_current_time()
     subscription = Subscription(status_id=subscription_status.idle.id, created=current_time, updated=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(subscription, update_columns, createparams)
+    update_columns = settable_keylist.intersection(Subscription.all_columns)
+    set_column_attributes(subscription, update_columns, createparams)
+    commit_or_flush(commit)
     print("[%s]: created" % subscription.shortlink)
     return subscription
 
 
 # ###### Update
 
-def update_subscription_from_parameters(subscription, updateparams):
+def update_subscription_from_parameters(subscription, updateparams, commit=True):
     if 'status' in updateparams:
         updateparams['status_id'] = Subscription.status_enum.by_name(updateparams['status']).id
     update_results = []
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(subscription, update_columns, updateparams))
+    update_columns = settable_keylist.intersection(Subscription.all_columns)
+    update_results.append(set_column_attributes(subscription, update_columns, updateparams))
     if subscription.requery is not None and subscription.requery > hours_from_now(subscription.interval):
         update_subscription_requery(subscription, hours_from_now(subscription.interval))
     if any(update_results):
-        print("[%s]: updated" % subscription.shortlink)
         subscription.updated = get_current_time()
-        SESSION.commit()
+        commit_or_flush(commit)
+        print("[%s]: updated" % subscription.shortlink)
+    return subscription
 
 
 def update_subscription_status(subscription, value):
     subscription.status_id = subscription_status.by_name(value).id
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 def update_subscription_requery(subscription, timeval):
     subscription.requery = timeval
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 def update_subscription_last_info(subscription):
     subscription.checked = get_current_time()
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 # ###### Delete
 
 def delete_subscription(subscription):
     SESSION.delete(subscription)
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 # #### Query
@@ -129,7 +128,7 @@ def add_subscription_error(subscription, error):
     subscription.status_id = subscription_status.error.id
     subscription.checked = get_current_time()
     subscription.requery = None
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 def delay_subscription_elements(subscription, delay_days):
@@ -139,7 +138,7 @@ def delay_subscription_elements(subscription, delay_days):
             element.expires = None
         else:
             element.expires = add_days(max(element.expires or current_time, current_time), delay_days)
-    SESSION.commit()
+    commit_or_flush(True)
 
 
 def get_average_interval_for_subscriptions(subscriptions, days):

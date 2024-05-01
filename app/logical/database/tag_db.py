@@ -4,15 +4,15 @@
 
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import SiteTag, UserTag, Post
 from ..utility import set_error
-from .base_db import update_column_attributes
+from .base_db import set_column_attributes, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['name']
+CREATE_ALLOWED_ATTRIBUTES = ['name']
+
 TAG_MODEL_DICT = {
     'site_tag': SiteTag,
     'user_tag': UserTag,
@@ -25,10 +25,13 @@ ID_MODEL_DICT = {
 
 # ## FUNCTIONS
 
-def create_tag_from_parameters(createparams):
-    update_columns = set(createparams.keys()).intersection(COLUMN_ATTRIBUTES)
+def create_tag_from_parameters(createparams, commit=True):
+    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
+    update_columns = settable_keylist.intersection(Tag.all_columns)
     tag = TAG_MODEL_DICT[createparams['type']]()
-    update_column_attributes(tag, update_columns, createparams)
+    set_column_attributes(tag, update_columns, createparams)
+    commit_or_flush(commit)
+    print("[%s]: created" % tag.shortlink)
     return tag
 
 
@@ -43,7 +46,7 @@ def append_tag_to_item(tag, append_key, dataparams):
     elif tag in item._tags:
         return set_error(retdata, "Tag '%s' already added to %s." % (tag.name, item.shortlink))
     item._tags.append(tag)
-    SESSION.commit()
+    commit_or_flush(True)
     retdata['append'] = item.to_json()
     return retdata
 
@@ -59,6 +62,6 @@ def remove_tag_from_item(tag, remove_key, dataparams):
     elif tag not in item._tags:
         return set_error(retdata, "Tag '%s' does not exist on %s." % (tag.name, item.shortlink))
     item._tags.remove(tag)
-    SESSION.commit()
+    commit_or_flush(True)
     retdata['remove'] = item.to_json()
     return retdata

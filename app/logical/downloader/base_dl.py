@@ -8,10 +8,10 @@ from utility.data import get_buffer_checksum
 
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
-from ..database.upload_element_db import update_upload_element_from_parameters
+from ..database.upload_element_db import link_upload_media
 from ..database.subscription_element_db import link_subscription_post, update_subscription_element_status,\
-    duplicate_subscription_post, update_subscription_element_keep
-from ..database.post_db import post_append_illust_url, get_post_by_md5, set_post_type
+    duplicate_subscription_post, update_subscription_element_keep, get_elements_by_md5
+from ..database.post_db import get_post_by_md5, update_post_from_parameters
 from ..database.error_db import create_error, extend_errors, is_error
 
 
@@ -33,7 +33,7 @@ def record_outcome(post, record):
             update_upload_element_from_parameters(record, {'status': 'error'}, commit=True)
         return False
     if record.model_name == 'upload_element':
-        update_upload_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
+        link_upload_media(record, post)
     elif record.model_name == 'subscription_element':
         link_subscription_post(record, post)
     return True
@@ -65,18 +65,18 @@ def check_existing(buffer, illust_url, record):
         return md5
     post = get_post_by_md5(md5)
     if post is not None:
-        post_append_illust_url(post, illust_url)
+        update_illust_url_from_parameters(illust_url, {'post_id': post.id})
         if record.model_name == 'upload_element':
             update_upload_element_from_parameters(record, {'status': 'duplicate', 'md5': post.md5})
             if post.type.name != 'user':
-                set_post_type(post, 'user')
+                update_post_from_parameters(post, {'type': 'user'})
         elif record.model_name == 'subscription_element':
-            duplicate_subscription_post(record, post.md5)
+            duplicate_subscription_post(record, post.media)
         return None
     if record.model_name == 'subscription_element' and record.status_name != 'deleted':
-        record.md5 = md5  # Set the MD5 now so that the count function can be used
-        if record.duplicate_element_count > 0:
-            duplicate_subscription_post(record, md5)
+        elements = get_elements_by_md5(md5)
+        if len(elements):
+            duplicate_subscription_post(record, elements[0].media)
             return None
     return md5
 

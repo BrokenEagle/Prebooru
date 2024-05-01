@@ -118,6 +118,10 @@ class MediaAsset(JsonModel):
     def is_video(self):
         return self.file_ext not in ['jpg', 'png', 'gif']
 
+    @property
+    def has_file_access(self):
+        return self.location.name != 'alternate' or os.path.exists(ALTERNATE_MEDIA_DIRECTORY)
+
     # #### File system functions
 
     @property

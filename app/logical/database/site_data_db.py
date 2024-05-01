@@ -1,9 +1,8 @@
 # APP/LOGICAL/DATABASE/SITE_DATA_DB.PY
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import TwitterData, PixivData
-from .base_db import update_column_attributes
+from .base_db import set_column_attributes, commit_or_flush, add_record, delete_record
 
 
 # ## GLOBAL VARIABLES
@@ -19,33 +18,33 @@ SITE_DATA_TYPE_DICT = {
 
 # ## FUNCTIONS
 
-def update_site_data_from_parameters(illust, params):
+def update_site_data_from_parameters(illust, params, commit=True):
     if illust.site_data is not None:
         expected_type = SITE_DATA_TYPE_DICT[illust.site.name]
         if illust.site_data.type.name != expected_type:
             print("Deleting site data!")
-            SESSION.delete(illust.site_data)
-            SESSION.commit()
+            delete_record(illust.site_data)
+            commit_or_flush(True)
             illust.site_data = None
     if illust.site.name == 'twitter':
-        return update_twitter_site_data(illust, params)
+        result = update_twitter_site_data(illust, params)
     if illust.site.name == 'pixiv':
-        return update_pixiv_site_data(illust, params)
+        result = update_pixiv_site_data(illust, params)
+    commit_or_flush(commit)
+    return result
 
 
 def update_twitter_site_data(illust, params):
     if illust.site_data is None:
         illust.site_data = TwitterData(illust_id=illust.id)
-        SESSION.add(illust.site_data)
-        SESSION.commit()
-    update_columns = set(params.keys()).intersection(TWITTER_COLUMN_ATTRIBUTES)
-    return update_column_attributes(illust.site_data, update_columns, params)
+        add_record(illust.site_data)
+        commit_or_flush(False)
+    return set_column_attributes(illust.site_data, TWITTER_COLUMN_ATTRIBUTES, [], params)
 
 
 def update_pixiv_site_data(illust, params):
     if illust.site_data is None:
         illust.site_data = PixivData(illust_id=illust.id)
-        SESSION.add(illust.site_data)
-        SESSION.commit()
-    update_columns = set(params.keys()).intersection(PIXIV_COLUMN_ATTRIBUTES)
-    return update_column_attributes(illust.site_data, update_columns, params)
+        add_record(illust.site_data)
+        commit_or_flush(False)
+    return set_column_attributes(illust.site_data, PIXIV_COLUMN_ATTRIBUTES, [], params)

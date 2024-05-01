@@ -170,7 +170,8 @@ def create(get_request=False):
         createparams['type'] = 'post'
     elif createparams['illust_url_id']:
         createparams['type'] = 'file'
-    retdata['item'] = create_upload_from_parameters(createparams)
+    upload = create_upload_from_parameters(createparams)
+    retdata['item'] = upload.to_json()
     SCHEDULER.add_job("process_upload-%d" % retdata['item']['id'], process_upload, args=(retdata['item']['id'],))
     return retdata
 
