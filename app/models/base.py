@@ -423,6 +423,16 @@ class JsonModel(DB.Model):
         return relations
 
     @classmethod
+    def dependant_relations(cls):
+        relations = []
+        for key in cls.relations:
+            table = cls.__table__
+            relation = getattr(cls, key)
+            if relation.property.primaryjoin.left.table == table:
+                relations.append(key)
+        return relations
+
+    @classmethod
     def set_relation_properties(cls):
         for key in cls.fk_relations():
             table_name = getattr(cls, key).property.primaryjoin.left.table.name

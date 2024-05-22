@@ -15,7 +15,7 @@ from ..models import Subscription, Artist
 from ..logical.utility import set_error
 from ..logical.records.subscription_rec import process_subscription_manual
 from ..logical.database.subscription_db import create_subscription_from_parameters,\
-    update_subscription_from_parameters, update_subscription_status, delay_subscription_elements,\
+    update_subscription_from_parameters, update_subscription_from_parameters, delay_subscription_elements,\
     delete_subscription, get_average_interval_for_subscriptions
 from ..logical.database.server_info_db import get_subscriptions_ready
 from ..logical.database.jobs_db import get_job_status_data, create_or_update_job_status
@@ -150,7 +150,7 @@ def update(subscription):
     errors = parameter_validation(updateparams, True)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
-    update_subscription_from_parameters(subscription, updateparams)
+    update_subscription_from_parameters(subscription, updateparams, update=True)
     retdata['item'] = subscription.to_json()
     return retdata
 
@@ -293,7 +293,7 @@ def process_html(id):
     else:
         raw_params = get_data_params(request, 'process')
         data_params = get_process_data(source.PROCESS_FORM_CONFIG, raw_params)
-    update_subscription_status(subscription, 'manual')
+    update_subscription_from_parameters(subscription, {'status': 'manual'})
     job_id = "process_subscription_manual-%d" % subscription.id
     job_status = get_job_status_data(job_id) or {}
     job_status.update({
@@ -315,14 +315,14 @@ def process_html(id):
 @bp.route('/subscriptions/<int:id>/reset', methods=['PUT'])
 def reset_html(id):
     subscription = get_or_abort(Subscription, id)
-    update_subscription_status(subscription, 'idle')
+    update_subscription_from_parameters(subscription, {'status': 'idle'})
     return redirect(request.referrer)
 
 
 @bp.route('/subscriptions/<int:id>/retire', methods=['PUT'])
 def retire_html(id):
     subscription = get_or_abort(Subscription, id)
-    update_subscription_status(subscription, 'retired')
+    update_subscription_from_parameters(subscription, {'status': 'retired'})
     return redirect(request.referrer)
 
 

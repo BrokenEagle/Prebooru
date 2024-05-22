@@ -150,7 +150,7 @@ def update(booru):
     if check_booru is not None:
         retdata['item'] = check_booru.to_json()
         return set_error(retdata, "Booru already exists: booru #%d" % check_booru.id)
-    update_booru_from_parameters(booru, updateparams)
+    update_booru_from_parameters(booru, updateparams, update=True)
     retdata['item'] = booru.to_json()
     return retdata
 

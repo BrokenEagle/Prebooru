@@ -15,7 +15,7 @@ from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.records.upload_rec import process_upload
 from ..logical.records.media_file_rec import batch_get_or_create_media
-from ..logical.database.upload_db import create_upload_from_parameters, set_upload_status
+from ..logical.database.upload_db import create_upload_from_parameters, update_upload_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_form, get_data_params, hide_input, parse_string_list,\
     nullify_blanks, set_default, get_or_abort, referrer_check, get_limit, get_page
@@ -327,6 +327,6 @@ def upload_check_html(id):
 @bp.route('/uploads/<int:id>/resubmit', methods=['POST'])
 def resubmit_html(id):
     upload = get_or_abort(Upload, id)
-    set_upload_status(upload, 'pending')
+    update_upload_from_parameters(upload, {'status': 'pending'})
     SCHEDULER.add_job("process_upload-%d" % id, process_upload, args=(id,))
     return redirect(request.referrer)

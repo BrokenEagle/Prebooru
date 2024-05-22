@@ -3,56 +3,37 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy import or_
 
-# ## PACKAGE IMPORTS
-from utility.time import get_current_time
-
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Pool
-from .base_db import set_column_attributes, commit_or_flush
+from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
 
-CREATE_ALLOWED_ATTRIBUTES = ['name', 'series']
-UPDATE_ALLOWED_ATTRIBUTES = ['name', 'series']
+ANY_WRITABLE_COLUMNS = ['name', 'series', 'element_count']
+NULL_WRITABLE_ATTRIBUTES = []
 
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### Create
+# #### Create
 
 def create_pool_from_parameters(createparams, commit=True):
-    current_time = get_current_time()
-    pool = Pool(created=current_time, updated=current_time, element_count=0)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(Pool.all_columns)
-    set_column_attributes(pool, update_columns, createparams)
-    commit_or_flush(commit)
-    print("[%s]: created" % pool.shortlink)
+    return set_pool_from_parameters(Pool(element_count=0), createparams, commit, 'created', False)
+
+
+# #### Update
+
+def update_pool_from_parameters(pool, updateparams, commit=True, update=False):
+    return set_pool_from_parameters(pool, updateparams, commit, 'updated', update)
+
+
+# #### Set
+
+def set_pool_from_parameters(pool, setparams, commit, action, update):
+    if set_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update):
+        save_record(pool, commit, action)
     return pool
-
-
-# ###### Update
-
-def update_pool_from_parameters(pool, updateparams, commit=True):
-    update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(set_column_attributes(pool, update_columns, updateparams))
-    if any(update_results):
-        pool.updated = get_current_time()
-        commit_or_flush(commit)
-        print("[%s]: updated" % pool.shortlink)
-
-
-def update_pool_positions(pool):
-    pool._elements.reorder()
-    pool.element_count = pool._get_element_count()
-    pool.checked = get_current_time()
-    commit_or_flush(True)
 
 
 # #### Query

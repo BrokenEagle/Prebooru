@@ -4,16 +4,15 @@
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Notation, Pool, Subscription, Booru, Artist, Illust, Post
 from .pool_element_db import delete_pool_element
-from .base_db import set_column_attributes, commit_or_flush
+from .base_db import set_column_attributes, commit_or_flush, save_record, add_record, delete_record
 
 
 # ## GLOBAL VARIABLES
 
-CREATE_ALLOWED_ATTRIBUTES = ['body']
-UPDATE_ALLOWED_ATTRIBUTES = ['body']
+ANY_WRITABLE_COLUMNS = ['body']
+NULL_WRITABLE_ATTRIBUTES = []
 
 ID_MODEL_DICT = {
     'pool_id': Pool,
@@ -27,40 +26,32 @@ ID_MODEL_DICT = {
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### Create
+# #### Create
 
 def create_notation_from_parameters(createparams, commit=True):
-    current_time = get_current_time()
-    notation = Notation(created=current_time, updated=current_time, no_pool=True)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(Notation.all_columns)
-    set_column_attributes(notation, update_columns, createparams)
-    commit_or_flush(commit)
-    print("[%s]: created" % notation.shortlink)
-    return notation
+    return set_notation_from_parameters(Notation(no_pool=True), createparams, commit, 'created', False)
 
 
 def create_notation_from_json(data):
     notation = Notation.loads(data)
-    SESSION.add(notation)
-    SESSION.commit()
+    add_record(notation)
+    save_record(notation, True, 'created')
     print("[%s]: created" % notation.shortlink)
     return notation
 
 
-# ###### Update
+# #### Update
 
-def update_notation_from_parameters(notation, updateparams, commit):
-    update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(set_column_attributes(notation, update_columns, updateparams))
-    if any(update_results):
-        notation.updated = get_current_time()
-        commit_or_flush(commit)
-        print("[%s]: updated" % notation.shortlink)
+def update_notation_from_parameters(notation, updateparams, commit=True, update=False):
+    return set_notation_from_parameters(notation, updateparams, commit, 'updated', update)
+
+
+# #### Set
+
+def set_notation_from_parameters(notation, setparams, commit, action, update):
+    if set_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update):
+        save_record(notation, commit, action)
+    return notation
 
 
 # ###### Delete
@@ -68,8 +59,8 @@ def update_notation_from_parameters(notation, updateparams, commit):
 def delete_notation(notation):
     if notation._pool is not None:
         delete_pool_element(notation._pool)
-    SESSION.delete(notation)
-    SESSION.commit()
+    delete_record(notation)
+    commit_or_flush(True)
 
 
 # #### Misc functions
@@ -86,9 +77,9 @@ def append_notation_to_item(notation, append_key, dataparams):
         item.updated = get_current_time()
         item.element_count += 1
         notation.no_pool = False
-        SESSION.flush()
+        commit_or_flush(False)
         item = notation._pool
     else:
         setattr(notation, table_name + '_id', item.id)
-    SESSION.commit()
+    commit_or_flush(True)
     return {'error': False, 'append_item': item.to_json(), 'append_type': item.model_name}

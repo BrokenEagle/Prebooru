@@ -7,10 +7,8 @@ from sqlalchemy import or_
 from utility.time import get_current_time, days_ago
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Post, SubscriptionElement, ImageHash, MediaAsset
-from .base_db import update_column_attributes, commit_or_flush
-from .media_asset_db import create_or_update_media_asset_from_parameters
+from .base_db import set_column_attributes, commit_or_flush, add_record, delete_record
 from .pool_element_db import delete_pool_element
 
 
@@ -39,7 +37,7 @@ def create_post_from_parameters(createparams, commit=True):
         createparams['type_id'] = Post.type_enum.by_name(createparams['type']).id,
     current_time = get_current_time()
     post = Post(created=current_time, simcheck=False)
-    update_column_attributes(post, CREATE_ALLOWED_ATTRIBUTES, createparams)
+    set_column_attributes(post, CREATE_ALLOWED_ATTRIBUTES, createparams)
     commit_or_flush(commit, safe=True)
     print("[%s]: created" % post.shortlink)
     return post
@@ -59,7 +57,7 @@ def update_post_from_parameters(post, updateparams, commit=True):
     update_results = []
     if 'type' in updateparams:
         updateparams['type_id'] = Post.type_enum.by_name(updateparams['type']).id
-    update_results.append(update_column_attributes(post, UPDATE_ALLOWED_ATTRIBUTES, updateparams))
+    update_results.append(set_column_attributes(post, UPDATE_ALLOWED_ATTRIBUTES, updateparams))
     if any(update_results):
         commit_or_flush(commit, safe=True)
         print("[%s]: updated" % post.shortlink)

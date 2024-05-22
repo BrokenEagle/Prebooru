@@ -226,7 +226,7 @@ def update(artist):
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
         return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
-    update_artist_from_parameters(artist, updateparams)
+    update_artist_from_parameters(artist, updateparams, update=True)
     retdata['item'] = artist.to_json()
     return retdata
 

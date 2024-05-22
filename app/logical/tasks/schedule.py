@@ -20,17 +20,18 @@ from ..records.post_rec import relocate_old_posts_to_alternate, check_all_posts_
 from ..records.artist_rec import check_all_artists_for_boorus
 from ..records.booru_rec import check_all_boorus
 from ..records.media_file_rec import batch_delete_media
+from ..records.pool_rec import update_pool_positions
 from ..records.subscription_rec import sync_missing_subscription_illusts, populate_subscription_elements,\
     download_missing_elements, unlink_expired_subscription_elements, delete_expired_subscription_elements,\
     archive_expired_subscription_elements
 from ..database.base_db import safe_db_execute
-from ..database.pool_db import get_all_recheck_pools, update_pool_positions
-from ..database.subscription_db import get_available_subscriptions_query, update_subscription_status,\
+from ..database.pool_db import get_all_recheck_pools
+from ..database.subscription_db import get_available_subscriptions_query, update_subscription_from_parameters,\
     get_busy_subscriptions, get_subscription_by_ids
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
-from ..database.archive_db import expired_archive_count, delete_expired_archive
+from ..database.archive_db import expired_archive_count, delete_expired_archives
 from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id, get_job_status_data,\
     create_or_update_job_status
 from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready,\
@@ -69,11 +70,29 @@ def expunge_archive_records_task():
         if archive_delete_count > 0:
             printer("Archive records deleted:", archive_delete_count)
             status = {'total': archive_delete_count}
-            status.update(delete_expired_archive())
+            delete_expired_archives()
             return status
         printer("No archive records to delete.")
 
     _execute_scheduled_task(_task, 'expunge_archive_records')
+
+
+@SCHEDULER.task("interval", **JOB_CONFIG['cleanup_media_assets']['config'])
+def cleanup_media_assets_task():
+    def _task(printer, is_manual):
+        status = {}
+        status['unattached_records'] = delete_unattached_media_assets()
+        if status['unattached'] > 0:
+            printer("Media asset records deleted:", status['unattached'])
+        status['deleted'] = delete_files_without_media_models(is_manual)
+        if status['deleted'] > 0:
+            printer("System files deleted:", status['deleted'])
+        if status['unattached'] == 0 or status['deleted'] == 0:
+            printer("No media assets affected.")
+            return None
+        return status
+
+    _execute_scheduled_task(_task, 'cleanup_media_assets')
 
 
 @SCHEDULER.task('interval', **JOB_CONFIG['generate_missing_image_hashes']['config'])
@@ -298,7 +317,7 @@ def reset_subscription_status_task():
         subscriptions = get_busy_subscriptions()
         if len(subscriptions):
             for subscription in subscriptions:
-                update_subscription_status(subscription, 'idle')
+                update_subscription_from_parameters(subscription, {'status': 'idle'})
             printer("Subscriptions reset:", len(subscriptions))
             status = {'total': len(subscriptions)}
         else:
@@ -412,14 +431,14 @@ def _process_pending_subscription(subscription, printer):
 
     def error_func(scope_vars, error):
         nonlocal subscription
-        update_subscription_status(subscription, 'error')
+        update_subscription_from_parameters(subscription, {'status': 'error'})
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
         if error is None and subscription.status.name != 'error':
-            update_subscription_status(subscription, 'idle')
+            update_subscription_from_parameters(subscription, {'status': 'idle'})
 
-    update_subscription_status(subscription, 'automatic')
+    update_subscription_from_parameters(subscription, {'status': 'automatic'})
     safe_db_execute('check_pending_subscriptions', 'tasks.schedule', scope_vars={'subscription': subscription},
                     try_func=try_func, msg_func=msg_func, error_func=error_func, finally_func=finally_func,
                     printer=printer)
@@ -430,5 +449,5 @@ def _pending_subscription_callback(subscription_ids):
     subscriptions = get_subscription_by_ids(subscription_ids)
     for subscription in subscriptions:
         if subscription.status.name == 'automatic':
-            update_subscription_status(subscription, 'idle')
+            update_subscription_from_parameters(subscription, {'status': 'idle'})
     SESSION.remove()

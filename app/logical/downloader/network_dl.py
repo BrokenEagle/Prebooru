@@ -53,7 +53,7 @@ def get_media_extension(illust_url):
     full_url = source.get_full_url(illust_url)
     file_ext = source.get_media_extension(full_url)
     if file_ext not in ['jpg', 'png', 'gif', 'mp4']:
-        return create_error('downloader.network_dl.get_media_extension', "Unsupported file format: %s" % file_ext)
+        return create_error('network_dl.get_media_extension', "Unsupported file format: %s" % file_ext)
     else:
         return file_ext
 
@@ -68,6 +68,7 @@ def download_media(illust_url, record, sample):
         return buffer
     elif sample:
         return [buffer]
+    # Try alternate URL if the primary URL fails
     error = buffer
     alternate_url = source.get_alternate_url(illust_url) if not sample else source.get_sample_url(illust_url, False)
     if alternate_url is None:
@@ -161,5 +162,5 @@ def _download_media(download_url, source):
     print("Downloading", download_url)
     buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
     if isinstance(buffer, str):
-        return create_error('downloader.network_dl.download_media', "Download URL: %s => %s" % (download_url, buffer))
+        return create_error('network_dl.download_media', "Download URL: %s => %s" % (download_url, buffer))
     return buffer

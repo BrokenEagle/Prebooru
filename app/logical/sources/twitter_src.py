@@ -27,7 +27,7 @@ from ...enum_imports import site_descriptor, api_data_type
 from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
-from ..database.artist_db import inactivate_artist
+from ..database.artist_db import update_artist_from_parameters
 from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
@@ -776,7 +776,7 @@ def get_global_objects(data, type_name):
     objects = safe_get(data['body'], 'globalObjects', type_name)
     if type(objects) is not dict:
         if DEBUG_MODE:
-            log_network_error('sources.twitter.get_global_objects', data['response'])
+            log_network_error('twitter_src.get_global_objects', data['response'])
         raise Exception("Global data not found.")
     return list(objects.values())
 
@@ -799,7 +799,7 @@ def get_twitter_scroll_bottom_cursor(data):
     instructions = safe_get(data['body'], 'timeline', 'instructions')
     if type(instructions) is not list:
         if DEBUG_MODE:
-            log_network_error('sources.twitter.get_twitter_scroll_bottom_cursor', data['response'])
+            log_network_error('twitter_src.get_twitter_scroll_bottom_cursor', data['response'])
         raise Exception("Invalid JSON response.")
     for instruction in instructions:
         for type_name in instruction:
@@ -973,7 +973,7 @@ def twitter_request(url, method='GET', wait=True, use_httpx=False):
             reason = getattr(response, 'reason', None)
             print_error("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, reason, response.text))
             if DEBUG_MODE:
-                log_network_error('sources.twitter.twitter_request', response)
+                log_network_error('twitter_src.twitter_request', response)
             msg = "HTTP %d - %s" % (response.status_code, reason)
             return {'error': True, 'message': msg, 'response': response}
     else:
@@ -1054,14 +1054,14 @@ def get_twitter_illust_timeline(illust_id):
                            use_httpx=True)
     try:
         if data['error']:
-            return create_error('sources.twitter.get_twitter_illust_timeline', data['message'])
+            return create_error('twitter_src.get_twitter_illust_timeline', data['message'])
         found_tweets = get_graphql_timeline_entries(data['body'], [])
     except Exception as e:
         msg = "Error parsing Twitter data: %s" % str(e)
-        return create_error('sources.twitter.get_twitter_illust_timeline', msg)
+        return create_error('twitter_src.get_twitter_illust_timeline', msg)
     if len(found_tweets) == 0:
         put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], unicode=True)
-        return create_error('sources.twitter.get_twitter_illust_timeline', "No tweets found in data.")
+        return create_error('twitter_src.get_twitter_illust_timeline', "No tweets found in data.")
     # Normalize the hierarchical position of tweet info
     for tweet in found_tweets:
         if 'tweet' in safe_get(tweet, 'result'):
@@ -1070,7 +1070,7 @@ def get_twitter_illust_timeline(illust_id):
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
     if illust_id_str not in tweet_ids:
         put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], unicode=True)
-        return create_error('sources.twitter.get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
+        return create_error('twitter_src.get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
     return found_tweets
 
 
@@ -1135,7 +1135,7 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
     page = 1
     tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status,
                              v2=HAS_USER_AUTH)
-    return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
+    return create_error('twitter_src.populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
 
@@ -1167,7 +1167,7 @@ def populate_twitter_search_timeline(account, since_date, until_date, filter_lin
     count = 100
     page = 1
     tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, v2=HAS_USER_AUTH, **kwargs)
-    return create_error('sources.twitter.populate_twitter_search_timeline', tweet_ids)\
+    return create_error('twitter_src.populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
 
@@ -1177,9 +1177,9 @@ def get_twitter_illust(illust_id):
                   '&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true'
     data = twitter_request(request_url, use_httpx=True)
     if data['error']:
-        return create_error('sources.twitter.get_twitter_illust', data['message'])
+        return create_error('twitter_src.get_twitter_illust', data['message'])
     if len(data['body']) == 0:
-        return create_error('sources.twitter.get_twitter_illust', "Tweet not found: %d" % illust_id)
+        return create_error('twitter_src.get_twitter_illust', "Tweet not found: %d" % illust_id)
     return data['body'][0]
 
 
@@ -1193,7 +1193,7 @@ def get_twitter_illust_v2(illust_id):
         tweet = safe_get(twitter_data[i], 'result', 'legacy')
         if tweet is not None and tweet['id_str'] == illust_id_str:
             return tweet
-    return create_error('sources.twitter.get_twitter_illust_v2', "Tweet not found: %d" % illust_id)
+    return create_error('twitter_src.get_twitter_illust_v2', "Tweet not found: %d" % illust_id)
 
 
 def get_twitter_user_id(account):
@@ -1207,7 +1207,7 @@ def get_twitter_user_id(account):
                   'UserByScreenNameWithoutResults?%s' % urladdons
     data = twitter_request(request_url, wait=False, use_httpx=True)
     if data['error']:
-        return create_error('sources.twitter.get_user_id', data['message'])
+        return create_error('twitter_src.get_user_id', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
 
 
@@ -1222,15 +1222,15 @@ def get_twitter_artist(artist_id):
                   'UserByRestIdWithoutResults?%s' % urladdons
     data = twitter_request(request_url, use_httpx=True)
     if data['error']:
-        return create_error('sources.twitter.get_twitter_artist', data['message'])
+        return create_error('twitter_src.get_twitter_artist', data['message'])
     twitterdata = data['body']
     if 'errors' in twitterdata and len(twitterdata['errors']):
         msg = 'Twitter error: ' + '; '.join([error['message'] for error in twitterdata['errors']])
-        return create_error('sources.twitter.get_twitter_artist', msg)
+        return create_error('twitter_src.get_twitter_artist', msg)
     userdata = safe_get(twitterdata, 'data', 'user')
     if userdata is None or 'rest_id' not in userdata or 'legacy' not in userdata:
         msg = "Error parsing data: %s" % json.dumps(twitterdata)
-        return create_error('sources.twitter.get_twitter_artist', msg)
+        return create_error('twitter_src.get_twitter_artist', msg)
     retdata = userdata['legacy']
     retdata['id_str'] = userdata['rest_id']
     return retdata
@@ -1472,6 +1472,7 @@ def populate_artist_recheck_active(artist):
     twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
     if is_error(twuser):
         inactivate_artist(artist)
+        update_artist_from_parameters(artist, {'active': False})
         return twuser
     # The timeline was empty of any tweets
     return []

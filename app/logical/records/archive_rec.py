@@ -11,24 +11,27 @@ from utility.file import delete_file
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..database.base_db import record_from_json
-from ..database.archive_db import ARCHIVE_DIRECTORY, get_archive, create_archive, update_archive
+from ..database.archive_db import ARCHIVE_DIRECTORY, get_archive, create_archive_from_parameters,\
+    update_archive_from_parameters
 
 
 # ## FUNCTIONS
 
-def archive_record(record, expires=None):
-    data = record.archive()
-    data_key = record.key
+def archive_record(record, days, commit=True):
     model_name = record.model_name
-    archive = get_archive(model_name, data_key)
-    try:
-        if archive is None:
-            archive = create_archive(model_name, data_key, data, expires)
-        else:
-            update_archive(archive, data, expires)
-    except Exception:
-        return None
-    return archive
+    key = record.key
+    archive = get_archive(model_name, key)
+    if archive is None:
+        parameters = {
+            'type': model_name,
+            'key': key,
+            'data': record.archive(),
+            'days': days,
+        }
+        if model_name == 'post':
+            parameters['media_asset_id'] = post.media_asset_id
+        return create_archive_from_parameters(parameters, commit)
+    return update_archive_from_parameters(archive, {'data': record.archive(), 'days': days}, commit)
 
 
 def recreate_record(model, key, data):
@@ -117,13 +120,3 @@ def recreate_links(record, data):
             if link_record is not None:
                 getattr(record, attr).append(link_record)
                 SESSION.flush()
-
-
-def remove_archive_media_file(archive):
-    filename = archive.key + '.' + archive.data['body']['file_ext']
-    filepath = os.path.join(ARCHIVE_DIRECTORY, filename)
-    try:
-        delete_file(filepath)
-    except Exception as e:
-        logging.error("Error deleting sample.")
-        exception_print(e)

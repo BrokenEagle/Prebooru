@@ -10,8 +10,9 @@ from utility.data import eval_bool_string
 # ## LOCAL IMPORTS
 from ..models import SubscriptionElement, IllustUrl, Illust
 from ..logical.utility import search_url_for
-from ..logical.database.subscription_element_db import get_elements_by_id, update_subscription_element_keep,\
-    batch_update_subscription_element_keep
+from ..logical.database.subscription_element_db import update_subscription_element_from_parameters,\
+    get_elements_by_id
+from ..logical.database.base_db import commit_or_flush
 from ..logical.database.post_db import get_posts_by_md5s, get_post_by_md5
 from ..logical.database.archive_db import get_archive_posts_by_md5s, get_archive
 from ..logical.records.subscription_rec import redownload_element, reinstantiate_element, relink_element
@@ -140,7 +141,9 @@ def batch_keep_html():
     missing_ids = list(set(id_list).difference([element.id for element in elements]))
     if len(missing_ids) > 0:
         flash(f"Unable to find elements: {repr(missing_ids)}")
-    batch_update_subscription_element_keep(elements, data_params['keep'])
+    for element in elements:
+        update_subscription_element_from_parameters(element, {'keep': data_params['keep']}, commit=False)
+    commit_or_flush(True)
     return redirect(request.referrer)
 
 
@@ -152,7 +155,7 @@ def keep_html(id):
         flash("Keep argument not found.", 'error')
     else:
         flash("Element updated.")
-        update_subscription_element_keep(element, value)
+        update_subscription_element_from_parameters(element, {'keep': value})
     return redirect(request.referrer)
 
 
@@ -170,7 +173,7 @@ def keep_json(id):
         messages.append("Preview argument not found.")
     if len(messages) > 0:
         return {'error': True, 'message': '<br>'.join(messages)}
-    update_subscription_element_keep(element, value)
+    update_subscription_element_from_parameters(element, {'keep': value})
     if has_preview:
         html = render_template_ws("subscription_elements/_element_preview.html", element=element)
     else:

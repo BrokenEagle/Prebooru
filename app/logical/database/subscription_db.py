@@ -9,13 +9,15 @@ from utility.time import get_current_time, hours_from_now, add_days, days_ago
 # ## LOCAL IMPORTS
 from ...enum_imports import subscription_status
 from ...models import Subscription, SubscriptionElement, IllustUrl, Illust
-from .base_db import set_column_attributes, commit_or_flush
+from .base_db import set_column_attributes, commit_or_flush, save_record, delete_record
+from .error_db import append_error
 
 
 # ## GLOBAL VARIABLES
 
-CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration']
-UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
+ANY_WRITABLE_COLUMNS = ['interval', 'expiration']
+NULL_WRITABLE_ATTRIBUTES = ['artist_id']
+
 
 DISTINCT_ILLUST_COUNT = func.count(Illust.id.distinct())
 UNDECIDED_COUNT = func.count(SubscriptionElement.keep_filter('id', 'is_', None))
@@ -25,60 +27,35 @@ COUNT_UNDECIDED_ELEMENTS = func.sum(func.iif(SubscriptionElement.keep_filter('id
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### Create
+# #### Create
 
 def create_subscription_from_parameters(createparams, commit=True):
-    if 'status' in createparams:
-        createparams['status_id'] = Subscription.status_enum.by_name(createparams['status']).id
-    current_time = get_current_time()
-    subscription = Subscription(status_id=subscription_status.idle.id, created=current_time, updated=current_time)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(Subscription.all_columns)
-    set_column_attributes(subscription, update_columns, createparams)
-    commit_or_flush(commit)
-    print("[%s]: created" % subscription.shortlink)
+    return set_subscription_from_parameters(Subscription(status_id=subscription_status.idle.id),
+                                            createparams, commit, 'created', False)
+
+
+# #### Update
+
+def update_subscription_from_parameters(subscription, updateparams, commit=True, update=False):
+    return set_subscription_from_parameters(subscription, updateparams, commit, 'updated', update)
+
+
+# #### Set
+
+def set_subscription_from_parameters(subscription, setparams, commit, action, update):
+    if set_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update):
+        # Will only be modified when lowering the interval
+        expected_requery = hours_from_now(subscription.interval)
+        if subscription.requery is not None and subscription.requery > expected_requery:
+            subscription.requery = expected_requery
+        save_record(subscription, commit, action)
     return subscription
-
-
-# ###### Update
-
-def update_subscription_from_parameters(subscription, updateparams, commit=True):
-    if 'status' in updateparams:
-        updateparams['status_id'] = Subscription.status_enum.by_name(updateparams['status']).id
-    update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(Subscription.all_columns)
-    update_results.append(set_column_attributes(subscription, update_columns, updateparams))
-    if subscription.requery is not None and subscription.requery > hours_from_now(subscription.interval):
-        update_subscription_requery(subscription, hours_from_now(subscription.interval))
-    if any(update_results):
-        subscription.updated = get_current_time()
-        commit_or_flush(commit)
-        print("[%s]: updated" % subscription.shortlink)
-    return subscription
-
-
-def update_subscription_status(subscription, value):
-    subscription.status_id = subscription_status.by_name(value).id
-    commit_or_flush(True)
-
-
-def update_subscription_requery(subscription, timeval):
-    subscription.requery = timeval
-    commit_or_flush(True)
-
-
-def update_subscription_last_info(subscription):
-    subscription.checked = get_current_time()
-    commit_or_flush(True)
 
 
 # ###### Delete
 
 def delete_subscription(subscription):
-    SESSION.delete(subscription)
+    delete_record(subscription)
     commit_or_flush(True)
 
 
@@ -124,11 +101,9 @@ def ordered_subscriptions_by_pending_elements(limit):
 # #### Misc
 
 def add_subscription_error(subscription, error):
-    subscription.errors.append(error)
-    subscription.status_id = subscription_status.error.id
-    subscription.checked = get_current_time()
-    subscription.requery = None
-    commit_or_flush(True)
+    append_error(subscription, error, commit=False)
+    updateparams = {'status': 'error', 'checked': get_current_time(), 'requery': None}
+    update_subscription_from_parameters(subscription, updateparams, commit=True)
 
 
 def delay_subscription_elements(subscription, delay_days):

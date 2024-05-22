@@ -8,7 +8,7 @@ import datetime
 import sqlalchemy
 
 # ## PACKAGE IMPORTS
-from utility.time import process_utc_timestring
+from utility.time import process_utc_timestring, get_current_time
 from utility.uprint import safe_print, buffered_print
 
 # ## LOCAL IMPORTS
@@ -64,7 +64,7 @@ def set_association_attributes(params, associations):
             params[association_key] = params[key]
 
 
-def set_column_attributes(item, any_columns, null_columns, dataparams):
+def set_column_attributes(item, any_columns, null_columns, dataparams, update=False):
     """For setting column attributes with scalar values"""
     printer = buffered_print('set_column_attributes', safe=True, header=False)
     is_dirty = False
@@ -76,7 +76,9 @@ def set_column_attributes(item, any_columns, null_columns, dataparams):
         if attr in null_columns and getattr(item, attr) is not None:
             continue
         if getattr(item, attr) != dataparams[attr]:
-            printer("Setting basic attr (%s):" % item.shortlink, attr, getattr(item, attr), dataparams[attr])
+            from_val = _normalize_val(getattr(item, attr))
+            to_val = _normalize_val(dataparams[attr])
+            printer("Setting basic attr (%s):" % item.shortlink, attr, from_val, to_val)
             setattr(item, attr, dataparams[attr])
             is_dirty = True
     if item not in SESSION:
@@ -85,7 +87,7 @@ def set_column_attributes(item, any_columns, null_columns, dataparams):
             item.created = current_time
         add_record(item)
     if is_dirty:
-        if hasattr(item, 'updated'):
+        if hasattr(item, 'updated') and (update or getattr(item, 'updated') is None):
             current_time = get_current_time() if current_time is None else current_time
             item.updated = current_time
         printer.print()
@@ -100,6 +102,7 @@ def set_relationship_collections(item, relationships, dataparams):
         if dataparams.get(attr) is None:
             continue
         collection = getattr(item, attr)
+        is_dependant = attr in item.dependant_relations()
         current_values = [getattr(subitem, subattr) for subitem in collection]
         add_values = set(dataparams[attr]).difference(current_values)
         for value in add_values:
@@ -114,7 +117,10 @@ def set_relationship_collections(item, relationships, dataparams):
         for value in remove_values:
             printer("Removing collection item (%s):" % item.shortlink, attr, value)
             remove_item = next(filter(lambda x: getattr(x, subattr) == value, collection))
-            collection.remove(remove_item)
+            if is_dependant:
+                delete_record(remove_item)
+            else:
+                collection.remove(remove_item)
             is_dirty = True
     if is_dirty:
         printer.print()
@@ -131,8 +137,8 @@ def append_relationship_collections(item, relationships, dataparams):
             continue
         collection = getattr(item, attr)
         current_values = [getattr(subitem, subattr) for subitem in collection]
-        if dataparams[attr] not in current_values:
-            value = dataparams[attr]
+        if dataparams[append_attr] not in current_values:
+            value = dataparams[append_attr]
             printer("Adding collection item (%s):" % item.shortlink, attr, value)
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
@@ -153,21 +159,20 @@ def record_from_json(model, data):
     return record
 
 
-def will_update_record(record, data, columns):
-    for key in data:
-        if key not in columns:
-            continue
-        if getattr(record, key) != data[key]:
-            return True
-    return False
-
-
 def add_record(record):
     SESSION.add(record)
 
 
 def delete_record(record):
     SESSION.delete(record)
+
+
+def save_record(record, commit, action, safe=False):
+    commit_or_flush(False, safe)
+    print("[%s]: %s" % (record.shortlink, action))
+    # Commit only after printing to avoid unnecessarily requerying the record
+    if commit:
+        SESSION.commit()
 
 
 def commit_or_flush(commit, safe=False):
@@ -200,3 +205,11 @@ def _handle_db_exception(error):
     if isinstance(error, sqlalchemy.exc.OperationalError) and error.code == 'e3q8':
         print("!!!Sleeping for DB lock!!!")
         time.sleep(30)
+
+
+def _normalize_val(val):
+    if isinstance(val, str):
+        return val[:50] + '...' if len(val) > 50 else val
+    if isinstance(val, dict):
+        return '<dict>'
+    return val

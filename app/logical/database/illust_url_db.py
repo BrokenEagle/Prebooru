@@ -18,13 +18,13 @@ NULL_WRITABLE_ATTRIBUTES = ['illust_id']
 # #### Create
 
 def create_illust_url_from_parameters(createparams, commit=True):
-    return set_media_asset_from_parameters(IllustUrl(), createparams, commit, 'created')
+    return set_illust_url_from_parameters(IllustUrl(), createparams, commit, 'created')
 
 
 # #### Update
 
 def update_illust_url_from_parameters(illust_url, updateparams, commit=True):
-    return set_media_asset_from_parameters(illust_url, updateparams, commit, 'updated')
+    return set_illust_url_from_parameters(illust_url, updateparams, commit, 'updated')
 
 
 # #### Set

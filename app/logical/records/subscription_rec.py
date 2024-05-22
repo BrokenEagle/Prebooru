@@ -22,17 +22,15 @@ from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..downloader.network_dl import convert_network_subscription
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
-    update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query,\
-    update_subscription_element_keep
+    update_subscription_element_from_parameters, link_subscription_post, pending_subscription_downloads_query,\
+    unlink_subscription_post, delete_subscription_post, archive_subscription_post, expired_subscription_elements
 from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.archive_db import get_archive
 from ..database.error_db import is_error
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
-from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
-    archive_subscription_post, expired_subscription_elements
-from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
-    add_subscription_error, update_subscription_status, check_processing_subscriptions
+from ..database.subscription_db import add_subscription_error, update_subscription_from_parameters,\
+    check_processing_subscriptions
 from ..database.base_db import safe_db_execute
 from .post_rec import recreate_archived_post
 from .artist_rec import update_artist
@@ -85,13 +83,13 @@ def process_subscription_manual(subscription_id, job_id, params):
     def error_func(scope_vars, e):
         nonlocal subscription
         subscription = subscription or Subscription.find(subscription_id)
-        update_subscription_status(subscription, 'error')
+        update_subscription_from_parameters(subscription, {'status': 'error'})
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
         subscription = subscription or Subscription.find(subscription_id)
         if error is None and subscription.status.name != 'error':
-            update_subscription_status(subscription, 'idle')
+            update_subscription_from_parameters(subscription, {'status': 'idle'})
         SessionTimer(15, _query_unlock).start()  # Check later to give the DB time to catch up
 
     def _query_unlock():
@@ -110,7 +108,7 @@ def process_subscription_manual(subscription_id, job_id, params):
 
 
 def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
-    update_subscription_requery(subscription, hours_from_now(4))
+    update_subscription_from_parameters(subscription, {'requery': hours_from_now(4)})
     artist = subscription.artist
     source = artist.site.source
     site_illust_ids = source.populate_all_artist_illusts(artist, job_id, params)
@@ -140,11 +138,10 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
         else:
             update_illust_from_parameters(illust, data_params)
         job_status['illusts'] += 1
-    update_job_status(job_id, job_status)
-    update_subscription_last_info(subscription)
     job_status['ids'] = None
     update_job_status(job_id, job_status)
-    update_subscription_requery(subscription, hours_from_now(subscription.interval))
+    update_subscription_from_parameters(subscription, {'requery': hours_from_now(subscription.interval),
+                                                       'checked': get_current_time()})
 
 
 def download_subscription_elements(subscription, job_id=None):
@@ -219,8 +216,9 @@ def delete_expired_subscription_elements(manual):
     while True:
         print(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
-            if delete_subscription_post(element):
+            if element.media.has_file_access:
                 print(f"Deleting post of {element.shortlink}")
+                delete_subscription_post(element)
                 deleted_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
@@ -281,7 +279,7 @@ def redownload_element(element):
         nonlocal element
         initial_errors = [error.id for error in element.errors]
         if convert_network_subscription(element) and element.post_id is not None:
-            update_subscription_element_status(element, 'active')
+            update_subscription_element_from_parameters(element, {'status': 'active'})
             if element.post.is_video:
                 SessionThread(target=convert_mp4_to_webp,
                               args=(element.post.file_path, element.post.video_preview_path)).start()
@@ -295,8 +293,7 @@ def redownload_element(element):
                 msg = f'Duplicate of {element.illust_url.post.shortlink}'
             return {'error': True, 'message': msg}
         else:
-            update_subscription_element_status(element, 'error')
-            update_subscription_element_keep(element, 'unknown')
+            update_subscription_element_from_parameters(element, {'status': 'error', 'keep': 'unknown'})
             new_errors = [error for error in element.errors if error.id not in initial_errors]
             msg = '; '.join(f"{error.module}: {error.message}" for error in new_errors) or "Unknown error."
             return {'error': True, 'message': msg}
@@ -313,9 +310,9 @@ def reinstantiate_element(element):
     archive = get_archive('post', element.md5)
     if archive is None:
         if get_post_by_md5(element.md5) is not None:
-            update_subscription_element_status(element, 'unlinked')
+            update_subscription_element_from_parameters(element, {'status': 'unlinked'})
         else:
-            update_subscription_element_status(element, 'deleted')
+            update_subscription_element_from_parameters(element, {'status': 'deleted'})
         return {'error': True, 'message': f'Post archive with MD5 {element.md5} does not exist.'}
     results = recreate_archived_post(archive, False)
     if results['error']:
@@ -325,8 +322,7 @@ def reinstantiate_element(element):
                                                     SubscriptionElement.status_filter('name', '__eq__', 'unlinked'))\
                                             .first()
         if unlinked is not None:
-            update_subscription_element_status(element, 'duplicate')
-            update_subscription_element_keep(element, 'unknown')
+            update_subscription_element_from_parameters(element, {'status': 'duplicate', 'keep': 'unknown'})
         return results
     relink_element(element)
     return {'error': False}
@@ -336,9 +332,9 @@ def relink_element(element):
     post = get_post_by_md5(element.md5)
     if post is None:
         if get_archive('post', element.md5) is not None:
-            update_subscription_element_status(element, 'archived')
+            update_subscription_element_from_parameters(element, {'status': 'archived'})
         else:
-            update_subscription_element_status(element, 'deleted')
+            update_subscription_element_from_parameters(element, {'status': 'deleted'})
         return {'error': True, 'message': f'Post with MD5 {element.md5} does not exist.'}
     link_subscription_post(element, post)
     return {'error': False}

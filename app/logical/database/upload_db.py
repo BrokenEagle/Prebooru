@@ -1,72 +1,61 @@
 # APP/LOGICAL/DATABASE/UPLOAD_DB.PY
 
-# ## PYTHON IMPORTS
-import re
-
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time
+from utility.data import merge_dicts
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...enum_imports import upload_status
 from ...models import Upload, UploadUrl
-from .base_db import set_column_attributes, commit_or_flush
+from .error_db import append_error
+from .base_db import set_column_attributes, set_relationship_collections, commit_or_flush, save_record
 
 
 # ## GLOBAL VARIABLES
 
-CREATE_ALLOWED_ATTRIBUTES = ['illust_url_id', 'media_filepath', 'sample_filepath', 'request_url', 'active',
-                             'image_urls']
+ALL_SCALAR_RELATIONSHIPS = [('image_urls', 'url', UploadUrl)]
+
+ANY_WRITABLE_COLUMNS = ['successes', 'failures', 'status_id']
+NULL_WRITABLE_ATTRIBUTES = ['request_url', 'media_filepath', 'sample_filepath', 'illust_url_id']
 
 
 # ## FUNCTIONS
 
-# #### DB Functions
-
-# ###### CREATE
+# #### Create
 
 def create_upload_from_parameters(createparams, commit=True):
-    data = {
-        'successes': 0,
-        'failures': 0,
-        'status_id': upload_status.pending.id,
-        'created': get_current_time(),
-    }
-    upload = Upload(**data)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(Upload.all_columns)
-    set_column_attributes(upload, update_columns, createparams)
-    if 'image_urls' in createparams and len(createparams['image_urls']):
-        _update_illust_urls(upload, createparams['image_urls'])
-    commit_or_flush(commit)
-    print("[%s]: created" % upload.shortlink)
+    mergedparams = merge_dicts(
+        createparams,
+        {
+            'successes': 0,
+            'failures': 0,
+            'status': 'pending',
+        }
+    )
+    return set_upload_from_parameters(Upload(), mergedparams, commit, 'created')
+
+
+# #### Update
+
+def update_upload_from_parameters(upload, updateparams, commit=True):
+    return set_upload_from_parameters(upload, updateparams, commit, 'updated')
+
+
+# #### Set
+
+def set_upload_from_parameters(upload, setparams, commit, action):
+    if 'status' in setparams:
+        setparams['status_id'] = upload_status.by_name(setparams['status']).id
+    col_result = set_column_attributes(upload, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams)
+    if col_result:
+        commit_or_flush(False, safe=True)
+    rel_result = set_relationship_collections(upload, ALL_SCALAR_RELATIONSHIPS, setparams)
+    if any([col_result, rel_result]):
+        save_record(upload, commit, action)
     return upload
 
 
-# #### Misc functions
+# #### Misc
 
-def has_duplicate_posts(upload):
-    return any(re.match(r'Image already uploaded on post #\d+', error.message) for error in upload.errors)
-
-
-def set_upload_status(upload, value):
-    upload.status_id = upload_status.by_name(value).id
-    SESSION.commit()
-
-
-def add_upload_success(upload):
-    upload.successes += 1
-    SESSION.commit()
-
-
-def add_upload_failure(upload):
-    upload.failures += 1
-    SESSION.commit()
-
-
-# #### Private
-
-def _update_illust_urls(upload, urllist):
-    for url in urllist:
-        upload_url = UploadUrl(url=url, upload_id=upload.id)
-        SESSION.add(upload_url)
+def add_upload_error(upload, error):
+    append_error(upload, error, commit=False)
+    update_upload_from_parameters(upload, {'status': 'error'}, commit=True)

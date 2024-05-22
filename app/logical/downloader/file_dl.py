@@ -16,12 +16,10 @@ from .base_dl import load_post_image, check_existing, check_filetype, check_imag
 
 def convert_file_upload(upload):
     if upload.file_illust_url.type == 'image':
-        post = create_image_post(upload, 'user')
+        result = create_image_post(upload, 'user')
     elif upload.file_illust_url.type == 'video':
-        post = create_video_post(upload, 'user')
-    if post is not None:
-        record_outcome(post, upload)
-    return post is not None
+        result = create_video_post(upload, 'user')
+    return record_outcome(result, upload)
 
 
 # #### Post creation functions

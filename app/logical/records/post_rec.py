@@ -25,7 +25,7 @@ from ..database.post_db import delete_post,\
     get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id, create_post
 from ..database.media_asset_db import update_media_asset_from_parameters
 from ..database.error_db import create_error
-from ..database.archive_db import set_archive_temporary
+from ..database.archive_db import update_archive_from_parameters
 from .base_rec import delete_data
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
@@ -211,7 +211,7 @@ def recreate_archived_post(archive):
                             post.video_sample_path, create_sample)).start()
     SessionThread(target=process_image_matches, args=([post.id],)).start()
     retdata['item'] = post.to_json()
-    set_archive_temporary(archive, 7)
+    update_archive_from_parameters(archive, {'days': 7})
     return retdata
 
 
@@ -390,6 +390,7 @@ def _get_video_thumb_binary(post):
         print("Downloading", download_url)
         buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
         if isinstance(buffer, str):
-            create_error('records.post_rec._get_video_thumb_binary', "Download URL: %s => %s" % (download_url, buffer))
+            error = create_error('post_rec.get_video_thumb_binary', "Download URL: %s => %s" % (download_url, buffer))
+            append_error(post, error)
             continue
         return buffer

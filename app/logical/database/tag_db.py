@@ -4,14 +4,15 @@
 
 
 # ## LOCAL IMPORTS
-from ...models import SiteTag, UserTag, Post
+from ...models import Tag, SiteTag, UserTag, Post
 from ..utility import set_error
-from .base_db import set_column_attributes, commit_or_flush
+from .base_db import set_column_attributes, commit_or_flush, save_record
 
 
 # ## GLOBAL VARIABLES
 
-CREATE_ALLOWED_ATTRIBUTES = ['name']
+ANY_WRITABLE_COLUMNS = ['name']
+NULL_WRITABLE_ATTRIBUTES = []
 
 TAG_MODEL_DICT = {
     'site_tag': SiteTag,
@@ -25,15 +26,18 @@ ID_MODEL_DICT = {
 
 # ## FUNCTIONS
 
+# #### Create
+
 def create_tag_from_parameters(createparams, commit=True):
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(Tag.all_columns)
+    if 'type_id' in createparams:
+        createparams['type'] = Tag.type_enum.by_id(createparams['type_id']).name
     tag = TAG_MODEL_DICT[createparams['type']]()
-    set_column_attributes(tag, update_columns, createparams)
-    commit_or_flush(commit)
-    print("[%s]: created" % tag.shortlink)
+    set_column_attributes(tag, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    save_record(tag, commit, 'created')
     return tag
 
+
+# #### Misc
 
 def append_tag_to_item(tag, append_key, dataparams):
     retdata = {'error': False, 'item': tag.to_json()}

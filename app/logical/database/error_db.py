@@ -1,42 +1,36 @@
 # APP/LOGICAL/DATABASE/ERROR_DB.PY
 
-# ## PACKAGE IMPORTS
-from utility.time import get_current_time
-
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Error
-from .base_db import update_column_attributes
+from .base_db import set_column_attributes, commit_or_flush, save_record, add_record, delete_record
 
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['module', 'message']
-
-CREATE_ALLOWED_ATTRIBUTES = ['module', 'message']
+ANY_WRITABLE_COLUMNS = ['module', 'message']
+NULL_WRITABLE_ATTRIBUTES = []
 
 
 # ## FUNCTIONS
 
-# #### DB functions
+# #### Create
 
-# ###### CREATE
-
-def create_error_from_parameters(createparams):
-    current_time = get_current_time()
-    error = Error(created=current_time)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(error, update_columns, createparams, commit=False)
-    print("[%s]: created" % error.shortlink)
-    return error
+def create_error_from_parameters(createparams, commit=True):
+    return set_error_from_parameters(Error(), createparams, commit, 'created')
 
 
 def create_error_from_json(data):
     error = Error.loads(data)
-    SESSION.add(error)
-    SESSION.commit()
-    print("[%s]: created" % error.shortlink)
+    add_record(error)
+    save_record(error, True, 'created')
+    return error
+
+
+# #### Set
+
+def set_error_from_parameters(error, setparams, commit, action):
+    if set_column_attributes(error, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(error, commit, action)
     return error
 
 
@@ -44,40 +38,31 @@ def create_error_from_json(data):
 
 # ###### Create
 
-def create_error(module_name, message):
-    error = create_error_from_parameters({'module': module_name, 'message': message})
-    SESSION.commit()
-    return error
-
-
-def create_and_append_error(module_name, message, instance):
-    error = create_error_from_parameters({'module': module_name, 'message': message})
-    append_error(instance, error)
-    return error
+def create_error(module_name, message, commit=True):
+    return create_error_from_parameters({'module': module_name, 'message': message}, commit)
 
 
 # ###### Delete
+
 def delete_error(error):
-    SESSION.delete(error)
-    SESSION.commit()
+    delete_record(error)
+    commit_or_flush(True)
 
 
 # ###### Add relationship
 
-def extend_errors(instance, errors):
+def extend_errors(instance, errors, commit=True):
     for error in errors:
         append_error(instance, error, commit=False)
-    SESSION.commit()
+    commit_or_flush(commit)
 
 
 def append_error(instance, error, commit=True):
+    instance.errors
     table_name = instance.table_name
     append_key = table_name + '_id'
     setattr(error, append_key, instance.id)
-    if commit:
-        SESSION.commit()
-    else:
-        SESSION.flush()
+    commit_or_flush(commit)
 
 
 # ###### Test
