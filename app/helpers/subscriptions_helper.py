@@ -224,7 +224,7 @@ def element_preview_link(element, lazyload):
         return post_preview_link(element.post_match, lazyload)
     if element.archive_match is not None:
         return archive_preview_link(element.archive_match, lazyload)
-    preview_url = element.illust_url.preview_url
+    preview_url = element.illust_url.full_preview_url
     title = f"( {element.illust_url.width} x  {element.illust_url.height} )"
     addons = {
         'data-src': preview_url,

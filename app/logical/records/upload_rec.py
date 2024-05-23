@@ -11,7 +11,7 @@ from utility.uprint import buffered_print, print_warning
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Upload, Illust
+from ...models import Upload
 from ..utility import unique_objects, SessionThread
 from ..sources.base_src import get_post_source
 from ..records.artist_rec import update_artist_from_source, check_artists_for_boorus
@@ -21,10 +21,10 @@ from ..records.image_hash_rec import generate_post_image_hashes
 from ..records.similarity_match_rec import generate_similarity_matches
 from ..database.base_db import safe_db_execute
 from ..database.illust_db import get_site_illust, get_site_illusts
-from ..database.upload_db import update_upload_from_parameters
+from ..database.upload_db import update_upload_from_parameters, add_upload_error
 from ..database.upload_element_db import create_upload_element_from_parameters
 from ..database.post_db import get_posts_by_id
-from ..database.error_db import append_error
+from ..database.error_db import create_error, append_error
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
 from ..downloader.network_dl import convert_network_upload
 from ..downloader.file_dl import convert_file_upload
@@ -93,7 +93,7 @@ def populate_upload_elements(upload, illust=None):
             return
     else:
         source = illust.site.source
-    all_upload_urls = [source.normalize_image_url(upload_url.url) for upload_url in upload.image_urls]
+    all_upload_urls = [source.normalize_partial_image_url(upload_url.url) for upload_url in upload.image_urls]
     upload_elements = list(upload.elements)
     for illust_url in illust.urls:
         if (len(all_upload_urls) > 0) and (illust_url.url not in all_upload_urls):
@@ -159,11 +159,11 @@ def process_network_upload(upload):
     # The artist will have already been created in the create illust step if it didn't exist
     if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist)
-    all_upload_urls = [no_file_extension(source.normalize_image_url(upload_url.url))
+    all_upload_urls = [no_file_extension(source.normalize_partial_image_url(upload_url.url))
                        for upload_url in upload.image_urls]
     upload_elements = upload.elements
     image_upload = source.is_image_url(upload.request_url)
-    normalized_request_url = no_file_extension(source.normalize_image_url(upload.request_url)) if image_upload else None
+    normalized_request_url = no_file_extension(source.normalize_partial_image_url(upload.request_url)) if image_upload else None
     for illust_url in illust.urls:
         normalized_illust_url = no_file_extension(illust_url.url)
         if image_upload and normalized_request_url != normalized_illust_url:

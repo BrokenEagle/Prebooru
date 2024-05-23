@@ -70,7 +70,7 @@ def download_media(illust_url, record, sample):
         return [buffer]
     # Try alternate URL if the primary URL fails
     error = buffer
-    alternate_url = source.get_alternate_url(illust_url) if not sample else source.get_sample_url(illust_url, False)
+    alternate_url = illust_url.full_alternate_url if not sample else source.get_sample_url(illust_url, False)
     if alternate_url is None:
         return [error]
     buffer = _download_media(alternate_url, source)

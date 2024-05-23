@@ -150,40 +150,12 @@ def is_post_url(url):
     return bool(ARTWORKS_RG.match(url))
 
 
-def get_media_url(illust_url):
-    return 'https://' + illust_url.site.domain + illust_url.url
-
-
-def get_post_url(illust):
+def get_primary_url(illust):
     return ILLUST_HREFURL % illust.site_illust_id
 
 
-def get_illust_url(site_illust_id):
-    return ILLUST_HREFURL % site_illust_id
-
-
-def image_illust_download_urls(illust):
-    return list(filter(lambda x: image_url_mapper, illust.urls))
-
-
-def get_full_url(illust_url):
-    return get_media_url(illust_url)
-
-
 def get_alternate_url(illust_url):
-    pass
-
-
-def get_preview_url(illust_url):
-    return small_image_url(get_full_url(illust_url))
-
-
-def image_url_mapper(x):
-    return is_image_url(get_full_url(x))
-
-
-def video_url_mapper(x):
-    return is_video_url(get_full_url(x))
+    return None
 
 
 # Artist

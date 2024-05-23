@@ -135,8 +135,20 @@ class Illust(JsonModel):
         return any(illust_url.type == 'video' for illust_url in self.urls)
 
     @property
+    def primary_url(self):
+        return self.site.source.get_primary_url(self)
+
+    @property
+    def secondary_url(self):
+        return self.site.source.get_secondary_url(self)
+
+    @property
     def site_domain(self):
         return self.site.domain
+
+    @property
+    def shortlink(self):
+        return "%s #%d" % (illust.site.name.lower(), illust.site_illust_id)
 
     @property
     def key(self):

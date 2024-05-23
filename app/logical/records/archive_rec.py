@@ -1,17 +1,9 @@
 # APP/LOGICAL/RECORDS/ARCHIVE_REC.PY
 
-# ## PYTHON IMPORTS
-import os
-import logging
-
-# ## PACKAGE IMPORTS
-from utility.uprint import exception_print
-from utility.file import delete_file
-
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..database.base_db import record_from_json
-from ..database.archive_db import ARCHIVE_DIRECTORY, get_archive, create_archive_from_parameters,\
+from ..database.archive_db import get_archive, create_archive_from_parameters,\
     update_archive_from_parameters
 
 
@@ -29,7 +21,7 @@ def archive_record(record, days, commit=True):
             'days': days,
         }
         if model_name == 'post':
-            parameters['media_asset_id'] = post.media_asset_id
+            parameters['media_asset_id'] = record.media_asset_id
         return create_archive_from_parameters(parameters, commit)
     return update_archive_from_parameters(archive, {'data': record.archive(), 'days': days}, commit)
 

@@ -53,11 +53,11 @@ def similar_search_links(post, format_url, proxy_url=None):
                 image_links.append('N/A')
             continue
         source = illust.site.source
-        media_url = source.get_media_url(illust_url)
+        media_url = illust_url.full_url
         if source.is_video_url(media_url):
-            small_url = source.get_sample_url(illust_url)
+            small_url = illust_url.full_sample_url
         else:
-            small_url = source.small_image_url(media_url)
+            small_url = illust_url.full_preview_url
         encoded_url = urllib.parse.quote_plus(small_url)
         href_url = format_url + encoded_url
         image_links.append(external_link(illust.shortlink, href_url))
@@ -157,7 +157,7 @@ def danbooru_post_bookmarklet_links(post):
             image_links.append(external_link(f'file #{illust.id}', url))
             continue
         source = illust.site.source
-        media_url = source.get_media_url(illust_url)
+        media_url = illust_url.full_url
         post_url = source.get_post_url(illust)
         query_string = urllib.parse.urlencode({'url': media_url, 'ref': post_url})
         href_url = DANBOORU_HOSTNAME + '/uploads/new?' + query_string

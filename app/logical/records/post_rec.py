@@ -14,17 +14,19 @@ from utility.uprint import buffered_print
 
 # ### LOCAL IMPORTS
 from ... import SESSION
-from ...models import Post
+from ...models import Post, MediaAsset
 from ..utility import set_error, SessionThread
 from ..logger import handle_error_message
 from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm
-from ..database.post_db import delete_post,\
-    get_posts_to_query_danbooru_id_page, update_post_from_parameters, alternate_posts_query,\
-    get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id, create_post
-from ..database.media_asset_db import update_media_asset_from_parameters
-from ..database.error_db import create_error
+from ..database.post_db import delete_post, create_post_from_parameters, update_post_from_parameters,\
+    get_posts_to_query_danbooru_id_page, alternate_posts_query,\
+    get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id
+from ..database.media_asset_db import create_media_asset_from_parameters, update_media_asset_from_parameters,\
+    get_media_asset_by_md5
+from ..database.illust_url_db import update_illust_url_from_parameters
+from ..database.error_db import create_error, append_error
 from ..database.archive_db import update_archive_from_parameters
 from .base_rec import delete_data
 from .image_hash_rec import generate_post_image_hashes
@@ -40,6 +42,7 @@ REVERSE_MEDIA_LOCATION = {
     'primary': 'alternate',
     'alternate': 'primary',
 }
+
 
 # ## FUNCTIONS
 
@@ -114,7 +117,7 @@ def create_post_record(illust_url, width, height, file_ext, md5, size, post_type
         delete_file(media_asset.original_file_path)
         delete_file(media_asset.image_sample_path)
         delete_file(media_asset.image_preview_path)
-        if post.media.is_video:
+        if media_asset.is_video:
             delete_file(media_asset.video_sample_path)
             delete_file(media_asset.video_preview_path)
         media_asset = update_media_asset_from_parameters(media_asset, media_params, commit=False)
@@ -369,8 +372,6 @@ def _load_file(post):
         has_sample = post.has_sample
         has_preview = post.has_preview
         downsample_sample = downsample_preview = True
-    elif post.file_ext == 'gif':
-        pass
     elif post.file_ext == 'mp4':
         create_directory(TEMP_DIRECTORY)
         save_path = os.path.join(TEMP_DIRECTORY, post.md5 + '.' + 'jpg')
@@ -386,7 +387,7 @@ def _load_file(post):
 def _get_video_thumb_binary(post):
     for illust_url in post.illust_urls:
         source = illust_url.site.source
-        download_url = source.get_sample_url(illust_url)
+        download_url = illust_url.full_sample_url
         print("Downloading", download_url)
         buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
         if isinstance(buffer, str):

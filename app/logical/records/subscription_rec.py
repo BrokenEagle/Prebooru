@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from config import POPULATE_ELEMENTS_PER_PAGE, SYNC_MISSING_ILLUSTS_PER_PAGE, DOWNLOAD_POSTS_PER_PAGE,\
     UNLINK_ELEMENTS_PER_PAGE, DELETE_ELEMENTS_PER_PAGE, ARCHIVE_ELEMENTS_PER_PAGE,\
     DOWNLOAD_POSTS_PAGE_LIMIT, EXPIRE_ELEMENTS_PAGE_LIMIT
-from utility.time import days_from_now, hours_from_now, days_ago
+from utility.time import days_from_now, hours_from_now, days_ago, get_current_time
 from utility.uprint import buffered_print, print_info
 
 # ## LOCAL IMPORTS

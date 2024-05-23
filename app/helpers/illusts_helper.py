@@ -59,14 +59,6 @@ def site_date_iterator(illust):
 
 # #### URL functions
 
-def site_short_link(illust):
-    return "%s #%d" % (illust.site.name.lower(), illust.site_illust_id)
-
-
-def site_illust_url(illust):
-    return illust.site.source.get_illust_url(illust.site_illust_id)
-
-
 def danbooru_batch_url(illust):
     source = illust.site.source
     post_url = source.get_post_url(illust)
@@ -152,12 +144,12 @@ def site_illust_link(illust):
     if illust.site_id == site_descriptor.custom.id:
         # Need to add a post_url for CustomData, a subclass for SiteData
         return Markup("N/A")
-    return external_link(site_short_link(illust), site_illust_url(illust))
+    return external_link(illust.shortlink, illust.primary_url)
 
 
 def alt_site_illust_link(illust):
     if illust.site_id == site_descriptor.custom.id:
         return ""
-    source = illust.site.source
-    post_url = source.get_post_url(illust)
-    return external_link('»', post_url) if post_url != source.get_illust_url(illust.site_illust_id) else ""
+    primary_url = illust.primary_url
+    secondary_url = illust.secondary_url
+    return external_link('»', secondary_url) if secondary_url != primary_url else ""

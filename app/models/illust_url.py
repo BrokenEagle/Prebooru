@@ -51,28 +51,48 @@ class IllustUrl(JsonModel):
 
     @memoized_property
     def type(self):
-        if self.site.source.video_url_mapper(self):
+        if self.site.source.is_video_url(self.full_url):
             return 'video'
-        elif self.site.source.image_url_mapper(self):
+        elif self.site.source.is_image_url(self.full_url):
             return 'image'
         else:
             return 'unknown'
 
+    @property
+    def full_url(self):
+        return 'https://' + self.site_domain + self.url
+
     @memoized_property
-    def preview_url(self):
+    def full_preview_url(self):
         if self.type == 'image':
-            return self.site.source.get_preview_url(self)
+            return self.site.source.small_image_url(self.full_url)
         elif self.type == 'video':
             return self.full_sample_url
+        return None
 
     @memoized_property
-    def full_url(self):
-        return self.site.source.get_media_url(self)
+    def full_original_url(self):
+        if self.type == 'image':
+            return self.site.source.original_image_url(self.full_url)
+        elif self.type == 'video':
+            return self.full_url
+        return None
 
     @memoized_property
+    def full_alternate_url(self):
+        if self.type == 'image':
+            return self.site.source.alternate_image_url(self.full_url)
+        return None
+
+    @property
     def full_sample_url(self):
         if self.type == 'video':
-            return self.site.source.get_sample_url(self)
+            return 'https://' + self.sample_site.domain + self.sample_url
+
+    @property
+    def full_alternate_sample_url(self):
+        if self.type == 'video':
+            return self.site.source.alternate_image_url(self.full_url)
 
     @property
     def site_domain(self):
@@ -96,7 +116,7 @@ class IllustUrl(JsonModel):
     @classmethod
     def find_by_key(cls, full_url):
         site = site_descriptor.get_site_from_url(full_url)
-        partial = site.source.partial_media_url(full_url)
+        partial = site.source.get_partial_media_url(full_url)
         return cls.query.filter(cls.column_map['site_id'] == site.id, cls.url == partial).one_or_none()
 
     @classmethod
@@ -104,11 +124,11 @@ class IllustUrl(JsonModel):
         if 'url' in data and data['url'].startswith('http'):
             site = site_descriptor.get_site_from_url(data['url'])
             data['site_id'] = site.id
-            data['url'] = site.source.partial_media_url(data['url'])
+            data['url'] = site.source.get_partial_media_url(data['url'])
         if 'sample' in data and data['sample'] is not None and data['sample'].startswith('http'):
             site = site_descriptor.get_site_from_url(data['sample'])
             data['sample_site_id'] = site.id
-            data['sample_url'] = site.source.partial_media_url(data['sample'])
+            data['sample_url'] = site.source.get_partial_media_url(data['sample'])
         return super().loads(data)
 
     archive_excludes = {'url', 'site', 'site_id', 'sample', 'sample_url', 'sample_site_id'}
