@@ -11,15 +11,14 @@ import urllib
 import datetime
 
 # ## EXTERNAL IMPORTS
-import requests
 import httpx
 from wtforms import RadioField, BooleanField, IntegerField, TextField
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN, TWITTER_MINIMUM_QUERY_INTERVAL
-from utility.data import safe_get, decode_json, fixup_crlf, safe_check
+from utility.data import safe_get, fixup_crlf, safe_check
 from utility.time import get_current_time, datetime_from_epoch
-from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
+from utility.file import get_file_extension, get_http_filename, put_get_json
 from utility.uprint import print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
@@ -66,32 +65,35 @@ TWVIDEO_HOST_RG = re.compile(r'https?://video\.twimg\.com', re.IGNORECASE)
 # ###### Partial URL regexes
 
 TWEET1_PARTIAL_RG = re.compile(r"""
-/[\w-]+                                 # Account
+/
+(?P<account>[\w-]+)
 /status
-/(\d+)                                  # ID
+/
+(?P<id>\d+)
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
 TWEET2_PARTIAL_RG = re.compile(r"""
-/i/web/status
-/(\d+)                                  # ID
+/i/web/status/
+(?P<id>\d+)
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
 USERS1_PARTIAL_RG = re.compile(r"""
-/([\w-]+)                               # Account
+/
+(?P<account>[\w-]+)
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
 USERS2_PARTIAL_RG = re.compile(r"""
 /intent/user\?user_id=
-(\d+)                                   # User ID
+(?P<id>\d+)
 $                                       # End
 """, re.X | re.IGNORECASE)
 
 USERS3_PARTIAL_RG = re.compile(r"""
-/i/user
-/(\d+)                                  # User ID
+/i/user/
+(?P<id>\d+)
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
@@ -268,11 +270,6 @@ IMAGE_URL_HANDLERS = [
 
 # #### Network variables
 
-REQUEST_METHODS = {
-    'GET': requests.get,
-    'POST': requests.post
-}
-
 XREQUEST_METHODS = {
     'GET': httpx.get,
     'POST': httpx.post
@@ -281,15 +278,12 @@ XREQUEST_METHODS = {
 TWITTER_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
                "Zz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
 
-TWITTER_USER_HEADERS = {
+TWITTER_HEADERS = {
     'user-agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',  # noqa: E501
     'authorization': 'Bearer ' + TWITTER_AUTH,
     'x-csrf-token': TWITTER_CSRF_TOKEN,
     'cookie': f'auth_token={TWITTER_USER_TOKEN}; ct0={TWITTER_CSRF_TOKEN}'
 }
-
-HAS_USER_AUTH = TWITTER_USER_TOKEN is not None and TWITTER_CSRF_TOKEN is not None
-TWITTER_HEADERS = TWITTER_USER_HEADERS if HAS_USER_AUTH else None
 
 TWITTER_ILLUST_TIMELINE_GRAPHQL_FEATURES = {
     "rweb_lists_timeline_redesign_enabled": True,
@@ -471,7 +465,6 @@ PROCESS_FORM_CONFIG = {
 IMAGE_SERVER = 'https://pbs.twimg.com'
 TWITTER_SIZES = [':orig', ':large', ':medium', ':small']
 
-TOKEN_FILE = os.path.join(DATA_DIRECTORY, 'twittertoken.txt')
 ERROR_TWEET_FILE = os.path.join(DATA_DIRECTORY, 'twittererror.json')
 
 LAST_QUERY = None
@@ -483,6 +476,10 @@ LAST_QUERY = None
 
 # ###### Artists
 
+def artist_booru_search_url(artist):
+    return 'https://twitter.com/intent/user?user_id=%d' % artist.site_artist_id
+
+
 def artist_links(artist):
     return {
         'main': artist_main_url(artist),
@@ -492,10 +489,6 @@ def artist_links(artist):
     }
 
 
-def artist_screen_name(artist):
-    return artist.current_site_account if artist.current_site_account is not None else artist.site_accounts[0]
-
-
 def artist_profile_urls(artist):
     profile_urls = ['https://twitter.com/intent/user?user_id=%d' % artist.site_artist_id]
     for site_account in artist.site_accounts:
@@ -503,13 +496,8 @@ def artist_profile_urls(artist):
     return profile_urls
 
 
-def artist_booru_search_url(artist):
-    return 'https://twitter.com/intent/user?user_id=%d' % artist.site_artist_id
-
-
 def artist_main_url(artist):
-    screen_name = artist_screen_name(artist)
-    return 'https://twitter.com/%s' % screen_name
+    return 'https://twitter.com/%s' % artist.current_site_account
 
 
 def artist_media_url(artist):
@@ -565,20 +553,22 @@ def is_artist_id_url(url):
     return bool(USERS2_RG.match(url) or USERS3_RG.match(url))
 
 
-def get_artist_id_url_id(artist_url):
+def get_artist_id_from_url(artist_url):
     match = USERS2_RG.match(artist_url) or USERS3_RG.match(artist_url)
     if match:
-        return match.group(1)
+        return match.group('id')
+    return None
 
 
 def get_artist_id(artist_url):
-    match = USERS2_RG.match(artist_url) or USERS3_RG.match(artist_url)
-    if match:
-        return match.group(1)
+    artist_id = get_artist_id_from_url(artist_url)
+    if artist_id is not None:
+        return artist_id
     match = USERS1_RG.match(artist_url)
     if match:
-        screen_name = match.group(1)
+        screen_name = match.group('account')
         return get_twitter_user_id(screen_name)
+    return None
 
 
 # ###### Post URLs
@@ -592,7 +582,7 @@ def is_request_url(request_url):
 
 
 def get_illust_id(request_url):
-    return int(TWEET1_RG.match(request_url).group(1))
+    return int(TWEET1_RG.match(request_url).group('id'))
 
 
 # ###### Media URLs
@@ -973,30 +963,9 @@ def source_prework(site_illust_id):
     save_api_data(twusers, 'id_str', SITE.id, api_data_type.artist.id)
 
 
-# #### Token functions
+# #### Network
 
-def load_guest_token():
-    global TOKEN_TIMESTAMP
-    try:
-        TOKEN_TIMESTAMP = os.path.getmtime(TOKEN_FILE) if os.path.exists(TOKEN_FILE) else None
-        data = load_default(TOKEN_FILE, {"token": None})
-        return str(data['token']) if data['token'] is not None else None
-    except Exception:
-        return None
-
-
-def save_guest_token(guest_token):
-    put_get_json(TOKEN_FILE, 'w', {"token": str(guest_token)})
-
-
-def check_token_file():
-    global TOKEN_TIMESTAMP
-    last_timestamp = TOKEN_TIMESTAMP if 'TOKEN_TIMESTAMP' in globals() else None
-    TOKEN_TIMESTAMP = os.path.getmtime(TOKEN_FILE) if os.path.exists(TOKEN_FILE) else None
-    return last_timestamp == TOKEN_TIMESTAMP
-
-
-# #### Network auxiliary functions
+# ###### Auxiliary
 
 def get_global_objects(data, type_name):
     objects = safe_get(data['body'], 'globalObjects', type_name)
@@ -1034,15 +1003,8 @@ def get_twitter_scroll_bottom_cursor(data):
                 return cursor
 
 
-def timeline_iterator(data, cursor, tweet_ids, seen_users, user_id=None, last_id=None, v2=False, **kwargs):
-    if v2:
-        results = get_graphql_timeline_entries_v2(data['body'])
-    else:
-        results =\
-            {
-                'tweets': {tweet['id_str']: tweet for tweet in get_global_objects(data, 'tweets')},
-                'users': {user['id_str']: user for user in get_global_objects(data, 'users')},
-            }
+def timeline_iterator(data, cursor, tweet_ids, seen_users, user_id=None, last_id=None, **kwargs):
+    results = get_graphql_timeline_entries_v2(data['body'])
     tweets = [tweet for tweet in results['tweets'].values()]
     if len(results['tweets']) == 0:
         # Only check on the first iteration
@@ -1062,7 +1024,7 @@ def timeline_iterator(data, cursor, tweet_ids, seen_users, user_id=None, last_id
         tweet_ids.clear()
         tweet_ids.extend(valid_ids)
         return True
-    found_cursor = results['cursors']['bottom'] if v2 else get_twitter_scroll_bottom_cursor(data)
+    found_cursor = results['cursors']['bottom']
     if found_cursor is None:
         print("Reached end of timeline!")
         return True
@@ -1104,113 +1066,6 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
         if len(tweet_ids) > len(old_tweet_ids):
             lowest_tweet_id = min(id for id in tweet_ids if id not in old_tweet_ids)
         page += 1
-
-
-# #### Network functions
-
-def check_guest_auth(func):
-    def wrapper(*args, **kwargs):
-        if not HAS_USER_AUTH and (TWITTER_HEADERS is None or not check_token_file()):
-            authenticate_guest()
-        return func(*args, **kwargs)
-    return wrapper
-
-
-def authenticate_guest(override=False):
-    global TWITTER_HEADERS
-    if HAS_USER_AUTH:
-        raise Exception("Should not authenticate with user auth.")
-    TWITTER_HEADERS = {
-        'authorization': 'Bearer %s' % TWITTER_AUTH
-    }
-    guest_token = load_guest_token() if not override else None
-    if guest_token is None:
-        print("Authenticating as guest...")
-        data = twitter_request('https://api.twitter.com/1.1/guest/activate.json', 'POST', False)
-        guest_token = str(data['body']['guest_token'])
-        save_guest_token(guest_token)
-    else:
-        print("Loaded guest token from file.")
-    TWITTER_HEADERS['x-guest-token'] = guest_token
-
-
-def reauthentication_check(response):
-    if response.status_code == 401:
-        return True
-    if response.status_code != 403:
-        return False
-    try:
-        resp_json = response.json()
-    except Exception:
-        return False
-    if 'errors' not in resp_json:
-        return False
-    if type(resp_json['errors']) is list:
-        error_code = safe_get(resp_json, 'errors', 0, 'code')
-    elif type(resp_json['errors']) is str:
-        error_json = decode_json(resp_json['errors'])
-        error_code = error_json and safe_get(error_json, 'code')
-    else:
-        return False
-    return error_code in [200, 239]
-
-
-def check_request_wait(wait):
-    if not wait:
-        return
-    next_wait = get_next_wait('twitter')
-    if next_wait is not None:
-        sleep_time = next_wait - get_current_time().timestamp()
-        if sleep_time > 0.0:
-            update_next_wait('twitter', TWITTER_MINIMUM_QUERY_INTERVAL + sleep_time)
-            print_info("Twitter request: sleeping -", sleep_time)
-            time.sleep(sleep_time)
-            return
-    update_next_wait('twitter', TWITTER_MINIMUM_QUERY_INTERVAL)
-
-
-@check_guest_auth
-def twitter_request(url, method='GET', wait=True, use_httpx=False):
-    check_request_wait(wait)
-    reauthenticated = False
-    rq_methods = REQUEST_METHODS if not use_httpx else XREQUEST_METHODS
-    for i in range(3):
-        try:
-            response = rq_methods[method](url, headers=TWITTER_HEADERS, timeout=10)
-        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError, httpx.ConnectTimeout) as e:
-            print_warning("Pausing for network timeout...")
-            error = e
-            time.sleep(5)
-            continue
-        if response.status_code == 200:
-            break
-        if not reauthenticated and reauthentication_check(response):
-            authenticate_guest(True)
-            reauthenticated = True
-        elif response.status_code == 429:
-            print_warning("Pausing for requests exceeded...")
-            error = "HTTP 429: Too many requests - rate limit exceeded."
-            time.sleep(300)
-        elif response.status_code in [503]:
-            print_warning("Pausing for server error:", response.text)
-            error = "HTTP 503: Server error."
-            time.sleep(60)
-        else:
-            reason = getattr(response, 'reason', None)
-            print_error("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, reason, response.text))
-            if DEBUG_MODE:
-                log_network_error('twitter_src.twitter_request', response)
-            msg = "HTTP %d - %s" % (response.status_code, reason)
-            return {'error': True, 'message': msg, 'response': response}
-    else:
-        print_error("Connection errors exceeded!")
-        message = error if isinstance(error, str) else repr(error)
-        return {'error': True, 'message': message}
-    try:
-        data = response.json()
-    except Exception:
-        return {'error': True, 'message': "Error decoding response into JSON.", 'response': response}
-    return {'error': False, 'body': data, 'response': response}
 
 
 def get_graphql_timeline_entries(data, found_tweets):
@@ -1266,6 +1121,61 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
     return retdata
 
 
+# ###### Request
+
+def check_request_wait(wait):
+    if not wait:
+        return
+    next_wait = get_next_wait('twitter')
+    if next_wait is not None:
+        sleep_time = next_wait - get_current_time().timestamp()
+        if sleep_time > 0.0:
+            update_next_wait('twitter', TWITTER_MINIMUM_QUERY_INTERVAL + sleep_time)
+            print_info("Twitter request: sleeping -", sleep_time)
+            time.sleep(sleep_time)
+            return
+    update_next_wait('twitter', TWITTER_MINIMUM_QUERY_INTERVAL)
+
+
+def twitter_request(url, method='GET', wait=True):
+    check_request_wait(wait)
+    for i in range(3):
+        try:
+            response = XREQUEST_METHODS[method](url, headers=TWITTER_HEADERS, timeout=10)
+        except (httpx.TimeoutException, httpx.ConnectError) as e:
+            print_warning("Pausing for network timeout...")
+            error = e
+            time.sleep(5)
+            continue
+        if response.status_code == 200:
+            break
+        elif response.status_code == 429:
+            print_warning("Pausing for requests exceeded...")
+            error = "HTTP 429: Too many requests - rate limit exceeded."
+            time.sleep(300)
+        elif response.status_code in [503]:
+            print_warning("Pausing for server error:", response.text)
+            error = "HTTP 503: Server error."
+            time.sleep(60)
+        else:
+            print_error("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, response.reason, response.text))
+            if DEBUG_MODE:
+                log_network_error('twitter_src.twitter_request', response)
+            message = "HTTP %d - %s" % (response.status_code, response.reason)
+            return {'error': True, 'message': message, 'response': response}
+    else:
+        print_error("Connection errors exceeded!")
+        message = error if isinstance(error, str) else repr(error)
+        return {'error': True, 'message': message}
+    try:
+        data = response.json()
+    except Exception:
+        return {'error': True, 'message': "Error decoding response into JSON.", 'response': response}
+    return {'error': False, 'body': data, 'response': response}
+
+
+# ###### Endpoints
+
 def get_twitter_illust_timeline(illust_id):
     print("Getting twitter #%d" % illust_id)
     illust_id_str = str(illust_id)
@@ -1276,8 +1186,7 @@ def get_twitter_illust_timeline(illust_id):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(variables),
                                         'features': json.dumps(features),
                                         'fieldToggles': json.dumps(field_toggles)})
-    data = twitter_request("https://twitter.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons,
-                           use_httpx=True)
+    data = twitter_request("https://twitter.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons)
     try:
         if data['error']:
             return ('twitter_src.get_twitter_illust_timeline', data['message'])
@@ -1300,12 +1209,57 @@ def get_twitter_illust_timeline(illust_id):
     return found_tweets
 
 
-def get_media_page(user_id, cursor=None):
-    params = TWITTER_BASE_PARAMS.copy()
-    if cursor is not None:
-        params['cursor'] = cursor
-    url_params = urllib.parse.urlencode(params)
-    return twitter_request(("https://api.twitter.com/2/timeline/media/%s.json?" % user_id) + url_params)
+def get_twitter_user_id(account):
+    print("Getting user ID: %s" % account)
+    jsondata = {
+        'screen_name': account,
+        'withHighlightedLabel': False
+    }
+    urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
+    request_url = 'https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
+                  'UserByScreenNameWithoutResults?%s' % urladdons
+    data = twitter_request(request_url, wait=False)
+    if data['error']:
+        return ('twitter_src.get_user_id', data['message'])
+    return safe_get(data, 'body', 'data', 'user', 'rest_id')
+
+
+def get_twitter_artist(artist_id):
+    print("Getting user #%d" % artist_id)
+    jsondata = {
+        'userId': str(artist_id),
+        'withHighlightedLabel': False,
+    }
+    urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
+    request_url = 'https://twitter.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
+                  'UserByRestIdWithoutResults?%s' % urladdons
+    data = twitter_request(request_url)
+    if data['error']:
+        return ('twitter_src.get_twitter_artist', data['message'])
+    twitterdata = data['body']
+    if 'errors' in twitterdata and len(twitterdata['errors']):
+        msg = 'Twitter error: ' + '; '.join([error['message'] for error in twitterdata['errors']])
+        return ('twitter_src.get_twitter_artist', msg)
+    userdata = safe_get(twitterdata, 'data', 'user')
+    if userdata is None or 'rest_id' not in userdata or 'legacy' not in userdata:
+        msg = "Error parsing data: %s" % json.dumps(twitterdata)
+        return ('twitter_src.get_twitter_artist', msg)
+    retdata = userdata['legacy']
+    retdata['id_str'] = userdata['rest_id']
+    return retdata
+
+
+def get_twitter_illust_v2(illust_id):
+    print("Getting twitter #%d" % illust_id)
+    illust_id_str = str(illust_id)
+    twitter_data = get_twitter_illust_timeline(illust_id)
+    if isinstance(twitter_data, tuple):
+        return twitter_data
+    for i in range(len(twitter_data)):
+        tweet = safe_get(twitter_data[i], 'result', 'legacy')
+        if tweet is not None and tweet['id_str'] == illust_id_str:
+            return tweet
+    return ('twitter_src.get_twitter_illust_v2', "Tweet not found: %d" % illust_id)
 
 
 def get_media_page_v2(user_id, count, cursor=None):
@@ -1316,18 +1270,7 @@ def get_media_page_v2(user_id, count, cursor=None):
     if cursor is not None:
         variables['cursor'] = cursor
     url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features)})
-    return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params,
-                           use_httpx=True)
-
-
-def get_search_page(query, cursor=None):
-    params = TWITTER_BASE_PARAMS.copy()
-    params.update(TWITTER_SEARCH_PARAMS)
-    params['q'] = query
-    if cursor is not None:
-        params['cursor'] = cursor
-    url_params = urllib.parse.urlencode(params)
-    return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params, use_httpx=True)
+    return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params)
 
 
 def get_search_page_v2(query, count, cursor=None):
@@ -1344,6 +1287,8 @@ def get_search_page_v2(query, count, cursor=None):
     return twitter_request("https://twitter.com/i/api/graphql/KUnA_SzQ4DMxcwWuYZh9qg/SearchTimeline?" + url_params)
 
 
+# ###### Subscription
+
 def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
     print("Populating from media page: %d" % (user_id))
 
@@ -1352,15 +1297,11 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
         job_status['range'] = 'media:' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        if HAS_USER_AUTH:
-            return get_media_page_v2(user_id, count, cursor)
-        else:
-            return get_media_page(user_id, cursor)
+        return get_media_page_v2(user_id, count, cursor)
 
     count = 100 if last_id is None else 20
     page = 1
-    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status,
-                             v2=HAS_USER_AUTH)
+    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status)
     return ('twitter_src.populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
@@ -1385,81 +1326,13 @@ def populate_twitter_search_timeline(account, since_date, until_date, filter_lin
         job_status['range'] = since_date + '..' + until_date + ':' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        if HAS_USER_AUTH:
-            return get_search_page_v2(query, count, cursor)
-        else:
-            return get_search_page(query, cursor)
+        return get_search_page_v2(query, count, cursor)
 
     count = 100
     page = 1
-    tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, v2=HAS_USER_AUTH, **kwargs)
+    tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, **kwargs)
     return ('twitter_src.populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
-
-
-def get_twitter_illust(illust_id):
-    print("Getting twitter #%d" % illust_id)
-    request_url = 'https://api.twitter.com/1.1/statuses/lookup.json?id=%d' % illust_id +\
-                  '&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true'
-    data = twitter_request(request_url, use_httpx=True)
-    if data['error']:
-        return ('twitter_src.get_twitter_illust', data['message'])
-    if len(data['body']) == 0:
-        return ('twitter_src.get_twitter_illust', "Tweet not found: %d" % illust_id)
-    return data['body'][0]
-
-
-def get_twitter_illust_v2(illust_id):
-    print("Getting twitter #%d" % illust_id)
-    illust_id_str = str(illust_id)
-    twitter_data = get_twitter_illust_timeline(illust_id)
-    if isinstance(twitter_data, tuple):
-        return twitter_data
-    for i in range(len(twitter_data)):
-        tweet = safe_get(twitter_data[i], 'result', 'legacy')
-        if tweet is not None and tweet['id_str'] == illust_id_str:
-            return tweet
-    return ('twitter_src.get_twitter_illust_v2', "Tweet not found: %d" % illust_id)
-
-
-def get_twitter_user_id(account):
-    print("Getting user ID: %s" % account)
-    jsondata = {
-        'screen_name': account,
-        'withHighlightedLabel': False
-    }
-    urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    request_url = 'https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
-                  'UserByScreenNameWithoutResults?%s' % urladdons
-    data = twitter_request(request_url, wait=False, use_httpx=True)
-    if data['error']:
-        return ('twitter_src.get_user_id', data['message'])
-    return safe_get(data, 'body', 'data', 'user', 'rest_id')
-
-
-def get_twitter_artist(artist_id):
-    print("Getting user #%d" % artist_id)
-    jsondata = {
-        'userId': str(artist_id),
-        'withHighlightedLabel': False,
-    }
-    urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    request_url = 'https://twitter.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
-                  'UserByRestIdWithoutResults?%s' % urladdons
-    data = twitter_request(request_url, use_httpx=True)
-    if data['error']:
-        return ('twitter_src.get_twitter_artist', data['message'])
-    twitterdata = data['body']
-    if 'errors' in twitterdata and len(twitterdata['errors']):
-        msg = 'Twitter error: ' + '; '.join([error['message'] for error in twitterdata['errors']])
-        return ('twitter_src.get_twitter_artist', msg)
-    userdata = safe_get(twitterdata, 'data', 'user')
-    if userdata is None or 'rest_id' not in userdata or 'legacy' not in userdata:
-        msg = "Error parsing data: %s" % json.dumps(twitterdata)
-        return ('twitter_src.get_twitter_artist', msg)
-    retdata = userdata['legacy']
-    retdata['id_str'] = userdata['rest_id']
-    return retdata
 
 
 # #### Convert
