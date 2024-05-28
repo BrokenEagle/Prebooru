@@ -50,7 +50,7 @@ def redownload_post(post, illust_url):
 
 def get_media_extension(illust_url):
     source = illust_url.site.source
-    full_url = source.get_full_url(illust_url)
+    full_url = illust_url.full_url
     file_ext = source.get_media_extension(full_url)
     if file_ext not in ['jpg', 'png', 'gif', 'mp4']:
         return create_error('network_dl.get_media_extension', "Unsupported file format: %s" % file_ext)
@@ -62,7 +62,7 @@ def get_media_extension(illust_url):
 
 def download_media(illust_url, record, sample):
     source = illust_url.site.source
-    download_url = source.get_full_url(illust_url) if not sample else source.get_sample_url(illust_url, True)
+    download_url = illust_url.full_url if not sample else illust_url.full_sample_url
     buffer = _download_media(download_url, source)
     if not is_error(buffer):
         return buffer
@@ -70,7 +70,7 @@ def download_media(illust_url, record, sample):
         return [buffer]
     # Try alternate URL if the primary URL fails
     error = buffer
-    alternate_url = illust_url.full_alternate_url if not sample else source.get_sample_url(illust_url, False)
+    alternate_url = illust_url.full_alternate_url
     if alternate_url is None:
         return [error]
     buffer = _download_media(alternate_url, source)

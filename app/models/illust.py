@@ -126,6 +126,10 @@ class Illust(JsonModel):
             return 'video'
         return 'unknown'
 
+    @property
+    def source(self):
+        return self.site.source
+
     @memoized_property
     def has_images(self):
         return any(illust_url.type == 'image' for illust_url in self.urls)
@@ -136,11 +140,11 @@ class Illust(JsonModel):
 
     @property
     def primary_url(self):
-        return self.site.source.get_primary_url(self)
+        return self.source.get_primary_url(self)
 
     @property
     def secondary_url(self):
-        return self.site.source.get_secondary_url(self)
+        return self.source.get_secondary_url(self)
 
     @property
     def site_domain(self):

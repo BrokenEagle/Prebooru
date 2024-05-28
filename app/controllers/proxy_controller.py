@@ -77,7 +77,7 @@ def danbooru_upload_data():
     else:
         illust = post.illusts[0]
     source = illust.site.source
-    post_url = source.get_post_url(illust)
+    post_url = illust.primary_url
     profile_urls = source.artist_profile_urls(illust.artist)
     illust_commentaries = source.illust_commentaries_dtext(illust)
     tags = source.BAD_ID_TAGS.copy() if not illust.active or not illust.artist.active else []

@@ -51,12 +51,16 @@ class IllustUrl(JsonModel):
 
     @memoized_property
     def type(self):
-        if self.site.source.is_video_url(self.full_url):
+        if self.source.is_video_url(self.full_url):
             return 'video'
-        elif self.site.source.is_image_url(self.full_url):
+        elif self.source.is_image_url(self.full_url):
             return 'image'
         else:
             return 'unknown'
+
+    @property
+    def source(self):
+        return self.site.source
 
     @property
     def full_url(self):
@@ -65,7 +69,7 @@ class IllustUrl(JsonModel):
     @memoized_property
     def full_preview_url(self):
         if self.type == 'image':
-            return self.site.source.small_image_url(self.full_url)
+            return self.source.small_image_url(self.full_url)
         elif self.type == 'video':
             return self.full_sample_url
         return None
@@ -73,7 +77,7 @@ class IllustUrl(JsonModel):
     @memoized_property
     def full_original_url(self):
         if self.type == 'image':
-            return self.site.source.original_image_url(self.full_url)
+            return self.source.original_image_url(self.full_url)
         elif self.type == 'video':
             return self.full_url
         return None
@@ -81,7 +85,7 @@ class IllustUrl(JsonModel):
     @memoized_property
     def full_alternate_url(self):
         if self.type == 'image':
-            return self.site.source.alternate_image_url(self.full_url)
+            return self.source.alternate_image_url(self.full_url)
         return None
 
     @property
@@ -92,7 +96,7 @@ class IllustUrl(JsonModel):
     @property
     def full_alternate_sample_url(self):
         if self.type == 'video':
-            return self.site.source.alternate_image_url(self.full_url)
+            return self.source.alternate_image_url(self.full_url)
 
     @property
     def site_domain(self):

@@ -268,6 +268,27 @@ IMAGE_URL_HANDLERS = [
     },
 ]
 
+VIDEO_URL_HANDLERS = [
+    {
+        'regex': VIDEO1_RG,
+        'partial':
+            lambda match: "/tweet_video/%s.%s" % (match.group('key'), match.group('ext')),
+    },
+    {
+        'regex': VIDEO2_RG,
+        'partial':
+            lambda match: "/%s/%s%s/vid/%s/%sx%s/%s.%s" % (match.group('type'), match.group('id'),
+                                                           match.group('path') or "", match.group('format') or "",
+                                                           match.group('width'), match.group('height'),
+                                                           match.group('key'), match.group('ext')),
+        'normalize': 0,
+        'alternate': 0,
+        'addon': '&name=',
+    },
+]
+
+MEDIA_URL_HANDLERS = IMAGE_URL_HANDLERS + VIDEO_URL_HANDLERS
+
 # #### Network variables
 
 XREQUEST_METHODS = {
@@ -588,14 +609,18 @@ def get_illust_id(request_url):
 # ###### Media URLs
 
 def get_media_extension(media_url):
-    match =\
-        IMAGE1_RG.match(media_url) or IMAGE2_RG.match(media_url)\
-        or IMAGE3_RG.match(media_url) or IMAGE4_RG.match(media_url)\
-        or VIDEO1_RG.match(media_url) or VIDEO2_RG.match(media_url)
-    if match:
-        return match.group('ext')
-    filename = get_http_filename(media_url)
-    return get_file_extension(filename)
+    for handler in MEDIA_URL_HANDLERS:
+        match = handler['regex'].match(media_url)
+        if match:
+            return match.group('ext')
+    return None
+
+
+def partial_media_url(media_url, action=None, size=None):
+    partial_url = partial_image_url(media_url, action, size)
+    if partial_url is None:
+        partial_url = partial_video_url(media_url)
+    return partial_url
 
 
 def partial_image_url(image_url, action=None, size=None):
@@ -609,6 +634,14 @@ def partial_image_url(image_url, action=None, size=None):
             if index:
                 size_addon = IMAGE_URL_HANDLERS[index] + size if size is not None else ""
                 return IMAGE_URL_HANDLERS[index]['partial'](match) + size_addon
+    return None
+
+
+def partial_video_url(video_url):
+    for handler in VIDEO_URL_HANDLERS:
+        match = handler['regex'].match(video_url)
+        if match:
+            return handler['partial'](match)
     return None
 
 
@@ -636,13 +669,18 @@ def is_media_url(media_url):
     return is_image_url(media_url) or is_video_url(media_url)
 
 
-def is_image_url(media_url):
-    return bool(IMAGE1_RG.match(media_url) or IMAGE2_RG.match(media_url)
-                or IMAGE3_RG.match(media_url) or IMAGE4_RG.match(media_url))
+def is_image_url(image_url):
+    for handler in IMAGE_URL_HANDLERS:
+        if handler['regex'].match(image_url):
+            return True
+    return False
 
 
-def is_video_url(media_url):
-    return bool(VIDEO1_RG.match(media_url) or VIDEO2_RG.match(media_url))
+def is_video_url(video_url):
+    for handler in VIDEO_URL_HANDLERS:
+        if handler['regex'].match(video_url):
+            return True
+    return False
 
 
 # #### Params

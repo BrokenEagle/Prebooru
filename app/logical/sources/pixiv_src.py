@@ -165,6 +165,10 @@ def get_secondary_url(illust):
     return None
 
 
+def illust_commentaries_dtext(illust):
+    return illust.commentaries
+
+
 # ###### Tags
 
 def tag_search_url(tag):

@@ -25,7 +25,7 @@ from ..database.subscription_element_db import create_subscription_element_from_
     update_subscription_element_from_parameters, link_subscription_post, pending_subscription_downloads_query,\
     unlink_subscription_post, delete_subscription_post, archive_subscription_post, expired_subscription_elements
 from ..database.post_db import get_post_by_md5, get_posts_by_id
-from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
+from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
 from ..database.archive_db import get_archive
 from ..database.error_db import is_error
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
@@ -131,7 +131,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
             job_status['range'] = f"({first} - {last}) / {total}"
             update_job_status(job_id, job_status)
         data_params = source.get_illust_data(item_id)
-        illust = source.get_site_illust(item_id, artist.site_id)
+        illust = get_site_illust(item_id, artist.site_id)
         if illust is None:
             data_params['artist_id'] = artist.id
             create_illust_from_parameters(data_params)
