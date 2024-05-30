@@ -147,8 +147,7 @@ def merge_dicts(a, b, merge=None):
     merge = copy.deepcopy(a) if merge is None else merge
     for key in b:
         if key in merge and isinstance(merge[key], dict) and isinstance(b[key], dict):
-            merge[key] = {}
-            merge_dicts(a[key], b[key], merge[key])
+            merge[key] = merge_dicts(a[key], b[key], merge[key])
         else:
-            merge[key] = b[key]
+            merge[key] = copy.deepcopy(b[key])
     return merge

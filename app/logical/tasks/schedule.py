@@ -339,16 +339,16 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
         display_name = ' '.join(word.title() for word in id.split('_'))
         if has_lock and not _set_db_semaphore(id):
             print(f"Task scheduler - {display_name}: already running")
-            return
+            return False
         is_manual = _is_job_manual(id) if has_manual else False
         if not is_manual:
+            if has_enabled and not _is_job_enabled(id):
+                print(f"Task scheduler - {display_name}: disabled")
+                return True
             if busy_check and server_is_busy():
                 print(f"Task scheduler - {display_name}: Server busy, rescheduling....")
                 reschedule_from_child(id)
-                return
-            if has_enabled and not _is_job_enabled(id):
-                print(f"Task scheduler - {display_name}: disabled")
-                return
+                return True
         else:
             print(f"Task scheduler - {display_name}: manually executed")
         update_last_activity('server')
@@ -376,15 +376,17 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
         info = {'error': "%s :\n%s" % (repr(e), tback)}
         print_error(info['error'])
         SESSION.rollback()
-    if info is not None and record_status:
+    if isinstance(info, dict) and record_status:
         info['processed'] = int(datetime_to_epoch(start))
         info['duration'] = (get_current_time() - start).seconds
         status.append(info)
         dirty = True
+    elif isinstance(info, bool) and info:
+        _free_db_semaphore(id)
     if dirty:
         create_or_update_job_status(id, status)
         SESSION.commit()
-        SESSION.remove()
+    SESSION.remove()
 
 
 def _is_job_enabled(id):

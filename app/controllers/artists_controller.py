@@ -115,7 +115,8 @@ FORM_CONFIG = {
         'name': 'Webpages',
         'field': TextAreaField,
         'kwargs': {
-            'description': "Separated by carriage returns. Prepend with '-' to mark as inactive.",
+            'description': "Separated by carriage returns. Prepend with '-' to mark as inactive.<br>"
+                           "<b>Note:</b> Removing a webpage from this interface will mark it as inactive. To actually remove a webpage, use the controls on the SHOW page.",
         },
     },
     'profile': {
@@ -227,7 +228,6 @@ def update(artist):
         retdata['item'] = check_artist.to_json()
         return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
     update_artist_from_parameters(artist, updateparams, update=True)
-    retdata['item'] = artist.to_json()
     return retdata
 
 
@@ -372,7 +372,9 @@ def update_json(id):
     artist = get_or_error(Artist, id)
     if type(artist) is dict:
         return artist
-    return update(artist)
+    results = update(artist)
+    results['item'] = artist.to_json()
+    return results
 
 
 # ###### DELETE

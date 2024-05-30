@@ -5,6 +5,7 @@ from sqlalchemy import not_
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
+from utility.uprint import buffered_print
 
 # ## LOCAL IMPORTS
 from ...models import Artist, ArtistUrl, Booru, Label, Description
@@ -20,8 +21,8 @@ APPEND_SCALAR_RELATIONSHIPS = [('_profiles', 'body', Description)]
 ALL_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['site_accounts', 'names', 'profiles']
 
-ANY_WRITABLE_COLUMNS = ['site_artist_id', 'current_site_account', 'site_created', 'active', 'primary']
-NULL_WRITABLE_ATTRIBUTES = ['site_id']
+ANY_WRITABLE_COLUMNS = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'primary']
+NULL_WRITABLE_ATTRIBUTES = []
 
 BOORU_SUBQUERY = Artist.query\
     .join(Booru, Artist.boorus)\
@@ -143,7 +144,7 @@ def _set_all_site_accounts(params, artist):
 
 def _set_relations(artist, setparams):
     if isinstance(setparams.get('profiles'), str):
-        setparams['_profiles_append'] = setparams['profiles']
+        setparams['_profiles_append'] = setparams['profiles'] if len(setparams['profiles']) else None
         setparams['profiles'] = None
     set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
     set_rel_result = set_relationship_collections(artist, ALL_SCALAR_RELATIONSHIPS, setparams)
@@ -154,6 +155,7 @@ def _set_relations(artist, setparams):
 def _set_artist_webpages(artist, params):
     if 'webpages' not in params:
         return False
+    printer = buffered_print('set_artist_webpages', safe=True, header=False)
     update_results = False
     existing_webpages = [webpage.url for webpage in artist.webpages]
     current_webpages = []
@@ -168,22 +170,24 @@ def _set_artist_webpages(artist, params):
                 'url': url,
                 'active': is_active,
             }
+            printer("Adding artist url [%s]:" % artist.shortlink, url, is_active)
             artist_url = ArtistUrl(**data)
             add_record(artist_url)
-            commit_or_flush(False)
             update_results = True
         elif artist_url.active != is_active:
+            printer("Updating %s (%s):" % (artist_url.shortlink, artist_url.url), artist_url.active, is_active)
             artist_url.active = is_active
-            commit_or_flush(False)
             update_results = True
         current_webpages.append(url)
     removed_webpages = set(existing_webpages).difference(current_webpages)
     for url in removed_webpages:
         # These will only be removable via the artist urls controller
+        printer("Inactivating %s (%s):" % (artist_url.shortlink, artist_url.url))
         artist_url = next(filter(lambda x: x.url == url, artist.webpages))
         artist_url.active = False
         update_results = True
     if update_results:
+        printer.print()
         commit_or_flush(False)
     return update_results
 
