@@ -21,7 +21,8 @@ from ..logical.database.server_info_db import get_subscriptions_ready
 from ..logical.database.jobs_db import get_job_status_data, create_or_update_job_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
-    check_param_requirements, nullify_blanks, set_default, hide_input, parse_type, parse_bool_parameter
+    check_param_requirements, nullify_blanks, set_default, hide_input, parse_type, parse_bool_parameter,\
+    index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -185,13 +186,11 @@ def index_json():
 def index_html():
     q = index()
     q = q.options(selectinload(Subscription.artist))
-    subscriptions = paginate(q, request)
-    if request.args.get('show_interval', type=eval_bool_string):
-        average_intervals = get_average_interval_for_subscriptions(subscriptions.items, 365)
-    else:
-        average_intervals = None
-    return render_template("subscriptions/index.html", subscriptions=subscriptions,
-                           subscription=Subscription(), average_intervals=average_intervals)
+    page = paginate(q, request)
+    average_intervals = get_average_interval_for_subscriptions(page.items, 365)\
+                        if request.args.get('show_interval', type=eval_bool_string)\
+                        else None
+    return index_html_response(page, 'subscription', 'subscriptions', average_intervals=average_intervals)
 
 
 # ###### CREATE

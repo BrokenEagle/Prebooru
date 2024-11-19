@@ -40,13 +40,13 @@
     <form id="form" method="post" action="{{ url_for('subscription_element.batch_keep_html') }}">
         <input type="hidden" id="subscription-element-keep" name="subscription_element[keep]" value="">
         <div id="subscription-elements-container">
-            {% for element in subscription_elements.items %}{{ subscription_element_preview(element, True) }}{% endfor %}
+            {% for element in page.items %}{{ subscription_element_preview(element, True) }}{% endfor %}
         </div>
     </form>
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(subscription_elements) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}
 
 {% block pagescript %}

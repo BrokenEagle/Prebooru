@@ -22,7 +22,7 @@ from ..logical.database.illust_db import create_illust_from_parameters, update_i
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
     hide_input, int_or_blank, nullify_blanks, set_default, check_param_requirements, parse_array_parameter,\
-    parse_bool_parameter, get_page, get_limit
+    parse_bool_parameter, get_page, get_limit, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -378,8 +378,8 @@ def index_json():
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    illusts = paginate(q, request, distinct=True)
-    return render_template("illusts/index.html", illusts=illusts, illust=Illust())
+    page = paginate(q, request, distinct=True)
+    return index_html_response(page, 'illust', 'illusts')
 
 
 # ###### CREATE

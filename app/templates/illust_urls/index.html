@@ -20,7 +20,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for illust_url in illust_urls.items %}
+            {% for illust_url in page.items %}
                 <tr id="illust-url-{{ illust_url.id }}">
                     <td>
                         {% if illust_url.post is not none %}
@@ -50,7 +50,7 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(illust_urls) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}
 
 {% block pagescript %}

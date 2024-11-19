@@ -12,7 +12,7 @@ from ..logical.utility import set_error
 from ..logical.database.tag_db import create_tag_from_parameters, append_tag_to_item, remove_tag_from_item
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_or_abort, get_data_params, check_param_requirements, parse_type,\
-    render_template_ws
+    render_template_ws, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -123,8 +123,8 @@ def index_json():
 @bp.route('/tags', methods=['GET'])
 def index_html():
     q = index()
-    tags = paginate(q, request)
-    return render_template("tags/index.html", tags=tags, tag=Tag())
+    page = paginate(q, request)
+    return index_html_response(page, 'tag', 'tags')
 
 
 # ###### CREATE

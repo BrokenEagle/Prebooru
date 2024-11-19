@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for item in archives.items %}
+            {% for item in page.items %}
                 <tr id="archive-{{ item.id }}">
                     <td>
                         <div class="id-link">{{ item.show_link }}</div>
@@ -56,5 +56,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(archives) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}

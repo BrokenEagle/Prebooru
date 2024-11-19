@@ -15,7 +15,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for tag in tags.items %}
+            {% for tag in page.items %}
                 <tr id="tag-{{ tag.id }}">
                     <td>{{ tag.show_link }}</td>
                     <td>{{ tag.name }}</td>
@@ -27,5 +27,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(tags) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}

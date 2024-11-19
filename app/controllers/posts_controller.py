@@ -14,7 +14,7 @@ from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust
 from ..logical.records.post_rec import create_sample_preview_files, create_video_sample_preview_files,\
     archive_post_for_deletion
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_or_abort
+    get_params_value, paginate, default_order, get_or_abort, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -131,8 +131,8 @@ def index_html():
         if post_type in Post.type_enum.names:
             q = q.enum_join(Post.type_enum).filter(Post.type_filter('name', '__eq__', post_type))
     q = q.options(INDEX_HTML_OPTIONS)
-    posts = paginate(q, request, max_limit=MAX_LIMIT_HTML, distinct=True)
-    return render_template("posts/index.html", posts=posts, post=Post())
+    page = paginate(q, request, max_limit=MAX_LIMIT_HTML, distinct=True)
+    return index_html_response(page, 'post', 'posts')
 
 
 @bp.route('/', methods=['GET'])

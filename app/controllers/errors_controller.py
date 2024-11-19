@@ -10,7 +10,7 @@ from utility.data import eval_bool_string
 from ..logical.database.error_db import delete_error
 from ..models import Error
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
-    search_filter, default_order, paginate, get_or_abort
+    search_filter, default_order, paginate, get_or_abort, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -57,8 +57,8 @@ def index_json():
 @bp.route('/errors', methods=['GET'])
 def index_html():
     q = index()
-    errors = paginate(q, request)
-    return render_template("errors/index.html", errors=errors, error=Error())
+    page = paginate(q, request)
+    return index_html_response(page, 'error', 'errors')
 
 
 # #### DELETE

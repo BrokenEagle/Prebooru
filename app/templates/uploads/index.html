@@ -20,7 +20,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for upload in uploads.items %}
+            {% for upload in page.items %}
                 {% set outer_loop = loop %}
                 <tr id="upload-{{ upload.id }}">
                     <td>{{ multi_post_preview(upload, 'upload') }}</td>
@@ -52,5 +52,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(uploads) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}

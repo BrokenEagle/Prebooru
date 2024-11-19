@@ -5,9 +5,10 @@ import re
 import urllib
 import traceback
 from functools import reduce
+from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
-from flask import jsonify, abort, url_for, render_template
+from flask import jsonify, abort, url_for, render_template, request, redirect
 from sqlalchemy import not_
 from wtforms import Form
 from wtforms.meta import DefaultMeta
@@ -52,6 +53,14 @@ def index_json_response(query, request, **kwargs):
     # Don't unncessarily calculate the count when doing a JSON response since it doesn't get used
     kwargs['count'] = False
     return jsonify([x.to_json() for x in paginate(query, request, **kwargs).items])
+
+
+def index_html_response(page, endpoint, path, **params):
+    if len(page.items) == 1 and request.args.get('redirect') == 'true':
+        return redirect(url_for(f'{endpoint}.show_html', id=page.items[0].id))
+    params['page'] = page
+    params[endpoint] = SimpleNamespace(id=None)
+    return render_template(f"{path}/index.html", **params)
 
 
 def jsonify_data(data):

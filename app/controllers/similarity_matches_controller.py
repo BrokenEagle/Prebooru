@@ -92,9 +92,9 @@ def index_json():
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    similarity_matches = paginate(q, request, MAX_LIMIT_HTML)
+    page = paginate(q, request, MAX_LIMIT_HTML)
     return render_template("similarity_matches/index.html",
-                           similarity_matches=similarity_matches,
+                           page=page,
                            similarity_match=SimilarityMatch())
 
 

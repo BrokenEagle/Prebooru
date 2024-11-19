@@ -15,7 +15,7 @@ from ..logical.records.booru_rec import create_booru_from_source, update_booru_f
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, get_data_params,\
     check_param_requirements, nullify_blanks, get_form, parse_array_parameter, parse_bool_parameter,\
-    set_default
+    set_default, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -196,8 +196,8 @@ def index_json():
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    boorus = paginate(q, request)
-    return render_template("boorus/index.html", boorus=boorus, booru=Booru())
+    page = paginate(q, request)
+    return index_html_response(page, 'booru', 'boorus')
 
 
 # ###### CREATE

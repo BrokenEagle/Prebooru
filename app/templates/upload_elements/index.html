@@ -19,7 +19,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for element in upload_elements.items %}
+            {% for element in page.items %}
                 {% set illust_url = element.illust_url %}
                 {% set preview_class = 'single-post' if element.post is not none else 'no-post' %}
                 <tr id="upload-element-{{ element.id }}" class="upload-element">
@@ -49,7 +49,7 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(upload_elements) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}
 
 {% block pagescript %}

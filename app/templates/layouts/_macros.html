@@ -3,10 +3,9 @@
         <li id="nav-{{ html_text }}" class="{{ klass }}">{{ helpers.base.general_link(text, url_for(endpoint), id=("nav-%s-link" % html_text)) }}</li>
     {% endwith %}
 {%- endmacro %}
-{% macro subnav_link_to(text, endpoint, id=None, attrs={}) -%}
-    {% with html_text, attrs = helpers.base.subnav_link_to(text, attrs) %}
-        <li id="subnav-{{ html_text }}">{{ helpers.base.general_link(text, url_for(endpoint, id=id, **kwargs), **attrs) }}</li>
-    {% endwith %}
+
+{% macro subnav_link_to(text, endpoint, id=None, with_params=None, attrs=None) -%}
+    {{ helpers.base.subnav_link_to(text, endpoint, id, with_params, attrs, **kwargs) }}
 {%- endmacro %}
 
 {% macro render_form(form, method, url, class=None, manual=False) -%}

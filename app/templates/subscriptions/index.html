@@ -18,7 +18,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for subscription in subscriptions.items %}
+            {% for subscription in page.items %}
                 <tr id="subscription-{{ subscription.id }}">
                     <td>{{ subscription.show_link }}</td>
                     <td>
@@ -53,5 +53,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(subscriptions) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}

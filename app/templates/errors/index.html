@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for error in errors.items %}
+            {% for error in page.items %}
                 <tr id="error-{{ error.id }}">
                     <td>{{ error.show_link }}</td>
                     <td>
@@ -31,5 +31,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(errors) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}

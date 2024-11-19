@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for booru in boorus.items %}
+            {% for booru in page.items %}
                 <tr id="booru-{{ booru.id }}">
                     <td class="booru-id">{{ booru.show_link }} {{ helpers.booru.post_search_link(booru) }}</td>
                     <td class="booru-info">
@@ -37,5 +37,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(boorus) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}

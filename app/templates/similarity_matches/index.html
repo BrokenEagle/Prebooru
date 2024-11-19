@@ -16,13 +16,13 @@
             </div>
         </div>
         <form id="form" method="post" action="{{ url_for('similarity_match.batch_delete_html') }}">
-            {% for element in similarity_matches.items %}{{ similarity_match_previews(element) }}{% endfor %}
+            {% for element in page.items %}{{ similarity_match_previews(element) }}{% endfor %}
         </form>
     </div>
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(similarity_matches) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}
 
 {% block pagescript %}

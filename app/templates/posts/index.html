@@ -13,12 +13,12 @@
         {{ helpers.post.post_type_link('subscription') }}
     </div>
     <div id="posts-container">
-        {% for post in posts.items %}{{ post_preview(post, True) }}{% endfor %}
+        {% for post in page.items %}{{ post_preview(post, True) }}{% endfor %}
     </div>
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(posts) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}
 
 {% block pagescript %}

@@ -11,7 +11,7 @@ from ..logical.records.artist_rec import recreate_archived_artist, relink_archiv
 from ..logical.records.illust_rec import recreate_archived_illust, relink_archived_illust
 from ..logical.records.post_rec import recreate_archived_post, relink_archived_post
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_or_abort
+    get_params_value, paginate, default_order, get_or_abort, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -72,8 +72,8 @@ def index_json():
 @bp.route('/archives', methods=['GET'])
 def index_html():
     q = index()
-    archives = paginate(q, request)
-    return render_template("archives/index.html", archives=archives, archive=Archive())
+    page = paginate(q, request)
+    return index_html_response(page, 'archive', 'archives')
 
 
 # ###### MISC

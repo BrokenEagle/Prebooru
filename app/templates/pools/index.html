@@ -17,7 +17,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for pool in pools.items %}
+            {% for pool in page.items %}
                 <tr id="pool-{{ pool.id }}">
                     <td>{{ pool.show_link }} {{ helpers.pool.last_page_link(pool) }}</td>
                     <td>{{ pool.name }}</td>
@@ -31,5 +31,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(pools) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}

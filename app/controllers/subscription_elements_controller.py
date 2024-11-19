@@ -119,7 +119,7 @@ def index_html():
             archive_match = next((archive for archive in archives if archive.key == item.md5), None)
         setattr(item, 'archive_match', archive_match)
     return render_template_ws("subscription_elements/index.html",
-                              subscription_elements=elements,
+                              page=elements,
                               subscription_element=SubscriptionElement())
 
 

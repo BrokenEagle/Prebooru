@@ -17,7 +17,7 @@ from ..logical.database.notation_db import create_notation_from_parameters, upda
     append_notation_to_item, delete_notation
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, hide_input,\
-    nullify_blanks, check_param_requirements
+    nullify_blanks, check_param_requirements, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -207,8 +207,8 @@ def index_json():
 @bp.route('/notations', methods=['GET'])
 def index_html():
     q = index()
-    notations = paginate(q, request)
-    return render_template("notations/index.html", notations=notations, notation=Notation())
+    page = paginate(q, request)
+    return index_html_response(page, 'notation', 'notations')
 
 
 # ###### CREATE

@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for notation in notations.items %}
+            {% for notation in page.items %}
                 <tr id="notation-{{ notation.id }}">
                     <td>{{ notation.show_link }}</td>
                     <td>{{ helpers.notation.body_excerpt(notation) }}</td>
@@ -29,5 +29,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(notations)}}
+    {{ page_navigation(page)}}
 {% endblock pages %}

@@ -6,7 +6,7 @@ from flask import Blueprint, request, render_template
 # ## LOCAL IMPORTS
 from ..models import MediaFile
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_or_abort
+    get_params_value, paginate, default_order, get_or_abort, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -53,5 +53,5 @@ def index_json():
 @bp.route('/media_files', methods=['GET'])
 def index_html():
     q = index()
-    media_files = paginate(q, request)
-    return render_template("media_files/index.html", media_files=media_files, media_file=MediaFile())
+    page = paginate(q, request)
+    return index_html_response(page, 'media_file', 'media_files')

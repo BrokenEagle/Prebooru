@@ -25,7 +25,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for illust in illusts.items %}
+            {% for illust in page.items %}
                 <tr id="illust-{{ illust.id }}">
                     <td>
                         <div class="preview-header">{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</div>
@@ -73,7 +73,7 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(illusts) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}
 
 {% block pagescript %}

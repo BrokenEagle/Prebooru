@@ -22,7 +22,7 @@ from ..logical.database.booru_db import create_booru_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
     parse_array_parameter, check_param_requirements, int_or_blank, nullify_blanks, set_default, parse_bool_parameter,\
-    hide_input
+    hide_input, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -311,8 +311,8 @@ def index_json():
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    artists = paginate(q, request)
-    return render_template("artists/index.html", artists=artists, artist=Artist())
+    page = paginate(q, request)
+    return index_html_response(page, 'artist', 'artists')
 
 
 # ###### CREATE

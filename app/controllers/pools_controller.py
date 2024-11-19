@@ -14,7 +14,7 @@ from ..logical.database.pool_db import create_pool_from_parameters, update_pool_
 from ..logical.searchable import numeric_matching
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_page, get_limit, get_or_abort,\
-    get_or_error, check_param_requirements, nullify_blanks, parse_bool_parameter, set_default
+    get_or_error, check_param_requirements, nullify_blanks, parse_bool_parameter, set_default, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -180,8 +180,8 @@ def index_json():
 @bp.route('/pools', methods=['GET'])
 def index_html():
     q = index()
-    pools = paginate(q, request)
-    return render_template("pools/index.html", pools=pools, pool=Pool())
+    page = paginate(q, request)
+    return index_html_response(page, 'pool', 'pools')
 
 
 # ###### CREATE

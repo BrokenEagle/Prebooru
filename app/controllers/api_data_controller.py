@@ -6,7 +6,7 @@ from flask import Blueprint, request, render_template
 # ## LOCAL IMPORTS
 from ..models import ApiData
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_or_abort
+    get_params_value, paginate, default_order, get_or_abort, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -53,5 +53,5 @@ def index_json():
 @bp.route('/api_data', methods=['GET'])
 def index_html():
     q = index()
-    api_data = paginate(q, request)
-    return render_template("api_data/index.html", api_data=api_data, api_datum=ApiData())
+    page = paginate(q, request)
+    return index_html_response(page, 'api_data', 'api_data')

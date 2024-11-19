@@ -18,7 +18,7 @@ from ..logical.records.media_file_rec import batch_get_or_create_media
 from ..logical.database.upload_db import create_upload_from_parameters, set_upload_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_form, get_data_params, hide_input, parse_string_list,\
-    nullify_blanks, set_default, get_or_abort, referrer_check, get_limit, get_page
+    nullify_blanks, set_default, get_or_abort, referrer_check, get_limit, get_page, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -239,8 +239,8 @@ def index_json():
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    uploads = paginate(q, request)
-    return render_template("uploads/index.html", uploads=uploads, upload=Upload())
+    page = paginate(q, request)
+    return index_html_response(page, 'upload', 'uploads')
 
 
 # ###### CREATE

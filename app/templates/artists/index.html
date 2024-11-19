@@ -19,7 +19,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for artist in artists.items %}
+            {% for artist in page.items %}
                 <tr id="artist-{{ artist.id }}">
                     <td>{{ artist.show_link }} {{ helpers.artist.post_search_link(artist) }}</td>
                     <td>
@@ -42,5 +42,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(artists) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}

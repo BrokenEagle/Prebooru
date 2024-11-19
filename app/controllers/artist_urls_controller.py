@@ -6,7 +6,7 @@ from flask import Blueprint, request, render_template
 # ## LOCAL IMPORTS
 from ..models import ArtistUrl
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
-    search_filter, default_order, paginate, get_or_abort
+    search_filter, default_order, paginate, get_or_abort, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -53,5 +53,5 @@ def index_json():
 @bp.route('/artist_urls', methods=['GET'])
 def index_html():
     q = index()
-    artist_urls = paginate(q, request)
-    return render_template("artist_urls/index.html", artist_urls=artist_urls, artist_url=ArtistUrl())
+    page = paginate(q, request)
+    return index_html_response(page, 'artist_url', 'artist_urls')

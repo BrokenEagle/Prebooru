@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 # ## LOCAL IMPORTS
 from ..models import UploadElement, IllustUrl, Illust
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
-    search_filter, default_order, paginate, get_or_abort
+    search_filter, default_order, paginate, get_or_abort, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -66,6 +66,5 @@ def index_json():
 def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
-    upload_elements = paginate(q, request)
-    return render_template("upload_elements/index.html", upload_elements=upload_elements,
-                           upload_element=UploadElement())
+    page = paginate(q, request)
+    return index_html_response(page, 'upload_element', 'upload_elements')

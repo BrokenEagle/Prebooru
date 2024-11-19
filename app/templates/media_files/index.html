@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for media_file in media_files.items %}
+            {% for media_file in page.items %}
                 <tr id="media-file-{{ media_file.id }}">
                     <td>{{ media_file.show_link }}</td>
                     <td>
@@ -37,5 +37,5 @@
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(media_files) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}

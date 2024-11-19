@@ -2,8 +2,8 @@
 
 <menu id="secondary-menu">
     {{ subnav_link_to("Listing", 'api_data.index_html') }}
-    {% if api_datum.id != None %}
+    {% if api_data.id != None %}
         |
-        {{ subnav_link_to("Show", 'api_data.show_html', id=api_datum.id) }}
+        {{ subnav_link_to("Show", 'api_data.show_html', id=api_data.id) }}
     {% endif %}
 </menu>
