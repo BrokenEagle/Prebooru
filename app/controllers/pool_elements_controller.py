@@ -5,7 +5,7 @@ from flask import Blueprint, request, redirect
 from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
-from utility.data import eval_bool_string
+from utility.data import eval_bool_string, int_or_array
 
 # ## LOCAL IMPORTS
 from ..models import Pool, PoolElement
@@ -27,7 +27,7 @@ APPEND_KEYS = ['illust_id', 'post_id', 'notation_id']
 PARSE_PARAMS_DICT = {
     'pool_id': int,
     'illust_id': int,
-    'post_id': int,
+    'post_id': int_or_array,
     'notation_id': int,
 }
 

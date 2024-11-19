@@ -80,6 +80,10 @@ def str_or_blank(string):
     return string if len(string) else None
 
 
+def int_or_array(value):
+    return [int(v) for v in value] if isinstance(value, list) else int(value)
+
+
 # #### Boolean functions
 
 def is_truthy(string):
