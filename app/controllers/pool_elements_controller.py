@@ -1,7 +1,7 @@
 # APP/CONTROLLERS/POOL_ELEMENTS_CONTROLLER.PY
 
 # ## EXTERNAL IMPORTS
-from flask import Blueprint, request, redirect
+from flask import Blueprint, request, redirect, flash
 from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
@@ -10,7 +10,8 @@ from utility.data import eval_bool_string, int_or_array
 # ## LOCAL IMPORTS
 from ..models import Pool, PoolElement
 from ..logical.utility import set_error
-from ..logical.database.pool_element_db import create_pool_element_from_parameters, delete_pool_element
+from ..logical.database.pool_element_db import create_pool_element_from_parameters, delete_pool_element,\
+    batch_delete_pool_elements, get_pool_elements_by_id
 from .base_controller import get_data_params, get_or_abort, get_or_error, check_param_requirements,\
     index_json_response, show_json_response, process_request_values, get_params_value, search_filter, default_order,\
     parse_type, render_template_ws
@@ -126,6 +127,24 @@ def delete_json(id):
         html = render_template_ws("pools/_section.html", pool_elements=pool_elements, section_id=f"{item_table}-pools")
         retdata['html'] = html
     return retdata
+
+
+@bp.route('/pool_elements/batch_delete', methods=['POST'])
+def batch_delete_html():
+    dataparams = get_data_params(request, 'pool_element')
+    if 'id' in dataparams:
+        element_ids = set(int(id) for id in dataparams['id'] if id.isdigit())
+        if len(element_ids) > 0:
+            elements = get_pool_elements_by_id(element_ids)
+            if len(elements) > 0:
+                batch_delete_pool_elements(elements)
+            else:
+                flash("No valid element ids specified.", 'error')
+        else:
+            flash("No valid element ids set.", 'error')
+    else:
+        flash("ID parameter not included.", 'error')
+    return redirect(request.referrer)
 
 
 # ###### MISC

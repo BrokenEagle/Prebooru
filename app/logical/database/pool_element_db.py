@@ -8,9 +8,10 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Illust, Post, Notation
+from ...models import Pool, Illust, Post, Notation
 from ...models.pool_element import PoolElement, pool_element_create
 from ..utility import set_error
+from .pool_db import update_pool_positions
 
 
 # ## GLOBAL VARIABLES
@@ -48,6 +49,23 @@ def delete_pool_element(pool_element):
         pool_element.pool.element_count -= 1
     SESSION.delete(pool_element)
     SESSION.commit()
+
+
+def batch_delete_pool_elements(pool_elements):
+    pool_ids = set()
+    for element in pool_elements:
+        pool_ids.add(element.pool_id)
+        SESSION.delete(element)
+    SESSION.commit()
+    for pool_id in pool_ids:
+        pool = Pool.find(pool_id)
+        update_pool_positions(pool)
+
+
+# #### Query
+
+def get_pool_elements_by_id(element_ids):
+    return PoolElement.query.filter(PoolElement.id.in_(element_ids)).all()
 
 
 # #### Misc
