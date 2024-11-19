@@ -35,16 +35,30 @@ def create_tag_from_parameters(createparams):
 def append_tag_to_item(tag, append_key, dataparams):
     retdata = {'error': False, 'item': tag.to_json()}
     model = ID_MODEL_DICT[append_key]
-    item = model.find(dataparams[append_key])
+    id = dataparams[append_key]
     table_name = model.__table__.name
-    if item is None:
-        msg = "Unable to append tag; %s #%d does not exist." % (table_name, dataparams[append_key])
-        return set_error(retdata, msg)
-    elif tag in item._tags:
-        return set_error(retdata, "Tag '%s' already added to %s." % (tag.name, item.shortlink))
-    item._tags.append(tag)
+    if isinstance(id, list):
+        items = model.query.filter(model.id.in_(id)).all()
+        if len(items) == 0:
+            return set_error(retdata, "%ss not found." % table_name)
+        single = False
+    else:
+        item = model.find(dataparams[append_key])
+        if item is None:
+            return set_error(retdata, "%s not found." % table_name)
+        items = [item]
+        single = True
+    for item in items:
+        if tag in item._tags:
+            if single:
+                return set_error(retdata, "Tag '%s' already added to %s." % (tag.name, item.shortlink))
+            else:
+                continue
+        item._tags.append(tag)
+    SESSION.flush()
+    if single:
+        retdata['append'] = item.to_json()
     SESSION.commit()
-    retdata['append'] = item.to_json()
     return retdata
 
 

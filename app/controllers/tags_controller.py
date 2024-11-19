@@ -4,7 +4,7 @@
 from flask import Blueprint, request, render_template, flash, redirect
 
 # ## PACKAGE IMPORTS
-from utility.data import eval_bool_string
+from utility.data import eval_bool_string, int_or_array
 
 # ## LOCAL IMPORTS
 from ..models import Tag, UserTag, Post
@@ -72,14 +72,13 @@ def append_item(tag):
     if tag.type.name == 'site_tag':
         return set_error(retdata, "Site tags cannot be appended.")
     dataparams = get_data_params(request, 'tag')
-    dataparams.update({k: parse_type(dataparams, k, int) for (k, v) in dataparams.items() if k in APPEND_KEYS})
+    dataparams.update({k: parse_type(dataparams, k, int_or_array) for (k, v) in dataparams.items() if k in APPEND_KEYS})
     append_key = [key for key in APPEND_KEYS if key in dataparams and dataparams[key] is not None]
     if len(append_key) > 1:
-        return set_error(retdata, "May append using only a single ID; multiple values found: %s" % repr(append_key))
-    elif len(append_key) == 0:
-        return set_error(retdata, "Must include an append ID.")
-    else:
-        return append_tag_to_item(tag, append_key[0], dataparams)
+        return set_error(retdata, "May append using only a single type; multiple values found: %s" % repr(append_key))
+    if len(append_key) == 0:
+        return set_error(retdata, "Must include an append type.")
+    return append_tag_to_item(tag, append_key[0], dataparams)
 
 
 def remove_item(tag):
@@ -160,12 +159,11 @@ def append_item_show_html(id):
 
 @bp.route('/tags/append', methods=['POST'])
 def append_item_index_html():
-    tag_name = request.values.get('tag[name]')
-    tag = _get_user_tag(tag_name)
-    if tag is None:
-        flash("Tag with name %s not found." % tag_name, 'error')
+    retdata = _get_user_tag()
+    if retdata['error']:
+        flash(retdata['message'], 'error')
         return redirect(request.referrer)
-    results = append_item(tag)
+    results = append_item(retdata['tag'])
     if results['error']:
         flash(results['message'], 'error')
     else:
@@ -175,11 +173,10 @@ def append_item_index_html():
 
 @bp.route('/tags/append.json', methods=['POST'])
 def append_item_index_json():
-    tag_name = request.values.get('tag[name]')
-    tag = _get_user_tag(tag_name)
-    if tag is None:
-        return {'error': True, 'message': "Tag with name %s not found." % str(tag_name)}
-    result = append_item(tag)
+    retdata = _get_user_tag()
+    if retdata['error']:
+        return retdata
+    result = append_item(retdata['tag'])
     if result['error']:
         return result
     is_preview = request.values.get('preview', type=eval_bool_string, default=False)
@@ -219,7 +216,14 @@ def remove_item_show_json(id):
 
 # #### Private
 
-def _get_user_tag(tag_name):
-    return Tag.query.enum_join(Tag.type_enum)\
-                    .filter(Tag.name == tag_name, Tag.type_filter('name', '__eq__', 'user_tag'))\
-                    .one_or_none()
+def _get_user_tag():
+    retdata = {'error': False}
+    tag_name = retdata['name'] = request.values.get('tag[name]')
+    if tag_name is None:
+        return set_error(retdata, "Tag name parameter not included.")
+    tag = retdata['tag'] = Tag.query.enum_join(Tag.type_enum)\
+                              .filter(Tag.name == tag_name, Tag.type_filter('name', '__eq__', 'user_tag'))\
+                              .one_or_none()
+    if tag is None:
+        return set_error(retdata, "Tag with name %s not found." % tag_name)
+    return retdata

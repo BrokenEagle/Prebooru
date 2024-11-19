@@ -1,11 +1,17 @@
 {% from "layouts/_macros.html" import subnav_link_to %}
 
 <menu id="secondary-menu">
-    {{ subnav_link_to("Listing", 'post.index_html') }}
+    {% if helpers.base.is_index() and edit_posts %}
+        {{ subnav_link_to("Listing", 'post.index_html', with_params=True, edit_posts='false', attrs={'class': 'nav-modify'}) }}
+    {% else %}
+        {{ subnav_link_to("Listing", 'post.index_html') }}
+    {% endif %}
     {{ subnav_link_to("Tags", 'tag.index_html') }}
     | {{ subnav_link_to("Upload", 'upload.create_html', attrs={'class': 'nav-control', 'onclick': 'return Posts.createUpload(this)'}) }}
     {% if post.id is not none %}
         {{ subnav_link_to("Show", 'post.show_html', post.id) }}
         {{ subnav_link_to("Delete", 'post.delete_html', id=post.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+    {% elif helpers.base.is_index() and not edit_posts %}
+        {{ subnav_link_to("Modify", 'post.index_html', with_params=True, edit_posts='true', attrs={'class': 'nav-modify'}) }}
     {% endif %}
 </menu>
