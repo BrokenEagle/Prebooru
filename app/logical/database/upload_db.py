@@ -46,6 +46,12 @@ def create_upload_from_parameters(createparams):
     return data
 
 
+# #### Query
+
+def get_pending_uploads():
+    return Upload.query.enum_join(Upload.status_enum).filter(Upload.status_filter('name', '__eq__', 'pending')).all()
+
+
 # #### Misc functions
 
 def has_duplicate_posts(upload):

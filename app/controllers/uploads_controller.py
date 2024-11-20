@@ -1,21 +1,27 @@
 # APP/CONTROLLERS/UPLOADS_CONTROLLER.PY
 
+# ## PYTHON IMPORTS
+import threading
+
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy.orm import selectinload
 from wtforms import StringField, IntegerField, TextAreaField
 
 # ## PACKAGE IMPORTS
+from utility import RepeatTimer
+from utility.time import minutes_ago
 from utility.data import eval_bool_string
+from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
-from .. import SCHEDULER
+from .. import SCHEDULER, SESSION
 from ..models import Upload, UploadElement, IllustUrl, Illust
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.records.upload_rec import process_upload
 from ..logical.records.media_file_rec import batch_get_or_create_media
-from ..logical.database.upload_db import create_upload_from_parameters, set_upload_status
+from ..logical.database.upload_db import create_upload_from_parameters, set_upload_status, get_pending_uploads
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_form, get_data_params, hide_input, parse_string_list,\
     nullify_blanks, set_default, get_or_abort, referrer_check, get_limit, get_page, index_html_response
@@ -25,6 +31,8 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("upload", __name__)
 
+RECHECK_UPLOADS = None
+INIT = False
 
 # #### Load options
 
@@ -143,6 +151,7 @@ def index():
 
 
 def create(get_request=False):
+    global RECHECK_UPLOADS
     force_download = request.values.get('force', type=eval_bool_string)
     image_urls_only = request.values.get('image_urls_only', type=eval_bool_string)
     request_url_only = request.values.get('request_url_only', type=eval_bool_string) or get_request
@@ -171,6 +180,10 @@ def create(get_request=False):
         createparams['type'] = 'file'
     retdata['item'] = create_upload_from_parameters(createparams)
     SCHEDULER.add_job("process_upload-%d" % retdata['item']['id'], process_upload, args=(retdata['item']['id'],))
+    if RECHECK_UPLOADS is None:
+        RECHECK_UPLOADS = RepeatTimer(30, _recheck_pending_uploads)
+        RECHECK_UPLOADS.setDaemon(True)
+        RECHECK_UPLOADS.start()
     return retdata
 
 
@@ -326,3 +339,36 @@ def resubmit_html(id):
     set_upload_status(upload, 'pending')
     SCHEDULER.add_job("process_upload-%d" % id, process_upload, args=(id,))
     return redirect(request.referrer)
+
+
+# #### Private
+
+def _recheck_pending_uploads():
+    global RECHECK_UPLOADS
+    pending_uploads = get_pending_uploads()
+    if len(pending_uploads) == 0 and RECHECK_UPLOADS is not None:
+        print("\nUploads recheck - exiting\n")
+        RECHECK_UPLOADS.cancel()
+        RECHECK_UPLOADS = None
+    else:
+        print("\nUploads recheck - %d pending\n" % len(pending_uploads))
+        for upload in pending_uploads:
+            if upload.created < minutes_ago(1):
+                job_id = "process_upload-%d" % upload.id
+                if SCHEDULER.get_job(job_id) is None:
+                    print_warning(f"Restarting stalled {upload.shortlink}")
+                    SCHEDULER.add_job(job_id, process_upload, args=(upload.id,))
+    SESSION.remove()
+
+
+def _initialize():
+    timer = threading.Timer(30, _recheck_pending_uploads)
+    timer.setDaemon(True)
+    timer.start()
+
+
+# ## INITIALIZE
+
+if not INIT:
+    _initialize()
+    INIT = True
