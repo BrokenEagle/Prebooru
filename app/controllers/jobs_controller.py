@@ -21,6 +21,24 @@ bp = Blueprint('job', __name__)
 
 # ## FUNCTIONS
 
+# #### INDEX
+
+@bp.route('/jobs', methods=['GET'])
+def index_json():
+    data = []
+    for job in SCHEDULER.get_jobs():
+        data.append({
+            'id': job.id,
+            'name': job.name,
+            'executor': job.executor,
+            'func': job.func_ref,
+            'misfire_grace_time': job.misfire_grace_time,
+            'next_run_time': job.next_run_time.isoformat(),
+            'pending': job.pending,
+            })
+    return jsonify(data)
+
+
 # #### CREATE
 
 @bp.route('/jobs', methods=['POST'])
