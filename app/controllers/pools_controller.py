@@ -7,6 +7,9 @@ from wtforms import StringField, BooleanField
 from wtforms.validators import DataRequired
 
 
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string
+
 # ## LOCAL IMPORTS
 from ..models import Pool, Post, Illust, IllustUrl, PoolPost, PoolIllust, PoolNotation
 from ..logical.utility import set_error
@@ -155,10 +158,11 @@ def show_json(id):
 @bp.route('/pools/<int:id>', methods=['GET'])
 def show_html(id):
     pool = get_or_abort(Pool, id)
-    elements = pool.element_paginate(page=get_page(request), per_page=get_limit(request),
+    page = pool.element_paginate(page=get_page(request), per_page=get_limit(request),
                                      illust_options=SHOW_HTML_ILLUST_OPTIONS,
                                      post_options=SHOW_HTML_POST_OPTIONS)
-    return render_template("pools/show.html", pool=pool, elements=elements)
+    edit_pool = request.values.get('edit_pool', type=eval_bool_string, default=False)
+    return render_template("pools/show.html", pool=pool, page=page, edit_pool=edit_pool)
 
 
 @bp.route('/pools/<int:id>/last', methods=['GET'])

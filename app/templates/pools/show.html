@@ -1,10 +1,17 @@
 {% extends "pools/_base.html" %}
-{% from "layouts/_macros.html" import page_navigation %}
-{% from "pools/_macros.html" import pool_display_block, pool_info_block %}
+{% from "layouts/_macros.html" import page_navigation, image_select_controls %}
+{% from "pools/_macros.html" import pool_element_preview, pool_element_select_preview %}
 
 {% block title %}
     {{ pool.header }}
 {% endblock title %}
+
+{% block linkscript %}
+    {{ super() }}
+    {% if edit_pool %}
+        <script src="{{ url_for('static', filename='javascript/pools.js') }}"></script>
+    {% endif %}
+{% endblock linkscript %}
 
 {% block content %}
     <div id="pool-content">
@@ -12,28 +19,45 @@
         <div id="pool-name">
             <strong>Name:</strong> {{ pool.name }}
         </div>
-        <div id="pool-items">
-            {% for item in elements.items %}
-                <div class="pool-block" id="{{ item.model_name }}-{{ item.id }}">
-                    <div class="pool-block-heading heading">
-                        <a href="#{{ item.model_name }}-{{ item.id }}" class="bookmark-target">◊</a>&thinsp;
-                        {{ helpers.pool.media_header(item) }}
-                        {{ item.show_link }}
-                    </div>
-                    <div class="pool-block-content">
-                        {{ pool_display_block(item) }}
-                        {% if item.model_name == "post" or item.model_name == "illust" %}{{ pool_info_block(item) }}{% endif %}
-                    </div>
+        <div id="pool-page-controls">
+            {% if edit_pool %}
+                <div id="pool-controls">
+                    {% call image_select_controls('pool-element-select-input') %}
+                        <strong>
+                            [
+                            <a class="pool-link" href="#" onclick="return Pools.deleteElements()">REMOVE</a>
+                            ]
+                        </strong>
+                    {% endcall %}
                 </div>
+            {% endif %}
+        </div>
+        {% if edit_pool %}
+            <form id="form" method="post" action="{{ url_for('pool_element.batch_delete_html') }}">
+        {% endif %}
+        <div id="pool-items">
+            {% for item in page.items %}
+                {% if edit_pool %}
+                    {{ pool_element_select_preview(pool._elements[loop.index0], item) }}
+                {% else %}
+                    {{ pool_element_preview(item) }}
+                {% endif %}
             {% endfor %}
         </div>
+        {% if edit_pool %}
+            </form>
+        {% endif %}
     </div>
 {% endblock content %}
 
 {% block pages %}
-    {{ page_navigation(elements) }}
+    {{ page_navigation(page) }}
 {% endblock pages %}
 
 {% block pagescript %}
     Prebooru.initializeLazyLoad(".pool-display-block");
+    {% if edit_pool %}
+        Pools.setAllInputsTimeout();
+        Pools.initializeEventCallbacks();
+    {% endif %}
 {% endblock pagescript %}

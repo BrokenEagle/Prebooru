@@ -4,6 +4,37 @@
 
 const Pools = {};
 
+Pools.toggleCheckbox = function(obj) {
+    let $div = Prebooru.closest(obj, 'div');
+    if (obj.checked) {
+        $div.classList.add('checkbox-active');
+    } else {
+        $div.classList.remove('checkbox-active');
+    }
+};
+
+Pools.setAllInputsTimeout = function () {
+    setTimeout(() => {
+        document.querySelectorAll('.post-element-select input[type=checkbox]').forEach((input) => {
+            if (!input.checked) return;
+            let curr = Prebooru.closest(input, 'div.input');
+            if (curr !== null) {
+                curr.classList.add('checkbox-active');
+            }
+        });
+    }, 500);
+};
+
+Pools.initializeEventCallbacks = function () {
+    document.addEventListener('prebooru:update-inputs', Pools.updateAllInputs);
+};
+
+Pools.updateAllInputs = function() {
+    document.querySelectorAll('.pool-element-select input[type=checkbox]').forEach((input) => {
+        Pools.toggleCheckbox(input);
+    });
+};
+
 Pools.deleteElement = function(obj) {
     let $section = document.querySelector('.pool-section');
     fetch(obj.href, {method: 'DELETE'})
@@ -37,6 +68,18 @@ Pools.createElement = function (obj, type) {
                     $section.outerHTML = data.html;
                 }
             });
+    }
+    return false;
+};
+
+Pools.deleteElements = function () {
+    if (document.querySelectorAll('div.input.checkbox-active').length) {
+        if(confirm("Remove these items from pool?")) {
+            let form = document.querySelector('#form');
+            form.submit();
+        }
+    } else {
+        Prebooru.message("No elements selected.");
     }
     return false;
 };

@@ -9,6 +9,36 @@ div#pool-name {
     font-size: 28px;
 }
 
+article.pool-element-select {
+    display: inline-block;
+    height: 550px;
+    margin: 10px 0 0 40px;
+    position: relative;
+    text-align: center;
+    vertical-align: top;
+    width: 304px;
+}
+
+div.pool-element-display div.input label {
+    display: block;
+    text-align: start;
+    border: 1px solid;
+    border-radius: 25px;
+    margin-bottom: 5px;
+    margin-top: 0;
+    padding: 5px;
+    background: #f0f0d0;
+    border-color: #dd8;
+}
+
+div.pool-element-display div.input.checkbox-active label {
+    background: linear-gradient(270deg, green, transparent);
+}
+
+div.pool-element-display div.input input {
+    margin-left: 25px;
+}
+
 div.pool-block {
     border: 1px solid #eee;
     display: inline-block;

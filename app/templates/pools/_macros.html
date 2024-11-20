@@ -16,6 +16,39 @@
     </ul>
 {%- endmacro %}
 
+{% macro pool_element_preview(item) -%}
+    <div class="pool-block" id="{{ item.model_name }}-{{ item.id }}">
+        <div class="pool-block-heading heading">
+            <a href="#{{ item.model_name }}-{{ item.id }}" class="bookmark-target">◊</a>&thinsp;
+            {{ helpers.pool.media_header(item) }}
+            {{ item.show_link }}
+        </div>
+        <div class="pool-block-content">
+            {{ pool_display_block(item) }}
+            {% if item.model_name == "post" or item.model_name == "illust" %}{{ pool_info_block(item) }}{% endif %}
+        </div>
+    </div>
+{%- endmacro %}
+
+{% macro pool_element_select_preview(element, item) -%}
+    <article id="pool-element-{{ element.id }}" class="pool-element-select">
+        <div class="pool-element-display">
+            <div class="input">
+                <label for="pool-element-{{ element.id }}-checkbox">
+                    <input type="checkbox"
+                           class="pool-element-select-input"
+                           id="pool-element-{{ element.id }}-checkbox"
+                           name="pool_element[id][]"
+                           value="{{ element.id }}"
+                           onchange="return Pools.toggleCheckbox(this)"
+                           onclick="return Prebooru.selectClick(this)">
+                </label>
+            </div>
+        </div>
+        {{ pool_element_preview(item) }}
+    </article>
+{%- endmacro %}
+
 {% macro pool_display_block(item) -%}
     <div class="pool-display-block">
         {% if item.model_name == "post" %}

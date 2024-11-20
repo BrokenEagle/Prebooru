@@ -6,7 +6,15 @@
     {# Add link to pool elements index #}
     {% if pool.id is not none %}
         |
-        {{ subnav_link_to("Show", "pool.show_html", id=pool.id) }}
+        {% if helpers.base.is_show() %}
+            {% if edit_pool %}
+                {{ subnav_link_to("Show", "pool.show_html", id=pool.id, attrs={'class': 'nav-modify'}) }}
+            {% else %}
+                {{ subnav_link_to("Modify", "pool.show_html", id=pool.id, edit_pool='true', attrs={'class': 'nav-modify'}) }}
+            {% endif %}
+        {% else %}
+            {{ subnav_link_to("Show", "pool.show_html", id=pool.id) }}
+        {% endif %}
         {{ subnav_link_to("Edit", "pool.edit_html", id=pool.id) }}
         {{ subnav_link_to("Notate", 'notation.new_html', pool_id=pool.id, redirect='true', attrs={'class': 'nav-control'}) }}
     {% endif %}

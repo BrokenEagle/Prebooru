@@ -240,6 +240,10 @@ def is_index():
     return request.endpoint.endswith('.index_html')
 
 
+def is_show():
+    return request.endpoint.endswith('.show_html')
+
+
 def nav_link_to(text, endpoint):
     link_blueprint = endpoint.split('.')[0]
     request_blueprint = request.endpoint.split('.')[0]
