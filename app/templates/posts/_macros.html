@@ -31,6 +31,25 @@
     </div>
 {%- endmacro %}
 
+{% macro post_select_preview(post, lazyload=False) -%}
+    <article id="post-{{ post.id }}" class="post-select">
+        <div class="post-display">
+            <div class="input">
+                <label for="post-{{ post.id }}-checkbox">
+                    <input type="checkbox"
+                           class="post-select-input"
+                           id="post-{{ post.id }}-checkbox"
+                           name="post[id][]"
+                           value="{{ post.id }}"
+                           onchange="return Posts.toggleCheckbox(this)"
+                           onclick="return Prebooru.selectClick(this)">
+                </label>
+            </div>
+        </div>
+        {{ post_preview(post, lazyload) }}
+    </article>
+{%- endmacro %}
+
 {% macro recent_posts(posts, post_count=None, post_search=None) -%}
     <div class="heading">
         <div id="recent-posts-heading" class="large-2">

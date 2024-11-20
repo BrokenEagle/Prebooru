@@ -4,6 +4,84 @@
 
 const Posts = {};
 
+Posts.toggleCheckbox = function(obj) {
+    let $div = Prebooru.closest(obj, 'div');
+    if (obj.checked) {
+        $div.classList.add('checkbox-active');
+    } else {
+        $div.classList.remove('checkbox-active');
+    }
+};
+
+Posts.setAllInputsTimeout = function () {
+    setTimeout(() => {
+        document.querySelectorAll('.post-select input[type=checkbox]').forEach((input) => {
+            if (!input.checked) return;
+            let curr = Prebooru.closest(input, 'div.input');
+            if (curr !== null) {
+                curr.classList.add('checkbox-active');
+            }
+        });
+    }, 500);
+};
+
+Posts.initializeEventCallbacks = function () {
+    document.addEventListener('prebooru:update-inputs', Posts.updateAllInputs);
+};
+
+Posts.updateAllInputs = function() {
+    document.querySelectorAll('.post-select input[type=checkbox]').forEach((input) => {
+        Posts.toggleCheckbox(input);
+    });
+};
+
+Posts.submitForm = function (type, url) {
+    if (['pool', 'tag'].includes(type)) {
+        let post_inputs = document.querySelectorAll('.post-select input[type=checkbox]');
+        let post_ids = [...post_inputs].filter((input) => input.checked && input.value.match(/^\d+$/)).map((input) => input.value);
+        if (post_ids.length > 0) {
+            if (type === 'pool') {
+                let pool_id = prompt("Enter pool # to add to:");
+                if (pool_id?.match(/^\d+$/)) {
+                    let data = new FormData();
+                    data.append('pool_element[pool_id]', Number(pool_id));
+                    post_ids.forEach((post_id) => {
+                        data.append('pool_element[post_id][]', Number(post_id));
+                    });
+                    fetch(url, {method: 'POST', body: data})
+                        .then((resp) => resp.json())
+                        .then((data) => {
+                            if (data.error) {
+                                Prebooru.error(data.message);
+                            } else {
+                                Prebooru.message(`Added posts to pool #${pool_id}.`);
+                            }
+                        });
+                }
+            } else if (type === 'tag') {
+                let tag_name = prompt("Enter tag name to add:");
+                let data = new FormData();
+                data.append('tag[name]', tag_name);
+                post_ids.forEach((post_id) => {
+                    data.append('tag[post_id][]', Number(post_id));
+                });
+                fetch(url, {method: 'POST', body: data})
+                    .then((resp) => resp.json())
+                    .then((data) => {
+                        if (data.error) {
+                            Prebooru.error(data.message);
+                        } else {
+                            Prebooru.message(`Added tag ${tag_name} to posts.`);
+                        }
+                    });
+            }
+        } else {
+            Prebooru.message("No posts selected.");
+        }
+    }
+    return false;
+};
+
 Posts.createUpload = function(obj) {
     let url = prompt("Enter the URL of the post to upload from:");
     if (url !== null) {

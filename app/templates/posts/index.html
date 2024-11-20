@@ -1,19 +1,41 @@
 {% extends "posts/_base.html" %}
-{% from "layouts/_macros.html" import page_navigation %}
-{% from "posts/_macros.html" import post_preview %}
+{% from "layouts/_macros.html" import page_navigation, image_select_controls %}
+{% from "posts/_macros.html" import post_preview, post_select_preview %}
 
 {% block title %}
     Posts
 {% endblock title %}
 
 {% block content %}
-    <div id="type-selector">
-        {{ helpers.post.post_type_link('all') }}
-        {{ helpers.post.post_type_link('user') }}
-        {{ helpers.post.post_type_link('subscription') }}
+    <div id="post-page-controls">
+        <div id="post-type-selector">
+            {{ helpers.post.post_type_link('all') }}
+            {{ helpers.post.post_type_link('user') }}
+            {{ helpers.post.post_type_link('subscription') }}
+        </div>
+        {% if edit_posts %}
+            <div id="post-controls">
+                {% call image_select_controls('post-select-input') %}
+                    &emsp;&emsp;&emsp;
+                    <strong>
+                        ADD[
+                        <a class="pool-link" href="#" onclick="return Posts.submitForm('pool', '{{ url_for('pool_element.create_json') }}')">POOL</a>
+                        |
+                        <a class="tag-link" href="#" onclick="return Posts.submitForm('tag', '{{ url_for('tag.append_item_index_json') }}')">TAG</a>
+                        ]
+                    </strong>
+                {% endcall %}
+            </div>
+        {% endif %}
     </div>
     <div id="posts-container">
-        {% for post in page.items %}{{ post_preview(post, True) }}{% endfor %}
+        {% for post in page.items %}
+            {% if edit_posts %}
+                {{ post_select_preview(post, True) }}
+            {% else %}
+                {{ post_preview(post, True) }}
+            {% endif %}
+        {% endfor %}
     </div>
 {% endblock content %}
 
@@ -24,4 +46,8 @@
 {% block pagescript %}
     Prebooru.initializeLazyLoad('.post');
     Prebooru.initializeVideoPreviews('.video-post');
+    {% if edit_posts %}
+        Posts.setAllInputsTimeout();
+        Posts.initializeEventCallbacks();
+    {% endif %}
 {% endblock pagescript %}

@@ -236,6 +236,10 @@ def url_for_with_params(endpoint, **kwargs):
 
 # #### Navigation functions
 
+def is_index():
+    return request.endpoint.endswith('.index_html')
+
+
 def nav_link_to(text, endpoint):
     link_blueprint = endpoint.split('.')[0]
     request_blueprint = request.endpoint.split('.')[0]
@@ -244,10 +248,13 @@ def nav_link_to(text, endpoint):
     return html_text, klass
 
 
-def subnav_link_to(text, attrs):
+def subnav_link_to(text, endpoint, id, with_params, attrs, **kwargs):
     html_text = html_kebab_case(text)
+    attrs = {} if attrs is None else attrs
     attrs['id'] = "subnav-" + html_text + "-link"
-    return html_text, attrs
+    url = url_for_with_params(endpoint, id=id, **kwargs) if with_params else url_for(endpoint, id=id, **kwargs)
+    link = general_link(text, url, **attrs)
+    return add_container('li', link, id=f'subnav-{html_text}')
 
 
 def page_navigation(paginate):

@@ -5,20 +5,78 @@ div#posts-container {
     margin-top: 2em;
 }
 
-div#type-selector {
+div#post-page-controls {
+    border-bottom: 2px solid #eee;
+    height: 4em;
+    position: relative;
+    width: 95%;
+}
+
+div#post-page-controls > div {
+    position: absolute;
+}
+
+div#post-type-selector {
     font-size: 1.2em;
     margin-top: 1em;
     width: 14em;
-    border-bottom: 1px solid #ccc;
+    bottom: 0;
+    left: 0;
 }
 
-a.post-type {
+div#post-type-selector a {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 15px 15px 0 0;
+    border-bottom: none;
     display: inline-block;
-    margin: 0 0.5em;
+    margin-right: -6px;
+    padding: 5px 10px;
 }
 
-a.post-type.type-active {
+div#post-type-selector a.type-active {
     font-weight: bold;
+    color: white;
+    background: #0075f8;
+}
+
+div#post-controls {
+    bottom: 0;
+    right: 0;
+}
+
+div#posts-container article.post {
+    margin: 0 50px 25px 0;
+}
+
+article.post-select {
+    display: inline-block;
+    height: 350px;
+    margin: 0 50px 20px 0;
+    position: relative;
+    text-align: center;
+    vertical-align: top;
+    width: 304px;
+}
+
+div.post-display div.input label {
+    display: block;
+    text-align: start;
+    border: 1px solid;
+    border-radius: 25px;
+    margin-bottom: 5px;
+    margin-top: 0;
+    padding: 5px;
+    background: #f0f0d0;
+    border-color: #dd8;
+}
+
+div.post-display div.input.checkbox-active label {
+    background: linear-gradient(270deg, green, transparent);
+}
+
+div.post-display div.input input {
+    margin-left: 25px;
 }
 
 /**** SHOW Page ****/

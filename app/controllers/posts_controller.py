@@ -132,7 +132,8 @@ def index_html():
             q = q.enum_join(Post.type_enum).filter(Post.type_filter('name', '__eq__', post_type))
     q = q.options(INDEX_HTML_OPTIONS)
     page = paginate(q, request, max_limit=MAX_LIMIT_HTML, distinct=True)
-    return index_html_response(page, 'post', 'posts')
+    edit_posts = request.values.get('edit_posts', type=eval_bool_string, default=False)
+    return index_html_response(page, 'post', 'posts', edit_posts=edit_posts)
 
 
 @bp.route('/', methods=['GET'])
