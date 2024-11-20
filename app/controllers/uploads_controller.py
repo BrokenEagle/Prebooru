@@ -167,7 +167,7 @@ def create(get_request=False):
         check_upload = uniqueness_check(createparams)
         if check_upload is not None:
             retdata['item'] = check_upload.to_json()
-            return set_error(retdata, "Upload already exists: upload #%d" % check_upload.id)
+            return set_error(retdata, "Upload already exists.")
     if createparams['request_url']:
         site = site_descriptor.get_site_from_url(createparams['request_url'])
         if site.name == 'custom':
@@ -188,12 +188,17 @@ def create(get_request=False):
 
 
 def upload_select():
+    force_load = request.values.get('force', type=eval_bool_string)
     dataparams = get_data_params(request, 'upload')
     selectparams = convert_data_params(dataparams)
     retdata = {'error': False, 'data': selectparams, 'params': dataparams}
     if 'request_url' not in selectparams:
         return set_error(retdata, "Request URL not specified.")
     selectparams['request_url'] = selectparams['request_url'].split('#')[0]
+    check_upload = uniqueness_check(selectparams)
+    if check_upload is not None and not force_load:
+        retdata['item'] = check_upload.to_json()
+        return set_error(retdata, "Upload already exists.")
     errors = check_create_params(selectparams, True)
     if len(errors):
         return set_error(retdata, '\n'.join(errors))
@@ -309,7 +314,11 @@ def upload_all_html():
     if results['error']:
         flash(results['message'], 'error')
         form = get_upload_form(**results['data'])
-        return render_template("uploads/all.html", form=form, upload=Upload())
+        if 'item' in results:
+            upload = Upload.find(results['item']['id'])
+        else:
+            upload = Upload()
+        return render_template("uploads/all.html", form=form, upload=upload)
     return redirect(url_for('upload.show_html', id=results['item']['id']))
 
 
@@ -322,7 +331,11 @@ def upload_select_html():
     form = get_upload_form(request_url=results['data']['request_url'])
     if results['error']:
         flash(results['message'], 'error')
-        return render_template("uploads/select.html", illust_urls=None, form=form, upload=Upload())
+        if 'item' in results:
+            upload = Upload.find(results['item']['id'])
+        else:
+            upload = Upload()
+        return render_template("uploads/select.html", illust_urls=None, form=form, upload=upload)
     return render_template("uploads/select.html", form=form, illust_urls=results['item'], upload=Upload())
 
 

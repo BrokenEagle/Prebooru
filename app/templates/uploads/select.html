@@ -6,6 +6,12 @@
 
 {% block content %}
     <div class="form-heading heading">Upload Select</div>
+    {% if upload.id is not none %}
+        <div id="upload-duplicate-section">
+            <div id="upload-duplicate-info">{{ upload.show_link }}</div>
+            <div id="upload-force-select-load">{{ helpers.base.general_link("Force load", helpers.base.url_for_with_params('upload.upload_select_html', force=True)) }}</div>
+        </div>
+    {% endif %}
     {% if illust_urls is not none %}
         {% include "uploads/_select_images_form.html" %}
     {% else %}

@@ -138,9 +138,35 @@ div.upload-preview img {
     width: auto;
 }
 
-/**** SELECT ****/
+/**** ALL/SELECT ****/
+
+div#upload-duplicate-section {
+    display: flex;
+    margin-top: 1em;
+}
+
+div#upload-duplicate-info {
+    font-size: 20px;
+    font-weight: bold;
+    padding: 0.25em 0;
+}
+
+div#upload-force-select-load {
+    font-weight: bold;
+    font-size: 20px;
+    margin-left: 1em;
+    border: 2px solid #EEE;
+    border-radius: 25px;
+    max-width: fit-content;
+    padding: 0.25em 0.5em;
+}
+
 div#force-input {
     margin: 0.5em;
+}
+
+div#upload-force-select-load a {
+    color: orange;
 }
 
 div.select-image-block {

@@ -7,6 +7,11 @@
 
 {% block content %}
     <div class="form-heading heading">Upload All</div>
+    {% if upload.id is not none %}
+        <div id="upload-duplicate-section">
+            <div id="upload-duplicate-info">{{ upload.show_link }}</div>
+        </div>
+    {% endif %}
     {% call render_form(form, 'POST', upload.create_url, manual=True) %}
         <div id="force-input" class="input checkbox-input inline-input">
             <label for="select-force">Force</label>
