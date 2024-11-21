@@ -27,8 +27,10 @@ from ..database.server_info_db import get_next_wait, update_next_wait
 # #### Module variables
 
 IMAGE_HEADERS = {
-    'Referer': 'https://www.pixiv.net/'
+    'referer': 'https://www.pixiv.net/',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
 }
+
 
 BAD_ID_TAGS = ['bad_id', 'bad_pixiv_id']
 
@@ -88,7 +90,7 @@ API_HEADERS = {
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-US,en;q=0.9',
     'upgrade-insecure-requests': '1',
-    'user-agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'  # noqa: E501
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',  # noqa: E501
     'cookie': f'PHPSESSID={PIXIV_PHPSESSID}',
 }
 
