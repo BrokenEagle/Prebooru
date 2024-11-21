@@ -147,7 +147,7 @@ Prebooru.selectClick = function(obj) {
 };
 
 Prebooru.copyFileLink = function(obj) {
-    prompt('Copy file link:', obj.dataset.filePath);
+    Prebooru.copyToClipboard(obj.dataset.filePath);
     return false;
 };
 
@@ -176,6 +176,15 @@ Prebooru.processNotice = function(notice_class, msg) {
 Prebooru.closeNotice = function() {
     document.getElementById('script-notice').className = "";
     return false;
+};
+
+Prebooru.copyToClipboard = async function(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        Prebooru.message("Copied!");
+    } catch (error) {
+        Prebooru.error("Couldn't copy to clipboard");
+    }
 };
 
 Prebooru.resizeImage = function (obj) {
