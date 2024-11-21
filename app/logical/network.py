@@ -3,7 +3,7 @@
 # ## PYTHON IMPORTS
 import time
 import json
-import requests
+import httpx
 
 # ## PACKAGE IMPORTS
 from config import PREBOORU_PORT
@@ -14,12 +14,12 @@ from config import PREBOORU_PORT
 def get_http_data(serverfilepath, method='get', **args):
     if 'timeout' not in args:
         args['timeout'] = 10
-    request_method = getattr(requests, method)
+    request_method = getattr(httpx, method)
     response = None
     for i in range(4):
         try:
             response = request_method(serverfilepath, **args)
-        except requests.exceptions.ReadTimeout:
+        except httpx.ConnectTimeout:
             continue
         except Exception as e:
             return "Unexpected error: %s" % str(e)
