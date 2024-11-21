@@ -6,7 +6,7 @@ import time
 import urllib
 
 # ## EXTERNAL IMPORTS
-import requests
+import httpx
 
 # ## PACKAGE IMPORTS
 from config import PIXIV_PHPSESSID
@@ -89,10 +89,8 @@ API_HEADERS = {
     'accept-language': 'en-US,en;q=0.9',
     'upgrade-insecure-requests': '1',
     'user-agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'  # noqa: E501
+    'cookie': f'PHPSESSID={PIXIV_PHPSESSID}',
 }
-
-API_JAR = requests.cookies.RequestsCookieJar()
-API_JAR.set('PHPSESSID', PIXIV_PHPSESSID, domain='.pixiv.net', path='/', expires=None)
 
 # #### Other variables
 
@@ -315,8 +313,8 @@ def pixiv_request(url, wait=True):
     check_request_wait(wait)
     for i in range(3):
         try:
-            response = requests.get(url, headers=API_HEADERS, cookies=API_JAR, timeout=10)
-        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
+            response = httpx.get(url, headers=API_HEADERS, timeout=10)
+        except (httpx.ConnectTimeout) as e:
             if i == 2:
                 print("Connection errors exceeded!")
                 return {'error': True, 'message': repr(e)}
@@ -325,8 +323,8 @@ def pixiv_request(url, wait=True):
             continue
         if response.status_code == 200:
             break
-        print("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, response.reason, response.text))
-        return {'error': True, 'message': "HTTP %d - %s" % (response.status_code, response.reason)}
+        print("\n%s\nHTTP %d: %s" % (url, response.status_code, response.text))
+        return {'error': True, 'message': "HTTP %d" % (response.status_code)}
     try:
         return response.json()
     except Exception:
