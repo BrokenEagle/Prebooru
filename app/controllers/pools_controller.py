@@ -159,8 +159,8 @@ def show_json(id):
 def show_html(id):
     pool = get_or_abort(Pool, id)
     page = pool.element_paginate(page=get_page(request), per_page=get_limit(request),
-                                     illust_options=SHOW_HTML_ILLUST_OPTIONS,
-                                     post_options=SHOW_HTML_POST_OPTIONS)
+                                 illust_options=SHOW_HTML_ILLUST_OPTIONS,
+                                 post_options=SHOW_HTML_POST_OPTIONS)
     edit_pool = request.values.get('edit_pool', type=eval_bool_string, default=False)
     return render_template("pools/show.html", pool=pool, page=page, edit_pool=edit_pool)
 

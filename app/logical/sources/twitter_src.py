@@ -1117,9 +1117,14 @@ def get_tweet_by_rest_id(tweet_id):
     variables = TWEET_REST_ID_VARIABLES.copy()
     variables['tweetId'] = tweet_id
     features = TWEET_REST_ID_FEATURES.copy()
-    fieldToggles = TWEET_REST_ID_FIELD_TOGGLES.copy()
-    url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features), 'fieldToggles': json.dumps(fieldToggles)})
-    data = twitter_request("https://x.com/i/api/graphql/7xflPyRiUxGVbJd4uWmbfg/TweetResultByRestId?" + url_params, use_httpx=True)
+    field_toggles = TWEET_REST_ID_FIELD_TOGGLES.copy()
+    url_params = urllib.parse.urlencode({
+        'variables': json.dumps(variables),
+        'features': json.dumps(features),
+        'fieldToggles': json.dumps(field_toggles)
+    })
+    data = twitter_request("https://x.com/i/api/graphql/7xflPyRiUxGVbJd4uWmbfg/TweetResultByRestId?" + url_params,
+                           use_httpx=True)
     try:
         if data['error']:
             return create_error('twitter_src.get_tweet_by_rest_id', data['message'])
@@ -1128,8 +1133,10 @@ def get_tweet_by_rest_id(tweet_id):
         msg = "Error parsing Twitter data: %s" % str(e)
         return create_error('twitter_src.get_tweet_by_rest_id', msg)
     tweet = safe_get(results, 'tweets', tweet_id_str)
-    return tweet if tweet is not None\
-           else create_error('sources.twitter.get_tweet_by_rest_id', "Tweet not found: %d" % illust_id)
+    return tweet\
+        if tweet is not None\
+        else create_error('sources.twitter.get_tweet_by_rest_id', "Tweet not found: %d" % tweet_id)
+
 
 def get_media_page(user_id, cursor=None):
     params = TWITTER_BASE_PARAMS.copy()

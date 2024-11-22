@@ -35,7 +35,7 @@ def index_json():
             'misfire_grace_time': job.misfire_grace_time,
             'next_run_time': job.next_run_time.isoformat(),
             'pending': job.pending,
-            })
+        })
     return jsonify(data)
 
 

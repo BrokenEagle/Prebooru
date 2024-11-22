@@ -75,10 +75,12 @@ def pool_filter(query, search):
         query = query.filter(subclause)
     elif 'pool_id' in search or 'pool_id_not' in search:
         if search.get('pool_id', "").isdigit():
-            subquery = PoolPost.query.filter(PoolPost.pool_id == int(search['pool_id'])).with_entities(PoolPost.post_id)
+            subquery = PoolPost.query.filter(PoolPost.pool_id == int(search['pool_id']))\
+                                     .with_entities(PoolPost.post_id)
             query = query.filter(Post.id.in_(subquery))
         if search.get('pool_id_not', "").isdigit():
-            subquery = PoolPost.query.filter(PoolPost.pool_id == int(search['pool_id_not'])).with_entities(PoolPost.post_id)
+            subquery = PoolPost.query.filter(PoolPost.pool_id == int(search['pool_id_not']))\
+                                     .with_entities(PoolPost.post_id)
             query = query.filter(Post.id.not_in(subquery))
     return query
 

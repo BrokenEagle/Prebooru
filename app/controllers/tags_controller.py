@@ -92,8 +92,7 @@ def remove_item(tag):
         return set_error(retdata, "May remove using only a single ID; multiple values found: %s" % repr(remove_key))
     elif len(remove_key) == 0:
         return set_error(retdata, "Must include an remove ID.")
-    else:
-        return remove_tag_from_item(tag, remove_key[0], dataparams)
+    return remove_tag_from_item(tag, remove_key[0], dataparams)
 
 
 # #### Route functions

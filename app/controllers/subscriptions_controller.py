@@ -187,9 +187,10 @@ def index_html():
     q = index()
     q = q.options(selectinload(Subscription.artist))
     page = paginate(q, request)
-    average_intervals = get_average_interval_for_subscriptions(page.items, 365)\
-                        if request.args.get('show_interval', type=eval_bool_string)\
-                        else None
+    average_intervals =\
+        get_average_interval_for_subscriptions(page.items, 365)\
+        if request.args.get('show_interval', type=eval_bool_string)\
+        else None
     return index_html_response(page, 'subscription', 'subscriptions', average_intervals=average_intervals)
 
 
