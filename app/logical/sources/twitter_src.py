@@ -1044,7 +1044,7 @@ def get_twitter_illust_timeline(illust_id):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(variables),
                                         'features': json.dumps(features),
                                         'fieldToggles': json.dumps(field_toggles)})
-    data = twitter_request("https://twitter.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons,
+    data = twitter_request("https://x.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons,
                            use_httpx=True)
     try:
         if data['error']:
@@ -1084,7 +1084,7 @@ def get_media_page_v2(user_id, count, cursor=None):
     if cursor is not None:
         variables['cursor'] = cursor
     url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features)})
-    return twitter_request("https://twitter.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params,
+    return twitter_request("https://x.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params,
                            use_httpx=True)
 
 
@@ -1109,7 +1109,7 @@ def get_search_page_v2(query, count, cursor=None):
     url_params = urllib.parse.urlencode({'variables': json.dumps(variables),
                                          'features': json.dumps(features),
                                          'fieldToggles': json.dumps(field_toggles)})
-    return twitter_request("https://twitter.com/i/api/graphql/KUnA_SzQ4DMxcwWuYZh9qg/SearchTimeline?" + url_params)
+    return twitter_request("https://x.com/i/api/graphql/KUnA_SzQ4DMxcwWuYZh9qg/SearchTimeline?" + url_params)
 
 
 def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
@@ -1197,7 +1197,7 @@ def get_twitter_user_id(account):
         'withHighlightedLabel': False
     }
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    request_url = 'https://twitter.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
+    request_url = 'https://x.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
                   'UserByScreenNameWithoutResults?%s' % urladdons
     data = twitter_request(request_url, wait=False, use_httpx=True)
     if data['error']:
@@ -1212,7 +1212,7 @@ def get_twitter_artist(artist_id):
         'withHighlightedLabel': False,
     }
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    request_url = 'https://twitter.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
+    request_url = 'https://x.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
                   'UserByRestIdWithoutResults?%s' % urladdons
     data = twitter_request(request_url, use_httpx=True)
     if data['error']:
