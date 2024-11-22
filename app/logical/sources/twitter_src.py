@@ -371,6 +371,46 @@ TWITTER_SEARCH_TIMELINE_FIELD_TOGGLES = {
     "withArticleRichContentState": False,
 }
 
+TWEET_REST_ID_VARIABLES = {
+    "withCommunity": False,
+    "includePromotedContent": False,
+    "withVoice": False,
+}
+
+TWEET_REST_ID_FEATURES = {
+    "creator_subscriptions_tweet_preview_api_enabled": False,
+    "communities_web_enable_tweet_community_results_fetch": False,
+    "c9s_tweet_anatomy_moderator_badge_enabled": False,
+    "articles_preview_enabled": False,
+    "tweetypie_unmention_optimization_enabled": False,
+    "responsive_web_edit_tweet_api_enabled": False,
+    "graphql_is_translatable_rweb_tweet_is_translatable_enabled": False,
+    "view_counts_everywhere_api_enabled": False,
+    "longform_notetweets_consumption_enabled": False,
+    "responsive_web_twitter_article_tweet_consumption_enabled": False,
+    "tweet_awards_web_tipping_enabled": False,
+    "creator_subscriptions_quote_tweet_preview_enabled": False,
+    "freedom_of_speech_not_reach_fetch_enabled": False,
+    "standardized_nudges_misinfo": False,
+    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": False,
+    "tweet_with_visibility_results_prefer_gql_media_interstitial_enabled": False,
+    "rweb_video_timestamps_enabled": False,
+    "longform_notetweets_rich_text_read_enabled": False,
+    "longform_notetweets_inline_media_enabled": False,
+    "rweb_tipjar_consumption_enabled": False,
+    "responsive_web_graphql_exclude_directive_enabled": False,
+    "verified_phone_label_enabled": False,
+    "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+    "responsive_web_graphql_timeline_navigation_enabled": False,
+    "responsive_web_enhance_cards_enabled": False,
+}
+
+TWEET_REST_ID_FIELD_TOGGLES = {
+    "withArticleRichContentState": False,
+    "withArticlePlainText": False,
+    "withAuxiliaryUserLabels": False,
+}
+
 # #### Subscription variables
 
 PROCESS_FORM_CONFIG = {
@@ -1068,6 +1108,25 @@ def get_twitter_illust_timeline(illust_id):
     return found_tweets
 
 
+def get_tweet_by_rest_id(tweet_id):
+    tweet_id_str = str(tweet_id)
+    variables = TWEET_REST_ID_VARIABLES.copy()
+    variables['tweetId'] = tweet_id
+    features = TWEET_REST_ID_FEATURES.copy()
+    fieldToggles = TWEET_REST_ID_FIELD_TOGGLES.copy()
+    url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features), 'fieldToggles': json.dumps(fieldToggles)})
+    data = twitter_request("https://x.com/i/api/graphql/7xflPyRiUxGVbJd4uWmbfg/TweetResultByRestId?" + url_params, use_httpx=True)
+    try:
+        if data['error']:
+            return create_error('twitter_src.get_tweet_by_rest_id', data['message'])
+        results = get_graphql_timeline_entries_v2(data['body'])
+    except Exception as e:
+        msg = "Error parsing Twitter data: %s" % str(e)
+        return create_error('twitter_src.get_tweet_by_rest_id', msg)
+    tweet = safe_get(results, 'tweets', tweet_id_str)
+    return tweet if tweet is not None\
+           else create_error('sources.twitter.get_tweet_by_rest_id', "Tweet not found: %d" % illust_id)
+
 def get_media_page(user_id, cursor=None):
     params = TWITTER_BASE_PARAMS.copy()
     if cursor is not None:
@@ -1175,19 +1234,6 @@ def get_twitter_illust(illust_id):
     if len(data['body']) == 0:
         return create_error('sources.twitter.get_twitter_illust', "Tweet not found: %d" % illust_id)
     return data['body'][0]
-
-
-def get_twitter_illust_v2(illust_id):
-    print("Getting twitter #%d" % illust_id)
-    illust_id_str = str(illust_id)
-    twitter_data = get_twitter_illust_timeline(illust_id)
-    if is_error(twitter_data):
-        return twitter_data
-    for i in range(len(twitter_data)):
-        tweet = safe_get(twitter_data[i], 'result', 'legacy')
-        if tweet is not None and tweet['id_str'] == illust_id_str:
-            return tweet
-    return create_error('sources.twitter.get_twitter_illust_v2', "Tweet not found: %d" % illust_id)
 
 
 def get_twitter_user_id(account):
@@ -1418,7 +1464,7 @@ def get_artist_data(site_artist_id):
 def get_illust_api_data(site_illust_id):
     tweet = get_api_illust(site_illust_id, SITE.id)
     if tweet is None:
-        tweet = get_twitter_illust_v2(site_illust_id)
+        tweet = get_tweet_by_rest_id(site_illust_id)
         if is_error(tweet):
             return
         save_api_data([tweet], 'id_str', SITE.id, api_data_type.illust.id)
