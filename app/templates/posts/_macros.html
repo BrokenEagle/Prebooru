@@ -1,3 +1,5 @@
+{% from "layouts/_macros.html" import render_block %}
+
 {% macro post_preview(post, lazyload=False) -%}
     {% if post is not none %}
         <article id="post-{{ post.id }}" class="post {{ 'video-post' if post.is_video else '' }}">
@@ -48,6 +50,12 @@
         </div>
         {{ post_preview(post, lazyload) }}
     </article>
+{%- endmacro %}
+
+{% macro posts_display(post_search_url, post_count, section_id, section=True) -%}
+    {% call render_block('section' if section else 'div', id=section_id) %}
+        <span class="heading">Posts</span> (&thinsp;{{ post_count }}&thinsp;) {{ helpers.base.general_link('»', post_search_url) }}
+    {% endcall %}
 {%- endmacro %}
 
 {% macro recent_posts(posts, post_count=None, post_search=None) -%}

@@ -74,6 +74,10 @@ def danbooru_batch_url(illust):
     return DANBOORU_HOSTNAME + '/uploads/batch?' + query_string
 
 
+def post_search(illust):
+    return search_url_for('post.index_html', illust_urls={'illust_id': illust.id})
+
+
 # #### Link functions
 
 # ###### INDEX

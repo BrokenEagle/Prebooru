@@ -74,7 +74,6 @@ class Illust(JsonModel):
     tags = association_proxy('_tags', 'name', creator=site_tag_creator)
     commentaries = association_proxy('_commentaries', 'body', creator=description_creator)
     pools = association_proxy('_pools', 'pool')
-    _posts = association_proxy('urls', 'post')
     boorus = association_proxy('artist', 'boorus')
     title = association_proxy('site_data', 'title', getset_factory=polymorphic_accessor_factory)
     retweets = association_proxy('site_data', 'retweets', getset_factory=polymorphic_accessor_factory)
@@ -112,7 +111,11 @@ class Illust(JsonModel):
 
     @memoized_property
     def posts(self):
-        return [post for post in self._posts if post is not None]
+        return self._post_query.all()
+
+    @property
+    def post_count(self):
+        return self._post_query.get_count()
 
     @property
     def type(self):
@@ -204,6 +207,11 @@ class Illust(JsonModel):
     @property
     def _urls_query(self):
         return IllustUrl.query.filter_by(illust_id=self.id)
+
+    @property
+    def _post_query(self):
+        from .post import Post
+        return Post.query.join(IllustUrl, Post.illust_urls).filter(IllustUrl.illust_id == self.id)
 
     __table_args__ = (
         DB.UniqueConstraint('site_illust_id', 'site_id'),
