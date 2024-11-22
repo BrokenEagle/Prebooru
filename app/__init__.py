@@ -193,7 +193,7 @@ def _error_handler(error):
 
 @atexit.register
 def _close_session():
-    SESSION.close()
+    SESSION.remove()
 
 
 def _load_models():
