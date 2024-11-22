@@ -366,7 +366,7 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
     if dirty:
         create_or_update_job_status(id, status)
         SESSION.commit()
-        SESSION.remove()
+    SESSION.remove()
 
 
 def _is_job_enabled(id):
