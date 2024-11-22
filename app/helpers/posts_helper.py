@@ -181,11 +181,6 @@ def regenerate_image_matches_link(post):
     return general_link("Regenerate image matches", url, **addons)
 
 
-def disk_file_link(post):
-    addons = {'onclick': 'return Posts.copyFileLink(this)', 'data-file-path': post.file_path}
-    return general_link("Copy file link", "#", **addons)
-
-
 def add_notation_link(post):
     return general_link("Add notation", url_for('notation.new_html', post_id=post.id, redirect='true'))
 
