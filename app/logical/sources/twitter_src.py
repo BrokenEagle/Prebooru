@@ -427,7 +427,6 @@ def artist_links(artist):
     return {
         'main': artist_main_url(artist),
         'media': artist_media_url(artist),
-        'likes': artist_likes_url(artist),
         'search': artist_search_url(artist),
     }
 
@@ -650,11 +649,6 @@ def artist_main_url(artist):
 def artist_media_url(artist):
     url = artist_main_url(artist)
     return url + '/media' if len(url) else ""
-
-
-def artist_likes_url(artist):
-    url = artist_main_url(artist)
-    return url + '/likes' if len(url) else ""
 
 
 def artist_search_url(artist):
