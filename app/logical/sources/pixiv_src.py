@@ -383,9 +383,16 @@ def source_prework(site_illust_id):
 # ###### ILLUST
 
 def get_artwork_commentary(artwork):
-    description = artwork['description']
+    description = fixup_crlf(artwork['description'])
     if len(description) > 0:
         description = safe_get(artwork, 'extraData', 'meta', 'twitter', 'description')
+    if artwork.get('request') is not None:
+        user_name = artwork['request']['creator']['userName']
+        user_id_str = artwork['request']['creator']['userId']
+        request_text = "Request from @%s (pxuser #%s)\r\n" % (user_name, user_id_str)
+        request_text += "=> pixivrequest #%s\r\n\r\n" % artwork['request']['request']['requestId']
+        request_text += fixup_crlf(artwork['request']['request']['requestProposal']['requestOriginalProposal'])
+        description += "\r\n\r\n--------------------------------------------------\r\n" + request_text if len(description) else request_text
     return description if len(description) else None
 
 
@@ -393,6 +400,10 @@ def get_illust_tags(artwork):
     tags = set(tag_data['tag'] for tag_data in (safe_get(artwork, 'tags', 'tags') or []))
     if artwork['isOriginal']:
         tags.add('original')
+    if artwork.get('request') is not None:
+        tags.add('pixiv_commission')
+    if artwork.get('aiType') == 2:
+        tags.add('ai_generated')
     return list(tags)
 
 
