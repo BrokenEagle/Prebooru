@@ -67,20 +67,24 @@ TWVIDEO_HOST_RG = re.compile(r'^https?://video\.twimg\.com', re.IGNORECASE)
 # ###### Partial URL regexes
 
 TWEET1_PARTIAL_RG = re.compile(r"""
-/[\w-]+                                 # Account
-/status
-/(\d+)                                  # ID
+/
+(?!\d+/)                                # Not numeric
+[\w-]+                                  # Account
+/status/
+(\d+)                                   # ID
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
 TWEET2_PARTIAL_RG = re.compile(r"""
-/i/web/status
-/(\d+)                                  # ID
+/i/web/status/
+(\d+)                                   # ID
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
 USERS1_PARTIAL_RG = re.compile(r"""
-/([\w-]+)                               # Account
+/
+(?!\d+/)                                # Not numeric
+([\w-]+)                                # Account
 (\?|$)                                  # End
 """, re.X | re.IGNORECASE)
 
