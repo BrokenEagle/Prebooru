@@ -1102,7 +1102,7 @@ def get_twitter_illust_timeline(illust_id):
         return create_error('sources.twitter.get_twitter_illust_timeline', "No tweets found in data.")
     # Normalize the hierarchical position of tweet info
     for tweet in found_tweets:
-        if 'tweet' in safe_get(tweet, 'result'):
+        if safe_get(tweet, 'result', 'tweet') is not None:
             for k in tweet['result']['tweet']:
                 tweet['result'][k] = tweet['result']['tweet'][k]
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
