@@ -107,7 +107,7 @@ class Illust(JsonModel):
 
     @property
     def active_urls(self):
-        return [url for url in self.urls if url.post is not None]
+        return [url for url in self.urls if url.post_id is not None]
 
     @memoized_property
     def posts(self):
