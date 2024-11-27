@@ -138,16 +138,23 @@ class Upload(JsonModel):
         if len(self.illust_urls):
             return self.illust_urls[0].illust
 
+    @property
+    def illust_id(self):
+        return getattr(self.illust, 'id', None)
+
     @memoized_property
     def artist(self):
-        if self.illust is not None:
-            return self.illust.artist
+        return getattr(self.illust, 'artist', None)
+
+    @property
+    def artist_id(self):
+        return getattr(self.artist, 'id', None)
 
     # ## Class properties
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['image_urls', 'post_ids', 'complete_post_ids', 'duplicate_post_ids', 'errors']
+        return super().json_attributes + ['image_urls', 'post_ids', 'complete_post_ids', 'duplicate_post_ids', 'illust_id', 'artist_id', 'errors']
 
     # ## Private
 
