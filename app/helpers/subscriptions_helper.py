@@ -103,6 +103,11 @@ def retire_link(subscription):
     return general_link("Retire subscription", url, method='PUT')
 
 
+def reset_requery_link(subscription):
+    url = url_for('subscription.requery_html', id=subscription.id)
+    return general_link("Reset requery", url, method='PUT')
+
+
 def element_keep_link(subscription, keep):
     search_args = {'subscription_id': subscription.id}
     if keep is not None:

@@ -8,6 +8,7 @@ from wtforms.validators import DataRequired
 
 # ## PACKAGE IMPORTS
 from utility.data import eval_bool_string
+from utility.time import hours_from_now
 
 # ## LOCAL IMPORTS
 from .. import SCHEDULER, SESSION
@@ -16,7 +17,7 @@ from ..logical.utility import set_error
 from ..logical.records.subscription_rec import process_subscription_manual
 from ..logical.database.subscription_db import create_subscription_from_parameters,\
     update_subscription_from_parameters, update_subscription_status, delay_subscription_elements,\
-    delete_subscription, get_average_interval_for_subscriptions
+    delete_subscription, get_average_interval_for_subscriptions, update_subscription_requery
 from ..logical.database.server_info_db import get_subscriptions_ready
 from ..logical.database.jobs_db import get_job_status_data, create_or_update_job_status
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -316,6 +317,7 @@ def process_html(id):
 def reset_html(id):
     subscription = get_or_abort(Subscription, id)
     update_subscription_status(subscription, 'idle')
+    flash("Subscription reset.")
     return redirect(request.referrer)
 
 
@@ -323,6 +325,15 @@ def reset_html(id):
 def retire_html(id):
     subscription = get_or_abort(Subscription, id)
     update_subscription_status(subscription, 'retired')
+    flash("Subscription retired.")
+    return redirect(request.referrer)
+
+
+@bp.route('/subscriptions/<int:id>/requery', methods=['PUT'])
+def requery_html(id):
+    subscription = get_or_abort(Subscription, id)
+    update_subscription_requery(subscription, hours_from_now(subscription.interval))
+    flash("Subscription requery updated.")
     return redirect(request.referrer)
 
 
