@@ -73,6 +73,7 @@ def update_subscription_requery(subscription, timeval):
 
 def update_subscription_last_info(subscription):
     subscription.checked = get_current_time()
+    subscription.last_id = subscription.artist.last_illust_id
     SESSION.commit()
 
 

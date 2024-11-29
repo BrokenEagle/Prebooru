@@ -7,7 +7,7 @@
                     <strong>Status:</strong> {{ helpers.subscription.status_link(subscription) }}
                 </li>
                 <li>
-                    <strong>Last Illust ID:</strong> {{ helpers.base.val_or_none(subscription.artist.last_illust_id) }}
+                    <strong>Last Illust ID:</strong> {{ helpers.base.val_or_none(subscription.last_id) }}
                 </li>
                 <li>
                     <strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription.checked) }}

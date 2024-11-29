@@ -274,9 +274,8 @@ def delete_html(id):
 @bp.route('/subscriptions/<int:id>/process', methods=['GET'])
 def process_form_html(id):
     subscription = get_or_abort(Subscription, id)
-    artist = subscription.artist
-    config = artist.site.source.PROCESS_FORM_CONFIG
-    form = get_process_form(config, last_id=artist.last_illust_id)
+    config = subscription.artist.site.source.PROCESS_FORM_CONFIG
+    form = get_process_form(config, last_id=subscription.last_id)
     return render_template("subscriptions/process.html", form=form, subscription=subscription)
 
 

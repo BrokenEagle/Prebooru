@@ -1560,7 +1560,7 @@ def populate_all_artist_illusts(artist, job_id=None, params=None):
     if params is None:
         params = {
             'type': 'media',
-            'last_id': artist.last_illust_id,
+            'last_id': artist.subscription.last_id,
         }
     elif params['type'] == 'search':
         params['last_id'] = None
