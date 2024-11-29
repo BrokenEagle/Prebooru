@@ -53,6 +53,10 @@ def add_notation_link(artist):
     return general_link("Add notation", url_for('notation.new_html', artist_id=artist.id, redirect='true'))
 
 
+def check_posts_link(artist):
+    return general_link("Check posts", url_for('artist.check_posts_html', id=artist.id), method="POST")
+
+
 def delete_profile_link(artist, profile):
     return general_link("remove", url_for('artist.delete_profile_html', id=artist.id, description_id=profile.id),
                         method="DELETE", **{'class': 'warning-link'})

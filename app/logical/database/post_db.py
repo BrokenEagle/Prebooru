@@ -166,3 +166,8 @@ def get_all_posts_page(limit):
 def get_posts_to_query_danbooru_id_page(limit):
     query = Post.query.filter(Post.danbooru_id.is_(None), NO_SUBELEMENT_CLAUSE)
     return query.limit_paginate(per_page=limit)
+
+
+def get_artist_posts_without_danbooru_ids(artist):
+    query = artist._post_query.filter(Post.danbooru_id.is_(None))
+    return query.limit_paginate(per_page=100, distinct=True)

@@ -14,7 +14,7 @@ from utility.uprint import buffered_print
 
 # ### LOCAL IMPORTS
 from ... import SESSION
-from ...models import Post
+from ...models import Post, Artist
 from ..utility import set_error, SessionThread
 from ..logger import handle_error_message
 from ..network import get_http_data
@@ -22,7 +22,8 @@ from ..media import load_image, create_sample, create_preview, create_video_scre
     convert_mp4_to_webm
 from ..database.post_db import delete_post,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, set_post_alternate, alternate_posts_query,\
-    get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id
+    get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
+    get_artist_posts_without_danbooru_ids
 from ..database.error_db import create_error
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
@@ -46,6 +47,16 @@ def check_all_posts_for_danbooru_id():
         print(f"check_all_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})")
         if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, status) or not page.has_next:
             return status
+        page = page.next()
+
+
+def check_artist_posts_for_danbooru_id(artist_id):
+    artist = Artist.find(artist_id)
+    page = get_artist_posts_without_danbooru_ids(artist)
+    while True:
+        print(f"check_artist_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})")
+        if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, {}) or not page.has_next:
+            break
         page = page.next()
 
 

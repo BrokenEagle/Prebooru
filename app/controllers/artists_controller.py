@@ -10,12 +10,14 @@ from wtforms.validators import DataRequired
 from utility.data import random_id
 
 # ## LOCAL IMPORTS
+from .. import SCHEDULER
 from ..models import Artist, Booru
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.sources.base_src import get_artist_required_params
 from ..logical.sources.danbooru_src import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion
+from ..logical.records.post_rec import check_artist_posts_for_danbooru_id
 from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
     artist_append_booru, artist_delete_profile
 from ..logical.database.booru_db import create_booru_from_parameters
@@ -436,4 +438,12 @@ def delete_profile_html(id):
         flash(results['message'], 'error')
     else:
         flash('Profile deleted.')
+    return redirect(url_for('artist.show_html', id=id))
+
+
+@bp.route('/artists/<int:id>/check_posts', methods=['POST'])
+def check_posts_html(id):
+    get_or_abort(Artist, id)
+    SCHEDULER.add_job("check_artist_posts_for_danbooru_id-%d" % id, check_artist_posts_for_danbooru_id, args=(id,))
+    flash('Job started.')
     return redirect(url_for('artist.show_html', id=id))
