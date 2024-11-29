@@ -9,15 +9,16 @@ from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
 from ..models import SubscriptionElement, IllustUrl, Illust
-from ..logical.utility import search_url_for
+from ..logical.utility import search_url_for, set_error
 from ..logical.database.subscription_element_db import get_elements_by_id, update_subscription_element_keep,\
     batch_update_subscription_element_keep
 from ..logical.database.post_db import get_posts_by_md5s, get_post_by_md5
 from ..logical.database.archive_db import get_archive_posts_by_md5s, get_archive
-from ..logical.records.subscription_rec import redownload_element, reinstantiate_element, relink_element
+from ..logical.records.subscription_rec import redownload_element, reinstantiate_element, relink_element,\
+    create_elements_from_source
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, strip_whitespace, get_page,\
-    render_template_ws
+    render_template_ws, get_data_params
 
 
 # ## GLOBAL VARIABLES
@@ -121,6 +122,21 @@ def index_html():
     return render_template_ws("subscription_elements/index.html",
                               page=elements,
                               subscription_element=SubscriptionElement())
+
+
+# ###### CREATE
+
+@bp.route('/subscription_elements.json', methods=['POST'])
+def create_json():
+    dataparams = get_data_params(request, 'subscription_element')
+    retdata = {'error': False, 'params': dataparams}
+    if 'source_url' not in dataparams:
+        return set_error(retdata, "Source URL not included.")
+    results = create_elements_from_source(dataparams['source_url'])
+    if isinstance(results, str):
+        return set_error(retdata, results)
+    retdata['item'] = [element.to_json() for element in results]
+    return retdata
 
 
 # ###### Misc

@@ -20,12 +20,14 @@ from ..utility import SessionThread, SessionTimer
 from ..searchable import search_attributes
 from ..media import convert_mp4_to_webp
 from ..logger import log_error
+from ..sources.base_src import get_post_source
 from ..downloader.network_dl import convert_network_subscription
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
     update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query,\
     update_subscription_element_keep
 from ..database.post_db import get_post_by_md5, get_posts_by_id
-from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
+from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
+from ..database.artist_db import get_site_artist
 from ..database.archive_db import get_archive
 from ..database.error_db import is_error
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
@@ -341,6 +343,37 @@ def relink_element(element):
         return {'error': True, 'message': f'Post with MD5 {element.md5} does not exist.'}
     link_subscription_post(element, post)
     return {'error': False}
+
+
+def create_elements_from_source(source_url):
+    source = get_post_source(source_url)
+    if source is None:
+        return "Source for URL not found."
+    site_illust_id = source.get_illust_id(source_url)
+    illust_data = source.get_illust_data(site_illust_id)
+    if 'site_artist_id' not in illust_data:
+        return "Twitter data not found."
+    artist = get_site_artist(illust_data['site_artist_id'], source.SITE.id)
+    if artist is None:
+        return "Artist not created yet."
+    subscription = artist.subscription
+    if subscription is None:
+        return "Subscription not created yet."
+    illust = get_site_illust(illust_data['site_illust_id'], artist.site_id)
+    if illust is not None:
+        return "Illust already created."
+    illust_data['artist_id'] = artist.id
+    illust = create_illust_from_parameters(illust_data)
+    elements = []
+    for illust_url in illust.urls:
+        createparams = {
+            'subscription_id': subscription.id,
+            'illust_url_id': illust_url.id,
+            'expires': days_from_now(subscription.expiration) if artist.subscription.expiration else None
+        }
+        element = create_subscription_element_from_parameters(createparams)
+        elements.append(element)
+    return elements
 
 
 def subscription_slots_needed_per_hour():
