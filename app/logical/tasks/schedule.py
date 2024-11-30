@@ -8,7 +8,7 @@ import traceback
 
 # ## PACKAGE IMPORTS
 from config import ALTERNATE_MEDIA_DIRECTORY, MAXIMUM_PROCESS_SUBSCRIPTIONS
-from utility.uprint import buffered_print, print_info, print_error
+from utility.uprint import buffered_print, print_info, print_error, print_warning
 from utility.file import get_directory_listing, delete_file
 from utility.time import seconds_from_now_local, get_current_time, days_ago, datetime_to_epoch, datetime_from_epoch
 
@@ -26,7 +26,7 @@ from ..records.subscription_rec import sync_missing_subscription_illusts, popula
 from ..database.base_db import safe_db_execute
 from ..database.pool_db import get_all_recheck_pools, update_pool_positions
 from ..database.subscription_db import get_available_subscriptions_query, update_subscription_status,\
-    get_busy_subscriptions, get_subscription_by_ids
+    get_busy_subscriptions, get_subscription_by_ids, update_subscriptions_status
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
@@ -149,10 +149,22 @@ def check_pending_subscriptions_task():
         subscriptions = query.all()
         if len(subscriptions) > 0:
             schedule_from_child('subscriptions-callback', 'app.logical.tasks.schedule:_pending_subscription_callback',
-                                [subscription.id for subscription in subscriptions], seconds_from_now_local(900))
-            for subscription in subscriptions:
+                                [subscription.id for subscription in subscriptions],
+                                seconds_from_now_local(150 * len(subscriptions)))
+            update_subscriptions_status(subscriptions, 'automatic')
+            last_index = len(subscriptions) - 1
+            for i, subscription in enumerate(subscriptions):
                 printer("Processing subscription:", subscription.id)
-                _process_pending_subscription(subscription, printer)
+                if not _process_pending_subscription(subscription, printer):
+                    print_warning("Token has expired... disabling check pending subscriptions task.")
+                    update_subscription_status(subscription, 'idle')
+                    update_subscriptions_status([subscription for subscription in subscriptions if subscription.status.name == 'automatic'], 'idle')
+                    update_job_by_id('job_enable', 'check_pending_subscriptions', {'enabled': False})
+                    break
+                if i != last_index:
+                    print("\nWaiting...\n")
+                    # Adding some delay here to try to be less bot-like
+                    time.sleep(30)
             return {'total': len(subscriptions)}
         else:
             printer("No subscriptions to process.")
@@ -419,11 +431,13 @@ def _process_pending_subscription(subscription, printer):
         nonlocal subscription
         if error is None and subscription.status.name != 'error':
             update_subscription_status(subscription, 'idle')
+        elif str(error) == "Should not authenticate with user auth.":
+            return False
+        return True
 
-    update_subscription_status(subscription, 'automatic')
-    safe_db_execute('check_pending_subscriptions', 'tasks.schedule', scope_vars={'subscription': subscription},
-                    try_func=try_func, msg_func=msg_func, error_func=error_func, finally_func=finally_func,
-                    printer=printer)
+    return safe_db_execute('check_pending_subscriptions', 'tasks.schedule', scope_vars={'subscription': subscription},
+                           try_func=try_func, msg_func=msg_func, error_func=error_func, finally_func=finally_func,
+                           printer=printer)
 
 
 def _pending_subscription_callback(subscription_ids):

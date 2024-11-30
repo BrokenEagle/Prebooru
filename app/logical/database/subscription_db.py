@@ -66,6 +66,12 @@ def update_subscription_status(subscription, value):
     SESSION.commit()
 
 
+def update_subscriptions_status(subscriptions, value):
+    for subscription in subscriptions:
+        subscription.status_id = subscription_status.by_name(value).id
+    SESSION.commit()
+
+
 def update_subscription_requery(subscription, timeval):
     subscription.requery = timeval
     SESSION.commit()
