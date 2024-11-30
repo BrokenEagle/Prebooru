@@ -19,9 +19,9 @@ from ..logger import log_error
 # ## FUNCTIONS
 
 def safe_db_execute(func_name, module_name, scope_vars=None, **kwargs):
-    for func_name in ['try_func', 'msg_func', 'error_func', 'finally_func', 'printer']:
-        if not((func_name in kwargs) and (callable(kwargs[func_name]))):
-            kwargs[func_name] = lambda *args: args[-1]
+    for name in ['try_func', 'msg_func', 'error_func', 'finally_func', 'printer']:
+        if not((name in kwargs) and (callable(kwargs[name]))):
+            kwargs[name] = lambda *args: args[-1]
     scope_vars = scope_vars or {}
     data = None
     error = None
