@@ -275,11 +275,6 @@ TWITTER_ILLUST_TIMELINE_GRAPHQL = {
 
 TWITTER_MEDIA_TIMELINE_GRAPHQL = {
     "includePromotedContent": False,
-    "withSuperFollowsUserFields": True,
-    "withDownvotePerspective": False,
-    "withReactionsMetadata": False,
-    "withReactionsPerspective": False,
-    "withSuperFollowsTweetFields": True,
     "withClientEventToken": False,
     "withBirdwatchNotes": False,
     "withVoice": True,
@@ -287,18 +282,35 @@ TWITTER_MEDIA_TIMELINE_GRAPHQL = {
 }
 
 TWITTER_MEDIA_TIMELINE_FEATURES = {
-    "responsive_web_graphql_timeline_navigation_enabled": False,
-    "unified_cards_ad_metadata_container_dynamic_card_content_query_enabled": False,
-    "dont_mention_me_view_api_enabled": True,
-    "responsive_web_uc_gql_enabled": True,
-    "vibe_api_enabled": True,
+    "rweb_tipjar_consumption_enabled": True,
+    "responsive_web_graphql_exclude_directive_enabled": True,
+    "verified_phone_label_enabled": False,
+    "creator_subscriptions_tweet_preview_api_enabled": True,
+    "responsive_web_graphql_timeline_navigation_enabled": True,
+    "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+    "communities_web_enable_tweet_community_results_fetch": True,
+    "c9s_tweet_anatomy_moderator_badge_enabled": True,
+    "articles_preview_enabled": False,
+    "tweetypie_unmention_optimization_enabled": True,
     "responsive_web_edit_tweet_api_enabled": True,
-    "graphql_is_translatable_rweb_tweet_is_translatable_enabled": False,
+    "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
+    "view_counts_everywhere_api_enabled": True,
+    "longform_notetweets_consumption_enabled": True,
+    "responsive_web_twitter_article_tweet_consumption_enabled": True,
+    "tweet_awards_web_tipping_enabled": False,
+    "creator_subscriptions_quote_tweet_preview_enabled": False,
+    "freedom_of_speech_not_reach_fetch_enabled": True,
     "standardized_nudges_misinfo": True,
-    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": False,
-    "interactive_text_enabled": True,
-    "responsive_web_text_conversations_enabled": False,
-    "responsive_web_enhance_cards_enabled": True,
+    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
+    "tweet_with_visibility_results_prefer_gql_media_interstitial_enabled": True,
+    "rweb_video_timestamps_enabled": True,
+    "longform_notetweets_rich_text_read_enabled": True,
+    "longform_notetweets_inline_media_enabled": True,
+    "responsive_web_enhance_cards_enabled": False,
+}
+
+TWITTER_MEDIA_TIMELINE_TOGGLES = {
+    "withArticlePlainText": False,
 }
 
 TWITTER_BASE_PARAMS = {
@@ -1149,12 +1161,14 @@ def get_media_page(user_id, cursor=None):
 def get_media_page_v2(user_id, count, cursor=None):
     variables = TWITTER_MEDIA_TIMELINE_GRAPHQL.copy()
     features = TWITTER_MEDIA_TIMELINE_FEATURES.copy()
+    toggles = TWITTER_MEDIA_TIMELINE_TOGGLES.copy()
     variables['userId'] = str(user_id)
     variables['count'] = count
     if cursor is not None:
         variables['cursor'] = cursor
-    url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features)})
-    return twitter_request("https://x.com/i/api/graphql/_vFDgkWOKL_U64Y2VmnvJw/UserMedia?" + url_params,
+    url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features),
+                                         'toggles': json.dumps(toggles)})
+    return twitter_request("https://x.com/i/api/graphql/aQQLnkexAl5z9ec_UgbEIA/UserMedia?" + url_params,
                            use_httpx=True)
 
 
