@@ -921,6 +921,8 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
         result = timeline_iterator(data, cursor, tweet_ids, seen_users, **kwargs)
         tweet_ids = list(set(tweet_ids))
         if result is None:
+            if page == 1 and job_id is None:
+                return "No tweets found on media timeline."
             print(f"No media tweets found on page #{page}")
             return
         elif result:
