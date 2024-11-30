@@ -50,7 +50,8 @@ def update_html(name):
 def run_html(name):
     if name in TASK_MAP:
         flash("Running task '%s'." % name)
-        SCHEDULER.add_job("%s-task" % name, _run_program, args=(TASK_MAP[name], name))
+        manual = request.values.get('manual', type=eval_bool_string)
+        SCHEDULER.add_job("%s-task" % name, _run_program, args=(TASK_MAP[name], name, manual))
         reschedule_task(name, False)
     else:
         flash("Invalid task name.", 'error')
@@ -67,14 +68,16 @@ def _initialize():
     TASK_MAP = dict((k[:-5], getattr(schedule, k)) for k in tasknames)
 
 
-def _run_program(func, name):
-    update_job_by_id('job_manual', name, {'manual': True})
-    SESSION.commit()
+def _run_program(func, name, manual):
+    if manual:
+        update_job_by_id('job_manual', name, {'manual': True})
+        SESSION.commit()
     try:
         func()
     finally:
-        update_job_by_id('job_manual', name, {'manual': False})
-        SESSION.commit()
+        if manual:
+            update_job_by_id('job_manual', name, {'manual': False})
+            SESSION.commit()
 
 
 # ## INITIALIZE

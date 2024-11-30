@@ -5,7 +5,14 @@
     <td>{{ tasks.enabled[job_id] | tojson }}</td>
     <td>{{ tasks.locks[job_id] | tojson }}</td>
     <td>
-        {{ helpers.base.general_link("run",  url_for('task.run_html', name=job_id), method='POST') }} |
+        {% if tasks.enabled[job_id] %}
+            {{ helpers.base.general_link("auto",  url_for('task.run_html', name=job_id, manual='false'), method='POST') }}
+        {% else %}
+            auto
+        {% endif %}
+        |
+        {{ helpers.base.general_link("manual",  url_for('task.run_html', name=job_id, manual='true'), method='POST') }}
+        |
         {% if tasks.enabled[job_id] %}
             {{ helpers.base.general_link("disable",  url_for('task.update_html', name=job_id, enable='false'), method='PUT') }}
         {% else %}
