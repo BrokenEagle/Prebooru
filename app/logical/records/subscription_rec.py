@@ -29,7 +29,7 @@ from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
 from ..database.artist_db import get_site_artist
 from ..database.archive_db import get_archive
-from ..database.error_db import is_error
+from ..database.error_db import is_error, create_and_append_error
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
 from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post, expired_subscription_elements
@@ -125,11 +125,10 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
     site_illust_ids = sorted(x for x in set(site_illust_ids))
     job_status = get_job_status_data(job_id) or {'illusts': 0}
     job_status['stage'] = 'illusts'
-    job_status['records'] = len(site_illust_ids)
-    print(f"sync_missing_subscription_illusts [{subscription.id}]: Total({len(site_illust_ids)})")
+    job_status['records'] = total = len(site_illust_ids)
+    print(f"sync_missing_subscription_illusts [{subscription.id}]: Total({total})")
     for (i, item_id) in enumerate(site_illust_ids):
         if (i % SYNC_MISSING_ILLUSTS_PER_PAGE) == 0:
-            total = len(site_illust_ids)
             first = i
             last = min(i + SYNC_MISSING_ILLUSTS_PER_PAGE, total)
             job_status['range'] = f"({first} - {last}) / {total}"
@@ -147,6 +146,9 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
     job_status['ids'] = None
     update_job_status(job_id, job_status)
     update_subscription_requery(subscription, hours_from_now(subscription.interval))
+    if job_id is None and total == 0:
+        create_and_append_error('records.subscription_rec.sync_missing_subscription_illusts',
+                                "No new illusts found on latest subscription check.", subscription)
 
 
 def download_subscription_elements(subscription, job_id=None):
