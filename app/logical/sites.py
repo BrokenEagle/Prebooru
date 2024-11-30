@@ -13,6 +13,7 @@ SITES = {
     'twitter': 'twitter.com',
     'twimg': 'pbs.twimg.com',
     'twvideo': 'video.twimg.com',
+    'twvideo_cf': 'video-cf.twimg.com',
 }
 
 DOMAINS = {v: k for k, v in SITES.items()}

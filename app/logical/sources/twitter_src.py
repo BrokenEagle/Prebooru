@@ -62,7 +62,7 @@ HAS_TAG_SEARCH = True
 
 TWITTER_HOST_RG = re.compile(r'^https?://twitter\.com', re.IGNORECASE)
 TWIMG_HOST_RG = re.compile(r'^https?://pbs\.twimg\.com', re.IGNORECASE)
-TWVIDEO_HOST_RG = re.compile(r'^https?://video\.twimg\.com', re.IGNORECASE)
+TWVIDEO_HOST_RG = re.compile(r'^https?://video(?:-cf)?\.twimg\.com', re.IGNORECASE)
 
 # ###### Partial URL regexes
 

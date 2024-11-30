@@ -18,4 +18,5 @@ SOURCEDICT = {
     'twitter': twitter_src,
     'twimg': twitter_src,
     'twvideo': twitter_src,
+    'twvideo_cf': twitter_src,
 }

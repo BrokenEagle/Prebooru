@@ -95,6 +95,10 @@ class SiteDescriptor(EnumModel):
     def twvideo(cls):
         return cls.by_name('twvideo')
 
+    @classproperty(cached=True)
+    def twvideo_cf(cls):
+        return cls.by_name('twvideo_cf')
+
     # ## Private
 
     __initial_mapping__ = {
@@ -103,6 +107,7 @@ class SiteDescriptor(EnumModel):
         'twitter': 2,
         'twimg': 3,
         'twvideo': 4,
+        'twvideo_cf': 5,
     }
     __mandatory_mapping__ = {
         'custom': 126,

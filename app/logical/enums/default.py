@@ -105,6 +105,7 @@ class SiteDescriptorEnum(AttrEnum):
     twitter = 2
     twimg = 3
     twvideo = 4
+    twvideo_cf = 5
     custom = 126
     unknown = 127
 
