@@ -88,12 +88,13 @@ class CountPaginate():
 
 class LimitPaginate():
     """Pagination method for processing items which may be removed from the total as it gets processed."""
-    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT, count=None, next_id=None, prev_id=None):
+    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT, count=None, distinct=False, next_id=None, prev_id=None):
         self.query = query
         self.per_page = per_page
         self.page = page
         self.next_id = next_id
         self.prev_id = prev_id
+        self.distinct = distinct
         self.current_count = self._get_count()
         self.count = count or self.current_count
         self.items = self._get_items() if self.current_count > 0 else []
@@ -122,15 +123,19 @@ class LimitPaginate():
 
     def next(self):
         return LimitPaginate(query=self.query, page=self.next_num, per_page=self.per_page, count=self.count,
-                             next_id=self.next_sequential_id) if self.has_next else None
+                             next_id=self.next_sequential_id, distinct=self.distinct) if self.has_next else None
 
     def prev(self):
         return LimitPaginate(query=self.query, page=self.prev_num, per_page=self.per_page, count=self.count,
-                             prev_id=self.prev_sequential_id) if self.has_prev else None
+                             prev_id=self.prev_sequential_id, distinct=self.distinct) if self.has_prev else None
 
     def _get_items(self):
         model = _query_model(self.query)
-        q = self.query
+        if self.distinct:
+            model = self.query.column_descriptions[0]['entity']
+            q = self.query.group_by(*model.pk_cols)
+        else:
+            q = self.query
         if self.next_id:
             q = q.filter(model.id < self.next_id)
         elif self.prev_id:
@@ -138,7 +143,19 @@ class LimitPaginate():
         return q.order_by(model.id.desc()).limit(self.per_page).all()
 
     def _get_count(self):
-        return self.query.count()
+        # Easy way to get an exact copy of a query
+        self._count_query = self.query.filter()
+        if len(self._count_query._where_criteria) == 0:
+            model = self._count_query.column_descriptions[0]['entity']
+            # Queries with no where criteria do not work correctly
+            self._count_query = self._count_query.filter(*model.pk_cols)
+        # Using function count with scalar does not like loader options
+        self._count_query._with_options = ()
+        if self.distinct:
+            # Keep it from rendering an unncessary DISTINCT outside of the count
+            self._count_query._distinct_on = ()
+            self._count_query._distinct = False
+        return self._count_query.get_count() if not self.distinct else self._count_query.distinct_count()
 
 
 # ## FUNCTIONS
@@ -220,8 +237,8 @@ def count_paginate(self, **kwargs):
     return CountPaginate(query=self, **kwargs)
 
 
-def limit_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT):
-    return LimitPaginate(query=self, page=page, per_page=per_page)
+def limit_paginate(self, page=1, per_page=DEFAULT_PAGINATE_LIMIT, distinct=False):
+    return LimitPaginate(query=self, page=page, per_page=per_page, distinct=distinct)
 
 
 def secondary_all(self):
