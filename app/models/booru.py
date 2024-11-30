@@ -29,7 +29,7 @@ BooruNames = secondarytable(
 BooruArtists = secondarytable(
     'booru_artists',
     DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
-    DB.Column('booru_id', DB.Integer, DB.ForeignKey('booru.id'), primary_key=True),
+    DB.Column('booru_id', DB.Integer, DB.ForeignKey('booru.id'), primary_key=True, index=True),
 )
 
 
