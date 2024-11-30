@@ -112,7 +112,8 @@ def process_subscription_manual(subscription_id, job_id, params):
 
 
 def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
-    update_subscription_requery(subscription, hours_from_now(4))
+    if subscription.status.name == 'automatic':
+        update_subscription_requery(subscription, hours_from_now(4))
     artist = subscription.artist
     source = artist.site.source
     site_illust_ids = source.populate_all_artist_illusts(artist, job_id, params)
@@ -145,7 +146,8 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
     update_subscription_last_info(subscription)
     job_status['ids'] = None
     update_job_status(job_id, job_status)
-    update_subscription_requery(subscription, hours_from_now(subscription.interval))
+    if subscription.status.name == 'automatic':
+        update_subscription_requery(subscription, hours_from_now(subscription.interval))
     if job_id is None and total == 0:
         create_and_append_error('records.subscription_rec.sync_missing_subscription_illusts',
                                 "No new illusts found on latest subscription check.", subscription)
