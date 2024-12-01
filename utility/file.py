@@ -106,9 +106,10 @@ def put_get_json(filepath, optype, data=None, unicode=False):
 
 def load_default(filepath, defaultvalue, binary=False, unicode=False):
     optype = 'rb' if binary else 'r'
+    data = None
     if os.path.exists(filepath):
-        return put_get_json(filepath, optype, unicode=unicode)
-    return defaultvalue
+        data = put_get_json(filepath, optype, unicode=unicode)
+    return defaultvalue if data is None else data
 
 
 def copy_file(old_filepath, new_filepath, safe=False):
