@@ -158,7 +158,9 @@ def check_pending_subscriptions_task():
                 if not _process_pending_subscription(subscription, printer):
                     print_warning("Token has expired... disabling check pending subscriptions task.")
                     update_subscription_status(subscription, 'idle')
-                    update_subscriptions_status([subscription for subscription in subscriptions if subscription.status.name == 'automatic'], 'idle')
+                    update_subscriptions = [subscription for subscription in subscriptions
+                                            if subscription.status.name == 'automatic']
+                    update_subscriptions_status(update_subscriptions, 'idle')
                     update_job_by_id('job_enable', 'check_pending_subscriptions', {'enabled': False})
                     break
                 if i != last_index:

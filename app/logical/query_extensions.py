@@ -88,7 +88,8 @@ class CountPaginate():
 
 class LimitPaginate():
     """Pagination method for processing items which may be removed from the total as it gets processed."""
-    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT, count=None, distinct=False, next_id=None, prev_id=None):
+    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT, count=None, distinct=False, next_id=None,
+                 prev_id=None):
         self.query = query
         self.per_page = per_page
         self.page = page
