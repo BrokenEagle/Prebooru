@@ -18,7 +18,7 @@ from wtforms import RadioField, BooleanField, IntegerField, TextField
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN, TWITTER_MINIMUM_QUERY_INTERVAL
 from utility.data import safe_get, decode_json, fixup_crlf, safe_check
 from utility.time import get_current_time, datetime_from_epoch
-from utility.file import get_file_extension, get_http_filename, load_default, put_get_json
+from utility.file import get_file_extension, get_http_filename, put_get_json
 from utility.uprint import print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
@@ -786,76 +786,10 @@ def source_prework(site_illust_id):
     save_api_data(twusers, 'id_str', SITE.id, api_data_type.artist.id)
 
 
-# #### Token functions
-
-def load_guest_token():
-    global TOKEN_TIMESTAMP
-    try:
-        TOKEN_TIMESTAMP = os.path.getmtime(TOKEN_FILE) if os.path.exists(TOKEN_FILE) else None
-        data = load_default(TOKEN_FILE, {"token": None})
-        return str(data['token']) if data['token'] is not None else None
-    except Exception:
-        return None
-
-
-def save_guest_token(guest_token):
-    put_get_json(TOKEN_FILE, 'w', {"token": str(guest_token)})
-
-
-def check_token_file():
-    global TOKEN_TIMESTAMP
-    last_timestamp = TOKEN_TIMESTAMP if 'TOKEN_TIMESTAMP' in globals() else None
-    TOKEN_TIMESTAMP = os.path.getmtime(TOKEN_FILE) if os.path.exists(TOKEN_FILE) else None
-    return last_timestamp == TOKEN_TIMESTAMP
-
-
 # #### Network auxiliary functions
 
-def get_global_objects(data, type_name):
-    objects = safe_get(data['body'], 'globalObjects', type_name)
-    if type(objects) is not dict:
-        if DEBUG_MODE:
-            log_network_error('sources.twitter.get_global_objects', data['response'])
-        raise Exception("Global data not found.")
-    return list(objects.values())
-
-
-def get_twitter_timeline_cursor(type_name, instruction, entryname):
-    if type_name == "addEntries":
-        for entry in instruction[type_name]['entries']:
-            if entry['entryId'].find(entryname) > -1:
-                cursor_entry = entry
-                break
-        else:
-            cursor_entry = None
-        if cursor_entry is not None:
-            return safe_get(cursor_entry, 'content', 'operation', 'cursor', 'value')
-    elif type_name == "replaceEntry" and instruction[type_name]['entryIdToReplace'].find(entryname) > -1:
-        return safe_get(instruction[type_name], 'entry', 'content', 'operation', 'cursor', 'value')
-
-
-def get_twitter_scroll_bottom_cursor(data):
-    instructions = safe_get(data['body'], 'timeline', 'instructions')
-    if type(instructions) is not list:
-        if DEBUG_MODE:
-            log_network_error('sources.twitter.get_twitter_scroll_bottom_cursor', data['response'])
-        raise Exception("Invalid JSON response.")
-    for instruction in instructions:
-        for type_name in instruction:
-            cursor = get_twitter_timeline_cursor(type_name, instruction, 'cursor-bottom')
-            if cursor is not None:
-                return cursor
-
-
-def timeline_iterator(data, cursor, tweet_ids, seen_users, user_id=None, last_id=None, v2=False, **kwargs):
-    if v2:
-        results = get_graphql_timeline_entries_v2(data['body'])
-    else:
-        results =\
-            {
-                'tweets': {tweet['id_str']: tweet for tweet in get_global_objects(data, 'tweets')},
-                'users': {user['id_str']: user for user in get_global_objects(data, 'users')},
-            }
+def timeline_iterator(data, cursor, tweet_ids, seen_users, user_id=None, last_id=None, **kwargs):
+    results = get_graphql_timeline_entries_v2(data['body'])
     tweets = [tweet for tweet in results['tweets'].values()]
     if len(results['tweets']) == 0:
         # Only check on the first iteration
@@ -875,7 +809,7 @@ def timeline_iterator(data, cursor, tweet_ids, seen_users, user_id=None, last_id
         tweet_ids.clear()
         tweet_ids.extend(valid_ids)
         return True
-    found_cursor = results['cursors']['bottom'] if v2 else get_twitter_scroll_bottom_cursor(data)
+    found_cursor = results['cursors']['bottom']
     if found_cursor is None:
         print("Reached end of timeline!")
         return True
@@ -923,32 +857,6 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
 
 # #### Network functions
 
-def check_guest_auth(func):
-    def wrapper(*args, **kwargs):
-        if not HAS_USER_AUTH and (TWITTER_HEADERS is None or not check_token_file()):
-            authenticate_guest()
-        return func(*args, **kwargs)
-    return wrapper
-
-
-def authenticate_guest(override=False):
-    global TWITTER_HEADERS
-    if HAS_USER_AUTH:
-        raise Exception("Should not authenticate with user auth.")
-    TWITTER_HEADERS = {
-        'authorization': 'Bearer %s' % TWITTER_AUTH
-    }
-    guest_token = load_guest_token() if not override else None
-    if guest_token is None:
-        print("Authenticating as guest...")
-        data = twitter_request('https://api.twitter.com/1.1/guest/activate.json', 'post', False)
-        guest_token = str(data['body']['guest_token'])
-        save_guest_token(guest_token)
-    else:
-        print("Loaded guest token from file.")
-    TWITTER_HEADERS['x-guest-token'] = guest_token
-
-
 def reauthentication_check(response):
     if response.status_code == 401:
         return True
@@ -984,10 +892,10 @@ def check_request_wait(wait):
     update_next_wait('twitter', TWITTER_MINIMUM_QUERY_INTERVAL)
 
 
-@check_guest_auth
 def twitter_request(url, method='get', wait=True):
+    if not HAS_USER_AUTH:
+        raise Exception("Cannot access Twitter API without valid credetials.")
     check_request_wait(wait)
-    reauthenticated = False
     request_method = getattr(httpx, method)
     for i in range(3):
         try:
@@ -999,9 +907,8 @@ def twitter_request(url, method='get', wait=True):
             continue
         if response.status_code == 200:
             break
-        if not reauthenticated and reauthentication_check(response):
-            authenticate_guest(True)
-            reauthenticated = True
+        if reauthentication_check(response):
+            raise Exception("Should not authenticate with user auth.")
         elif response.status_code == 429:
             print_warning("Pausing for requests exceeded...")
             error = "HTTP 429: Too many requests - rate limit exceeded."
@@ -1138,14 +1045,6 @@ def get_tweet_by_rest_id(tweet_id):
         else create_error('sources.twitter.get_tweet_by_rest_id', "Tweet not found: %d" % tweet_id)
 
 
-def get_media_page(user_id, cursor=None):
-    params = TWITTER_BASE_PARAMS.copy()
-    if cursor is not None:
-        params['cursor'] = cursor
-    url_params = urllib.parse.urlencode(params)
-    return twitter_request(("https://api.twitter.com/2/timeline/media/%s.json?" % user_id) + url_params)
-
-
 def get_media_page_v2(user_id, count, cursor=None):
     variables = TWITTER_MEDIA_TIMELINE_GRAPHQL.copy()
     features = TWITTER_MEDIA_TIMELINE_FEATURES.copy()
@@ -1157,16 +1056,6 @@ def get_media_page_v2(user_id, count, cursor=None):
     url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features),
                                          'toggles': json.dumps(toggles)})
     return twitter_request("https://x.com/i/api/graphql/aQQLnkexAl5z9ec_UgbEIA/UserMedia?" + url_params)
-
-
-def get_search_page(query, cursor=None):
-    params = TWITTER_BASE_PARAMS.copy()
-    params.update(TWITTER_SEARCH_PARAMS)
-    params['q'] = query
-    if cursor is not None:
-        params['cursor'] = cursor
-    url_params = urllib.parse.urlencode(params)
-    return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params)
 
 
 def get_search_page_v2(query, count, cursor=None):
@@ -1191,15 +1080,11 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
         job_status['range'] = 'media:' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        if HAS_USER_AUTH:
-            return get_media_page_v2(user_id, count, cursor)
-        else:
-            return get_media_page(user_id, cursor)
+        return get_media_page_v2(user_id, count, cursor)
 
     count = 100 if last_id is None else 20
     page = 1
-    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status,
-                             v2=HAS_USER_AUTH)
+    tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status)
     return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
@@ -1224,14 +1109,11 @@ def populate_twitter_search_timeline(account, since_date, until_date, filter_lin
         job_status['range'] = since_date + '..' + until_date + ':' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        if HAS_USER_AUTH:
-            return get_search_page_v2(query, count, cursor)
-        else:
-            return get_search_page(query, cursor)
+        return get_search_page_v2(query, count, cursor)
 
     count = 100
     page = 1
-    tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, v2=HAS_USER_AUTH, **kwargs)
+    tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, **kwargs)
     return create_error('sources.twitter.populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
