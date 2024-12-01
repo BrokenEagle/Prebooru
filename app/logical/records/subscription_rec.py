@@ -189,6 +189,7 @@ def download_missing_elements(manual=False):
     while True:
         print(f"download_missing_elements: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:
+            print(f"Downloading {element.shortlink}")
             convert_network_subscription(element)
             element_count += 1
         _process_image_matches(page.items)
