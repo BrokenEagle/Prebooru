@@ -11,7 +11,6 @@ import urllib
 import datetime
 
 # ## EXTERNAL IMPORTS
-import requests
 import httpx
 from wtforms import RadioField, BooleanField, IntegerField, TextField
 
@@ -207,16 +206,6 @@ https?://t\.co                         # Hostname
 
 
 # #### Network variables
-
-REQUEST_METHODS = {
-    'GET': requests.get,
-    'POST': requests.post
-}
-
-XREQUEST_METHODS = {
-    'GET': httpx.get,
-    'POST': httpx.post
-}
 
 TWITTER_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
                "Zz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
@@ -952,7 +941,7 @@ def authenticate_guest(override=False):
     guest_token = load_guest_token() if not override else None
     if guest_token is None:
         print("Authenticating as guest...")
-        data = twitter_request('https://api.twitter.com/1.1/guest/activate.json', 'POST', False)
+        data = twitter_request('https://api.twitter.com/1.1/guest/activate.json', 'post', False)
         guest_token = str(data['body']['guest_token'])
         save_guest_token(guest_token)
     else:
@@ -996,14 +985,14 @@ def check_request_wait(wait):
 
 
 @check_guest_auth
-def twitter_request(url, method='GET', wait=True, use_httpx=False):
+def twitter_request(url, method='get', wait=True):
     check_request_wait(wait)
     reauthenticated = False
-    rq_methods = REQUEST_METHODS if not use_httpx else XREQUEST_METHODS
+    request_method = getattr(httpx, method)
     for i in range(3):
         try:
-            response = rq_methods[method](url, headers=TWITTER_HEADERS, timeout=10)
-        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError, httpx.ConnectTimeout) as e:
+            response = request_method(url, headers=TWITTER_HEADERS, timeout=10)
+        except httpx.ConnectTimeout as e:
             print_warning("Pausing for network timeout...")
             error = e
             time.sleep(5)
@@ -1022,11 +1011,10 @@ def twitter_request(url, method='GET', wait=True, use_httpx=False):
             error = "HTTP 503: Server error."
             time.sleep(60)
         else:
-            reason = getattr(response, 'reason', None)
-            print_error("\n%s\nHTTP %d: %s (%s)" % (url, response.status_code, reason, response.text))
+            msg = "HTTP %d - %s" % (response.status_code, response.reason_phrase)
+            print_error("\n%s\%s" % (url, msg))
             if DEBUG_MODE:
                 log_network_error('sources.twitter.twitter_request', response)
-            msg = "HTTP %d - %s" % (response.status_code, reason)
             return {'error': True, 'message': msg, 'response': response}
     else:
         print_error("Connection errors exceeded!")
@@ -1102,8 +1090,7 @@ def get_twitter_illust_timeline(illust_id):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(variables),
                                         'features': json.dumps(features),
                                         'fieldToggles': json.dumps(field_toggles)})
-    data = twitter_request("https://x.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons,
-                           use_httpx=True)
+    data = twitter_request("https://x.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons)
     try:
         if data['error']:
             return create_error('sources.twitter.get_twitter_illust_timeline', data['message'])
@@ -1137,8 +1124,7 @@ def get_tweet_by_rest_id(tweet_id):
         'features': json.dumps(features),
         'fieldToggles': json.dumps(field_toggles)
     })
-    data = twitter_request("https://x.com/i/api/graphql/7xflPyRiUxGVbJd4uWmbfg/TweetResultByRestId?" + url_params,
-                           use_httpx=True)
+    data = twitter_request("https://x.com/i/api/graphql/7xflPyRiUxGVbJd4uWmbfg/TweetResultByRestId?" + url_params)
     try:
         if data['error']:
             return create_error('twitter_src.get_tweet_by_rest_id', data['message'])
@@ -1170,8 +1156,7 @@ def get_media_page_v2(user_id, count, cursor=None):
         variables['cursor'] = cursor
     url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features),
                                          'toggles': json.dumps(toggles)})
-    return twitter_request("https://x.com/i/api/graphql/aQQLnkexAl5z9ec_UgbEIA/UserMedia?" + url_params,
-                           use_httpx=True)
+    return twitter_request("https://x.com/i/api/graphql/aQQLnkexAl5z9ec_UgbEIA/UserMedia?" + url_params)
 
 
 def get_search_page(query, cursor=None):
@@ -1181,7 +1166,7 @@ def get_search_page(query, cursor=None):
     if cursor is not None:
         params['cursor'] = cursor
     url_params = urllib.parse.urlencode(params)
-    return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params, use_httpx=True)
+    return twitter_request("https://api.twitter.com/2/search/adaptive.json?" + url_params)
 
 
 def get_search_page_v2(query, count, cursor=None):
@@ -1255,7 +1240,7 @@ def get_twitter_illust(illust_id):
     print("Getting twitter #%d" % illust_id)
     request_url = 'https://api.twitter.com/1.1/statuses/lookup.json?id=%d' % illust_id +\
                   '&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true'
-    data = twitter_request(request_url, use_httpx=True)
+    data = twitter_request(request_url)
     if data['error']:
         return create_error('sources.twitter.get_twitter_illust', data['message'])
     if len(data['body']) == 0:
@@ -1272,7 +1257,7 @@ def get_twitter_user_id(account):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     request_url = 'https://x.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
                   'UserByScreenNameWithoutResults?%s' % urladdons
-    data = twitter_request(request_url, wait=False, use_httpx=True)
+    data = twitter_request(request_url, wait=False)
     if data['error']:
         return create_error('sources.twitter.get_user_id', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
@@ -1287,7 +1272,7 @@ def get_twitter_artist(artist_id):
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
     request_url = 'https://x.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
                   'UserByRestIdWithoutResults?%s' % urladdons
-    data = twitter_request(request_url, use_httpx=True)
+    data = twitter_request(request_url)
     if data['error']:
         return create_error('sources.twitter.get_twitter_artist', data['message'])
     twitterdata = data['body']
