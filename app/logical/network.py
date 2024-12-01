@@ -30,7 +30,7 @@ def get_http_data(serverfilepath, method='get', **args):
             time.sleep(15)
             continue
     if response is not None:
-        return "HTTP %d - %s" % (response.status_code, response.reason)
+        return "HTTP %d - %s" % (response.status_code, response.reason_phrase)
     else:
         return "Repeated connection timeouts"
 
