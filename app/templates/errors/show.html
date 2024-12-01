@@ -8,9 +8,9 @@
     <div id="error-heading" class="heading">{{ error.header }}</div>
     <div id="error-content">
         <ul>
-            {% if error.append_item is not none %}
+            {% if error.append_type is not none %}
                 <li>
-                    <strong>{{ error.append_item.show_link }}</strong>
+                    <strong>{{ error.append_show_link }}</strong>
                 </li>
             {% endif %}
             <li>

@@ -30,8 +30,37 @@ class Error(JsonModel):
     # (OtO) upload_element [UploadElement]
 
     @memoized_property
+    def append_type(self):
+        if self.post_id is not None:
+            return 'post'
+        if self.upload_id is not None:
+            return 'upload'
+        if self.upload_element_id is not None:
+            return 'upload_element'
+        if self.subscription_id is not None:
+            return 'subscription'
+        if self.subscription_element_id is not None:
+            return 'subscription_element'
+
+    @memoized_property
     def append_item(self):
-        return self.upload or self.upload_element or self.post or self.subscription or self.subscription_element
+        if self.append_type is not None:
+            return getattr(self, self.append_type)
+
+    @property
+    def append_shortlink(self):
+        if self.append_type is not None:
+            return getattr(self, self.append_type + '_shortlink')
+
+    @property
+    def append_show_url(self):
+        if self.append_type is not None:
+            return getattr(self, self.append_type + '_show_url')
+
+    @property
+    def append_show_link(self):
+        if self.append_type is not None:
+            return getattr(self, self.append_type + '_show_link')
 
     __table_args__ = (
         DB.CheckConstraint(
@@ -50,3 +79,16 @@ def initialize():
     DB.Index(None, Error.subscription_element_id, unique=False, sqlite_where=Error.subscription_element_id.is_not(None))
     DB.Index(None, Error.upload_id, unique=False, sqlite_where=Error.upload_id.is_not(None))
     DB.Index(None, Error.upload_element_id, unique=False, sqlite_where=Error.upload_element_id.is_not(None))
+
+    from .post import Post
+    from .subscription import Subscription
+    from .subscription_element import SubscriptionElement
+    from .upload import Upload
+    from .upload_element import UploadElement
+    # Access the opposite side of the relationship to force the back reference to be generated
+    Post.errors.property._configure_started
+    Subscription.errors.property._configure_started
+    SubscriptionElement.errors.property._configure_started
+    Upload.errors.property._configure_started
+    UploadElement.errors.property._configure_started
+    Error.set_relation_properties()
