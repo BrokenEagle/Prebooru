@@ -135,7 +135,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
             job_status['range'] = f"({first} - {last}) / {total}"
             update_job_status(job_id, job_status)
         data_params = source.get_illust_data(item_id)
-        illust = source.get_site_illust(item_id, artist.site_id)
+        illust = get_site_illust(item_id, artist.site_id)
         if illust is None:
             data_params['artist_id'] = artist.id
             create_illust_from_parameters(data_params)
