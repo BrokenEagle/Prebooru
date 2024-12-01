@@ -40,7 +40,7 @@ def form_class(form):
 # #### Iterator functions
 
 def site_metric_iterator(illust):
-    if illust.site_id == site_descriptor.custom.id:
+    if illust.site_id == site_descriptor.custom.id or illust.site_data is None:
         return
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
@@ -49,7 +49,7 @@ def site_metric_iterator(illust):
 
 
 def site_date_iterator(illust):
-    if illust.site_id == site_descriptor.custom.id:
+    if illust.site_id == site_descriptor.custom.id or illust.site_data is None:
         return
     site_data_json = illust.site_data.to_json()
     for key, val in site_data_json.items():
