@@ -1012,7 +1012,7 @@ def twitter_request(url, method='get', wait=True):
             time.sleep(60)
         else:
             msg = "HTTP %d - %s" % (response.status_code, response.reason_phrase)
-            print_error("\n%s\%s" % (url, msg))
+            print_error("\n%s\n%s" % (url, msg))
             if DEBUG_MODE:
                 log_network_error('sources.twitter.twitter_request', response)
             return {'error': True, 'message': msg, 'response': response}
