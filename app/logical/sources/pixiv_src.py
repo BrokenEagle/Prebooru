@@ -28,8 +28,7 @@ from ..database.server_info_db import get_next_wait, update_next_wait
 
 IMAGE_HEADERS = {
     'referer': 'https://www.pixiv.net/',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                  '(KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36', # noqa: E501
 }
 
 
