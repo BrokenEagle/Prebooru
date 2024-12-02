@@ -76,16 +76,20 @@ class Pool(JsonModel):
                         .all() if len(illust_ids) else []
         notations = Notation.query.options(*_get_options(notation_options)).filter(Notation.id.in_(notation_ids))\
                             .all() if len(notation_ids) else []
-        for i in range(0, len(page.items)):
-            page_item = page.items[i]
-            if page_item.type.name == 'pool_post':
-                page.items[i] = next(filter(lambda x: x.id == page_item.post_id, posts), None)
-            elif page_item.type.name == 'pool_illust':
-                page.items[i] = next(filter(lambda x: x.id == page_item.illust_id, illusts), None)
-            elif page_item.type.name == 'pool_notation':
-                page.items[i] = next(filter(lambda x: x.id == page_item.notation_id, notations), None)
-            if page.items[i] is None:
-                raise Exception("Missing pool element item: %s" % repr(page_item))
+        page.elements = page.items
+        page.items = []
+        for i in range(0, len(page.elements)):
+            page_element = page.elements[i]
+            page_item = None
+            if page_element.type.name == 'pool_post':
+                page_item = next(filter(lambda x: x.id == page_element.post_id, posts), None)
+            elif page_element.type.name == 'pool_illust':
+                page_item = next(filter(lambda x: x.id == page_element.illust_id, illusts), None)
+            elif page_element.type.name == 'pool_notation':
+                page_item = next(filter(lambda x: x.id == page_element.notation_id, notations), None)
+            if page_item is None:
+                raise Exception("Missing pool element item: %s" % repr(page_element))
+            page.items.append(page_item)
         return page
 
     # ## Private

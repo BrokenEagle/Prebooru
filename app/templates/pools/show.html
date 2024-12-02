@@ -38,7 +38,7 @@
         <div id="pool-items">
             {% for item in page.items %}
                 {% if edit_pool %}
-                    {{ pool_element_select_preview(pool._elements[loop.index0], item) }}
+                    {{ pool_element_select_preview(page.elements[loop.index0], item) }}
                 {% else %}
                     {{ pool_element_preview(item) }}
                 {% endif %}
