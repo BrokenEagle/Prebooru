@@ -9,6 +9,19 @@ div#pool-name {
     font-size: 28px;
 }
 
+div#pool-page-controls {
+    border-bottom: 2px solid #eee;
+    height: 4em;
+    position: relative;
+    width: 95%;
+}
+
+div#pool-controls {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
 article.pool-element-select {
     display: inline-block;
     height: 550px;

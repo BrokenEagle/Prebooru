@@ -61,6 +61,10 @@ menu > li > a.nav-control {
     color: darkorange;
 }
 
+menu > li > a.nav-modify {
+    color: green;
+}
+
 a:link,
 a:visited {
     color: #0075f8;
