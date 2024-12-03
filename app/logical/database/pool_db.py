@@ -1,62 +1,53 @@
 # APP/LOGICAL/DATABASE/POOL_DB.PY
 
 # ## EXTERNAL IMPORTS
+from sqlalchemy import func
+
+# ## EXTERNAL IMPORTS
 from sqlalchemy import or_
 
-# ## PACKAGE IMPORTS
-from utility.time import get_current_time
-
 # ## LOCAL IMPORTS
-from ... import SESSION
-from ...models import Pool
-from .base_db import update_column_attributes
+from ...models import Pool, PoolElement
+from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['name', 'series']
-
-CREATE_ALLOWED_ATTRIBUTES = ['name', 'series']
-UPDATE_ALLOWED_ATTRIBUTES = ['name', 'series']
+ANY_WRITABLE_COLUMNS = ['name', 'series', 'element_count']
+NULL_WRITABLE_ATTRIBUTES = []
 
 
 # ## FUNCTIONS
 
-# #### Route DB functions
+# #### Create
 
-# ###### Create
+def create_pool_from_parameters(createparams, commit=True):
+    return set_pool_from_parameters(Pool(element_count=0), createparams, commit, 'created', False)
 
-def create_pool_from_parameters(createparams):
-    current_time = get_current_time()
-    pool = Pool(created=current_time, updated=current_time, element_count=0)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(pool, update_columns, createparams)
-    print("[%s]: created" % pool.shortlink)
+
+# #### Update
+
+def update_pool_from_parameters(pool, updateparams, commit=True, update=False):
+    return set_pool_from_parameters(pool, updateparams, commit, 'updated', update)
+
+
+# #### Set
+
+def set_pool_from_parameters(pool, setparams, commit, action, update):
+    if set_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update):
+        save_record(pool, commit, action)
     return pool
-
-
-# ###### Update
-
-def update_pool_from_parameters(pool, updateparams):
-    update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(pool, update_columns, updateparams))
-    if any(update_results):
-        print("[%s]: updated" % pool.shortlink)
-        pool.updated = get_current_time()
-        SESSION.commit()
-
-
-def update_pool_positions(pool):
-    pool._elements.reorder()
-    pool.element_count = pool._get_element_count()
-    pool.checked = get_current_time()
-    SESSION.commit()
 
 
 # #### Query
 
 def get_all_recheck_pools():
     return Pool.query.filter(or_(Pool.checked.is_(None), Pool.checked < Pool.updated)).all()
+
+
+def get_pool_next_position(pool):
+    return\
+        PoolElement.query.filter(PoolElement.pool_id == pool.id)\
+                   .with_entities(func.max(PoolElement.position)).scalar() + 1\
+        if pool.element_count > 0\
+        else 0

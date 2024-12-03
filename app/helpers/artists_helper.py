@@ -78,8 +78,6 @@ def artist_links(artist):
     if artist.site_id == site_descriptor.custom.id:
         return Markup('N/A')
     source = artist.site.source
-    if not source.has_artist_urls(artist):
-        return Markup('<em>N/A</em>')
     all_links = [external_link(name.title(), url) for (name, url) in source.artist_links(artist).items()]
     return Markup(' | '.join(all_links))
 

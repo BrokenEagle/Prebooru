@@ -25,6 +25,7 @@ SHOW_HTML_OPTIONS = (
 
 INDEX_HTML_OPTIONS = (
     selectinload(UploadElement.illust_url).selectinload(IllustUrl.post).lazyload('*'),
+    selectinload(UploadElement.errors),
 )
 
 

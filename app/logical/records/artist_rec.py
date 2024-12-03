@@ -13,7 +13,7 @@ from ..logger import handle_error_message
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, get_site_artist,\
     delete_artist, get_artists_without_boorus_page
 from ..database.booru_db import get_boorus, create_booru_from_parameters, booru_append_artist
-from ..database.archive_db import set_archive_temporary
+from ..database.archive_db import update_archive_from_parameters
 from .base_rec import delete_data
 from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
 
@@ -122,8 +122,7 @@ def recreate_archived_artist(archive):
         SESSION.rollback()
     else:
         retdata = {'error': False, 'item': artist.to_json()}
-        set_archive_temporary(archive, 7)
-        SESSION.commit()
+        update_archive_from_parameters(archive, {'days': 7})
     return retdata
 
 

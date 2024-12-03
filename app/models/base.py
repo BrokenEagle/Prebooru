@@ -248,6 +248,12 @@ class CompressedJSON(DB.TypeDecorator):
 class JsonModel(DB.Model):
     __abstract__ = True
 
+    def __init__(self, *args, **kwargs):
+        for col in kwargs:
+            if hasattr(self, col + '_enum') and isinstance(kwargs[col], str):
+                kwargs[col] = getattr(self, col + '_enum').by_name(kwargs[col])
+        super().__init__(*args, **kwargs)
+
     @classmethod
     def find(cls, *args, **kwargs):
         if len(args):
@@ -384,6 +390,11 @@ class JsonModel(DB.Model):
         """Return an uncommitted copy of the record."""
         return self.__class__(**self.column_dict())
 
+    def compare(self, cmp):
+        if self.__class__ != cmp.__class__:
+            return False
+        return all(getattr(self, col) == getattr(cmp, col) for col in self.all_columns)
+
     def attach(self, attr, record):
         setattr(self, attr, record)
 
@@ -408,6 +419,16 @@ class JsonModel(DB.Model):
             table = cls.__table__
             relation = getattr(cls, key)
             if relation.property.primaryjoin.right.table == table:
+                relations.append(key)
+        return relations
+
+    @classmethod
+    def dependant_relations(cls):
+        relations = []
+        for key in cls.relations:
+            table = cls.__table__
+            relation = getattr(cls, key)
+            if relation.property.primaryjoin.left.table == table:
                 relations.append(key)
         return relations
 

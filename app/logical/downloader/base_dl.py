@@ -9,9 +9,9 @@ from utility.data import get_buffer_checksum
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
 from ..database.upload_element_db import update_upload_element_from_parameters
-from ..database.subscription_element_db import link_subscription_post, update_subscription_element_status,\
-    duplicate_subscription_post, update_subscription_element_keep
-from ..database.post_db import post_append_illust_url, get_post_by_md5, set_post_type
+from ..database.subscription_element_db import link_subscription_post, update_subscription_element_from_parameters,\
+    duplicate_subscription_post, get_elements_by_md5
+from ..database.post_db import get_post_by_md5, update_post_from_parameters
 from ..database.error_db import create_error, extend_errors, is_error
 
 
@@ -25,15 +25,16 @@ def record_outcome(post, record):
         valid_errors = [error for error in post_errors if is_error(error)]
         if len(valid_errors) != len(post_errors):
             print("\aInvalid data returned in outcome:", [item for item in post_errors if not is_error(item)])
-        extend_errors(record, valid_errors)
+        extend_errors(record, valid_errors, commit=False)
         if record.model_name == 'subscription_element' and record.status.name == 'active':
-            update_subscription_element_status(record, 'error')
-            update_subscription_element_keep(record, 'unknown')
+            update_subscription_element_from_parameters(element, {'status': 'error', 'keep': 'unknown'})
         elif record.model_name == 'upload_element' and record.status.name == 'pending':
-            update_upload_element_from_parameters(record, {'status': 'error'}, commit=True)
+            update_upload_element_from_parameters(record, {'status': 'error'})
+        elif record.model_name == 'upload' and record.status.name == 'processing':
+            update_upload_element_from_parameters(record, {'status': 'error'})
         return False
     if record.model_name == 'upload_element':
-        update_upload_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
+        update_upload_element_from_parameters(record, {'status': 'complete', 'media_asset_id': post.media_asset_id})
     elif record.model_name == 'subscription_element':
         link_subscription_post(record, post)
     return True
@@ -42,17 +43,17 @@ def record_outcome(post, record):
 def load_post_image(buffer):
     image = load_image(buffer)
     if isinstance(image, str):
-        return create_error('downloader.base_dl.load_post_image', image)
+        return create_error('base_dl.load_post_image', image)
     try:
         if check_alpha(image):
             return convert_alpha(image)
         else:
             return image
     except Exception as e:
-        return create_error('downloader.base_dl.load_post_image', "Error removing alpha transparency: %s" % repr(e))
+        return create_error('base_dl.load_post_image', "Error removing alpha transparency: %s" % repr(e))
 
 
-def create_post_error(function, message, post_errors, module='downloader.base_dl'):
+def create_post_error(function, message, post_errors, module='base_dl'):
     error = create_error(f'{module}.{function}', message)
     post_errors.append(error)
 
@@ -65,18 +66,19 @@ def check_existing(buffer, illust_url, record):
         return md5
     post = get_post_by_md5(md5)
     if post is not None:
-        post_append_illust_url(post, illust_url)
+        update_illust_url_from_parameters(illust_url, {'post_id': post.id})
         if record.model_name == 'upload_element':
-            update_upload_element_from_parameters(record, {'status': 'duplicate', 'md5': post.md5})
+            update_upload_element_from_parameters(record, {'status': 'duplicate', 'media_asset_id': post.media_asset_id})
             if post.type.name != 'user':
-                set_post_type(post, 'user')
+                update_post_from_parameters(post, {'type': 'user'})
         elif record.model_name == 'subscription_element':
-            duplicate_subscription_post(record, post.md5)
-        return None
+            duplicate_subscription_post(record, post.media_asset_id)
+        elif record.model_name == 'upload':
+            update_upload_from_parameters(record, {'status': 'duplicate'})
     if record.model_name == 'subscription_element' and record.status_name != 'deleted':
-        record.md5 = md5  # Set the MD5 now so that the count function can be used
-        if record.duplicate_element_count > 0:
-            duplicate_subscription_post(record, md5)
+        elements = get_elements_by_md5(md5)
+        if len(elements):
+            duplicate_subscription_post(record, elements[0].media_asset_id)
             return None
     return md5
 
@@ -122,19 +124,19 @@ def check_video_info(post, illust_url, post_errors):
 def create_post_preview(image, post, downsample=True):
     result = create_preview(image, post.preview_path, downsample)
     if result is not None:
-        return create_error('downloader.base_dl.create_post_preview', result)
+        return create_error('base_dl.create_post_preview', result)
 
 
 def create_post_sample(image, post, downsample=True):
     result = create_sample(image, post.sample_path, downsample)
     if result is not None:
-        return create_error('downloader.base_dl.create_post_sample', result)
+        return create_error('base_dl.create_post_sample', result)
 
 
 def create_post_data(buffer, post):
     result = create_data(buffer, post.file_path)
     if result is not None:
-        return create_error('downloader.base_dl.create_post_data', result)
+        return create_error('base_dl.create_post_data', result)
 
 
 # #### Save functions

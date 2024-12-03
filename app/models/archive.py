@@ -5,15 +5,27 @@ import os
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
+from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
-from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS
+from config import PREVIEW_DIMENSIONS
 from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import archive_type
-from .base import JsonModel, EpochTimestamp, image_server_url, get_relation_definitions
+from .media_asset import MediaAsset
+from .base import JsonModel, EpochTimestamp, get_relation_definitions
+
+
+# ## FUNCTIONS
+
+def check_type(func):
+    def wrapper(*args):
+        if not args[0].is_post_type:
+            return None
+        return func(*args)
+    return wrapper
 
 
 # ## CLASSES
@@ -27,43 +39,54 @@ class Archive(JsonModel):
     key = DB.Column(DB.String(255), nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
+    media_asset_id = DB.Column(DB.INTEGER, DB.ForeignKey('media_asset.id'), nullable=True)
+
+    # ## Relationships
+    media = DB.relationship(MediaAsset, lazy=True, uselist=False,
+                            backref=DB.backref('archive', lazy=True, uselist=False))
+
+    # ## Association proxies
+    width = association_proxy('media', 'width')
+    height = association_proxy('media', 'height')
+    size = association_proxy('media', 'size')
+    md5 = association_proxy('media', 'md5')
+    file_ext = association_proxy('media', 'file_ext')
+    pixel_md5 = association_proxy('media', 'pixel_md5')
+    duration = association_proxy('media', 'duration')
+    audio = association_proxy('media', 'audio')
+    location = association_proxy('media', 'location')
 
     @property
     def is_post_type(self):
         return self.type.name == 'post'
 
     @property
+    @check_type
     def has_preview(self):
-        if not self.is_post_type:
-            return
-        return self.data['body']['width'] > PREVIEW_DIMENSIONS[0] or\
-            self.data['body']['height'] > PREVIEW_DIMENSIONS[1]
+        return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1] or self.media.is_video
 
     @property
+    @check_type
     def file_url(self):
-        if not self.is_post_type:
-            return
-        return image_server_url('archive' + self._partial_network_path + self.data['body']['file_ext'], 'main')
+        return self.media.original_file_url
 
     @property
+    @check_type
     def preview_url(self):
-        if not self.is_post_type:
-            return
         if not self.has_preview:
             return self.file_url
-        return image_server_url('archive_preview' + self._partial_network_path + 'jpg', 'main')
+        return self.media.image_preview_url
 
     @property
+    @check_type
     def file_path(self):
-        if not self.is_post_type:
-            return
-        return os.path.join(MEDIA_DIRECTORY, 'archive', self._partial_file_path + self.data['body']['file_ext'])
+        return self.media.original_file_path
 
     @property
+    @check_type
     def preview_path(self):
-        if not self.is_post_type or not self.has_preview:
-            return
-        return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')
+        if self.has_preview:
+            return self.media.image_preview_path
 
     # ## Class properties
 

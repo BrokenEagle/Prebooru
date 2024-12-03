@@ -8,7 +8,7 @@ import datetime
 import sqlalchemy
 
 # ## PACKAGE IMPORTS
-from utility.time import process_utc_timestring
+from utility.time import process_utc_timestring, get_current_time
 from utility.uprint import safe_print, buffered_print
 
 # ## LOCAL IMPORTS
@@ -64,75 +64,90 @@ def set_association_attributes(params, associations):
             params[association_key] = params[key]
 
 
-def update_column_attributes(item, attrs, dataparams, commit=True):
-    """For updating column attributes with scalar values"""
-    printer = buffered_print('update_column_attributes', safe=True, header=False)
+def set_column_attributes(item, any_columns, null_columns, dataparams, update=False):
+    """For setting column attributes with scalar values"""
+    printer = buffered_print('set_column_attributes', safe=True, header=False)
     is_dirty = False
-    for attr in attrs:
+    current_time = None
+    allowed_attrs = any_columns + null_columns
+    for attr in allowed_attrs:
+        if attr not in dataparams:
+            continue
+        if attr in null_columns and getattr(item, attr) is not None:
+            continue
         if getattr(item, attr) != dataparams[attr]:
-            printer("Setting basic attr (%s):" % item.shortlink, attr, getattr(item, attr), dataparams[attr])
+            from_val = _normalize_val(getattr(item, attr))
+            to_val = _normalize_val(dataparams[attr])
+            printer("Setting basic attr (%s):" % item.shortlink, attr, from_val, to_val)
             setattr(item, attr, dataparams[attr])
             is_dirty = True
     if item not in SESSION:
-        SESSION.add(item)
+        if hasattr(item, 'created'):
+            current_time = get_current_time()
+            item.created = current_time
+        add_record(item)
     if is_dirty:
+        if hasattr(item, 'updated') and (update or getattr(item, 'updated') is None):
+            current_time = get_current_time() if current_time is None else current_time
+            item.updated = current_time
         printer.print()
-        _safe_db_commit(item, 'update_column_attributes', "Error on record create/update", commit=commit)
     return is_dirty
 
 
-def update_relationship_collections(item, relationships, updateparams, commit=True):
+def set_relationship_collections(item, relationships, dataparams):
     """For updating multiple values to collection relationships with scalar values"""
-    printer = buffered_print('update_relationship_collections', safe=True, header=False)
+    printer = buffered_print('set_relationship_collections', safe=True, header=False)
     is_dirty = False
     for attr, subattr, model in relationships:
-        if updateparams[attr] is None:
+        if dataparams.get(attr) is None:
             continue
         collection = getattr(item, attr)
+        is_dependant = attr in item.dependant_relations()
         current_values = [getattr(subitem, subattr) for subitem in collection]
-        add_values = set(updateparams[attr]).difference(current_values)
+        add_values = set(dataparams[attr]).difference(current_values)
         for value in add_values:
             printer("Adding collection item (%s):" % item.shortlink, attr, value)
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
-                SESSION.add(add_item)
+                add_record(add_item)
             collection.append(add_item)
             is_dirty = True
-        remove_values = set(current_values).difference(updateparams[attr])
+        remove_values = set(current_values).difference(dataparams[attr])
         for value in remove_values:
             printer("Removing collection item (%s):" % item.shortlink, attr, value)
             remove_item = next(filter(lambda x: getattr(x, subattr) == value, collection))
-            collection.remove(remove_item)
+            if is_dependant:
+                delete_record(remove_item)
+            else:
+                collection.remove(remove_item)
             is_dirty = True
     if is_dirty:
         printer.print()
-        msg = "Error on adding/removing collection values"
-        _safe_db_commit(item, 'update_relationship_collections', msg, commit=commit)
     return is_dirty
 
 
-def append_relationship_collections(item, relationships, updateparams, commit=True):
+def append_relationship_collections(item, relationships, dataparams):
     """For appending a single value to collection relationships with scalar values"""
     printer = buffered_print('append_relationship_collections', safe=True, header=False)
     is_dirty = False
     for attr, subattr, model in relationships:
-        if updateparams[attr] is None:
+        append_attr = attr + '_append'
+        if dataparams.get(append_attr) is None:
             continue
         collection = getattr(item, attr)
         current_values = [getattr(subitem, subattr) for subitem in collection]
-        if updateparams[attr] not in current_values:
-            value = updateparams[attr]
+        if dataparams[append_attr] not in current_values:
+            value = dataparams[append_attr]
             printer("Adding collection item (%s):" % item.shortlink, attr, value)
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
-                SESSION.add(add_item)
+                add_record(add_item)
             collection.append(add_item)
             is_dirty = True
     if is_dirty:
         printer.print()
-        _safe_db_commit(item, 'append_relationship_collections', "Error on adding collection value", commit=commit)
     return is_dirty
 
 
@@ -144,34 +159,57 @@ def record_from_json(model, data):
     return record
 
 
-def will_update_record(record, data, columns):
-    for key in data:
-        if key not in columns:
-            continue
-        if getattr(record, key) != data[key]:
-            return True
-    return False
+def add_record(record):
+    SESSION.add(record)
 
 
-# #### Private functions
+def delete_record(record):
+    SESSION.delete(record)
 
-def _safe_db_commit(item, func_name, message, commit=True):
+
+def save_record(record, commit, action, safe=False):
+    commit_or_flush(False, safe)
+    print("[%s]: %s" % (record.shortlink, action))
+    # Commit only after printing to avoid unnecessarily requerying the record
+    if commit:
+        SESSION.commit()
+
+
+def commit_or_flush(commit, safe=False):
+    if safe:
+        safe_db_commit(commit)
+    elif commit:
+        SESSION.commit()
+    else:
+        SESSION.flush()
+
+
+def safe_db_commit(commit):
     try:
         if commit:
             SESSION.commit()
         else:
             SESSION.flush()
     except Exception as e:
-        error_message = (message + ' : %s\n\t%s') % (e, str(item))
-        safe_print("\a%s : %s" % (func_name, error_message))
+        safe_print("\asafe_db_commit : %s" % str(e))
         print("Unlocking the database...")
         SESSION.rollback()
-        log_error(f'database.base_db.{func_name}', error_message)
+        log_error('base_db.safe_db_commit', str(e))
         _handle_db_exception(e)
         raise
 
+
+# #### Private functions
 
 def _handle_db_exception(error):
     if isinstance(error, sqlalchemy.exc.OperationalError) and error.code == 'e3q8':
         print("!!!Sleeping for DB lock!!!")
         time.sleep(30)
+
+
+def _normalize_val(val):
+    if isinstance(val, str):
+        return val[:50] + '...' if len(val) > 50 else val
+    if isinstance(val, dict):
+        return '<dict>'
+    return val

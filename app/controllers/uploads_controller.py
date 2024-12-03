@@ -16,12 +16,13 @@ from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
 from .. import SCHEDULER, SESSION
-from ..models import Upload, UploadElement, IllustUrl, Illust
+from ..models import Upload, UploadElement, IllustUrl, Illust, Post
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.records.upload_rec import process_upload
 from ..logical.records.media_file_rec import batch_get_or_create_media
-from ..logical.database.upload_db import create_upload_from_parameters, set_upload_status, get_pending_uploads
+from ..logical.database.upload_db import create_upload_from_parameters, update_upload_from_parameters,\
+    get_pending_uploads
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_form, get_data_params, hide_input, parse_string_list,\
     nullify_blanks, set_default, get_or_abort, referrer_check, get_limit, get_page, index_html_response
@@ -51,7 +52,8 @@ SHOW_ELEMENTS_HTML_OPTIONS = (
 )
 
 INDEX_HTML_OPTIONS = (
-    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.post),
+    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.post).selectinload(Post.media),  # noqa: E501
+    selectinload(Upload.file_illust_url).selectinload(IllustUrl.post).selectinload(Post.media),
     selectinload(Upload.image_urls),
     selectinload(Upload.errors),
 )
@@ -178,7 +180,8 @@ def create(get_request=False):
         createparams['type'] = 'post'
     elif createparams['illust_url_id']:
         createparams['type'] = 'file'
-    retdata['item'] = create_upload_from_parameters(createparams)
+    upload = create_upload_from_parameters(createparams)
+    retdata['item'] = upload.to_json()
     SCHEDULER.add_job("process_upload-%d" % retdata['item']['id'], process_upload, args=(retdata['item']['id'],))
     if RECHECK_UPLOADS is None:
         RECHECK_UPLOADS = RepeatTimer(30, _recheck_pending_uploads)
@@ -349,7 +352,7 @@ def upload_check_html(id):
 @bp.route('/uploads/<int:id>/resubmit', methods=['POST'])
 def resubmit_html(id):
     upload = get_or_abort(Upload, id)
-    set_upload_status(upload, 'pending')
+    update_upload_from_parameters(upload, {'status': 'pending'})
     SCHEDULER.add_job("process_upload-%d" % id, process_upload, args=(id,))
     return redirect(request.referrer)
 

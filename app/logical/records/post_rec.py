@@ -14,18 +14,20 @@ from utility.uprint import buffered_print
 
 # ### LOCAL IMPORTS
 from ... import SESSION
-from ...models import Post, Artist
+from ...models import Post, MediaAsset, Artist
 from ..utility import set_error, SessionThread
 from ..logger import handle_error_message
 from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm
-from ..database.post_db import delete_post,\
-    get_posts_to_query_danbooru_id_page, update_post_from_parameters, set_post_alternate, alternate_posts_query,\
-    get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
-    get_artist_posts_without_danbooru_ids
-from ..database.error_db import create_error
-from ..database.archive_db import set_archive_temporary
+from ..database.post_db import delete_post, create_post_from_parameters, get_posts_to_query_danbooru_id_page,\
+    update_post_from_parameters, alternate_posts_query, get_all_posts_page, missing_image_hashes_query,\
+    missing_similarity_matches_query, get_posts_by_id, get_artist_posts_without_danbooru_ids
+from ..database.media_asset_db import create_media_asset_from_parameters, update_media_asset_from_parameters,\
+    get_media_asset_by_md5
+from ..database.illust_url_db import update_illust_url_from_parameters
+from ..database.error_db import create_error, append_error
+from ..database.archive_db import update_archive_from_parameters
 from .base_rec import delete_data
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
@@ -35,6 +37,11 @@ from .archive_rec import archive_record, recreate_record, recreate_scalars, recr
 # ## GLOBAL VARIABLES
 
 RELOCATE_PAGE_LIMIT = 10
+
+REVERSE_MEDIA_LOCATION = {
+    'primary': 'alternate',
+    'alternate': 'primary',
+}
 
 
 # ## FUNCTIONS
@@ -101,29 +108,59 @@ def check_posts_for_valid_md5():
         page = page.next()
 
 
-def move_post_media_to_alternate(post, reverse=False):
-    temppost = post.copy()
-    temppost.alternate = not reverse
-    copy_file(post.file_path, temppost.file_path, True)
+def create_post_record(illust_url, width, height, file_ext, md5, size, post_type, pixel_md5, duration, has_audio):
+    media_params = {
+        'width': width,
+        'height': height,
+        'file_ext': file_ext,
+        'md5': md5,
+        'size': size,
+        'pixel_md5': pixel_md5,
+        'duration': duration,
+        'audio': has_audio,
+        'location': 'primary',
+    }
+    media_asset = get_media_asset_by_md5(md5)
+    if media_asset is not None:
+        # The downloader has already placed all files into the primary location, so cleanup any media files that exist
+        # elsewhere. The delete function checks a files existence, so it's just easier pass in all variants regardless.
+        delete_file(media_asset.original_file_path)
+        delete_file(media_asset.image_sample_path)
+        delete_file(media_asset.image_preview_path)
+        if media_asset.is_video:
+            delete_file(media_asset.video_sample_path)
+            delete_file(media_asset.video_preview_path)
+        media_asset = update_media_asset_from_parameters(media_asset, media_params, commit=False)
+    else:
+        media_asset = create_media_asset_from_parameters(media_asset, media_params, commit=False)
+    post = create_post_from_parameters({'media_asset_id': media_asset.id, 'type': post_type}, commit=False)
+    update_illust_url_from_parameters(illust_url, {'post_id': post.id}, commit=True)
+    return post
+
+
+def move_post_media_location(post, location):
+    tempmedia = post.media.copy()
+    tempmedia.location = MediaAsset.location_enum.by_name(location)
+    copy_file(post.file_path, tempmedia.file_path, True)
     if post.has_sample:
-        copy_file(post.sample_path, temppost.sample_path)
+        copy_file(post.sample_path, tempmedia.sample_path)
     if post.has_preview:
-        copy_file(post.preview_path, temppost.preview_path)
-    if post.is_video:
-        copy_file(post.video_sample_path, temppost.video_sample_path)
-        copy_file(post.video_preview_path, temppost.video_preview_path)
+        copy_file(post.preview_path, tempmedia.preview_path)
+    if post.media.is_video:
+        copy_file(post.video_sample_path, tempmedia.video_sample_path)
+        copy_file(post.video_preview_path, tempmedia.video_preview_path)
     # Commit post as alternate location at this point since the files have been safely copied over
-    set_post_alternate(post, not reverse)
+    update_media_asset_from_parameters(post.media, {'location': location})
     # Any errors after this point will just leave orphan images, which can always be cleaned up later
-    temppost.alternate = reverse
-    delete_file(temppost.file_path)
+    tempmedia.location = MediaAsset.location_enum.by_name(REVERSE_MEDIA_LOCATION[location])
+    delete_file(tempmedia.file_path)
     if post.has_sample:
-        delete_file(temppost.sample_path)
+        delete_file(tempmedia.sample_path)
     if post.has_preview:
-        delete_file(temppost.preview_path)
-    if post.is_video:
-        delete_file(temppost.video_sample_path)
-        delete_file(temppost.video_preview_path)
+        delete_file(tempmedia.preview_path)
+    if post.media.is_video:
+        delete_file(tempmedia.video_sample_path)
+        delete_file(tempmedia.video_preview_path)
 
 
 def delete_post_and_media(post):
@@ -181,13 +218,13 @@ def recreate_archived_post(archive):
         return handle_error_message(error)
     # Once the file move is successful, keep going even if there are errors.
     retdata = create_sample_preview_files(post)
-    if post.is_video:
+    if post.media.is_video:
         SessionThread(target=create_video_sample_preview_files,
                       args=(post.file_path, post.video_preview_path,
                             post.video_sample_path, create_sample)).start()
     SessionThread(target=process_image_matches, args=([post.id],)).start()
     retdata['item'] = post.to_json()
-    set_archive_temporary(archive, 7)
+    update_archive_from_parameters(archive, {'days': 7})
     return retdata
 
 
@@ -236,7 +273,7 @@ def create_sample_preview_files(post, retdata=None):
     retdata = retdata or {'error': False}
     errors = []
     buffer = None
-    if post.is_video:
+    if post.media.is_video:
         buffer = _get_video_thumb_binary(post)
     if buffer is not None:
         has_sample = has_preview = True
@@ -278,8 +315,10 @@ def relocate_old_posts_to_alternate(manual):
     while True:
         print(f"relocate_old_posts_to_alternate: {page.first} - {page.last} / Total({page.count})")
         for post in page.items:
+            if post.media.location.name == 'alternate':
+                continue
             print(f"Moving {post.shortlink}")
-            move_post_media_to_alternate(post)
+            move_post_media_location(post, 'alternate')
             moved += 1
         if not page.has_next or page.page > max_pages:
             return moved
@@ -343,8 +382,6 @@ def _load_file(post):
         has_sample = post.has_sample
         has_preview = post.has_preview
         downsample_sample = downsample_preview = True
-    elif post.file_ext == 'gif':
-        pass
     elif post.file_ext == 'mp4':
         create_directory(TEMP_DIRECTORY)
         save_path = os.path.join(TEMP_DIRECTORY, post.md5 + '.' + 'jpg')
@@ -360,10 +397,11 @@ def _load_file(post):
 def _get_video_thumb_binary(post):
     for illust_url in post.illust_urls:
         source = illust_url.site.source
-        download_url = source.get_sample_url(illust_url)
+        download_url = illust_url.full_sample_url
         print("Downloading", download_url)
         buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
         if isinstance(buffer, str):
-            create_error('records.post_rec._get_video_thumb_binary', "Download URL: %s => %s" % (download_url, buffer))
+            error = create_error('post_rec.get_video_thumb_binary', "Download URL: %s => %s" % (download_url, buffer))
+            append_error(post, error)
             continue
         return buffer

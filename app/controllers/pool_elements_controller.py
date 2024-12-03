@@ -10,8 +10,8 @@ from utility.data import eval_bool_string, int_or_array
 # ## LOCAL IMPORTS
 from ..models import Pool, PoolElement
 from ..logical.utility import set_error
-from ..logical.database.pool_element_db import create_pool_element_from_parameters, delete_pool_element,\
-    batch_delete_pool_elements, get_pool_elements_by_id
+from ..logical.records.pool_rec import add_to_pool
+from ..logical.database.pool_element_db import delete_pool_element, batch_delete_pool_elements, get_pool_elements_by_id
 from .base_controller import get_data_params, get_or_abort, get_or_error, check_param_requirements,\
     index_json_response, show_json_response, process_request_values, get_params_value, search_filter, default_order,\
     parse_type, render_template_ws
@@ -71,7 +71,7 @@ def create():
     pool = Pool.find(createparams['pool_id'])
     if pool is None:
         return set_error(retdata, "Pool #%d not found." % createparams['pool_id'])
-    retdata.update(create_pool_element_from_parameters(pool, createparams))
+    retdata.update(add_to_pool(pool, createparams))
     return retdata
 
 

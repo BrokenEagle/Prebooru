@@ -174,7 +174,7 @@ class Upload(JsonModel):
         raise Exception("Unable to find source for upload #%d" % self.id)
 
     def _populate_illust_urls(self):
-        if len(self.elements):
+        if len(self.elements) and any('illust_url' in elem._sa_instance_state.unloaded for elem in self.elements):
             selectinload_batch_primary(self.elements, 'illust_url')
         self._illust_urls = [element.illust_url for element in self.elements]
         self._complete_illust_urls = [element.illust_url for element in self.elements
@@ -184,5 +184,6 @@ class Upload(JsonModel):
         self._populate_illust_urls = lambda: None
 
     def _populate_posts(self):
-        selectinload_batch_primary(self.illust_urls, 'post')
+        if len(self.illust_urls) and any('post' in url._sa_instance_state.unloaded for url in self.illust_urls):
+            selectinload_batch_primary(self.illust_urls, 'post')
         self._populate_posts = lambda: None

@@ -53,11 +53,11 @@ def similar_search_links(post, format_url, proxy_url=None):
                 image_links.append('N/A')
             continue
         source = illust.site.source
-        media_url = source.get_media_url(illust_url)
+        media_url = illust_url.full_url
         if source.is_video_url(media_url):
-            small_url = source.get_sample_url(illust_url)
+            small_url = illust_url.full_sample_url
         else:
-            small_url = source.small_image_url(media_url)
+            small_url = illust_url.full_preview_url
         encoded_url = urllib.parse.quote_plus(small_url)
         href_url = format_url + encoded_url
         image_links.append(external_link(illust.shortlink, href_url))
@@ -77,7 +77,7 @@ def post_preview_link(post, lazyload):
     }
     if not lazyload:
         addons['src'] = post.preview_url
-    if post.is_video:
+    if post.media.is_video:
         addons['data-video'] = post.video_preview_url
     return render_tag('img', None, addons)
 
@@ -157,8 +157,8 @@ def danbooru_post_bookmarklet_links(post):
             image_links.append(external_link(f'file #{illust.id}', url))
             continue
         source = illust.site.source
-        media_url = source.get_media_url(illust_url)
-        post_url = source.get_post_url(illust)
+        media_url = illust_url.full_url
+        post_url = source.primary_url
         query_string = urllib.parse.urlencode({'url': media_url, 'ref': post_url})
         href_url = DANBOORU_HOSTNAME + '/uploads/new?' + query_string
         image_links.append(external_link(illust.shortlink, href_url))

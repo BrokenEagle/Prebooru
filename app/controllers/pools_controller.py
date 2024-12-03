@@ -128,7 +128,7 @@ def create():
     if check_pool is not None:
         retdata['item'] = check_pool.to_json()
         return set_error(retdata, "Pool with name already exists: pool #%d" % check_pool.id)
-    pool = create_pool_from_parameters(createparams)
+    pool = create_pool_from_parameters(createparams, update=True)
     retdata['item'] = pool.to_json()
     return retdata
 
@@ -141,7 +141,7 @@ def update(pool):
     if check_pool is not None:
         retdata['item'] = check_pool.to_json()
         return set_error(retdata, "Pool with name already exists: pool #%d" % check_pool.id)
-    update_pool_from_parameters(pool, updateparams)
+    update_pool_from_parameters(pool, updateparams, update=True)
     retdata['item'] = pool.to_json()
     return retdata
 

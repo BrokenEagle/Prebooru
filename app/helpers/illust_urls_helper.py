@@ -30,8 +30,8 @@ def preview_link(illust_url, lazyload=False):
         'width': preview_width,
         'height': preview_height,
         'alt': illust_url.shortlink,
-        'data-src': illust_url.preview_url,
+        'data-src': illust_url.full_preview_url,
     }
     if not lazyload:
-        addons['src'] = illust_url.preview_url
+        addons['src'] = illust_url.full_preview_url
     return render_tag('img', None, addons)

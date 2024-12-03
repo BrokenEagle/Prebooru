@@ -105,7 +105,7 @@ class Illust(JsonModel):
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)
 
-    @property
+    @memoized_property
     def active_urls(self):
         return [url for url in self.urls if url.post_id is not None]
 
@@ -127,6 +127,10 @@ class Illust(JsonModel):
             return 'video'
         return 'unknown'
 
+    @property
+    def source(self):
+        return self.site.source
+
     @memoized_property
     def has_images(self):
         return any(illust_url.type == 'image' for illust_url in self.urls)
@@ -136,8 +140,20 @@ class Illust(JsonModel):
         return any(illust_url.type == 'video' for illust_url in self.urls)
 
     @property
+    def primary_url(self):
+        return self.source.get_primary_url(self)
+
+    @property
+    def secondary_url(self):
+        return self.source.get_secondary_url(self)
+
+    @property
     def site_domain(self):
         return self.site.domain
+
+    @property
+    def shortlink(self):
+        return "%s #%d" % (self.site.name.lower(), self.site_illust_id)
 
     @property
     def key(self):
@@ -180,12 +196,13 @@ class Illust(JsonModel):
     def find_rel_by_key(cls, rel, key, value):
         from .artist import Artist
         from .post import Post
+        from .MediaAsset import MediaAsset
         if rel == 'artist':
             site_name = key.split('-')[0]
             return Artist.query.filter(Artist.site_filter('name', '__eq__', site_name),
                                        Artist.site_artist_id == value).one_or_none()
         if rel == 'posts':
-            return Post.query.filter(Post.md5.in_(k['md5'] for k in key)).all()
+            return Post.query.join(MediaAsset).filter(MediaAsset.md5.in_(k['md5'] for k in key)).all()
 
     @classproperty(cached=True)
     def load_columns(cls):

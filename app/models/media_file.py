@@ -1,20 +1,15 @@
 # APP/MODELS/MEDIA_FILE.PY
 
-# ## PYTHON IMPORTS
-import os
+# ## EXTERNAL IMPORTS
+from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
-from config import MEDIA_DIRECTORY
 from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, BlobMD5, EpochTimestamp, image_server_url
-
-
-# ## GLOBAL VARIABLES
-
-CACHE_DATA_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'cache')
+from .media_asset import MediaAsset
+from .base import JsonModel, EpochTimestamp
 
 
 # ## CLASSES
@@ -22,28 +17,17 @@ CACHE_DATA_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'cache')
 class MediaFile(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    md5 = DB.Column(BlobMD5(nullable=False), nullable=False)
-    file_ext = DB.Column(DB.String(255), nullable=False)
     media_url = DB.Column(DB.String(255), nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    media_asset_id = DB.Column(DB.INTEGER, DB.ForeignKey('media_asset.id'), nullable=False)
 
-    # ## Instance properties
+    # ## Relationships
+    media = DB.relationship(MediaAsset, lazy='selectin', uselist=False,
+                            backref=DB.backref('media_file', lazy=True, uselist=False))
 
-    @property
-    def file_url(self):
-        return image_server_url(self._partial_network_path, 'main')
-
-    @property
-    def file_path(self):
-        return os.path.join(CACHE_DATA_DIRECTORY, self._partial_file_path)
-
-    @property
-    def _partial_network_path(self):
-        return 'cache/%s.%s' % (self.md5, self.file_ext)
-
-    @property
-    def _partial_file_path(self):
-        return '%s.%s' % (self.md5, self.file_ext)
+    # ## Association proxies
+    md5 = association_proxy('media', 'md5')
+    file_ext = association_proxy('media', 'file_ext')
 
     # ## Class properties
 

@@ -5,7 +5,7 @@ from flask import Blueprint, request, render_template, url_for, redirect, flash
 
 # ## LOCAL IMPORTS
 from ..models import Archive
-from ..logical.database.archive_db import set_archive_permenant, set_archive_temporary
+from ..logical.database.archive_db import update_archive_from_parameters
 from ..logical.records.booru_rec import recreate_archived_booru, relink_archived_booru
 from ..logical.records.artist_rec import recreate_archived_artist, relink_archived_artist
 from ..logical.records.illust_rec import recreate_archived_illust, relink_archived_illust
@@ -107,12 +107,13 @@ def relink_item_html(id):
 @bp.route('/archives/<int:id>/set_permenant', methods=['POST'])
 def set_permenant_html(id):
     archive = get_or_abort(Archive, id)
-    set_archive_permenant(archive)
+    update_archive_from_parameters(archive, {'days': None})
     return redirect(request.referrer)
 
 
 @bp.route('/archives/<int:id>/set_temporary', methods=['POST'])
 def set_temporary_html(id):
     archive = get_or_abort(Archive, id)
-    set_archive_temporary(archive, 30, commit=True)  # Eventually add model specific delay times here
+    # Eventually add model specific delay times here
+    update_archive_from_parameters(archive, {'days': 30})
     return redirect(request.referrer)
