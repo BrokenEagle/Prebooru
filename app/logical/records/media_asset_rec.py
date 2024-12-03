@@ -40,7 +40,8 @@ def download_media_asset(download_url, source, location, alternate_url=None, ove
     media_asset = _check_existing(buffer)
     if not isinstance(media_asset, str):
         if media_asset.location is not None or not override:
-            return media_asset
+            results['media_asset'] = media_asset
+            return results
         md5 = media_asset.md5
     else:
         md5 = media_asset

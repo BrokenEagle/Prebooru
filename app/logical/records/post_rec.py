@@ -108,6 +108,7 @@ def check_posts_for_valid_md5():
         page = page.next()
 
 
+"""
 def create_post_record(illust_url, width, height, file_ext, md5, size, post_type, pixel_md5, duration, has_audio):
     media_params = {
         'width': width,
@@ -135,6 +136,13 @@ def create_post_record(illust_url, width, height, file_ext, md5, size, post_type
         media_asset = create_media_asset_from_parameters(media_asset, media_params, commit=False)
     post = create_post_from_parameters({'media_asset_id': media_asset.id, 'type': post_type}, commit=False)
     update_illust_url_from_parameters(illust_url, {'post_id': post.id}, commit=True)
+    return post
+"""
+
+def create_post_record(element, media_asset):
+    post_type = 'user' if element.model_name == 'upload_element' else 'subscription'
+    post = create_post_from_parameters({'media_asset_id': media_asset.id, 'type': post_type}, commit=False)
+    update_illust_url_from_parameters(element.illust_url, {'post_id': post.id}, commit=False)
     return post
 
 
