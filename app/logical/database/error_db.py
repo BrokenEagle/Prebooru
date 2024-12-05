@@ -42,6 +42,11 @@ def create_error(module_name, message, commit=True):
     return create_error_from_parameters({'module': module_name, 'message': message}, commit)
 
 
+def create_and_append_error(instance, module_name, message, commit=True):
+    error = create_error(module_name, message, commit)
+    append_error(instance, error, commit)
+
+
 # ###### Delete
 
 def delete_error(error):
@@ -58,7 +63,6 @@ def extend_errors(instance, errors, commit=True):
 
 
 def append_error(instance, error, commit=True):
-    instance.errors
     table_name = instance.table_name
     append_key = table_name + '_id'
     setattr(error, append_key, instance.id)

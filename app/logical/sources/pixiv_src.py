@@ -226,10 +226,14 @@ def get_media_extension(media_url):
     return get_file_extension(filename)
 
 
+def partial_media_url(media_url, size=None):
+    return partial_image_url(media_url, size)
+
+
 def partial_image_url(image_url, size=None):
     match = IMAGE_RG.match(image_url)
     if match:
-        if size == 'original':
+        if size == 'original' or size is None:
             return "/img-original/img/%s/%s_p%s.%s" %\
                    (match.group('date'), match.group('id'), match.group('order'), match.group('ext'))
         if size == 'regular':

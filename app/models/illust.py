@@ -152,7 +152,7 @@ class Illust(JsonModel):
         return self.site.domain
 
     @property
-    def shortlink(self):
+    def sitelink(self):
         return "%s #%d" % (self.site.name.lower(), self.site_illust_id)
 
     @property

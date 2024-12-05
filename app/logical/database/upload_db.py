@@ -25,14 +25,12 @@ NULL_WRITABLE_ATTRIBUTES = ['request_url', 'media_filepath', 'sample_filepath', 
 # ###### CREATE
 
 def create_upload_from_parameters(createparams, commit=True):
-    mergedparams = merge_dicts(
-        createparams,
-        {
-            'successes': 0,
-            'failures': 0,
-            'status': 'pending',
-        }
-    )
+    defaultparams = {
+        'successes': 0,
+        'failures': 0,
+        'status': 'pending',
+    }
+    mergedparams = merge_dicts(defaultparams, createparams)
     return set_upload_from_parameters(Upload(), mergedparams, commit, 'created')
 
 

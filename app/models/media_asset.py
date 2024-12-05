@@ -115,8 +115,12 @@ class MediaAsset(JsonModel):
     # ## Instance methods
 
     @property
+    def is_image(self):
+        return self.file_ext in ['jpg', 'png', 'gif']
+
+    @property
     def is_video(self):
-        return self.file_ext not in ['jpg', 'png', 'gif']
+        return self.file_ext in ['mp4']
 
     @property
     def has_file_access(self):
@@ -204,6 +208,16 @@ class MediaAsset(JsonModel):
         ext = VIDEO_SAMPLE_FILE_EXTS.get(self.location_id)
         if suburl_path:
             return self.image_server_url('video_preview' + self._partial_network_path + ext, suburl_path)
+
+    # ## Class methods
+
+    @classmethod
+    def alternate_location_configured(cls):
+        return ALTERNATE_MEDIA_DIRECTORY is not None
+
+    @classmethod
+    def alternate_location_available(cls):
+        return os.path.exists(ALTERNATE_MEDIA_DIRECTORY)
 
     # ## Private
 

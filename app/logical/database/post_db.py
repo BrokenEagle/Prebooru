@@ -4,18 +4,17 @@
 from sqlalchemy import or_
 
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time, days_ago
+from utility.time import days_ago
 
 # ## LOCAL IMPORTS
 from ...models import Post, SubscriptionElement, ImageHash, MediaAsset
-from .base_db import set_column_attributes, commit_or_flush, add_record, delete_record
-from .pool_element_db import delete_pool_element
+from .base_db import set_column_attributes, commit_or_flush, add_record, delete_record, save_record
 
 
 # ## GLOBAL VARIABLES
 
-CREATE_ALLOWED_ATTRIBUTES = ['type_id', 'media_asset_id']
-UPDATE_ALLOWED_ATTRIBUTES = ['type_id', 'danbooru_id', 'simcheck']
+ANY_WRITABLE_COLUMNS = ['type_id', 'simcheck']
+NULL_WRITABLE_ATTRIBUTES = ['media_asset_id', 'danbooru_id']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
                                                 .with_entities(SubscriptionElement.post_id)
@@ -28,19 +27,13 @@ SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### Create
+# #### Create
 
 def create_post_from_parameters(createparams, commit=True):
     if 'type' in createparams:
-        createparams['type_id'] = Post.type_enum.by_name(createparams['type']).id,
-    current_time = get_current_time()
-    post = Post(created=current_time, simcheck=False)
-    set_column_attributes(post, CREATE_ALLOWED_ATTRIBUTES, createparams)
-    commit_or_flush(commit, safe=True)
-    print("[%s]: created" % post.shortlink)
-    return post
+        createparams['type_id'] = Post.type_enum.by_name(createparams['type']).id
+    createparams['simcheck'] = False
+    return set_post_from_parameters(Post(), createparams, commit, 'created')
 
 
 def create_post_from_json(data):
@@ -54,13 +47,16 @@ def create_post_from_json(data):
 # ###### Update
 
 def update_post_from_parameters(post, updateparams, commit=True):
-    update_results = []
-    if 'type' in updateparams:
-        updateparams['type_id'] = Post.type_enum.by_name(updateparams['type']).id
-    update_results.append(set_column_attributes(post, UPDATE_ALLOWED_ATTRIBUTES, updateparams))
-    if any(update_results):
-        commit_or_flush(commit, safe=True)
-        print("[%s]: updated" % post.shortlink)
+    return set_post_from_parameters(post, updateparams, commit, 'updated')
+
+
+# #### Set
+
+def set_post_from_parameters(post, setparams, commit, action):
+    if 'type' in setparams:
+        setparams['type_id'] = Post.type_enum.by_name(setparams['type']).id
+    if set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(post, commit, action)
     return post
 
 

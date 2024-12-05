@@ -67,6 +67,7 @@ def set_association_attributes(params, associations):
 def set_column_attributes(item, any_columns, null_columns, dataparams, update=False):
     """For setting column attributes with scalar values"""
     printer = buffered_print('set_column_attributes', safe=True, header=False)
+    printer("(%s)" % item.shortlink)
     is_dirty = False
     current_time = None
     allowed_attrs = any_columns + null_columns
@@ -78,7 +79,8 @@ def set_column_attributes(item, any_columns, null_columns, dataparams, update=Fa
         if getattr(item, attr) != dataparams[attr]:
             from_val = _normalize_val(getattr(item, attr))
             to_val = _normalize_val(dataparams[attr])
-            printer("Setting basic attr (%s):" % item.shortlink, attr, from_val, to_val)
+            printer("[%s]:" %  _get_attr(item, attr),
+                    _get_val(item, attr, from_val), '->', _get_val(item, attr, to_val))
             setattr(item, attr, dataparams[attr])
             is_dirty = True
     if item not in SESSION:
@@ -97,6 +99,7 @@ def set_column_attributes(item, any_columns, null_columns, dataparams, update=Fa
 def set_relationship_collections(item, relationships, dataparams):
     """For updating multiple values to collection relationships with scalar values"""
     printer = buffered_print('set_relationship_collections', safe=True, header=False)
+    printer("(%s)" % item.shortlink)
     is_dirty = False
     for attr, subattr, model in relationships:
         if dataparams.get(attr) is None:
@@ -106,7 +109,7 @@ def set_relationship_collections(item, relationships, dataparams):
         current_values = [getattr(subitem, subattr) for subitem in collection]
         add_values = set(dataparams[attr]).difference(current_values)
         for value in add_values:
-            printer("Adding collection item (%s):" % item.shortlink, attr, value)
+            printer("[%s]:" % attr, _normalize_val(value))
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
@@ -130,6 +133,7 @@ def set_relationship_collections(item, relationships, dataparams):
 def append_relationship_collections(item, relationships, dataparams):
     """For appending a single value to collection relationships with scalar values"""
     printer = buffered_print('append_relationship_collections', safe=True, header=False)
+    printer("(%s)" % item.shortlink)
     is_dirty = False
     for attr, subattr, model in relationships:
         append_attr = attr + '_append'
@@ -139,7 +143,7 @@ def append_relationship_collections(item, relationships, dataparams):
         current_values = [getattr(subitem, subattr) for subitem in collection]
         if dataparams[append_attr] not in current_values:
             value = dataparams[append_attr]
-            printer("Adding collection item (%s):" % item.shortlink, attr, value)
+            printer("[%s]:" % attr, _normalize_val(value))
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
@@ -169,7 +173,7 @@ def delete_record(record):
 
 def save_record(record, commit, action, safe=False):
     commit_or_flush(False, safe)
-    print("[%s]: %s" % (record.shortlink, action))
+    print("[%s]: %s\n" % (record.shortlink, action))
     # Commit only after printing to avoid unnecessarily requerying the record
     if commit:
         SESSION.commit()
@@ -212,4 +216,22 @@ def _normalize_val(val):
         return val[:50] + '...' if len(val) > 50 else val
     if isinstance(val, dict):
         return '<dict>'
+    return val
+
+
+def _get_attr(item, attr):
+    if attr.endswith('_id'):
+        key = attr[:-3]
+        enum = getattr(item, key + '_enum', None)
+        if enum is not None:
+            return key
+    return attr
+
+
+def _get_val(item, attr, val):
+    if isinstance(val, int) and attr.endswith('_id'):
+        key = attr[:-3]
+        enum = getattr(item, key + '_enum', None)
+        if enum is not None:
+            return enum.by_id(val).name
     return val

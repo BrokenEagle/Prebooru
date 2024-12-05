@@ -684,7 +684,7 @@ def partial_image_url(image_url, action=None, size=None):
                 return handler['partial'](match) + size_addon
             index = handler.get(action)
             if index:
-                size_addon = IMAGE_URL_HANDLERS[index] + size if size is not None else ""
+                size_addon = IMAGE_URL_HANDLERS[index]['addon'] + size if size is not None else ""
                 return IMAGE_URL_HANDLERS[index]['partial'](match) + size_addon
     return None
 

@@ -16,22 +16,23 @@ from ..utility import unique_objects, SessionThread
 from ..sources.base_src import get_post_source
 from ..database.base_db import safe_db_execute
 from ..database.illust_db import get_site_illust, get_site_illusts
-from ..database.upload_db import update_upload_from_parameters, add_upload_error
-from ..database.upload_element_db import create_upload_element_from_parameters
+from ..database.upload_db import update_upload_from_parameters
+from ..database.upload_element_db import create_upload_element_from_parameters, update_upload_element_from_parameters
 from ..database.post_db import get_posts_by_id
-from ..database.error_db import create_error, append_error
+from ..database.error_db import create_and_append_error
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
-from ..downloader.network_dl import convert_network_upload
 from ..downloader.file_dl import convert_file_upload
 from .artist_rec import update_artist_from_source, check_artists_for_boorus
 from .illust_rec import create_illust_from_source, update_illust_from_source
-from .post_rec import check_posts_for_danbooru_id
+from .media_asset_rec import download_media_asset, move_media_asset
+from .post_rec import check_posts_for_danbooru_id, create_post_record
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
 
 # ## FUNCTIONS
 
 # #### Upload functions
+
 
 def process_upload(upload_id):
     printer = buffered_print("Process Upload")
@@ -81,61 +82,7 @@ def process_upload(upload_id):
     SESSION.remove()
 
 
-# #### Element functions
-
-def populate_upload_elements(upload, illust=None):
-    if illust is None:
-        source = get_post_source(upload.request_url)
-        site_illust_id = source.get_illust_id(upload.request_url)
-        illust = get_site_illust(site_illust_id, source.site.id)
-        if illust is None:
-            return
-    else:
-        source = illust.site.source
-    # Need to make sure this'll work posts with mixed video/image URLs
-    all_upload_urls = [source.partial_media_url(upload_url.url) for upload_url in upload.image_urls]
-    upload_elements = list(upload.elements)
-    for illust_url in illust.urls:
-        if (len(all_upload_urls) > 0) and (illust_url.url not in all_upload_urls):
-            continue
-        element = next((element for element in upload_elements if element.illust_url_id == illust_url.id), None)
-        if element is None:
-            element = create_upload_element_from_parameters({'upload_id': upload.id, 'illust_url_id': illust_url.id},
-                                                            commit=False)
-            upload_elements.append(element)
-    return upload_elements
-
-
-def populate_all_upload_elements(uploads):
-    illust_lookup = {}
-    illust_index = {}
-    upload_elements = {}
-    for upload in uploads:
-        source = upload._source
-        if upload.request_url is not None:
-            site_illust_id = source.get_illust_id(upload.request_url)
-        elif upload.illust_url_id is not None:
-            site_illust_id = upload.illust_url.illust.site_illust_id
-        else:
-            print_warning(f"Unable to find an illust for {upload.shortlink}")
-            continue
-        add_dict_entry(illust_lookup, source.SITE.id, site_illust_id)
-        illust_index[upload.id] = {'site_id': source.SITE.id, 'site_illust_id': site_illust_id}
-    illusts = []
-    for key in illust_lookup:
-        illusts += get_site_illusts(key, illust_lookup[key], load_urls=True)
-    for upload in uploads:
-        illust_params = illust_index[upload.id]
-        illust = next((illust for illust in illusts
-                       if illust.site_id == illust_params['site_id']
-                       and illust.site_illust_id == illust_params['site_illust_id']), None)
-        if illust is None:
-            continue
-        upload_elements[upload.id] = populate_upload_elements(upload, illust=illust)
-    return upload_elements
-
-
-# #### Auxiliary functions
+# #### Network uploads
 
 def process_network_upload(upload):
     # Request URL should have already been validated, so no null test needed
@@ -149,10 +96,9 @@ def process_network_upload(upload):
     if illust is None:
         illust = create_illust_from_source(site_illust_id, source)
         if illust is None:
-            error = create_error('upload_rec.process_network_upload',
-                                 "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id),
-                                 commit=False)
-            append_error(upload, error, commit=False)
+            create_and_append_error('upload_rec.process_network_upload',
+                                    "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id),
+                                    commit=False)
             update_upload_from_parameters(upload, {'status': 'error'}, commit=True)
             return
     elif illust.updated < requery_time:
@@ -161,32 +107,37 @@ def process_network_upload(upload):
     if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist)
     if source.is_image_url(upload.request_url):
-        process_network_image_upload(upload)
+        process_network_single_upload(upload, illust)
     else:
-        process_network_multi_upload(upload)
+        process_network_multi_upload(upload, illust)
     update_upload_from_parameters(upload, {'status': 'complete'}, commit=True)
 
 
-def process_network_image_upload(upload):
+def process_network_single_upload(upload, illust):
     if len(upload.elements) == 0:
-        normalized_request_url = no_file_extension(source.partial_media_url(upload.request_url))
+        normalized_request_url = no_file_extension(illust.source.partial_media_url(upload.request_url))
         illust_url = next((illust_url for illust_url in illust.urls
                            if no_file_extension(illust_url.url) == normalized_request_url),
                           None)
         if illust_url is None:
-            error = create_error('upload_rec.process_network_image_upload',
-                                 "Unable to find illust URL: %s -> %s" % (upload.request_url, illust.shortlink),
-                                 commit=False)
-            append_error(upload, error, commit=False)
+            create_and_append_error('upload_rec.process_network_single_upload',
+                                    "Unable to find illust URL: %s -> %s" %
+                                    (upload.request_url, illust.shortlink),
+                                    commit=True)
             update_upload_from_parameters(upload, {'status': 'error'}, commit=True)
-        element = create_upload_element_from_parameters({'upload_id': upload.id, 'illust_url_id': illust_url.id}, commit=False)
+            return
+        params = {
+            'upload_id': upload.id,
+            'illust_url_id': illust_url.id,
+        }
+        element = create_upload_element_from_parameters(params, commit=True)
         process_network_upload_element(element)
-    elif upload_elements[0].status.name == 'pending':
-        process_network_upload_element(upload_elements[0])
+    elif upload.elements[0].status.name == 'pending':
+        process_network_upload_element(upload.elements[0])
 
 
-def process_network_multi_upload(upload):
-    all_upload_urls = [no_file_extension(source.partial_media_url(upload_url.url))
+def process_network_multi_upload(upload, illust):
+    all_upload_urls = [no_file_extension(illust.source.partial_media_url(upload_url.url))
                        for upload_url in upload.image_urls]
     upload_elements = upload.elements
     total = 0
@@ -196,17 +147,50 @@ def process_network_multi_upload(upload):
             continue
         element = next((element for element in upload_elements if element.illust_url_id == illust_url.id), None)
         if element is None:
-            element = create_upload_element_from_parameters({'upload_id': upload.id, 'illust_url_id': illust_url.id})
+            params = {
+                'upload_id': upload.id,
+                'illust_url_id': illust_url.id,
+            }
+            element = create_upload_element_from_parameters(params, commit=True)
         if element.status.name == 'pending':
             process_network_upload_element(element)
         total += 1
-    if len(upload.image_urls) != total:
-        error = create_error('upload_rec.process_network_multi_upload',
-                             "Did not find all upload URLS in illust: expected (%d) : found (%d)" %
-                             (len(upload.image_urls), total),
-                             commit=False)
-        append_error(upload, error, commit=False)
+    if len(all_upload_urls) > 0 and len(all_upload_urls) != total:
+        create_and_append_error('upload_rec.process_network_multi_upload',
+                                "Did not find all upload URLS in illust: expected (%d) : found (%d)" %
+                                (len(upload.image_urls), total),
+                                commit=False)
 
+
+def process_network_upload_element(element):
+    illust_url = element.illust_url
+    source = illust_url.source
+    download_url = illust_url.full_original_url
+    alternate_url = illust_url.full_alternate_url
+    results = download_media_asset(download_url, source, 'primary', alternate_url=alternate_url)
+    for error in results['errors']:
+        create_and_append_error(element, *error, commit=False)
+    if results['media_asset'] is not None:
+        params = {
+            'media_asset_id': results['media_asset'].id,
+        }
+        if results['media_asset'].post is None:
+            if results['media_asset'].location.name != 'primary':
+                result = move_media_asset(results['media_asset'], 'primary')
+                if isinstance(result, str):
+                    create_and_append_error(element, 'upload_rec.process_network_upload_element', result, commit=False)
+                    update_upload_element_from_parameters(element, {'status': 'error'}, commit=True)
+                    return
+            create_post_record(element, results['media_asset'])
+            params['status'] = 'complete'
+        else:
+            params['status'] = 'duplicate'
+        update_upload_element_from_parameters(element, params, commit=True)
+    else:
+        update_upload_element_from_parameters(element, {'status': 'error'}, commit=True)
+
+
+# #### File upload
 
 def process_file_upload(upload):
     illust = upload.file_illust_url.illust
@@ -219,26 +203,6 @@ def process_file_upload(upload):
         update_upload_from_parameters(upload, {'status': 'complete'})
     else:
         update_upload_from_parameters(upload, {'status': 'error'})
-
-
-def process_network_upload_element(element)
-    source = element.illust_url.source
-    download_url = element.illust_url.full_original_url
-    alternate_url = element.illust_url.alternate_image_url
-    results = download_media_asset(download_url, source, 'primary', alternate_url=alternate_url, override=True)
-    for error in results['errors']:
-        error = create_error(*error, commit=False)
-        append_error(element, error)
-    if results['media_asset'] is not None:
-        params = {'media_asset_id': results['media_asset'].id}
-        if results['media_asset'].post is None:
-            post = create_post_record(element, results['media_asset'])
-            params['status'] = 'complete'
-        else:
-            params['status'] = 'duplicate'
-        update_upload_element_from_parameters(element, params, commit=False)
-    else:
-        update_upload_element_from_parameters(element, {'status': 'error'}, commit=False)
 
 
 # #### Secondary task functions

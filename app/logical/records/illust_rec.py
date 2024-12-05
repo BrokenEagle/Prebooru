@@ -8,7 +8,7 @@ from ... import SESSION
 from ...models import Illust
 from ..logger import handle_error_message
 from ..database.artist_db import get_blank_artist
-from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, delete_illust
+from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
 from ..database.archive_db import update_archive_from_parameters
 from .base_rec import delete_data
 from .artist_rec import get_or_create_artist_from_source
@@ -73,3 +73,23 @@ def relink_archived_illust(archive):
     if illust is None:
         return f"No illust found with key {archive.key}"
     recreate_links(illust, archive.data)
+
+
+def delete_illust(illust):
+    for pool_element in illust._pools:
+        delete_pool_element(pool_element)
+    delete_record(illust)
+    commit_or_flush(True)
+
+
+def illust_delete_commentary(illust, description_id):
+    retdata = {'error': False, 'descriptions': [commentary.to_json() for commentary in illust._commentaries]}
+    remove_commentary = next((comm for comm in illust._commentaries if comm.id == description_id), None)
+    if remove_commentary is None:
+        msg = "Commentary with description #%d does not exist on illust #%d." % (description_id, illust.id)
+        return set_error(retdata, msg)
+    illust._commentaries.remove(remove_commentary)
+    commit_or_flush(True)
+    retdata['item'] = illust.to_json()
+    return retdata
+

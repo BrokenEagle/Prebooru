@@ -7,10 +7,10 @@ import os
 from sqlalchemy.orm import selectinload
 
 # ### PACKAGE IMPORTS
-from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
+from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from utility.data import get_buffer_checksum, merge_dicts, inc_dict_entry
 from utility.file import create_directory, put_get_raw, copy_file, delete_file
-from utility.uprint import buffered_print
+from utility.uprint import buffered_print, print_warning
 
 # ### LOCAL IMPORTS
 from ... import SESSION
@@ -19,14 +19,13 @@ from ..utility import set_error, SessionThread
 from ..logger import handle_error_message
 from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
-    convert_mp4_to_webm
+    convert_mp4_to_webm, convert_alpha
 from ..database.post_db import delete_post, create_post_from_parameters, get_posts_to_query_danbooru_id_page,\
     update_post_from_parameters, alternate_posts_query, get_all_posts_page, missing_image_hashes_query,\
     missing_similarity_matches_query, get_posts_by_id, get_artist_posts_without_danbooru_ids
-from ..database.media_asset_db import create_media_asset_from_parameters, update_media_asset_from_parameters,\
-    get_media_asset_by_md5
+from ..database.media_asset_db import update_media_asset_from_parameters
 from ..database.illust_url_db import update_illust_url_from_parameters
-from ..database.error_db import create_error, append_error
+from ..database.error_db import create_and_append_error
 from ..database.archive_db import update_archive_from_parameters
 from .base_rec import delete_data
 from .image_hash_rec import generate_post_image_hashes
@@ -139,11 +138,59 @@ def create_post_record(illust_url, width, height, file_ext, md5, size, post_type
     return post
 """
 
+
 def create_post_record(element, media_asset):
     post_type = 'user' if element.model_name == 'upload_element' else 'subscription'
     post = create_post_from_parameters({'media_asset_id': media_asset.id, 'type': post_type}, commit=False)
-    update_illust_url_from_parameters(element.illust_url, {'post_id': post.id}, commit=False)
+    update_illust_url_from_parameters(element.illust_url, {'post_id': post.id}, commit=True)
+    if media_asset.is_image:
+        create_image_post_files(post)
+    else:
+        create_video_post_files(post)
     return post
+
+
+def create_image_post_files(post):
+    if not post.has_sample or post.has_preview:
+        return
+    buffer = put_get_raw(post.file_path, 'rb')
+    if isinstance(buffer, str):
+        create_and_append_error(post, 'post_rec.create_image_post_files', buffer, commit=False)
+        return
+    image = load_image(buffer)
+    if isinstance(image, str):
+        create_and_append_error(post, 'post_rec.create_image_post_files', image, commit=False)
+        return
+    normimage = convert_alpha(image)
+    if isinstance(normimage, str):
+        create_and_append_error(post, 'post_rec.create_image_post_files', normimage, commit=False)
+    else:
+        image = normimage
+    if post.has_sample:
+        result = _create_downsample(image, post.sample_path, dimensions=SAMPLE_DIMENSIONS)
+        if result is not None:
+            create_and_append_error(post, *result, commit=False)
+    if post.has_preview:
+        result = _create_downsample(image, post.preview_path, dimensions=PREVIEW_DIMENSIONS)
+        if result is not None:
+            create_and_append_error(post, *result, commit=False)
+
+
+def create_video_post_files(post):
+    buffer = _get_video_thumb_binary(post)
+    if buffer is None:
+        return
+    image = load_image(buffer)
+    if isinstance(image, str):
+        create_and_append_error(post, 'post_rec.create_video_post_files', image, commit=False)
+        return
+    result = _create_downsample(image, post.sample_path)
+    if result is not None:
+        create_and_append_error(post, *result, commit=False)
+    dimensions = PREVIEW_DIMENSIONS if post.has_preview else None
+    result = _create_downsample(image, post.preview_path, dimensions=dimensions)
+    if result is not None:
+        create_and_append_error(post, *result, commit=False)
 
 
 def move_post_media_location(post, location):
@@ -409,7 +456,28 @@ def _get_video_thumb_binary(post):
         print("Downloading", download_url)
         buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
         if isinstance(buffer, str):
-            error = create_error('post_rec.get_video_thumb_binary', "Download URL: %s => %s" % (download_url, buffer))
-            append_error(post, error)
+            create_and_append_error(post, 'post_rec.get_video_thumb_binary',
+                                    "Download URL: %s => %s" % (download_url, buffer), commit=False)
             continue
         return buffer
+    print_warning("Unable to download image sample... creating screenshot manually")
+    save_path = os.path.join(TEMP_DIRECTORY, post.media.md5 + '.' + 'jpg')
+    result = create_video_screenshot(post.original_file_path, save_path)
+    if result is not None:
+        create_and_append_error(post, 'post_rec.get_video_thumb_binary', result, commit=False)
+        return
+    buffer = put_get_raw(save_path, 'rb')
+    delete_file(save_path)
+    return buffer
+
+
+def _create_downsample(image, filepath, dimensions=None):
+    try:
+        sample = image.copy().convert("RGB")
+        if dimensions is not None:
+            sample.thumbnail(dimensions)
+        create_directory(filepath)
+        print("Saving downsample:", filepath)
+        sample.save(filepath, "JPEG")
+    except Exception as e:
+        return "Error creating sample: %s" % repr(e)

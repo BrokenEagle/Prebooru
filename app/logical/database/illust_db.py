@@ -11,7 +11,6 @@ from ...models import Illust, SiteTag, Description
 from ..utility import set_error
 from .illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from .site_data_db import update_site_data_from_parameters
-from .pool_element_db import delete_pool_element
 from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
     set_timesvalue, set_association_attributes, commit_or_flush, save_record, add_record, delete_record
 
@@ -78,27 +77,6 @@ def set_illust_from_parameters(illust, setparams, commit, action, update):
     if col_result or rel_result or url_result:
         save_record(illust, commit, action)
     return illust
-
-
-# ###### Delete
-
-def delete_illust(illust):
-    for pool_element in illust._pools:
-        delete_pool_element(pool_element)
-    delete_record(illust)
-    commit_or_flush(True)
-
-
-def illust_delete_commentary(illust, description_id):
-    retdata = {'error': False, 'descriptions': [commentary.to_json() for commentary in illust._commentaries]}
-    remove_commentary = next((comm for comm in illust._commentaries if comm.id == description_id), None)
-    if remove_commentary is None:
-        msg = "Commentary with description #%d does not exist on illust #%d." % (description_id, illust.id)
-        return set_error(retdata, msg)
-    illust._commentaries.remove(remove_commentary)
-    commit_or_flush(True)
-    retdata['item'] = illust.to_json()
-    return retdata
 
 
 # #### Query functions

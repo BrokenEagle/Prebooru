@@ -83,3 +83,23 @@ def update_pool_positions(pool):
     pool._elements.reorder()
     params = {'element_count': pool._get_element_count(), 'checked': get_current_time()}
     update_pool_from_parameters(pool, params, commit=True, update=False)
+
+
+def delete_pool_element(pool_element):
+    if pool_element.position >= (pool_element.pool.element_count - 1):
+        # Only decrement the pool element count if the element is the last one. This will leave holes, which will be
+        # fixed with a scheduled task, but will at least leave an elements position within range of the element count.
+        pool_element.pool.element_count -= 1
+    delete_record(pool_element)
+    commit_or_flush(True)
+
+
+def batch_delete_pool_elements(pool_elements):
+    pool_ids = set()
+    for element in pool_elements:
+        pool_ids.add(element.pool_id)
+        delete_record(element)
+    commit_or_flush(True)
+    for pool_id in pool_ids:
+        pool = Pool.find(pool_id)
+        update_pool_positions(pool)

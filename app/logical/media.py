@@ -34,10 +34,15 @@ def check_alpha(image):
 
 
 def convert_alpha(image):
-    alpha = image.copy().convert('RGBA').getchannel('A')
-    bg = Image.new('RGBA', image.size, (255, 255, 255, 255))
-    bg.paste(image, mask=alpha)
-    return bg
+    if check_alpha(image):
+        try:
+            alpha = image.copy().convert('RGBA').getchannel('A')
+            bg = Image.new('RGBA', image.size, (255, 255, 255, 255))
+            bg.paste(image, mask=alpha)
+            return bg
+        except Exception as e:
+            return "Error removing alpha transparency: %s" % repr(e)
+    return image
 
 
 def get_pixel_hash(image):
@@ -68,10 +73,23 @@ def get_video_info(file_path):
 def load_image(buffer):
     try:
         file_imgdata = BytesIO(buffer)
-        image = Image.open(file_imgdata)
+        return Image.open(file_imgdata)
     except Exception as e:
         return "Error processing image data: %s" % repr(e)
-    return image
+
+
+def get_duration(image):
+    if 'duration' not in image.info:
+        return 0
+    image.seek(0)
+    duration = 0
+    while True:
+        try:
+            duration += image.info['duration']
+            image.seek(image.tell() + 1)
+        except EOFError:
+            image.seek(0)
+            return duration / 1000
 
 
 def create_preview(image, preview_path, downsample=True, filetype='JPEG'):

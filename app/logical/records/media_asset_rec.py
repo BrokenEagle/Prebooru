@@ -1,19 +1,21 @@
 # APP/LOGICAL/RECORDS/MEDIA_ASSET_REC.PY
 
 # ## PYTHON IMPORTS
+import os
 import filetype
 
 # ## PACKAGE IMPORTS
-from utility.file import delete_file
+from utility.data import merge_dicts
+from utility.file import copy_file, delete_file
 
 # ### PACKAGE IMPORTS
-from config import DELETE_MEDIA_ASSETS_PAGE_LIMIT, DELETE_MEDIA_ASSETS_PER_PAGE
+from config import DELETE_MEDIA_ASSETS_PAGE_LIMIT, DELETE_MEDIA_ASSETS_PER_PAGE, TEMP_DIRECTORY
 from utility.data import get_buffer_checksum
 
 # ## LOCAL IMPORTS
 from ...models import MediaAsset
 from ..network import get_http_data
-from ..media import create_data, check_alpha, convert_alpha, load_image, get_pixel_hash
+from ..media import create_data, load_image, get_pixel_hash, get_duration, get_video_info
 from ..database.media_asset_db import create_media_asset_from_parameters, update_media_asset_from_parameters,\
     media_assets_without_media_models_query, get_media_asset_by_md5
 from ..database.error_db import create_error
@@ -21,9 +23,9 @@ from ..database.error_db import create_error
 
 # ## FUNCTIONS
 
-def download_media_asset(download_url, source, location, alternate_url=None, override=True):
+def download_media_asset(download_url, source, location, alternate_url=None):
     errors = []
-    results = {'media_asset': None, 'errors': errors}
+    results = {'media_asset': None, 'errors': errors, 'duplicate': False}
     file_ext = _get_media_extension(download_url, source)
     if isinstance(file_ext, tuple):
         errors.append(file_ext)
@@ -39,8 +41,9 @@ def download_media_asset(download_url, source, location, alternate_url=None, ove
             return results
     media_asset = _check_existing(buffer)
     if not isinstance(media_asset, str):
-        if media_asset.location is not None or not override:
+        if media_asset.location is not None:
             results['media_asset'] = media_asset
+            results['duplicate'] = True
             return results
         md5 = media_asset.md5
     else:
@@ -48,30 +51,61 @@ def download_media_asset(download_url, source, location, alternate_url=None, ove
         media_asset = None
     media_file_ext = _check_filetype(buffer, file_ext, errors)
     if media_file_ext in ['jpg', 'png', 'gif']:
-        image = _load_media_image(buffer)
-        if image.is_animated:
-            # Animated GIFs not handled yet.
-            errors.append(('media_asset_rec.download_media_asset', "Animated GIFs are not supported."))
-            return results
-        pixel_md5 = get_pixel_hash(image)
-        params = {
-            'md5': md5,
-            'width': image.width,
-            'height': image.height,
-            'size': len(buffer),
-            'pixel_md5': pixel_md5,
-            'file_ext': file_ext,
-            'location': location,
-        }
+        info = get_media_image_info(buffer, media_file_ext, errors)
+    elif media_file_ext == 'mp4':
+        info = get_media_video_info(buffer, md5, errors)
+    else:
+        info = None
+        errors.append(('media_asset_rec.download_media_asset', "Unhandled file extension: %s" % media_file_ext))
+    if info is None:
+        return results
+    params = merge_dicts(info, {
+        'md5': md5,
+        'size': len(buffer),
+        'file_ext': file_ext,
+        'location': location,
+    })
     if media_asset is None:
         media_asset = create_media_asset_from_parameters(params)
     else:
         media_asset = update_media_asset_from_parameters(media_asset, params)
+    results['media_asset'] = media_asset
     ret = create_data(buffer, media_asset.original_file_path)
     if ret is not None:
         errors.append(('media.create_data', ret))
         update_media_asset_from_parameters(media_asset, {'location': None})
     return results
+
+
+def get_media_image_info(buffer, media_file_ext, errors):
+    image = load_image(buffer)
+    if isinstance(image, str):
+        errors.append(('media_asset_rec.get_media_image_info', image))
+        return
+    info = {
+        'width': image.width,
+        'height': image.height,
+    }
+    duration = get_duration(image) if media_file_ext == 'gif' else 0
+    if duration == 0:
+        info['pixel_md5'] = get_pixel_hash(image)
+    else:
+        info['duration'] = duration
+    return info
+
+
+def get_media_video_info(buffer, md5, errors):
+    temp_path = os.path.join(TEMP_DIRECTORY, md5 + '.' + 'mp4')
+    ret = create_data(buffer, temp_path)
+    if ret is not None:
+        errors.append(('media_asset_rec.get_media_video_info', "Unable to save video to temp directory"))
+        return
+    info = get_video_info(temp_path)
+    delete_file(temp_path)
+    if isinstance(info, str):
+        errors.append(('media_asset_rec.get_media_video_info', "Unable to save video to temp directory"))
+        return
+    return info
 
 
 def delete_files_without_media_models(manual):
@@ -97,6 +131,20 @@ def delete_files_without_media_models(manual):
             break
         page = page.next()
     return delete_count
+
+
+def move_media_asset(media_asset, location):
+    if location == 'alternate' or media_asset.location.name == 'alternate':
+        if not MediaAsset.alternate_location_configured():
+            return "Alternate location not configured"
+        if not MediaAsset.alternate_location_available():
+            return "Alternate location not available"
+    move_asset = media_asset.copy()
+    move_asset.location = media_asset.location_enum.by_name(location)
+    copy_file(media_asset.original_file_path, move_asset.original_file_path, safe=True)
+    move_asset.location = media_asset.location
+    update_media_asset_from_parameters(media_asset, {'location': location})
+    delete_file(move_asset.original_file_path)
 
 
 # #### Private functions
@@ -126,19 +174,6 @@ def _check_filetype(buffer, file_ext, errors):
         errors.append(('media_asset_rec.check_filetype', msg))
         file_ext = guess.extension
     return file_ext
-
-
-def _load_media_image(buffer):
-    image = load_image(buffer)
-    if isinstance(image, str):
-        return ('media_rec.load_media_image', image)
-    try:
-        if check_alpha(image):
-            return convert_alpha(image)
-        else:
-            return image
-    except Exception as e:
-        return create_error('media_rec.load_media_image', "Error removing alpha transparency: %s" % repr(e))
 
 
 def _check_image_dimensions(image, illust_url, errors):

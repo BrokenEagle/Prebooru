@@ -3,7 +3,7 @@
 # ## LOCAL IMPORTS
 from ...models import IllustUrl
 from ...enum_imports import site_descriptor
-from .base_db import set_column_attributes, commit_or_flush
+from .base_db import set_column_attributes, commit_or_flush, save_record
 
 
 # ## GLOBAL VARIABLES
@@ -33,8 +33,7 @@ def set_illust_url_from_parameters(illust_url, setparams, commit, action):
     if 'site' in setparams:
         setparams['site'] = IllustUrl.site_enum.by_name(setparams['site']).id
     if set_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        commit_or_flush(commit, safe=True)
-        print("[%s]: %s" % (illust_url.shortlink, action))
+        save_record(illust_url, commit, action, safe=True)
     return illust_url
 
 
