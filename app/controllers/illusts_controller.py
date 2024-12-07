@@ -15,10 +15,11 @@ from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, Pool
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.records.artist_rec import get_or_create_artist_from_source
-from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
+from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion,\
+    illust_delete_commentary
 from ..logical.sources.base_src import get_post_source
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
-    illust_delete_commentary, set_illust_artist
+    set_illust_artist
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
     hide_input, int_or_blank, nullify_blanks, set_default, check_param_requirements, parse_array_parameter,\

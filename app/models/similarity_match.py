@@ -39,6 +39,8 @@ class SimilarityMatch(JsonModel):
         DB.CheckConstraint(
             "forward_id < reverse_id",
             name="id_order"),
-        DB.Index(None, 'reverse_id', 'forward_id', unique=True),
         {'sqlite_with_rowid': False},
     )
+
+def initialize():
+    DB.Index(None, SimilarityMatch.reverse_id, unique=False),

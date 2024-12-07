@@ -156,9 +156,8 @@ def danbooru_post_bookmarklet_links(post):
             url = DANBOORU_HOSTNAME + '/uploads/new?' + url_parameters
             image_links.append(external_link(f'file #{illust.id}', url))
             continue
-        source = illust.site.source
         media_url = illust_url.full_url
-        post_url = source.primary_url
+        post_url = illust.primary_url
         query_string = urllib.parse.urlencode({'url': media_url, 'ref': post_url})
         href_url = DANBOORU_HOSTNAME + '/uploads/new?' + query_string
         image_links.append(external_link(illust.shortlink, href_url))

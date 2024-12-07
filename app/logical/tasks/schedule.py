@@ -7,14 +7,13 @@ import time
 import traceback
 
 # ## PACKAGE IMPORTS
-from config import ALTERNATE_MEDIA_DIRECTORY, MAXIMUM_PROCESS_SUBSCRIPTIONS
+from config import MEDIA_DIRECTORY, ALTERNATE_MEDIA_DIRECTORY, MAXIMUM_PROCESS_SUBSCRIPTIONS
 from utility.uprint import buffered_print, print_info, print_error, print_warning
-from utility.file import get_directory_listing, delete_file
+from utility.file import get_directory_listing, delete_file, path_join
 from utility.time import seconds_from_now_local, get_current_time, days_ago, datetime_to_epoch, datetime_from_epoch
 
 # ## LOCAL IMPORTS
 from ... import DB, SESSION, SCHEDULER
-from ...models.media_file import CACHE_DATA_DIRECTORY
 from ..records.post_rec import relocate_old_posts_to_alternate, check_all_posts_for_danbooru_id,\
     generate_missing_image_hashes, calculate_similarity_matches
 from ..records.artist_rec import check_all_artists_for_boorus
@@ -31,7 +30,8 @@ from ..database.subscription_db import get_available_subscriptions_query, update
     get_busy_subscriptions, get_subscription_by_ids, update_subscriptions_status
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
-from ..database.media_file_db import get_expired_media_files, get_all_media_files, delete_unattached_media_assets
+from ..database.media_asset_db import delete_unattached_media_assets
+from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_db import expired_archive_count, delete_expired_archives
 from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id, get_job_status_data,\
     create_or_update_job_status
@@ -39,6 +39,11 @@ from ..database.server_info_db import update_last_activity, server_is_busy, get_
     update_subscriptions_ready
 from .reschedule import reschedule_from_child, schedule_from_child
 from . import JOB_CONFIG
+
+
+# ## GLOBAL VARIABLES
+
+CACHE_DATA_DIRECTORY = path_join(MEDIA_DIRECTORY, 'cache')
 
 
 # ## FUNCTIONS

@@ -23,32 +23,49 @@ from ..database.error_db import create_error
 
 # ## FUNCTIONS
 
-def download_media_asset(download_url, source, location, alternate_url=None):
-    errors = []
-    results = {'media_asset': None, 'errors': errors, 'duplicate': False}
-    file_ext = _get_media_extension(download_url, source)
-    if isinstance(file_ext, tuple):
-        errors.append(file_ext)
-        return results
+def check_media_asset(download_url, source, alternate_url=None):
+    results = {'media_asset': None, 'buffer': None, 'md5': None, 'errors': []}
     buffer = _download_media(download_url, source)
     if isinstance(buffer, tuple):
-        errors.append(buffer)
+        results['errors'].append(buffer)
         if alternate_url is None:
             return results
         buffer = _download_media(alternate_url, source)
         if isinstance(buffer, tuple):
-            errors.append(buffer)
+            results['errors'].append(buffer)
             return results
+    results['buffer'] = buffer
     media_asset = _check_existing(buffer)
     if not isinstance(media_asset, str):
-        if media_asset.location is not None:
-            results['media_asset'] = media_asset
-            results['duplicate'] = True
-            return results
-        md5 = media_asset.md5
+        results['media_asset'] = media_asset
+        results['md5'] = media_asset.md5
     else:
-        md5 = media_asset
-        media_asset = None
+        results['md5'] = media_asset
+    return results
+
+
+def create_or_update_media_asset(media_asset, download_url, source, location, buffer, md5):
+    results = {'media_asset': None, 'errors': []}
+    params = get_media_asset_params(download_url, source, buffer, md5, results['errors'])
+    if params is None:
+        return results
+    params['location'] = location
+    if media_asset is None:
+        results['media_asset'] = create_media_asset_from_parameters(params)
+    else:
+        results['media_asset'] = update_media_asset_from_parameters(media_asset, params)
+    ret = create_data(results['buffer'], media_asset.original_file_path)
+    if ret is not None:
+        results['errors'].append(('media_asset_rec.create_or_update_media_asset', ret))
+        update_media_asset_from_parameters(media_asset, {'location': None})
+    return results
+
+
+def get_media_asset_params(download_url, source, buffer, md5, errors):
+    file_ext = _get_media_extension(download_url, source)
+    if isinstance(file_ext, tuple):
+        errors.append(file_ext)
+        return None
     media_file_ext = _check_filetype(buffer, file_ext, errors)
     if media_file_ext in ['jpg', 'png', 'gif']:
         info = get_media_image_info(buffer, media_file_ext, errors)
@@ -58,23 +75,13 @@ def download_media_asset(download_url, source, location, alternate_url=None):
         info = None
         errors.append(('media_asset_rec.download_media_asset', "Unhandled file extension: %s" % media_file_ext))
     if info is None:
-        return results
+        return None
     params = merge_dicts(info, {
         'md5': md5,
         'size': len(buffer),
         'file_ext': file_ext,
-        'location': location,
     })
-    if media_asset is None:
-        media_asset = create_media_asset_from_parameters(params)
-    else:
-        media_asset = update_media_asset_from_parameters(media_asset, params)
-    results['media_asset'] = media_asset
-    ret = create_data(buffer, media_asset.original_file_path)
-    if ret is not None:
-        errors.append(('media.create_data', ret))
-        update_media_asset_from_parameters(media_asset, {'location': None})
-    return results
+    return params
 
 
 def get_media_image_info(buffer, media_file_ext, errors):

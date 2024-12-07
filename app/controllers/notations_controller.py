@@ -13,8 +13,9 @@ from utility.data import eval_bool_string, is_falsey
 # ## LOCAL IMPORTS
 from ..models import Notation, Pool, Subscription, Booru, Artist, Illust, Post, PoolNotation, TABLES
 from ..logical.utility import set_error
+from ..logical.records.notation_rec import delete_notation
 from ..logical.database.notation_db import create_notation_from_parameters, update_notation_from_parameters,\
-    append_notation_to_item, delete_notation
+    append_notation_to_item
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, hide_input,\
     nullify_blanks, check_param_requirements, index_html_response

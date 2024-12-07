@@ -13,8 +13,8 @@ import sqlalchemy as sa
 
 # ## PACKAGE IMPORTS
 from migrations.tables import remove_temp_tables
-from migrations.columns import alter_column, drop_column
-from migrations.constraints import drop_constraint
+from migrations.columns import alter_column, add_column, drop_column
+from migrations.constraints import add_constraint, drop_constraint
 
 
 # ## GLOBAL VARIABLES
@@ -53,24 +53,29 @@ def downgrade(engine_name):
 def upgrade_():
     print("Adding columns")
     with op.batch_alter_table('post', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
-        batch_op.create_foreign_key(batch_op.f('fk_post_media_asset_id_media_asset'), 'media_asset', ['media_asset_id'], ['id'])
+        add_column(None, 'media_asset_id', 'INTEGER', batch_op=batch_op)
+        alter_column(None, 'media_asset_id', 'INTEGER', {'nullable': False}, batch_op=batch_op)
+        create_constraint(None, 'fk_post_media_asset_id_media_asset', 'foreignkey', ('media_asset', ['media_asset_id'], ['id']), batch_op=batch_op)
 
     with op.batch_alter_table('archive', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
-        batch_op.create_foreign_key(batch_op.f('fk_archive_media_asset_id_media_asset'), 'media_asset', ['media_asset_id'], ['id'])
+        add_column(None, 'media_asset_id', 'INTEGER', batch_op=batch_op)
+        alter_column(None, 'media_asset_id', 'INTEGER', {'nullable': False}, batch_op=batch_op)
+        create_constraint(None, 'fk_archive_media_asset_id_media_asset', 'foreignkey', ('media_asset', ['media_asset_id'], ['id']), batch_op=batch_op)
 
     with op.batch_alter_table('media_file', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
-        batch_op.create_foreign_key(batch_op.f('fk_media_file_media_asset_id_media_asset'), 'media_asset', ['media_asset_id'], ['id'])
-
-    with op.batch_alter_table('subscription_element', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
-        batch_op.create_foreign_key(batch_op.f('fk_subscription_element_media_asset_id_media_asset'), 'media_asset', ['media_asset_id'], ['id'])
+        add_column(None, 'media_asset_id', 'INTEGER', batch_op=batch_op)
+        alter_column(None, 'media_asset_id', 'INTEGER', {'nullable': False}, batch_op=batch_op)
+        create_constraint(None, 'fk_media_file_media_asset_id_media_asset', 'foreignkey', ('media_asset', ['media_asset_id'], ['id']), batch_op=batch_op)
 
     with op.batch_alter_table('upload_element', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('media_asset_id', sa.INTEGER(), nullable=True))
-        batch_op.create_foreign_key(batch_op.f('fk_upload_element_media_asset_id_media_asset'), 'media_asset', ['media_asset_id'], ['id'])
+        add_column(None, 'media_asset_id', 'INTEGER', batch_op=batch_op)
+        alter_column(None, 'media_asset_id', 'INTEGER', {'nullable': False}, batch_op=batch_op)
+        create_constraint(None, 'fk_upload_element_media_asset_id_media_asset', 'foreignkey', ('media_asset', ['media_asset_id'], ['id']), batch_op=batch_op)
+
+    with op.batch_alter_table('subscription_element', schema=None) as batch_op:
+        add_column(None, 'media_asset_id', 'INTEGER', batch_op=batch_op)
+        alter_column(None, 'media_asset_id', 'INTEGER', {'nullable': False}, batch_op=batch_op)
+        create_constraint(None, 'fk_subscription_element_media_asset_id_media_asset', 'foreignkey', ('media_asset', ['media_asset_id'], ['id']), batch_op=batch_op)
 
     print("Populating columns")
     conn = op.get_bind()
@@ -86,22 +91,26 @@ def upgrade_():
 
 
 def downgrade_():
-    remove_temp_tables(['upload_element', 'subscription_element', 'post', 'media_file'])
-
-    with op.batch_alter_table('upload_element', schema=None) as batch_op:
-        drop_constraint(None, 'fk_upload_element_media_asset_id_media_asset', 'foreignkey', batch_op=batch_op)
-        drop_column(None, 'media_asset_id', batch_op=batch_op)
+    remove_temp_tables(['upload_element', 'subscription_element', 'post', 'archive', 'media_file'])
 
     with op.batch_alter_table('subscription_element', schema=None) as batch_op:
         drop_constraint(None, 'fk_subscription_element_media_asset_id_media_asset', 'foreignkey', batch_op=batch_op)
         drop_column(None, 'media_asset_id', batch_op=batch_op)
 
-    with op.batch_alter_table('post', schema=None) as batch_op:
-        drop_constraint(None, 'fk_post_media_asset_id_media_asset', 'foreignkey', batch_op=batch_op)
+    with op.batch_alter_table('upload_element', schema=None) as batch_op:
+        drop_constraint(None, 'fk_upload_element_media_asset_id_media_asset', 'foreignkey', batch_op=batch_op)
         drop_column(None, 'media_asset_id', batch_op=batch_op)
 
     with op.batch_alter_table('media_file', schema=None) as batch_op:
         drop_constraint(None, 'fk_media_file_media_asset_id_media_asset', 'foreignkey', batch_op=batch_op)
+        drop_column(None, 'media_asset_id', batch_op=batch_op)
+
+    with op.batch_alter_table('archive', schema=None) as batch_op:
+        drop_constraint(None, 'fk_archive_media_asset_id_media_asset', 'foreignkey', batch_op=batch_op)
+        drop_column(None, 'media_asset_id', batch_op=batch_op)
+
+    with op.batch_alter_table('post', schema=None) as batch_op:
+        drop_constraint(None, 'fk_post_media_asset_id_media_asset', 'foreignkey', batch_op=batch_op)
         drop_column(None, 'media_asset_id', batch_op=batch_op)
 
 

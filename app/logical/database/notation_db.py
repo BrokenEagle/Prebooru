@@ -5,7 +5,6 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import Notation, Pool, Subscription, Booru, Artist, Illust, Post
-from .pool_element_db import delete_pool_element
 from .base_db import set_column_attributes, commit_or_flush, save_record, add_record, delete_record
 
 
@@ -52,15 +51,6 @@ def set_notation_from_parameters(notation, setparams, commit, action, update):
     if set_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update):
         save_record(notation, commit, action)
     return notation
-
-
-# ###### Delete
-
-def delete_notation(notation):
-    if notation._pool is not None:
-        delete_pool_element(notation._pool)
-    delete_record(notation)
-    commit_or_flush(True)
 
 
 # #### Misc functions

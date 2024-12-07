@@ -282,9 +282,6 @@ VIDEO_URL_HANDLERS = [
                                                            match.group('path') or "", match.group('format') or "",
                                                            match.group('width'), match.group('height'),
                                                            match.group('key'), match.group('ext')),
-        'normalize': 0,
-        'alternate': 0,
-        'addon': '&name=',
     },
 ]
 
@@ -678,14 +675,14 @@ def partial_media_url(media_url, action=None, size=None):
 def partial_image_url(image_url, action=None, size=None):
     for handler in IMAGE_URL_HANDLERS:
         match = handler['regex'].match(image_url)
-        if match:
-            if action is None:
-                size_addon = handler['addon'] + size if size is not None else ""
-                return handler['partial'](match) + size_addon
-            index = handler.get(action)
-            if index:
-                size_addon = IMAGE_URL_HANDLERS[index]['addon'] + size if size is not None else ""
-                return IMAGE_URL_HANDLERS[index]['partial'](match) + size_addon
+        if not match:
+            continue
+        if action is None:
+            size_addon = handler['addon'] + size if size is not None else ""
+            return handler['partial'](match) + size_addon
+        index = handler.get(action)
+        size_addon = IMAGE_URL_HANDLERS[index]['addon'] + size if size is not None else ""
+        return IMAGE_URL_HANDLERS[index]['partial'](match) + size_addon
     return None
 
 

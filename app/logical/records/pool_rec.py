@@ -7,8 +7,8 @@ from utility.time import get_current_time
 from ...models import Illust, Post, Notation
 from ..utility import set_error
 from ..database.base_db import commit_or_flush
-from ..database.pool_db import update_pool_from_parameters
-from ..database.pool_element_db import create_pool_element_from_parameters, get_pool_next_position
+from ..database.pool_db import update_pool_from_parameters, get_pool_next_position
+from ..database.pool_element_db import create_pool_element_from_parameters
 
 
 # ## GLOBAL VARIABLES

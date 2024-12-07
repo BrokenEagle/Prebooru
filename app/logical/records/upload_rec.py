@@ -156,10 +156,9 @@ def process_network_multi_upload(upload, illust):
             process_network_upload_element(element)
         total += 1
     if len(all_upload_urls) > 0 and len(all_upload_urls) != total:
-        create_and_append_error('upload_rec.process_network_multi_upload',
+        create_and_append_error(upload, 'upload_rec.process_network_multi_upload',
                                 "Did not find all upload URLS in illust: expected (%d) : found (%d)" %
-                                (len(upload.image_urls), total),
-                                commit=False)
+                                (len(upload.image_urls), total), commit=False)
 
 
 def process_network_upload_element(element):
@@ -167,7 +166,7 @@ def process_network_upload_element(element):
     source = illust_url.source
     download_url = illust_url.full_original_url
     alternate_url = illust_url.full_alternate_url
-    results = download_media_asset(download_url, source, 'primary', alternate_url=alternate_url)
+    results = download_media_asset(download_url, source, 'primary', alternate_url=alternate_url, override=True)
     for error in results['errors']:
         create_and_append_error(element, *error, commit=False)
     if results['media_asset'] is not None:

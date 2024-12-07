@@ -34,7 +34,8 @@ from ..database.jobs_db import get_job_status_data, update_job_status, update_jo
 from ..database.subscription_db import add_subscription_error, update_subscription_from_parameters,\
     check_processing_subscriptions
 from ..database.base_db import safe_db_execute
-from .post_rec import recreate_archived_post
+from .media_rec import check_media_asset, create_or_update_media_asset, move_media_asset
+from .post_rec import create_post_record, recreate_archived_post
 from .artist_rec import update_artist
 from .image_hash_rec import generate_post_image_hashes
 
@@ -282,6 +283,101 @@ def populate_subscription_elements(subscription, job_id=None):
             job_status['elements'] += 1
         page += 1
     update_job_status(job_id, job_status)
+
+
+def process_subscription_element(element):
+    illust_url = element.illust_url
+    source = illust_url.source
+    download_url = illust_url.full_original_url
+    alternate_url = illust_url.full_alternate_url
+    check_results = check_media_asset(download_url, source, alternate_url=alternate_url, override=False)
+    for error in check_results['errors']:
+        create_and_append_error(element, *error, commit=False)
+    update_media_asset = False
+    duplicate_record = False
+    if check_results['media_asset'] is not None:
+        media_asset = check_results['media_asset']
+        if len(media_asset.subscription_elements)\
+                or media_asset.post is not None\
+                or media_asset.archive is not None:
+            duplicate_record = True
+        elif media_asset.media_file is not None:
+            ret = move_media_asset(media_asset, 'primary')
+            if isinstance(ret, str):
+                create_and_append_error(element, 'subscription_rec.process_subscription_element', ret, commit=False)
+                update_subscription_element_from_parameters(element, {'status': 'error'}, commit=True)
+                return
+        elif media_asset.location is None:
+            update_media_asset = True
+        else:
+            raise Exception("Unhandled state for %s" % media_asset.shortlink)
+    else:
+        media_asset = None
+        update_media_asset = True
+    if update_media_asset:
+        update_results = create_or_update_media_asset(media_asset, download_url, source, 'primary', check_results['buffer'], check_results['md5'])
+        for error in update_results['errors']:
+            create_and_append_error(element, *error, commit=False)
+        if update_results['media_asset'] is None:
+            update_subscription_element_from_parameters(element, {'status': 'error'}, commit=True)
+            return
+        media_asset = update_results['media_asset']
+    params = {'media_asset_id': media_asset.id}
+    if not duplicate_record:
+        post = create_post_record(element, media_asset)
+        params['post_id'] = post.id
+        params['status'] = 'complete'
+    else:
+        params['status'] = 'duplicate'
+    update_subscription_element_from_parameters(element, params, commit=True)
+
+
+
+"""
+    if results['media_asset'] is not None:
+        media_asset = results['media_asset']
+        params = {
+            'media_asset_id': media_asset.id,
+        }
+        create_post = False
+        update_media_asset = False
+        if results['duplicate']:
+            if len(media_asset.subscription_elements) or media_asset.post is not None\
+                or media_asset.archive is not None:
+                params['status'] = 'duplicate'
+            elif media_asset.media_file is not None:
+                ret = move_media_asset(media_asset, 'primary')
+                if isinstance(ret, str):
+                    create_and_append_error(element, 'subscription_rec.process_subscription_element', ret, commit=False)
+                    update_upload_element_from_parameters(element, {'status': 'error'}, commit=True)
+                    return
+                create_post = True
+            elif media_asset.location is None:
+                
+                update_media_asset = True
+            else:
+                raise Exception("Unhandled state for %s" % media_asset.shortlink)
+        else:
+            results2 = create_or_update_media_asset(download_url, source, 'primary', **results)
+        if update_media_asset
+        if media_asset is not None:
+            create_post_record(element, media_asset)
+        '''
+        elif results['media_asset'].post is None:
+            if results['media_asset'].location.name != 'primary':
+                result = move_media_asset(results['media_asset'], 'primary')
+                if isinstance(result, str):
+                    create_and_append_error(element, 'subscription_rec.process_subscription_element', result, commit=False)
+                    update_upload_element_from_parameters(element, {'status': 'error'}, commit=True)
+                    return
+            post = create_post_record(element, results['media_asset'])
+            params['post_id'] = post.id
+            params['status'] = 'complete'
+        '''
+        update_upload_element_from_parameters(element, params, commit=True)
+    else:
+        update_upload_element_from_parameters(element, {'status': 'error'}, commit=True)
+"""
 
 
 def redownload_element(element):

@@ -156,8 +156,8 @@ class MediaAsset(JsonModel):
 
     @property
     def video_preview_path(self):
-        path = VIDEO_SAMPLE_FILE_PATHS.get(self.location_id)
-        ext = VIDEO_SAMPLE_FILE_EXTS.get(self.location_id)
+        path = VIDEO_PREVIEW_FILE_PATHS.get(self.location_id)
+        ext = VIDEO_PREVIEW_FILE_EXTS.get(self.location_id)
         if self.is_video:
             return self._full_path(path, ext)
 
@@ -205,7 +205,7 @@ class MediaAsset(JsonModel):
     @check_context
     def video_preview_url(self):
         suburl_path = SUBURL_PATHS.get(self.location_id)
-        ext = VIDEO_SAMPLE_FILE_EXTS.get(self.location_id)
+        ext = VIDEO_PREVIEW_FILE_EXTS.get(self.location_id)
         if suburl_path:
             return self.image_server_url('video_preview' + self._partial_network_path + ext, suburl_path)
 

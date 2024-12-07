@@ -151,7 +151,7 @@ def create_post_record(element, media_asset):
 
 
 def create_image_post_files(post):
-    if not post.has_sample or post.has_preview:
+    if not (post.has_sample or post.has_preview):
         return
     buffer = put_get_raw(post.file_path, 'rb')
     if isinstance(buffer, str):
