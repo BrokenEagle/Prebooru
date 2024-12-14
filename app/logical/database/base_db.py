@@ -124,12 +124,13 @@ def append_relationship_collections(item, relationships, dataparams):
     printer = buffered_print('append_relationship_collections', safe=True, header=False)
     is_dirty = False
     for attr, subattr, model in relationships:
-        if dataparams.get(attr) is None:
+        append_attr = attr + '_append'
+        if dataparams.get(append_attr) is None:
             continue
         collection = getattr(item, attr)
         current_values = [getattr(subitem, subattr) for subitem in collection]
-        if dataparams[attr] not in current_values:
-            value = dataparams[attr]
+        if dataparams[append_attr] not in current_values:
+            value = dataparams[append_attr]
             printer("Adding collection item (%s):" % item.shortlink, attr, value)
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:

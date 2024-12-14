@@ -69,8 +69,6 @@ def update_illust_urls(illust, params):
 # ###### CREATE
 
 def create_illust_from_parameters(createparams):
-    if type(createparams.get('commentaries')) is str:
-        createparams['commentaries'] = [createparams['commentaries']]
     if 'site' in createparams:
         createparams['site_id'] = Illust.site_enum.by_name(createparams['site']).id
     set_timesvalues(createparams)
@@ -155,6 +153,9 @@ def get_site_illusts(site, site_illust_ids, load_urls=False):
 
 def _update_relations(illust, updateparams, overwrite=None, create=None):
     update_results = []
+    if isinstance(updateparams.get('commentaries'), str):
+        updateparams['_commentaries_append'] = updateparams['commentaries'] if len(updateparams['commentaries']) else None
+        updateparams['commentaries'] = None
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
     allowed_attributes = CREATE_ALLOWED_ATTRIBUTES if create else UPDATE_ALLOWED_ATTRIBUTES
     settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)

@@ -53,8 +53,6 @@ def set_all_site_accounts(params, artist):
 # ###### Create
 
 def create_artist_from_parameters(createparams):
-    if type(createparams.get('profiles')) is str:
-        createparams['profiles'] = [createparams['profiles']]
     if 'site' in createparams:
         createparams['site_id'] = Artist.site_enum.by_name(createparams['site']).id
     createparams['primary'] = createparams['primary'] if 'primary' in createparams else True
@@ -199,6 +197,9 @@ def get_artists_without_boorus_page(limit):
 
 def _update_relations(artist, updateparams, overwrite=None, create=None):
     update_results = []
+    if isinstance(updateparams.get('profiles'), str):
+        updateparams['_profiles_append'] = updateparams['profiles'] if len(updateparams['profiles']) else None
+        updateparams['profiles'] = None
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
     allowed_attributes = CREATE_ALLOWED_ATTRIBUTES if create else UPDATE_ALLOWED_ATTRIBUTES
     settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)
