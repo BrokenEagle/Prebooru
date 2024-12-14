@@ -7,10 +7,9 @@ from sqlalchemy import func
 from utility.time import get_current_time, hours_from_now, add_days, days_ago
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...enum_imports import subscription_status
 from ...models import Subscription, SubscriptionElement, IllustUrl, Illust
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, delete_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -58,36 +57,36 @@ def update_subscription_from_parameters(subscription, updateparams):
     if any(update_results):
         print("[%s]: updated" % subscription.shortlink)
         subscription.updated = get_current_time()
-        SESSION.commit()
+        commit_session()
 
 
 def update_subscription_status(subscription, value):
     subscription.status_id = subscription_status.by_name(value).id
-    SESSION.commit()
+    commit_session()
 
 
 def update_subscriptions_status(subscriptions, value):
     for subscription in subscriptions:
         subscription.status_id = subscription_status.by_name(value).id
-    SESSION.commit()
+    commit_session()
 
 
 def update_subscription_requery(subscription, timeval):
     subscription.requery = timeval
-    SESSION.commit()
+    commit_session()
 
 
 def update_subscription_last_info(subscription):
     subscription.checked = get_current_time()
     subscription.last_id = subscription.artist.last_illust_id
-    SESSION.commit()
+    commit_session()
 
 
 # ###### Delete
 
 def delete_subscription(subscription):
-    SESSION.delete(subscription)
-    SESSION.commit()
+    delete_record(subscription)
+    commit_session()
 
 
 # #### Query
@@ -136,7 +135,7 @@ def add_subscription_error(subscription, error):
     subscription.status_id = subscription_status.error.id
     subscription.checked = get_current_time()
     subscription.requery = None
-    SESSION.commit()
+    commit_session()
 
 
 def delay_subscription_elements(subscription, delay_days):
@@ -146,7 +145,7 @@ def delay_subscription_elements(subscription, delay_days):
             element.expires = None
         else:
             element.expires = add_days(max(element.expires or current_time, current_time), delay_days)
-    SESSION.commit()
+    commit_session()
 
 
 def get_average_interval_for_subscriptions(subscriptions, days):

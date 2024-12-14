@@ -4,10 +4,9 @@
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Booru, Label
 from .base_db import update_column_attributes, update_relationship_collections, set_association_attributes,\
-    will_update_record
+    will_update_record, add_record, delete_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -55,8 +54,8 @@ def create_booru_from_parameters(createparams):
 
 def create_booru_from_json(data):
     booru = Booru.loads(data)
-    SESSION.add(booru)
-    SESSION.commit()
+    add_record(booru)
+    commit_session()
     print("[%s]: created" % booru.shortlink)
     return booru
 
@@ -73,7 +72,7 @@ def update_booru_from_parameters(booru, updateparams):
     if any(update_results):
         print("[%s]: updated" % booru.shortlink)
         booru.updated = get_current_time()
-        SESSION.commit()
+        commit_session()
         return True
     return False
 
@@ -89,8 +88,8 @@ def will_update_booru(booru, data):
 # ###### Delete
 
 def delete_booru(booru):
-    SESSION.delete(booru)
-    SESSION.commit()
+    delete_record(booru)
+    commit_session()
 
 
 # #### Misc functions
@@ -99,14 +98,14 @@ def booru_append_artist(booru, artist):
     print("[%s]: Adding %s" % (booru.shortlink, artist.shortlink))
     booru.artists.append(artist)
     booru.updated = get_current_time()
-    SESSION.commit()
+    commit_session()
 
 
 def booru_remove_artist(booru, artist):
     print("[%s]: Removing %s" % (booru.shortlink, artist.shortlink))
     booru.artists.remove(artist)
     booru.updated = get_current_time()
-    SESSION.commit()
+    commit_session()
 
 
 # #### Query functions

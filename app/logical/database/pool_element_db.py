@@ -7,10 +7,10 @@ from sqlalchemy import func
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Pool, Illust, Post, Notation
 from ...models.pool_element import PoolElement, pool_element_create
 from ..utility import set_error
+from .base_db import add_record, delete_record, commit_session, flush_session
 from .pool_db import update_pool_positions
 
 
@@ -47,16 +47,16 @@ def delete_pool_element(pool_element):
         # Only decrement the pool element count if the element is the last one. This will leave holes, which will be
         # fixed with a scheduled task, but will at least leave an elements position within range of the element count.
         pool_element.pool.element_count -= 1
-    SESSION.delete(pool_element)
-    SESSION.commit()
+    delete_record(pool_element)
+    commit_session()
 
 
 def batch_delete_pool_elements(pool_elements):
     pool_ids = set()
     for element in pool_elements:
         pool_ids.add(element.pool_id)
-        SESSION.delete(element)
-    SESSION.commit()
+        delete_record(element)
+    commit_session()
     for pool_id in pool_ids:
         pool = Pool.find(pool_id)
         update_pool_positions(pool)
@@ -102,15 +102,15 @@ def create_pool_element_for_item(pool, id_key, dataparams):
         new_element = pool_element_create(item)
         new_element.pool_id = pool.id
         new_element.position = max_position + i + 1
-        SESSION.add(new_element)
+        add_record(new_element)
         if single:
             pool_ids += [pool.id]
     pool.updated = get_current_time()
     pool.element_count = max_position + len(items) + 1
-    SESSION.flush()
+    flush_session()
     if single:
         pool_element_ids = [pool_element.id for pool_element in item._pools]
         retdata.update({'pool': pool.basic_json(), 'type': itemtype, 'item': item.basic_json(),
                         'element_ids': pool_element_ids, 'data': pool_ids})
-    SESSION.commit()
+    commit_session()
     return retdata

@@ -4,10 +4,9 @@
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Notation, Pool, Subscription, Booru, Artist, Illust, Post
 from .pool_element_db import delete_pool_element
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, add_record, delete_record, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -45,8 +44,8 @@ def create_notation_from_parameters(createparams):
 
 def create_notation_from_json(data):
     notation = Notation.loads(data)
-    SESSION.add(notation)
-    SESSION.commit()
+    add_record(notation)
+    commit_session()
     print("[%s]: created" % notation.shortlink)
     return notation
 
@@ -61,7 +60,7 @@ def update_notation_from_parameters(notation, updateparams):
     if any(update_results):
         print("[%s]: updated" % notation.shortlink)
         notation.updated = get_current_time()
-        SESSION.commit()
+        commit_session()
 
 
 # ###### Delete
@@ -69,8 +68,8 @@ def update_notation_from_parameters(notation, updateparams):
 def delete_notation(notation):
     if notation._pool is not None:
         delete_pool_element(notation._pool)
-    SESSION.delete(notation)
-    SESSION.commit()
+    delete_record(notation)
+    commit_session()
 
 
 # #### Misc functions
@@ -87,9 +86,9 @@ def append_notation_to_item(notation, append_key, dataparams):
         item.updated = get_current_time()
         item.element_count += 1
         notation.no_pool = False
-        SESSION.flush()
+        flush_session()
         item = notation._pool
     else:
         setattr(notation, table_name + '_id', item.id)
-    SESSION.commit()
+    commit_session()
     return {'error': False, 'append_item': item.to_json(), 'append_type': item.model_name}

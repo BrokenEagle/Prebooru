@@ -1,9 +1,8 @@
 # APP/LOGICAL/DATABASE/IMAGE_HASH_DB.PY
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import ImageHash
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, flush_session, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
@@ -25,8 +24,7 @@ def create_image_hash_from_parameters(createparams, commit=False):
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(image_hash, update_columns, createparams, commit=False)
     print("[%s]: created" % image_hash.shortlink)
-    if commit:
-        SESSION.commit()
+    commit_or_flush(commit)
     return image_hash
 
 
@@ -34,7 +32,7 @@ def create_image_hash_from_parameters(createparams, commit=False):
 
 def delete_image_hash_by_post_id(post_id):
     ImageHash.query.filter(ImageHash.post_id == post_id).delete()
-    SESSION.flush()
+    flush_session()
 
 
 # #### Misc functions

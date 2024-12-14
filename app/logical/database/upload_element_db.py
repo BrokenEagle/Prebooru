@@ -1,10 +1,9 @@
 # APP/LOGICAL/DATABASE/UPLOAD_ELEMENT_DB.PY
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...enum_imports import upload_element_status
 from ...models import UploadElement
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
@@ -43,7 +42,4 @@ def update_upload_element_from_parameters(upload_element, updateparams, commit=T
     update_results.append(update_column_attributes(upload_element, update_columns, updateparams, commit=commit))
     if any(update_results):
         print("[%s]: updated" % upload_element.shortlink)
-        if commit:
-            SESSION.commit()
-        else:
-            SESSION.flush()
+        commit_or_flush(commit)

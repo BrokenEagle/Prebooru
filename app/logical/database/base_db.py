@@ -74,10 +74,10 @@ def update_column_attributes(item, attrs, dataparams, commit=True):
             setattr(item, attr, dataparams[attr])
             is_dirty = True
     if item not in SESSION:
-        SESSION.add(item)
+        add_record(item)
     if is_dirty:
         printer.print()
-        _safe_db_commit(item, 'update_column_attributes', "Error on record create/update", commit=commit)
+        safe_db_commit(commit)
     return is_dirty
 
 
@@ -96,7 +96,7 @@ def update_relationship_collections(item, relationships, updateparams, commit=Tr
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
-                SESSION.add(add_item)
+                add_record(add_item)
             collection.append(add_item)
             is_dirty = True
         remove_values = set(current_values).difference(updateparams[attr])
@@ -107,8 +107,7 @@ def update_relationship_collections(item, relationships, updateparams, commit=Tr
             is_dirty = True
     if is_dirty:
         printer.print()
-        msg = "Error on adding/removing collection values"
-        _safe_db_commit(item, 'update_relationship_collections', msg, commit=commit)
+        safe_db_commit(commit)
     return is_dirty
 
 
@@ -127,19 +126,59 @@ def append_relationship_collections(item, relationships, updateparams, commit=Tr
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
-                SESSION.add(add_item)
+                add_record(add_item)
             collection.append(add_item)
             is_dirty = True
     if is_dirty:
         printer.print()
-        _safe_db_commit(item, 'append_relationship_collections', "Error on adding collection value", commit=commit)
+        safe_db_commit(commit)
     return is_dirty
+
+
+def add_record(record):
+    SESSION.add(record)
+
+
+def delete_record(record):
+    SESSION.delete(record)
+
+
+def commit_session():
+    SESSION.commit()
+
+
+def flush_session():
+    SESSION.flush()
+
+
+def commit_or_flush(commit, safe=False):
+    if safe:
+        safe_db_commit(commit)
+    elif commit:
+        commit_session()
+    else:
+        flush_session()
+
+
+def safe_db_commit(commit):
+    try:
+        if commit:
+            commit_session()
+        else:
+            flush_session()
+    except Exception as e:
+        safe_print("\asafe_db_commit : %s" % str(e))
+        print("Unlocking the database...")
+        SESSION.rollback()
+        log_error('base_db.safe_db_commit', str(e))
+        _handle_db_exception(e)
+        raise
 
 
 def record_from_json(model, data):
     record = model.loads(data)
-    SESSION.add(record)
-    SESSION.flush()
+    add_record(record)
+    flush_session()
     print(f"[{record.shortlink}]: created")
     return record
 
@@ -154,22 +193,6 @@ def will_update_record(record, data, columns):
 
 
 # #### Private functions
-
-def _safe_db_commit(item, func_name, message, commit=True):
-    try:
-        if commit:
-            SESSION.commit()
-        else:
-            SESSION.flush()
-    except Exception as e:
-        error_message = (message + ' : %s\n\t%s') % (e, str(item))
-        safe_print("\a%s : %s" % (func_name, error_message))
-        print("Unlocking the database...")
-        SESSION.rollback()
-        log_error(f'database.base_db.{func_name}', error_message)
-        _handle_db_exception(e)
-        raise
-
 
 def _handle_db_exception(error):
     if isinstance(error, sqlalchemy.exc.OperationalError) and error.code == 'e3q8':

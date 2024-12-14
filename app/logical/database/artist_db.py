@@ -7,11 +7,10 @@ from sqlalchemy import not_
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Artist, ArtistUrl, Booru, Label, Description
 from ..utility import set_error
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
-    set_timesvalue, set_association_attributes
+    set_timesvalue, set_association_attributes, add_record, delete_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -70,8 +69,8 @@ def create_artist_from_parameters(createparams):
 
 def create_artist_from_json(data):
     artist = Artist.loads(data)
-    SESSION.add(artist)
-    SESSION.commit()
+    add_record(artist)
+    commit_session()
     print("[%s]: created" % artist.shortlink)
     return artist
 
@@ -92,7 +91,7 @@ def update_artist_from_parameters(artist, updateparams):
     if any(update_results):
         print("[%s]: updated" % artist.shortlink)
         artist.updated = get_current_time()
-        SESSION.commit()
+        commit_session()
 
 
 def recreate_artist_relations(artist, updateparams):
@@ -101,7 +100,7 @@ def recreate_artist_relations(artist, updateparams):
 
 def inactivate_artist(artist):
     artist.active = False
-    SESSION.commit()
+    commit_session()
 
 
 # #### Auxiliary functions
@@ -122,7 +121,7 @@ def update_artist_webpages(artist, params):
                 'active': is_active,
             }
             artist_url = ArtistUrl(**data)
-            SESSION.add(artist_url)
+            add_record(artist_url)
             is_dirty = True
         elif artist_url.active != is_active:
             artist_url.active = is_active
@@ -132,10 +131,10 @@ def update_artist_webpages(artist, params):
     for url in removed_webpages:
         # These will only be removable from the edit artist interface
         artist_url = next(filter(lambda x: x.url == url, artist.webpages))
-        SESSION.delete(artist_url)
+        delete_record(artist_url)
         is_dirty = True
     if is_dirty:
-        SESSION.commit()
+        commit_session()
     return is_dirty
 
 
@@ -145,8 +144,8 @@ def delete_artist(artist):
     from ..records.illust_rec import archive_illust_for_deletion
     for illust in artist.illusts:
         archive_illust_for_deletion(illust)
-    SESSION.delete(artist)
-    SESSION.commit()
+    delete_record(artist)
+    commit_session()
 
 
 # ###### Misc
@@ -170,7 +169,7 @@ def get_blank_artist():
 def artist_append_booru(artist, booru):
     artist.boorus.append(booru)
     artist.updated = get_current_time()
-    SESSION.commit()
+    commit_session()
 
 
 def artist_delete_profile(artist, description_id):
@@ -180,7 +179,7 @@ def artist_delete_profile(artist, description_id):
         msg = "Profile with description #%d does not exist on artist #%d." % (description_id, artist.id)
         return set_error(retdata, msg)
     artist._profiles.remove(remove_profile)
-    SESSION.commit()
+    commit_session()
     retdata['item'] = artist.to_json()
     return retdata
 

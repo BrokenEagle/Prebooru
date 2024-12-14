@@ -8,8 +8,8 @@ from utility.time import get_current_time, process_utc_timestring, minutes_ago
 from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import ServerInfo
+from .base_db import add_record, commit_session, flush_session
 from .jobs_db import is_any_job_locked, is_any_job_manual
 
 
@@ -43,22 +43,22 @@ def checkinit(func):
 
 def create_field(field, info):
     info = ServerInfo(field=field, info=info)
-    SESSION.add(info)
-    SESSION.flush()
+    add_record(info)
+    flush_session()
 
 
 # #### Update
 
 def update_field(field, info):
     ServerInfo.query.filter_by(field=field).update({'info': info})
-    SESSION.flush()
+    flush_session()
 
 
 # #### Delete
 
 def delete_field(field):
     ServerInfo.query.filter_by(field=field).delete()
-    SESSION.flush()
+    flush_session()
 
 
 # #### Query
@@ -108,7 +108,7 @@ def update_next_wait(kind, duration):
     field = kind + '_next_wait'
     value = FIELD_UPDATERS[field](duration)
     update_field(field, value)
-    SESSION.commit()
+    commit_session()
 
 
 @checkinit
@@ -121,7 +121,7 @@ def get_subscriptions_ready():
 def update_subscriptions_ready():
     value = FIELD_UPDATERS['subscriptions_ready'](True)
     update_field('subscriptions_ready', value)
-    SESSION.commit()
+    commit_session()
 
 
 # #### Initialization
@@ -141,5 +141,5 @@ def initialize_server_fields():
             create_field(field, value)
         else:
             update_field(field, value)
-    SESSION.commit()
+    commit_session()
     INITIALIZED = True

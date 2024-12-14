@@ -4,8 +4,9 @@
 from sqlalchemy import inspect
 
 # ## LOCAL IMPORTS
-from ... import SESSION, DB
+from ... import DB
 from ...models.jobs import JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
+from .base_db import add_record, delete_record, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -34,8 +35,8 @@ JOB_ITEMS_UPDATE = {
 
 def create_job_item(jobtype, id, val):
     item = JOB_ITEMS_CREATE[jobtype](id, val)
-    SESSION.add(item)
-    SESSION.flush()
+    add_record(item)
+    flush_session()
     return item
 
 
@@ -43,12 +44,12 @@ def create_job_item(jobtype, id, val):
 
 def update_job_item(item, value):
     JOB_ITEMS_UPDATE[item.table_name](item, value)
-    SESSION.flush()
+    flush_session()
 
 
 def update_job_by_id(job_type, id, value_dict):
     JOB_ITEMS[job_type].query.filter_by(id=id).update(value_dict)
-    SESSION.flush()
+    flush_session()
 
 
 def update_job_status(id, data):
@@ -56,14 +57,14 @@ def update_job_status(id, data):
         return
     job = JobStatus.find(id)
     job.data = data
-    SESSION.commit()
+    flush_session()
 
 
 # #### Delete
 
 def delete_job_item(item):
-    SESSION.delete(item)
-    SESSION.flush()
+    delete_record(item)
+    flush_session()
 
 
 # #### Query
@@ -101,9 +102,9 @@ def create_or_update_job_status(id, status):
     item = JobStatus.find(id)
     if item is None:
         item = JobStatus(id=id)
-        SESSION.add(item)
+        add_record(item)
     item.data = status
-    SESSION.flush()
+    flush_session()
 
 
 def check_tables():

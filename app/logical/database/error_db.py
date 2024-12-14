@@ -4,9 +4,8 @@
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Error
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, add_record, delete_record, commit_session, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
@@ -34,8 +33,8 @@ def create_error_from_parameters(createparams):
 
 def create_error_from_json(data):
     error = Error.loads(data)
-    SESSION.add(error)
-    SESSION.commit()
+    add_record(error)
+    commit_session()
     print("[%s]: created" % error.shortlink)
     return error
 
@@ -46,7 +45,7 @@ def create_error_from_json(data):
 
 def create_error(module_name, message):
     error = create_error_from_parameters({'module': module_name, 'message': message})
-    SESSION.commit()
+    commit_session()
     return error
 
 
@@ -58,8 +57,8 @@ def create_and_append_error(module_name, message, instance):
 
 # ###### Delete
 def delete_error(error):
-    SESSION.delete(error)
-    SESSION.commit()
+    delete_record(error)
+    commit_session()
 
 
 # ###### Add relationship
@@ -67,17 +66,14 @@ def delete_error(error):
 def extend_errors(instance, errors):
     for error in errors:
         append_error(instance, error, commit=False)
-    SESSION.commit()
+    commit_session()
 
 
 def append_error(instance, error, commit=True):
     table_name = instance.table_name
     append_key = table_name + '_id'
     setattr(error, append_key, instance.id)
-    if commit:
-        SESSION.commit()
-    else:
-        SESSION.flush()
+    commit_or_flush(commit)
 
 
 # ###### Test

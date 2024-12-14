@@ -4,9 +4,8 @@
 from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import MediaFile
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -35,7 +34,7 @@ def create_media_file_from_parameters(createparams):
 
 def update_media_file_expires(media_file):
     media_file.expires = days_from_now(1)
-    SESSION.commit()
+    commit_session()
 
 
 # ###### DELETE
@@ -43,7 +42,7 @@ def update_media_file_expires(media_file):
 def batch_delete_media_files(media_files):
     id_list = [media.id for media in media_files]
     MediaFile.query.filter(MediaFile.id.in_(id_list)).delete()
-    SESSION.commit()
+    commit_session()
 
 
 # #### Query functions

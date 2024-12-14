@@ -1,9 +1,8 @@
 # APP/LOGICAL/DATABASE/SITE_DATA_DB.PY
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import TwitterData, PixivData
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, add_record, delete_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -24,8 +23,8 @@ def update_site_data_from_parameters(illust, params):
         expected_type = SITE_DATA_TYPE_DICT[illust.site.name]
         if illust.site_data.type.name != expected_type:
             print("Deleting site data!")
-            SESSION.delete(illust.site_data)
-            SESSION.commit()
+            delete_record(illust.site_data)
+            commit_session()
             illust.site_data = None
     if illust.site.name == 'twitter':
         return update_twitter_site_data(illust, params)
@@ -36,8 +35,8 @@ def update_site_data_from_parameters(illust, params):
 def update_twitter_site_data(illust, params):
     if illust.site_data is None:
         illust.site_data = TwitterData(illust_id=illust.id)
-        SESSION.add(illust.site_data)
-        SESSION.commit()
+        add_record(illust.site_data)
+        commit_session()
     update_columns = set(params.keys()).intersection(TWITTER_COLUMN_ATTRIBUTES)
     return update_column_attributes(illust.site_data, update_columns, params)
 
@@ -45,7 +44,7 @@ def update_twitter_site_data(illust, params):
 def update_pixiv_site_data(illust, params):
     if illust.site_data is None:
         illust.site_data = PixivData(illust_id=illust.id)
-        SESSION.add(illust.site_data)
-        SESSION.commit()
+        add_record(illust.site_data)
+        commit_session()
     update_columns = set(params.keys()).intersection(PIXIV_COLUMN_ATTRIBUTES)
     return update_column_attributes(illust.site_data, update_columns, params)

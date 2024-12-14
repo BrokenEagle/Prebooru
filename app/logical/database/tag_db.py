@@ -4,10 +4,9 @@
 
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import SiteTag, UserTag, Post
 from ..utility import set_error
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -55,10 +54,10 @@ def append_tag_to_item(tag, append_key, dataparams):
             else:
                 continue
         item._tags.append(tag)
-    SESSION.flush()
+    flush_session()
     if single:
         retdata['append'] = item.to_json()
-    SESSION.commit()
+    commit_session()
     return retdata
 
 
@@ -73,6 +72,6 @@ def remove_tag_from_item(tag, remove_key, dataparams):
     elif tag not in item._tags:
         return set_error(retdata, "Tag '%s' does not exist on %s." % (tag.name, item.shortlink))
     item._tags.remove(tag)
-    SESSION.commit()
+    commit_session()
     retdata['remove'] = item.to_json()
     return retdata

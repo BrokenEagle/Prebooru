@@ -9,8 +9,8 @@ from config import MEDIA_DIRECTORY
 from utility.time import get_current_time, days_from_now
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Archive
+from .base_db import add_record, commit_session, commit_or_flush
 
 
 # ## GLOBAL DATA
@@ -32,8 +32,8 @@ def create_archive(type, key, data, days):
         'expires': days_from_now(days) if days is not None else None,
     }
     archive_item = Archive(**data)
-    SESSION.add(archive_item)
-    SESSION.commit()
+    add_record(archive_item)
+    commit_session()
     return archive_item
 
 
@@ -42,20 +42,17 @@ def create_archive(type, key, data, days):
 def update_archive(archive, data, days):
     archive.data = data
     archive.expires = days_from_now(days) if days is not None else None
-    SESSION.commit()
+    commit_session()
 
 
 def set_archive_permenant(item):
     item.expires = None
-    SESSION.commit()
+    commit_session()
 
 
 def set_archive_temporary(item, days, commit=False):
     item.expires = days_from_now(days)
-    if commit:
-        SESSION.commit()
-    else:
-        SESSION.flush()
+    commit_or_flush(commit)
 
 
 # ###### DELETE
@@ -68,7 +65,7 @@ def delete_expired_archive():
                .filter(Archive.type_filter('name', '__ne__', 'post'),
                        Archive.expires < get_current_time())\
                .delete()
-    SESSION.commit()
+    commit_session()
     expired_data = Archive.query.enum_join(Archive.type_enum)\
                                 .filter(Archive.type_filter('name', '__eq__', 'post'),
                                         Archive.expires < get_current_time())\
@@ -78,7 +75,7 @@ def delete_expired_archive():
         for archive in expired_data:
             remove_archive_media_file(archive)
         Archive.query.filter(Archive.id.in_([data.id for data in expired_data])).delete()
-        SESSION.commit()
+        commit_session()
     return status
 
 

@@ -7,9 +7,8 @@ from sqlalchemy import or_
 from utility.time import get_current_time, days_ago
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Post, SubscriptionElement, ImageHash
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, add_record, delete_record, commit_session, flush_session
 from .pool_element_db import delete_pool_element
 
 
@@ -48,8 +47,8 @@ def create_post_from_parameters(createparams):
 
 def create_post_from_json(data):
     post = Post.loads(data)
-    SESSION.add(post)
-    SESSION.commit()
+    add_record(post)
+    commit_session()
     print("[%s]: created" % post.shortlink)
     return post
 
@@ -63,22 +62,22 @@ def update_post_from_parameters(post, updateparams):
     update_results.append(update_column_attributes(post, update_columns, updateparams))
     if any(update_results):
         print("[%s]: updated" % post.shortlink)
-        SESSION.commit()
+        commit_session()
 
 
 def set_post_alternate(post, alternate):
     post.alternate = alternate
-    SESSION.commit()
+    commit_session()
 
 
 def set_post_type(post, post_type):
     post.type_id = Post.type_enum.by_name(post_type).id
-    SESSION.commit()
+    commit_session()
 
 
 def set_post_simcheck(post, simcheck):
     post.simcheck = simcheck
-    SESSION.flush()
+    flush_session()
 
 
 # ###### Delete
@@ -86,8 +85,8 @@ def set_post_simcheck(post, simcheck):
 def delete_post(post):
     for pool_element in post._pools:
         delete_pool_element(pool_element)
-    SESSION.delete(post)
-    SESSION.commit()
+    delete_record(post)
+    commit_session()
 
 
 # #### Misc functions
@@ -109,7 +108,7 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, durati
 
 def post_append_illust_url(post, illust_url):
     illust_url.post_id = post.id
-    SESSION.commit()
+    commit_session()
 
 
 def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size, post_type, pixel_md5, duration,

@@ -7,14 +7,13 @@ from sqlalchemy.orm import selectinload
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Illust, IllustUrl, SiteTag, Description
 from ..utility import set_error
 from .illust_url_db import update_illust_url_from_parameters
 from .site_data_db import update_site_data_from_parameters
 from .pool_element_db import delete_pool_element
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
-    set_timesvalue, set_association_attributes
+    set_timesvalue, set_association_attributes, add_record, delete_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -60,7 +59,7 @@ def update_illust_urls(illust, params):
     for url in removed_urls:
         illust_url = next(filter(lambda x: x.url == url, illust.urls))
         illust_url.active = False
-        SESSION.commit()
+        commit_session()
         update_results.append(True)
     return any(update_results)
 
@@ -87,8 +86,8 @@ def create_illust_from_parameters(createparams):
 
 def create_illust_from_json(data):
     illust = Illust.loads(data)
-    SESSION.add(illust)
-    SESSION.commit()
+    add_record(illust)
+    commit_session()
     print("[%s]: created" % illust.shortlink)
     return illust
 
@@ -108,7 +107,7 @@ def update_illust_from_parameters(illust, updateparams):
     if any(update_results):
         print("[%s]: updated" % illust.shortlink)
         illust.updated = get_current_time()
-        SESSION.commit()
+        commit_session()
 
 
 def recreate_illust_relations(illust, updateparams):
@@ -117,7 +116,7 @@ def recreate_illust_relations(illust, updateparams):
 
 def set_illust_artist(illust, artist):
     illust.artist = artist
-    SESSION.commit()
+    commit_session()
 
 
 # ###### Delete
@@ -125,8 +124,8 @@ def set_illust_artist(illust, artist):
 def delete_illust(illust):
     for pool_element in illust._pools:
         delete_pool_element(pool_element)
-    SESSION.delete(illust)
-    SESSION.commit()
+    delete_record(illust)
+    commit_session()
 
 
 # ###### Misc
@@ -138,7 +137,7 @@ def illust_delete_commentary(illust, description_id):
         msg = "Commentary with description #%d does not exist on illust #%d." % (description_id, illust.id)
         return set_error(retdata, msg)
     illust._commentaries.remove(remove_commentary)
-    SESSION.commit()
+    commit_session()
     retdata['item'] = illust.to_json()
     return retdata
 

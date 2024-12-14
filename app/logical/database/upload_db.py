@@ -7,10 +7,9 @@ import re
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...enum_imports import upload_status
 from ...models import Upload, UploadUrl
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, add_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -42,7 +41,7 @@ def create_upload_from_parameters(createparams):
         _update_illust_urls(upload, createparams['image_urls'])
     print("[%s]: created" % upload.shortlink)
     data = upload.to_json()
-    SESSION.commit()
+    commit_session()
     return data
 
 
@@ -60,17 +59,17 @@ def has_duplicate_posts(upload):
 
 def set_upload_status(upload, value):
     upload.status_id = upload_status.by_name(value).id
-    SESSION.commit()
+    commit_session()
 
 
 def add_upload_success(upload):
     upload.successes += 1
-    SESSION.commit()
+    commit_session()
 
 
 def add_upload_failure(upload):
     upload.failures += 1
-    SESSION.commit()
+    commit_session()
 
 
 # #### Private
@@ -78,4 +77,4 @@ def add_upload_failure(upload):
 def _update_illust_urls(upload, urllist):
     for url in urllist:
         upload_url = UploadUrl(url=url, upload_id=upload.id)
-        SESSION.add(upload_url)
+        add_record(upload_url)

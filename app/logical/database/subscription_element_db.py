@@ -11,11 +11,10 @@ from config import EXPIRED_SUBSCRIPTION, ALTERNATE_MEDIA_DIRECTORY
 from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...enum_imports import subscription_element_status, subscription_element_keep
 from ...models import Subscription, SubscriptionElement, Post
 from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -54,17 +53,17 @@ def create_subscription_element_from_parameters(createparams):
 def batch_update_subscription_element_keep(subscription_elements, value):
     for subscription_element in subscription_elements:
         _update_subscription_element_keep(subscription_element, value)
-    SESSION.commit()
+    commit_session()
 
 
 def update_subscription_element_keep(subscription_element, value):
     _update_subscription_element_keep(subscription_element, value)
-    SESSION.commit()
+    commit_session()
 
 
 def update_subscription_element_status(subscription_element, value):
     subscription_element.status_id = subscription_element_status.by_name(value).id
-    SESSION.commit()
+    commit_session()
 
 
 # #### Misc
@@ -75,14 +74,14 @@ def link_subscription_post(element, post):
     element.status_id = subscription_element_status.active.id
     element.expires = None
     _update_subscription_element_keep(element, None)
-    SESSION.commit()
+    commit_session()
 
 
 def unlink_subscription_post(element):
     element.post = None
     element.expires = None
     element.status_id = subscription_element_status.unlinked.id
-    SESSION.commit()
+    commit_session()
 
 
 def delete_subscription_post(element):
@@ -92,7 +91,7 @@ def delete_subscription_post(element):
         delete_post_and_media(element.post)
     element.expires = None
     element.status_id = subscription_element_status.deleted.id
-    SESSION.commit()
+    commit_session()
     return True
 
 
@@ -103,7 +102,7 @@ def archive_subscription_post(element):
         archive_post_for_deletion(element.post, None)
     element.expires = None
     element.status_id = subscription_element_status.archived.id
-    SESSION.commit()
+    commit_session()
 
 
 def duplicate_subscription_post(element, md5):
@@ -111,7 +110,7 @@ def duplicate_subscription_post(element, md5):
     element.md5 = md5
     element.status_id = subscription_element_status.duplicate.id
     element.keep_id = subscription_element_keep.unknown.id
-    SESSION.commit()
+    commit_session()
 
 
 # #### Query
@@ -121,10 +120,11 @@ def get_elements_by_id(id_list):
 
 
 def check_deleted_subscription_post(md5):
-    return SESSION.query(SubscriptionElement.id)\
-                  .filter(SubscriptionElement.md5 == md5,
-                          SubscriptionElement.status_filter('name', 'in_', ['deleted', 'archived'])
-                          ).first() is not None
+    return SubscriptionElement.query.enum_join(SubscriptionElement.status_enum)\
+                              .filter(SubscriptionElement.md5 == md5,
+                                      SubscriptionElement.status_filter('name', 'in_', ['deleted', 'archived']))\
+                              .with_entities(SubscriptionElement.id)\
+                              .first() is not None
 
 
 def expired_subscription_elements(expire_type):

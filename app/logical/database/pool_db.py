@@ -7,9 +7,8 @@ from sqlalchemy import or_
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
 from ...models import Pool
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -46,14 +45,14 @@ def update_pool_from_parameters(pool, updateparams):
     if any(update_results):
         print("[%s]: updated" % pool.shortlink)
         pool.updated = get_current_time()
-        SESSION.commit()
+        commit_session()
 
 
 def update_pool_positions(pool):
     pool._elements.reorder()
     pool.element_count = pool._get_element_count()
     pool.checked = get_current_time()
-    SESSION.commit()
+    commit_session()
 
 
 # #### Query
