@@ -58,10 +58,9 @@ def create_artist_from_parameters(createparams):
     if 'site' in createparams:
         createparams['site_id'] = Artist.site_enum.by_name(createparams['site']).id
     createparams['primary'] = createparams['primary'] if 'primary' in createparams else True
-    current_time = get_current_time()
     set_timesvalue(createparams, 'site_created')
     set_all_site_accounts(createparams, None)
-    artist = Artist(created=current_time, updated=current_time)
+    artist = Artist()
     update_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     _update_relations(artist, createparams, overwrite=True, create=True)
     save_record(artist, 'created')
@@ -87,7 +86,6 @@ def update_artist_from_parameters(artist, updateparams):
     update_results.append(update_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
     update_results.append(_update_relations(artist, updateparams, overwrite=False, create=False))
     if any(update_results):
-        artist.updated = get_current_time()
         save_record(artist, 'updated')
 
 

@@ -24,8 +24,7 @@ NULL_WRITABLE_ATTRIBUTES = []
 # ###### Create
 
 def create_pool_from_parameters(createparams):
-    current_time = get_current_time()
-    pool = Pool(created=current_time, updated=current_time, element_count=0)
+    pool = Pool(element_count=0)
     update_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(pool, 'created')
     return pool
@@ -35,7 +34,6 @@ def create_pool_from_parameters(createparams):
 
 def update_pool_from_parameters(pool, updateparams):
     if update_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        pool.updated = get_current_time()
         save_record(pool, 'updated')
 
 

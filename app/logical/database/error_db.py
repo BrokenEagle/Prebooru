@@ -1,8 +1,5 @@
 # APP/LOGICAL/DATABASE/ERROR_DB.PY
 
-# ## PACKAGE IMPORTS
-from utility.time import get_current_time
-
 # ## LOCAL IMPORTS
 from ...models import Error
 from .base_db import update_column_attributes, add_record, delete_record, save_record, commit_session, commit_or_flush
@@ -21,8 +18,7 @@ NULL_WRITABLE_ATTRIBUTES = []
 # ###### CREATE
 
 def create_error_from_parameters(createparams):
-    current_time = get_current_time()
-    error = Error(created=current_time)
+    error = Error()
     update_column_attributes(error, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(error, 'created', commit=False)
     return error

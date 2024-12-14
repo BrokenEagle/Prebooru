@@ -8,7 +8,7 @@ import datetime
 import sqlalchemy
 
 # ## PACKAGE IMPORTS
-from utility.time import process_utc_timestring
+from utility.time import process_utc_timestring, get_current_time
 from utility.uprint import safe_print, buffered_print
 
 # ## LOCAL IMPORTS
@@ -68,6 +68,7 @@ def update_column_attributes(item, any_columns, null_columns, dataparams):
     """For updating column attributes with scalar values"""
     printer = buffered_print('update_column_attributes', safe=True, header=False)
     is_dirty = False
+    current_time = None
     allowed_attrs = any_columns + null_columns
     for attr in allowed_attrs:
         if attr not in dataparams or (attr in null_columns and getattr(item, attr) is not None):
@@ -77,8 +78,14 @@ def update_column_attributes(item, any_columns, null_columns, dataparams):
             setattr(item, attr, dataparams[attr])
             is_dirty = True
     if item not in SESSION:
+        if hasattr(item, 'created'):
+            current_time = get_current_time()
+            item.created = current_time
         add_record(item)
     if is_dirty:
+        if hasattr(item, 'updated'):
+            current_time = get_current_time() if current_time is None else current_time
+            item.updated = current_time
         printer.print()
     return is_dirty
 

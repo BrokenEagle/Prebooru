@@ -32,8 +32,7 @@ COUNT_UNDECIDED_ELEMENTS = func.sum(func.iif(SubscriptionElement.keep_filter('id
 def create_subscription_from_parameters(createparams):
     if 'status' in createparams:
         createparams['status_id'] = Subscription.status_enum.by_name(createparams['status']).id
-    current_time = get_current_time()
-    subscription = Subscription(status_id=subscription_status.idle.id, created=current_time, updated=current_time)
+    subscription = Subscription(status_id=subscription_status.idle.id)
     update_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(subscription, 'created')
     return subscription
@@ -47,7 +46,6 @@ def update_subscription_from_parameters(subscription, updateparams):
     if subscription.requery is not None and subscription.requery > hours_from_now(subscription.interval):
         update_subscription_requery(subscription, hours_from_now(subscription.interval))
     if update_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        subscription.updated = get_current_time()
         save_record(subscription, 'updated')
 
 

@@ -31,8 +31,7 @@ ID_MODEL_DICT = {
 # ###### Create
 
 def create_notation_from_parameters(createparams):
-    current_time = get_current_time()
-    notation = Notation(created=current_time, updated=current_time, no_pool=True)
+    notation = Notation(no_pool=True)
     update_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(notation, 'created')
     return notation
@@ -49,7 +48,6 @@ def create_notation_from_json(data):
 
 def update_notation_from_parameters(notation, updateparams):
     if update_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        notation.updated = get_current_time()
         save_record(notation, 'updated')
 
 

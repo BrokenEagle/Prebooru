@@ -3,9 +3,6 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
 
-# ## PACKAGE IMPORTS
-from utility.time import get_current_time
-
 # ## LOCAL IMPORTS
 from ...models import Illust, IllustUrl, SiteTag, Description
 from ..utility import set_error
@@ -76,9 +73,8 @@ def create_illust_from_parameters(createparams):
         createparams['commentaries'] = [createparams['commentaries']]
     if 'site' in createparams:
         createparams['site_id'] = Illust.site_enum.by_name(createparams['site']).id
-    current_time = get_current_time()
     set_timesvalues(createparams)
-    illust = Illust(created=current_time, updated=current_time)
+    illust = Illust()
     update_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     _update_relations(illust, createparams, overwrite=True, create=True)
     save_record(illust, 'created')
@@ -103,7 +99,6 @@ def update_illust_from_parameters(illust, updateparams):
     update_results.append(update_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
     update_results.append(_update_relations(illust, updateparams, overwrite=False, create=False))
     if any(update_results):
-        illust.updated = get_current_time()
         save_record(illust, 'updated')
 
 

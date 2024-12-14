@@ -3,9 +3,6 @@
 # ## PYTHON IMPORTS
 import re
 
-# ## PACKAGE IMPORTS
-from utility.time import get_current_time
-
 # ## LOCAL IMPORTS
 from ...enum_imports import upload_status
 from ...models import Upload, UploadUrl
@@ -29,7 +26,6 @@ def create_upload_from_parameters(createparams):
         'successes': 0,
         'failures': 0,
         'status_id': upload_status.pending.id,
-        'created': get_current_time(),
     }
     upload = Upload(**data)
     update_column_attributes(upload, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)

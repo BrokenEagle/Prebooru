@@ -43,10 +43,9 @@ def set_all_names(params, booru):
 # ###### Create
 
 def create_booru_from_parameters(createparams):
-    current_time = get_current_time()
     set_all_names(createparams, None)
     set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
-    booru = Booru(created=current_time, updated=current_time)
+    booru = Booru()
     update_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     _update_relations(booru, createparams, create=True)
     save_record(booru, 'created')
@@ -69,7 +68,6 @@ def update_booru_from_parameters(booru, updateparams):
     update_results.append(update_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
     update_results.append(_update_relations(booru, updateparams, create=False))
     if any(update_results):
-        booru.updated = get_current_time()
         save_record(booru, 'updated')
         return True
     return False

@@ -4,7 +4,7 @@
 from sqlalchemy import or_
 
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time, days_ago
+from utility.time import days_ago
 
 # ## LOCAL IMPORTS
 from ...models import Post, SubscriptionElement, ImageHash
@@ -34,8 +34,7 @@ SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_
 # ###### Create
 
 def create_post_from_parameters(createparams):
-    current_time = get_current_time()
-    post = Post(created=current_time, alternate=False, simcheck=False)
+    post = Post(alternate=False, simcheck=False)
     update_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(post, 'created')
     return post
