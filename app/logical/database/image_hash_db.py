@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...models import ImageHash
-from .base_db import update_column_attributes, save_record, flush_session
+from .base_db import set_column_attributes, save_record, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -19,7 +19,7 @@ NULL_WRITABLE_ATTRIBUTES = ['post_id', 'ratio', 'hash']
 
 def create_image_hash_from_parameters(createparams, commit=False):
     image_hash = ImageHash()
-    update_column_attributes(image_hash, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(image_hash, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(image_hash, 'created', commit=commit)
     return image_hash
 

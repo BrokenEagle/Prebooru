@@ -5,7 +5,7 @@ from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import MediaFile
-from .base_db import update_column_attributes, save_record, commit_session
+from .base_db import set_column_attributes, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -22,7 +22,7 @@ NULL_WRITABLE_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
 
 def create_media_file_from_parameters(createparams):
     media_file = MediaFile(expires=days_from_now(1))
-    update_column_attributes(media_file, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(media_file, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(media_file, 'created')
     return media_file
 

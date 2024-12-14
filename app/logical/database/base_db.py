@@ -64,9 +64,9 @@ def set_association_attributes(params, associations):
             params[association_key] = params[key]
 
 
-def update_column_attributes(item, any_columns, null_columns, dataparams):
+def set_column_attributes(item, any_columns, null_columns, dataparams):
     """For updating column attributes with scalar values"""
-    printer = buffered_print('update_column_attributes', safe=True, header=False)
+    printer = buffered_print('set_column_attributes', safe=True, header=False)
     is_dirty = False
     current_time = None
     allowed_attrs = any_columns + null_columns
@@ -90,16 +90,16 @@ def update_column_attributes(item, any_columns, null_columns, dataparams):
     return is_dirty
 
 
-def update_relationship_collections(item, relationships, updateparams):
+def set_relationship_collections(item, relationships, dataparams):
     """For updating multiple values to collection relationships with scalar values"""
-    printer = buffered_print('update_relationship_collections', safe=True, header=False)
+    printer = buffered_print('set_relationship_collections', safe=True, header=False)
     is_dirty = False
     for attr, subattr, model in relationships:
-        if updateparams[attr] is None:
+        if dataparams.get(attr) is None:
             continue
         collection = getattr(item, attr)
         current_values = [getattr(subitem, subattr) for subitem in collection]
-        add_values = set(updateparams[attr]).difference(current_values)
+        add_values = set(dataparams[attr]).difference(current_values)
         for value in add_values:
             printer("Adding collection item (%s):" % item.shortlink, attr, value)
             add_item = model.query.filter_by(**{subattr: value}).first()
@@ -108,7 +108,7 @@ def update_relationship_collections(item, relationships, updateparams):
                 add_record(add_item)
             collection.append(add_item)
             is_dirty = True
-        remove_values = set(current_values).difference(updateparams[attr])
+        remove_values = set(current_values).difference(dataparams[attr])
         for value in remove_values:
             printer("Removing collection item (%s):" % item.shortlink, attr, value)
             remove_item = next(filter(lambda x: getattr(x, subattr) == value, collection))
@@ -119,17 +119,17 @@ def update_relationship_collections(item, relationships, updateparams):
     return is_dirty
 
 
-def append_relationship_collections(item, relationships, updateparams):
+def append_relationship_collections(item, relationships, dataparams):
     """For appending a single value to collection relationships with scalar values"""
     printer = buffered_print('append_relationship_collections', safe=True, header=False)
     is_dirty = False
     for attr, subattr, model in relationships:
-        if updateparams[attr] is None:
+        if dataparams.get(attr) is None:
             continue
         collection = getattr(item, attr)
         current_values = [getattr(subitem, subattr) for subitem in collection]
-        if updateparams[attr] not in current_values:
-            value = updateparams[attr]
+        if dataparams[attr] not in current_values:
+            value = dataparams[attr]
             printer("Adding collection item (%s):" % item.shortlink, attr, value)
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:

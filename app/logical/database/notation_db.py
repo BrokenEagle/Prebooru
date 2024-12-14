@@ -6,7 +6,7 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ...models import Notation, Pool, Subscription, Booru, Artist, Illust, Post
 from .pool_element_db import delete_pool_element
-from .base_db import update_column_attributes, add_record, delete_record, save_record, commit_session, flush_session
+from .base_db import set_column_attributes, add_record, delete_record, save_record, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -32,7 +32,7 @@ ID_MODEL_DICT = {
 
 def create_notation_from_parameters(createparams):
     notation = Notation(no_pool=True)
-    update_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(notation, 'created')
     return notation
 
@@ -47,7 +47,7 @@ def create_notation_from_json(data):
 # ###### Update
 
 def update_notation_from_parameters(notation, updateparams):
-    if update_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
+    if set_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         save_record(notation, 'updated')
 
 

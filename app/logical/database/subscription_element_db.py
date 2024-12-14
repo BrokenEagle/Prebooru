@@ -14,7 +14,7 @@ from utility.time import days_from_now, get_current_time
 from ...enum_imports import subscription_element_status, subscription_element_keep
 from ...models import Subscription, SubscriptionElement, Post
 from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
-from .base_db import update_column_attributes, save_record, commit_session
+from .base_db import set_column_attributes, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -40,7 +40,7 @@ else:
 
 def create_subscription_element_from_parameters(createparams):
     subscription_element = SubscriptionElement(status_id=subscription_element_status.active.id)
-    update_column_attributes(subscription_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(subscription_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(subscription_element, 'created')
     return subscription_element
 

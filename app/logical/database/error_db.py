@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...models import Error
-from .base_db import update_column_attributes, add_record, delete_record, save_record, commit_session, commit_or_flush
+from .base_db import set_column_attributes, add_record, delete_record, save_record, commit_session, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
@@ -19,7 +19,7 @@ NULL_WRITABLE_ATTRIBUTES = []
 
 def create_error_from_parameters(createparams):
     error = Error()
-    update_column_attributes(error, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(error, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(error, 'created', commit=False)
     return error
 

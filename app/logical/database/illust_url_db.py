@@ -3,7 +3,7 @@
 # ## LOCAL IMPORTS
 from ...models import IllustUrl
 from ...enum_imports import site_descriptor
-from .base_db import update_column_attributes, save_record
+from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
@@ -21,7 +21,7 @@ def create_illust_url_from_parameters(createparams):
     if 'site' in createparams:
         createparams['site_id'] = IllustUrl.site_enum.by_name(createparams['site']).id
     illust_url = IllustUrl()
-    update_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(illust_url, 'created')
     return illust_url
 
@@ -31,7 +31,7 @@ def create_illust_url_from_parameters(createparams):
 def update_illust_url_from_parameters(illust_url, updateparams):
     if 'site' in updateparams:
         updateparams['site'] = IllustUrl.site_enum.by_name(updateparams['site']).id
-    if update_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
+    if set_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         save_record(illust_url, 'updated')
 
 

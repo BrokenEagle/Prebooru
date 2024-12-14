@@ -9,7 +9,7 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ...models import Artist, ArtistUrl, Booru, Label, Description
 from ..utility import set_error
-from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
+from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
     set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session
 
 
@@ -61,7 +61,7 @@ def create_artist_from_parameters(createparams):
     set_timesvalue(createparams, 'site_created')
     set_all_site_accounts(createparams, None)
     artist = Artist()
-    update_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     _update_relations(artist, createparams, overwrite=True, create=True)
     save_record(artist, 'created')
     return artist
@@ -83,7 +83,7 @@ def update_artist_from_parameters(artist, updateparams):
     set_timesvalue(updateparams, 'site_created')
     set_all_site_accounts(updateparams, artist)
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    update_results.append(update_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
+    update_results.append(set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
     update_results.append(_update_relations(artist, updateparams, overwrite=False, create=False))
     if any(update_results):
         save_record(artist, 'updated')
@@ -204,7 +204,7 @@ def _update_relations(artist, updateparams, overwrite=None, create=None):
     settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)
     relationship_list = ALL_SCALAR_RELATIONSHIPS if overwrite else UPDATE_SCALAR_RELATIONSHIPS
     update_relationships = [rel for rel in relationship_list if rel[0] in settable_keylist]
-    update_results.append(update_relationship_collections(artist, update_relationships, updateparams))
+    update_results.append(set_relationship_collections(artist, update_relationships, updateparams))
     if not overwrite:
         append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
         update_results.append(append_relationship_collections(artist, append_relationships, updateparams))

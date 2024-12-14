@@ -8,7 +8,7 @@ from utility.time import days_ago
 
 # ## LOCAL IMPORTS
 from ...models import Post, SubscriptionElement, ImageHash
-from .base_db import update_column_attributes, add_record, delete_record, save_record, commit_session, flush_session
+from .base_db import set_column_attributes, add_record, delete_record, save_record, commit_session, flush_session
 from .pool_element_db import delete_pool_element
 
 
@@ -35,7 +35,7 @@ SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_
 
 def create_post_from_parameters(createparams):
     post = Post(alternate=False, simcheck=False)
-    update_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(post, 'created')
     return post
 
@@ -50,7 +50,7 @@ def create_post_from_json(data):
 # ###### Update
 
 def update_post_from_parameters(post, updateparams):
-    if update_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
+    if set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         save_record(post, 'updated')
 
 

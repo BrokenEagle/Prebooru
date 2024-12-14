@@ -6,7 +6,7 @@
 # ## LOCAL IMPORTS
 from ...models import SiteTag, UserTag, Post
 from ..utility import set_error
-from .base_db import update_column_attributes, commit_session, flush_session
+from .base_db import set_column_attributes, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -28,7 +28,7 @@ ID_MODEL_DICT = {
 
 def create_tag_from_parameters(createparams):
     tag = TAG_MODEL_DICT[createparams['type']]()
-    update_column_attributes(tag, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(tag, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     return tag
 
 

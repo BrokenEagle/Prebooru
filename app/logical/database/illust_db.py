@@ -9,7 +9,7 @@ from ..utility import set_error
 from .illust_url_db import update_illust_url_from_parameters
 from .site_data_db import update_site_data_from_parameters
 from .pool_element_db import delete_pool_element
-from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
+from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
     set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session
 
 
@@ -75,7 +75,7 @@ def create_illust_from_parameters(createparams):
         createparams['site_id'] = Illust.site_enum.by_name(createparams['site']).id
     set_timesvalues(createparams)
     illust = Illust()
-    update_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     _update_relations(illust, createparams, overwrite=True, create=True)
     save_record(illust, 'created')
     return illust
@@ -96,7 +96,7 @@ def update_illust_from_parameters(illust, updateparams):
         updateparams['site_id'] = Illust.site_enum.by_name(updateparams['site']).id
     set_timesvalues(updateparams)
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    update_results.append(update_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
+    update_results.append(set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
     update_results.append(_update_relations(illust, updateparams, overwrite=False, create=False))
     if any(update_results):
         save_record(illust, 'updated')
@@ -160,7 +160,7 @@ def _update_relations(illust, updateparams, overwrite=None, create=None):
     settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)
     relationship_list = ALL_SCALAR_RELATIONSHIPS if overwrite else UPDATE_SCALAR_RELATIONSHIPS
     update_relationships = [rel for rel in relationship_list if rel[0] in settable_keylist]
-    update_results.append(update_relationship_collections(illust, update_relationships, updateparams))
+    update_results.append(set_relationship_collections(illust, update_relationships, updateparams))
     update_results.append(update_site_data_from_parameters(illust, updateparams))
     if not overwrite:
         append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]

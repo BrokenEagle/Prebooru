@@ -8,7 +8,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import Pool
-from .base_db import update_column_attributes, save_record, commit_session
+from .base_db import set_column_attributes, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -25,7 +25,7 @@ NULL_WRITABLE_ATTRIBUTES = []
 
 def create_pool_from_parameters(createparams):
     pool = Pool(element_count=0)
-    update_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(pool, 'created')
     return pool
 
@@ -33,7 +33,7 @@ def create_pool_from_parameters(createparams):
 # ###### Update
 
 def update_pool_from_parameters(pool, updateparams):
-    if update_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
+    if set_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         save_record(pool, 'updated')
 
 

@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...models import TwitterData, PixivData
-from .base_db import update_column_attributes, add_record, delete_record, commit_session
+from .base_db import set_column_attributes, add_record, delete_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -37,7 +37,7 @@ def update_twitter_site_data(illust, params):
         illust.site_data = TwitterData(illust_id=illust.id)
         add_record(illust.site_data)
         commit_session()
-    return update_column_attributes(illust.site_data, TWITTER_COLUMN_ATTRIBUTES, [], params)
+    return set_column_attributes(illust.site_data, TWITTER_COLUMN_ATTRIBUTES, [], params)
 
 
 def update_pixiv_site_data(illust, params):
@@ -45,4 +45,4 @@ def update_pixiv_site_data(illust, params):
         illust.site_data = PixivData(illust_id=illust.id)
         add_record(illust.site_data)
         commit_session()
-    return update_column_attributes(illust.site_data, PIXIV_COLUMN_ATTRIBUTES, [], params)
+    return set_column_attributes(illust.site_data, PIXIV_COLUMN_ATTRIBUTES, [], params)

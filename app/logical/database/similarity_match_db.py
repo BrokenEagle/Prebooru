@@ -5,7 +5,7 @@ from sqlalchemy import or_
 
 # ## LOCAL IMPORTS
 from ...models import SimilarityMatch
-from .base_db import update_column_attributes, save_record, delete_record, commit_or_flush
+from .base_db import set_column_attributes, save_record, delete_record, commit_or_flush
 
 # ## GLOBAL VARIABLES
 
@@ -23,7 +23,7 @@ def create_similarity_match_from_parameters(createparams):
     similarity_match = SimilarityMatch()
     if createparams['forward_id'] > createparams['reverse_id']:
         createparams['forward_id'], createparams['reverse_id'] = createparams['reverse_id'], createparams['forward_id']
-    update_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(similarity_match, 'created', commit=False)
     return similarity_match
 
@@ -31,7 +31,7 @@ def create_similarity_match_from_parameters(createparams):
 # ###### UPDATE
 
 def update_similarity_match_from_parameters(similarity_match, updateparams):
-    if update_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
+    if set_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         save_record(similarity_match, 'updated', commit=False)
 
 

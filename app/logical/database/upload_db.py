@@ -6,7 +6,7 @@ import re
 # ## LOCAL IMPORTS
 from ...enum_imports import upload_status
 from ...models import Upload, UploadUrl
-from .base_db import update_column_attributes, add_record, save_record, commit_session, flush_session
+from .base_db import set_column_attributes, add_record, save_record, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -28,7 +28,7 @@ def create_upload_from_parameters(createparams):
         'status_id': upload_status.pending.id,
     }
     upload = Upload(**data)
-    update_column_attributes(upload, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(upload, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     flush_session()
     if 'image_urls' in createparams and len(createparams['image_urls']):
         _update_illust_urls(upload, createparams['image_urls'])

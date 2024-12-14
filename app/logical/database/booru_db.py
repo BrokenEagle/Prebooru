@@ -5,7 +5,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import Booru, Label
-from .base_db import update_column_attributes, update_relationship_collections, set_association_attributes,\
+from .base_db import set_column_attributes, set_relationship_collections, set_association_attributes,\
     will_update_record, add_record, delete_record, save_record, commit_session
 
 
@@ -46,7 +46,7 @@ def create_booru_from_parameters(createparams):
     set_all_names(createparams, None)
     set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
     booru = Booru()
-    update_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
+    set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     _update_relations(booru, createparams, create=True)
     save_record(booru, 'created')
     return booru
@@ -65,7 +65,7 @@ def create_booru_from_json(data):
 def update_booru_from_parameters(booru, updateparams):
     update_results = []
     set_all_names(updateparams, booru)
-    update_results.append(update_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
+    update_results.append(set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
     update_results.append(_update_relations(booru, updateparams, create=False))
     if any(update_results):
         save_record(booru, 'updated')
@@ -125,4 +125,4 @@ def _update_relations(booru, updateparams, create=None):
     allowed_attributes = CREATE_ALLOWED_ATTRIBUTES if create else UPDATE_ALLOWED_ATTRIBUTES
     settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)
     update_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    return update_relationship_collections(booru, update_relationships, updateparams)
+    return set_relationship_collections(booru, update_relationships, updateparams)
