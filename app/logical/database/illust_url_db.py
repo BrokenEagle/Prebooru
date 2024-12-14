@@ -8,13 +8,9 @@ from .base_db import update_column_attributes, save_record
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'sample_site_id', 'sample_url',
-                     'width', 'height', 'order', 'active']
-
-CREATE_ALLOWED_ATTRIBUTES = ['illust_id', 'site_id', 'url', 'sample_site_id', 'sample_url',
-                             'width', 'height', 'order', 'active']
-UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height',
-                             'order', 'active']
+ANY_WRITABLE_COLUMNS = ['site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height',
+                        'order', 'active', 'post_id']
+NULL_WRITABLE_ATTRIBUTES = ['illust_id']
 
 
 # ## FUNCTIONS
@@ -25,9 +21,7 @@ def create_illust_url_from_parameters(createparams):
     if 'site' in createparams:
         createparams['site_id'] = IllustUrl.site_enum.by_name(createparams['site']).id
     illust_url = IllustUrl()
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(illust_url, update_columns, createparams)
+    update_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(illust_url, 'created')
     return illust_url
 
@@ -37,9 +31,7 @@ def create_illust_url_from_parameters(createparams):
 def update_illust_url_from_parameters(illust_url, updateparams):
     if 'site' in updateparams:
         updateparams['site'] = IllustUrl.site_enum.by_name(updateparams['site']).id
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    if update_column_attributes(illust_url, update_columns, updateparams):
+    if update_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         save_record(illust_url, 'updated')
 
 

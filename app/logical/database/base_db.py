@@ -64,11 +64,14 @@ def set_association_attributes(params, associations):
             params[association_key] = params[key]
 
 
-def update_column_attributes(item, attrs, dataparams):
+def update_column_attributes(item, any_columns, null_columns, dataparams):
     """For updating column attributes with scalar values"""
     printer = buffered_print('update_column_attributes', safe=True, header=False)
     is_dirty = False
-    for attr in attrs:
+    allowed_attrs = any_columns + null_columns
+    for attr in allowed_attrs:
+        if attr not in dataparams or (attr in null_columns and getattr(item, attr) is not None):
+            continue
         if getattr(item, attr) != dataparams[attr]:
             printer("Setting basic attr (%s):" % item.shortlink, attr, getattr(item, attr), dataparams[attr])
             setattr(item, attr, dataparams[attr])

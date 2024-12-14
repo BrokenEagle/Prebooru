@@ -10,9 +10,8 @@ from .base_db import update_column_attributes, add_record, delete_record, save_r
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['module', 'message']
-
-CREATE_ALLOWED_ATTRIBUTES = ['module', 'message']
+ANY_WRITABLE_COLUMNS = ['module', 'message']
+NULL_WRITABLE_ATTRIBUTES = []
 
 
 # ## FUNCTIONS
@@ -24,9 +23,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['module', 'message']
 def create_error_from_parameters(createparams):
     current_time = get_current_time()
     error = Error(created=current_time)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(error, update_columns, createparams)
+    update_column_attributes(error, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(error, 'created', commit=False)
     return error
 

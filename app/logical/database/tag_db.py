@@ -11,7 +11,9 @@ from .base_db import update_column_attributes, commit_session, flush_session
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['name']
+ANY_WRITABLE_COLUMNS = ['name']
+NULL_WRITABLE_ATTRIBUTES = []
+
 TAG_MODEL_DICT = {
     'site_tag': SiteTag,
     'user_tag': UserTag,
@@ -25,9 +27,8 @@ ID_MODEL_DICT = {
 # ## FUNCTIONS
 
 def create_tag_from_parameters(createparams):
-    update_columns = set(createparams.keys()).intersection(COLUMN_ATTRIBUTES)
     tag = TAG_MODEL_DICT[createparams['type']]()
-    update_column_attributes(tag, update_columns, createparams)
+    update_column_attributes(tag, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     return tag
 
 

@@ -21,6 +21,9 @@ NORMALIZED_ASSOCIATE_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
 CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
 UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
 
+ANY_WRITABLE_COLUMNS = ['danbooru_id', 'current_name', 'banned', 'deleted']
+NULL_WRITABLE_ATTRIBUTES = []
+
 UPDATE_ALLOWED_COLUMNS = set(COLUMN_ATTRIBUTES).intersection(UPDATE_ALLOWED_ATTRIBUTES)
 
 
@@ -44,9 +47,7 @@ def create_booru_from_parameters(createparams):
     set_all_names(createparams, None)
     set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
     booru = Booru(created=current_time, updated=current_time)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(booru, update_columns, createparams)
+    update_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     _update_relations(booru, createparams, create=True)
     save_record(booru, 'created')
     return booru
@@ -65,9 +66,7 @@ def create_booru_from_json(data):
 def update_booru_from_parameters(booru, updateparams):
     update_results = []
     set_all_names(updateparams, booru)
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(booru, update_columns, updateparams))
+    update_results.append(update_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
     update_results.append(_update_relations(booru, updateparams, create=False))
     if any(update_results):
         booru.updated = get_current_time()

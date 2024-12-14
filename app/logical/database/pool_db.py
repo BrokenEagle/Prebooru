@@ -13,10 +13,8 @@ from .base_db import update_column_attributes, save_record, commit_session
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['name', 'series']
-
-CREATE_ALLOWED_ATTRIBUTES = ['name', 'series']
-UPDATE_ALLOWED_ATTRIBUTES = ['name', 'series']
+ANY_WRITABLE_COLUMNS = ['name', 'series', 'element_count']
+NULL_WRITABLE_ATTRIBUTES = []
 
 
 # ## FUNCTIONS
@@ -28,9 +26,7 @@ UPDATE_ALLOWED_ATTRIBUTES = ['name', 'series']
 def create_pool_from_parameters(createparams):
     current_time = get_current_time()
     pool = Pool(created=current_time, updated=current_time, element_count=0)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(pool, update_columns, createparams)
+    update_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(pool, 'created')
     return pool
 
@@ -38,11 +34,7 @@ def create_pool_from_parameters(createparams):
 # ###### Update
 
 def update_pool_from_parameters(pool, updateparams):
-    update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(pool, update_columns, updateparams))
-    if any(update_results):
+    if update_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         pool.updated = get_current_time()
         save_record(pool, 'updated')
 

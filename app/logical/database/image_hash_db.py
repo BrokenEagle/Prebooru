@@ -7,9 +7,8 @@ from .base_db import update_column_attributes, save_record, flush_session
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['post_id', 'ratio', 'hash']
-
-CREATE_ALLOWED_ATTRIBUTES = ['post_id', 'ratio', 'hash']
+ANY_WRITABLE_COLUMNS = []
+NULL_WRITABLE_ATTRIBUTES = ['post_id', 'ratio', 'hash']
 
 
 # ## FUNCTIONS
@@ -20,9 +19,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['post_id', 'ratio', 'hash']
 
 def create_image_hash_from_parameters(createparams, commit=False):
     image_hash = ImageHash()
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(image_hash, update_columns, createparams)
+    update_column_attributes(image_hash, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(image_hash, 'created', commit=commit)
     return image_hash
 

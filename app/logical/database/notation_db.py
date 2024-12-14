@@ -11,10 +11,8 @@ from .base_db import update_column_attributes, add_record, delete_record, save_r
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['body']
-
-CREATE_ALLOWED_ATTRIBUTES = ['body']
-UPDATE_ALLOWED_ATTRIBUTES = ['body']
+ANY_WRITABLE_COLUMNS = ['body']
+NULL_WRITABLE_ATTRIBUTES = []
 
 ID_MODEL_DICT = {
     'pool_id': Pool,
@@ -35,9 +33,7 @@ ID_MODEL_DICT = {
 def create_notation_from_parameters(createparams):
     current_time = get_current_time()
     notation = Notation(created=current_time, updated=current_time, no_pool=True)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(notation, update_columns, createparams)
+    update_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(notation, 'created')
     return notation
 
@@ -52,11 +48,7 @@ def create_notation_from_json(data):
 # ###### Update
 
 def update_notation_from_parameters(notation, updateparams):
-    update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(notation, update_columns, updateparams))
-    if any(update_results):
+    if update_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         notation.updated = get_current_time()
         save_record(notation, 'updated')
 

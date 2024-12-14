@@ -14,10 +14,8 @@ from .base_db import update_column_attributes, delete_record, save_record, commi
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['artist_id', 'interval', 'expiration', 'last_id', 'requery', 'checked']
-
-CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'interval', 'expiration']
-UPDATE_ALLOWED_ATTRIBUTES = ['interval', 'expiration']
+ANY_WRITABLE_COLUMNS = ['interval', 'expiration']
+NULL_WRITABLE_ATTRIBUTES = ['artist_id']
 
 DISTINCT_ILLUST_COUNT = func.count(Illust.id.distinct())
 UNDECIDED_COUNT = func.count(SubscriptionElement.keep_filter('id', 'is_', None))
@@ -36,9 +34,7 @@ def create_subscription_from_parameters(createparams):
         createparams['status_id'] = Subscription.status_enum.by_name(createparams['status']).id
     current_time = get_current_time()
     subscription = Subscription(status_id=subscription_status.idle.id, created=current_time, updated=current_time)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(subscription, update_columns, createparams)
+    update_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(subscription, 'created')
     return subscription
 
@@ -48,13 +44,9 @@ def create_subscription_from_parameters(createparams):
 def update_subscription_from_parameters(subscription, updateparams):
     if 'status' in updateparams:
         updateparams['status_id'] = Subscription.status_enum.by_name(updateparams['status']).id
-    update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(subscription, update_columns, updateparams))
     if subscription.requery is not None and subscription.requery > hours_from_now(subscription.interval):
         update_subscription_requery(subscription, hours_from_now(subscription.interval))
-    if any(update_results):
+    if update_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         subscription.updated = get_current_time()
         save_record(subscription, 'updated')
 

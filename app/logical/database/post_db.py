@@ -14,11 +14,9 @@ from .pool_element_db import delete_pool_element
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'danbooru_id', 'created', 'type_id', 'alternate',
-                     'pixel_md5', 'duration', 'audio']
-CREATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type_id', 'pixel_md5', 'duration', 'audio']
-UPDATE_ALLOWED_ATTRIBUTES = ['width', 'height', 'file_ext', 'md5', 'size', 'type_id', 'pixel_md5', 'duration', 'audio',
-                             'danbooru_id']
+ANY_WRITABLE_COLUMNS = ['type_id', 'simcheck']
+NULL_WRITABLE_ATTRIBUTES = ['width', 'height', 'size', 'file_ext', 'md5', 'pixel_md5', 'duration', 'audio',
+                            'alternate', 'danbooru_id']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
                                                 .with_entities(SubscriptionElement.post_id)
@@ -38,9 +36,7 @@ SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_
 def create_post_from_parameters(createparams):
     current_time = get_current_time()
     post = Post(created=current_time, alternate=False, simcheck=False)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(post, update_columns, createparams)
+    update_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(post, 'created')
     return post
 
@@ -55,11 +51,7 @@ def create_post_from_json(data):
 # ###### Update
 
 def update_post_from_parameters(post, updateparams):
-    update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(post, update_columns, updateparams))
-    if any(update_results):
+    if update_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         save_record(post, 'updated')
 
 

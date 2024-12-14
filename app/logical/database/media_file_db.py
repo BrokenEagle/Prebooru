@@ -10,9 +10,8 @@ from .base_db import update_column_attributes, save_record, commit_session
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
-
-CREATE_ALLOWED_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
+ANY_WRITABLE_COLUMNS = []
+NULL_WRITABLE_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
 
 
 # ## FUNCTIONS
@@ -23,9 +22,7 @@ CREATE_ALLOWED_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
 
 def create_media_file_from_parameters(createparams):
     media_file = MediaFile(expires=days_from_now(1))
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(media_file, update_columns, createparams)
+    update_column_attributes(media_file, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(media_file, 'created')
     return media_file
 

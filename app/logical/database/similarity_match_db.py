@@ -9,10 +9,8 @@ from .base_db import update_column_attributes, save_record, delete_record, commi
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['forward_id', 'reverse_id', 'score']
-
-CREATE_ALLOWED_ATTRIBUTES = ['forward_id', 'reverse_id', 'score']
-UPDATE_ALLOWED_ATTRIBUTES = ['score']
+ANY_WRITABLE_COLUMNS = ['score']
+NULL_WRITABLE_ATTRIBUTES = ['forward_id', 'reverse_id']
 
 
 # ## FUNCTIONS
@@ -25,9 +23,7 @@ def create_similarity_match_from_parameters(createparams):
     similarity_match = SimilarityMatch()
     if createparams['forward_id'] > createparams['reverse_id']:
         createparams['forward_id'], createparams['reverse_id'] = createparams['reverse_id'], createparams['forward_id']
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(similarity_match, update_columns, createparams)
+    update_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(similarity_match, 'created', commit=False)
     return similarity_match
 
@@ -35,11 +31,7 @@ def create_similarity_match_from_parameters(createparams):
 # ###### UPDATE
 
 def update_similarity_match_from_parameters(similarity_match, updateparams):
-    update_results = []
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(similarity_match, update_columns, updateparams))
-    if any(update_results):
+    if update_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
         save_record(similarity_match, 'updated', commit=False)
 
 

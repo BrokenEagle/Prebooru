@@ -16,10 +16,8 @@ from .pool_db import update_pool_positions
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['illust_id', 'site', 'url', 'width', 'height', 'order', 'active']
-
-CREATE_ALLOWED_ATTRIBUTES = ['illust_id', 'site', 'url', 'width', 'height', 'order', 'active']
-UPDATE_ALLOWED_ATTRIBUTES = ['site', 'url', 'width', 'height', 'order', 'active']
+ANY_WRITABLE_COLUMNS = ['position']
+NULL_WRITABLE_ATTRIBUTES = ['pool_id', 'post_id', 'illust_id', 'notation_id']
 
 ID_MODEL_DICT = {
     'illust_id': Illust,

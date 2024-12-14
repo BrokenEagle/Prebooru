@@ -30,6 +30,9 @@ CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_cre
 UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', '_tags',
                              '_commentaries']
 
+ANY_WRITABLE_COLUMNS = ['site_illust_id', 'site_created', 'pages', 'score', 'active']
+NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_id']
+
 
 # ## FUNCTIONS
 
@@ -76,9 +79,7 @@ def create_illust_from_parameters(createparams):
     current_time = get_current_time()
     set_timesvalues(createparams)
     illust = Illust(created=current_time, updated=current_time)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(illust, update_columns, createparams)
+    update_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     _update_relations(illust, createparams, overwrite=True, create=True)
     save_record(illust, 'created')
     return illust
@@ -99,9 +100,7 @@ def update_illust_from_parameters(illust, updateparams):
         updateparams['site_id'] = Illust.site_enum.by_name(updateparams['site']).id
     set_timesvalues(updateparams)
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(illust, update_columns, updateparams))
+    update_results.append(update_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
     update_results.append(_update_relations(illust, updateparams, overwrite=False, create=False))
     if any(update_results):
         illust.updated = get_current_time()

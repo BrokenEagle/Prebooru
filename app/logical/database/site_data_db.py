@@ -37,8 +37,7 @@ def update_twitter_site_data(illust, params):
         illust.site_data = TwitterData(illust_id=illust.id)
         add_record(illust.site_data)
         commit_session()
-    update_columns = set(params.keys()).intersection(TWITTER_COLUMN_ATTRIBUTES)
-    return update_column_attributes(illust.site_data, update_columns, params)
+    return update_column_attributes(illust.site_data, TWITTER_COLUMN_ATTRIBUTES, [], params)
 
 
 def update_pixiv_site_data(illust, params):
@@ -46,5 +45,4 @@ def update_pixiv_site_data(illust, params):
         illust.site_data = PixivData(illust_id=illust.id)
         add_record(illust.site_data)
         commit_session()
-    update_columns = set(params.keys()).intersection(PIXIV_COLUMN_ATTRIBUTES)
-    return update_column_attributes(illust.site_data, update_columns, params)
+    return update_column_attributes(illust.site_data, PIXIV_COLUMN_ATTRIBUTES, [], params)

@@ -27,6 +27,9 @@ CREATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account'
 UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'primary',
                              '_site_accounts', '_names', '_profiles']
 
+ANY_WRITABLE_COLUMNS = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'primary']
+NULL_WRITABLE_ATTRIBUTES = []
+
 BOORU_SUBQUERY = Artist.query\
     .join(Booru, Artist.boorus)\
     .filter(Booru.deleted.is_(False), Booru.danbooru_id.is_not(None))\
@@ -59,9 +62,7 @@ def create_artist_from_parameters(createparams):
     set_timesvalue(createparams, 'site_created')
     set_all_site_accounts(createparams, None)
     artist = Artist(created=current_time, updated=current_time)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(artist, update_columns, createparams)
+    update_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     _update_relations(artist, createparams, overwrite=True, create=True)
     save_record(artist, 'created')
     return artist
@@ -83,9 +84,7 @@ def update_artist_from_parameters(artist, updateparams):
     set_timesvalue(updateparams, 'site_created')
     set_all_site_accounts(updateparams, artist)
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(artist, update_columns, updateparams))
+    update_results.append(update_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
     update_results.append(_update_relations(artist, updateparams, overwrite=False, create=False))
     if any(update_results):
         artist.updated = get_current_time()

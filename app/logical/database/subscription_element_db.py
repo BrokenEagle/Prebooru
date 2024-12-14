@@ -19,9 +19,8 @@ from .base_db import update_column_attributes, save_record, commit_session
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'expires']
-
-CREATE_ALLOWED_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'post_id', 'expires']
+ANY_WRITABLE_COLUMNS = ['status_id', 'keep_id', 'post_id', 'expires']
+NULL_WRITABLE_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'md5']
 
 if EXPIRED_SUBSCRIPTION is True:
     EXPIRED_SUBSCRIPTION_ACTION = 'archive'
@@ -41,9 +40,7 @@ else:
 
 def create_subscription_element_from_parameters(createparams):
     subscription_element = SubscriptionElement(status_id=subscription_element_status.active.id)
-    settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
-    update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(subscription_element, update_columns, createparams)
+    update_column_attributes(subscription_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
     save_record(subscription_element, 'created')
     return subscription_element
 
