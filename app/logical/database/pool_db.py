@@ -8,7 +8,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import Pool
-from .base_db import update_column_attributes, commit_session
+from .base_db import update_column_attributes, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -31,7 +31,7 @@ def create_pool_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(pool, update_columns, createparams)
-    print("[%s]: created" % pool.shortlink)
+    save_record(pool, 'created')
     return pool
 
 
@@ -43,9 +43,8 @@ def update_pool_from_parameters(pool, updateparams):
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(pool, update_columns, updateparams))
     if any(update_results):
-        print("[%s]: updated" % pool.shortlink)
         pool.updated = get_current_time()
-        commit_session()
+        save_record(pool, 'updated')
 
 
 def update_pool_positions(pool):

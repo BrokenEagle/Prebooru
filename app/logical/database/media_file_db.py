@@ -5,7 +5,7 @@ from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import MediaFile
-from .base_db import update_column_attributes, commit_session
+from .base_db import update_column_attributes, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -26,7 +26,7 @@ def create_media_file_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(media_file, update_columns, createparams)
-    print("[%s]: created" % media_file.shortlink)
+    save_record(media_file, 'created')
     return media_file
 
 

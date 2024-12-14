@@ -14,7 +14,7 @@ from utility.time import days_from_now, get_current_time
 from ...enum_imports import subscription_element_status, subscription_element_keep
 from ...models import Subscription, SubscriptionElement, Post
 from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
-from .base_db import update_column_attributes, commit_session
+from .base_db import update_column_attributes, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -44,7 +44,7 @@ def create_subscription_element_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(subscription_element, update_columns, createparams)
-    print("[%s]: created" % subscription_element.shortlink)
+    save_record(subscription_element, 'created')
     return subscription_element
 
 

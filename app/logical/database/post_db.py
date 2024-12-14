@@ -8,7 +8,7 @@ from utility.time import get_current_time, days_ago
 
 # ## LOCAL IMPORTS
 from ...models import Post, SubscriptionElement, ImageHash
-from .base_db import update_column_attributes, add_record, delete_record, commit_session, flush_session
+from .base_db import update_column_attributes, add_record, delete_record, save_record, commit_session, flush_session
 from .pool_element_db import delete_pool_element
 
 
@@ -41,15 +41,14 @@ def create_post_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(post, update_columns, createparams)
-    print("[%s]: created" % post.shortlink)
+    save_record(post, 'created')
     return post
 
 
 def create_post_from_json(data):
     post = Post.loads(data)
     add_record(post)
-    commit_session()
-    print("[%s]: created" % post.shortlink)
+    save_record(post, 'created')
     return post
 
 
@@ -61,8 +60,7 @@ def update_post_from_parameters(post, updateparams):
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(post, update_columns, updateparams))
     if any(update_results):
-        print("[%s]: updated" % post.shortlink)
-        commit_session()
+        save_record(post, 'updated')
 
 
 def set_post_alternate(post, alternate):

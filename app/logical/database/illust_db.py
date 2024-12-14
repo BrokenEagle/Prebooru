@@ -13,7 +13,7 @@ from .illust_url_db import update_illust_url_from_parameters
 from .site_data_db import update_site_data_from_parameters
 from .pool_element_db import delete_pool_element
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
-    set_timesvalue, set_association_attributes, add_record, delete_record, commit_session
+    set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -80,15 +80,14 @@ def create_illust_from_parameters(createparams):
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(illust, update_columns, createparams)
     _update_relations(illust, createparams, overwrite=True, create=True)
-    print("[%s]: created" % illust.shortlink)
+    save_record(illust, 'created')
     return illust
 
 
 def create_illust_from_json(data):
     illust = Illust.loads(data)
     add_record(illust)
-    commit_session()
-    print("[%s]: created" % illust.shortlink)
+    save_record(illust, 'created')
     return illust
 
 
@@ -105,9 +104,8 @@ def update_illust_from_parameters(illust, updateparams):
     update_results.append(update_column_attributes(illust, update_columns, updateparams))
     update_results.append(_update_relations(illust, updateparams, overwrite=False, create=False))
     if any(update_results):
-        print("[%s]: updated" % illust.shortlink)
         illust.updated = get_current_time()
-        commit_session()
+        save_record(illust, 'updated')
 
 
 def recreate_illust_relations(illust, updateparams):

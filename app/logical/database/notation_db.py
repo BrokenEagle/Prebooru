@@ -6,7 +6,7 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ...models import Notation, Pool, Subscription, Booru, Artist, Illust, Post
 from .pool_element_db import delete_pool_element
-from .base_db import update_column_attributes, add_record, delete_record, commit_session, flush_session
+from .base_db import update_column_attributes, add_record, delete_record, save_record, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -38,15 +38,14 @@ def create_notation_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(notation, update_columns, createparams)
-    print("[%s]: created" % notation.shortlink)
+    save_record(notation, 'created')
     return notation
 
 
 def create_notation_from_json(data):
     notation = Notation.loads(data)
     add_record(notation)
-    commit_session()
-    print("[%s]: created" % notation.shortlink)
+    save_record(notation, 'created')
     return notation
 
 
@@ -58,9 +57,8 @@ def update_notation_from_parameters(notation, updateparams):
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_results.append(update_column_attributes(notation, update_columns, updateparams))
     if any(update_results):
-        print("[%s]: updated" % notation.shortlink)
         notation.updated = get_current_time()
-        commit_session()
+        save_record(notation, 'updated')
 
 
 # ###### Delete

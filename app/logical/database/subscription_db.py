@@ -9,7 +9,7 @@ from utility.time import get_current_time, hours_from_now, add_days, days_ago
 # ## LOCAL IMPORTS
 from ...enum_imports import subscription_status
 from ...models import Subscription, SubscriptionElement, IllustUrl, Illust
-from .base_db import update_column_attributes, delete_record, commit_session
+from .base_db import update_column_attributes, delete_record, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -39,7 +39,7 @@ def create_subscription_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(subscription, update_columns, createparams)
-    print("[%s]: created" % subscription.shortlink)
+    save_record(subscription, 'created')
     return subscription
 
 
@@ -55,9 +55,8 @@ def update_subscription_from_parameters(subscription, updateparams):
     if subscription.requery is not None and subscription.requery > hours_from_now(subscription.interval):
         update_subscription_requery(subscription, hours_from_now(subscription.interval))
     if any(update_results):
-        print("[%s]: updated" % subscription.shortlink)
         subscription.updated = get_current_time()
-        commit_session()
+        save_record(subscription, 'updated')
 
 
 def update_subscription_status(subscription, value):

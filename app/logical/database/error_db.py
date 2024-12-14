@@ -5,7 +5,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import Error
-from .base_db import update_column_attributes, add_record, delete_record, commit_session, commit_or_flush
+from .base_db import update_column_attributes, add_record, delete_record, save_record, commit_session, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
@@ -26,16 +26,15 @@ def create_error_from_parameters(createparams):
     error = Error(created=current_time)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(error, update_columns, createparams, commit=False)
-    print("[%s]: created" % error.shortlink)
+    update_column_attributes(error, update_columns, createparams)
+    save_record(error, 'created', commit=False)
     return error
 
 
 def create_error_from_json(data):
     error = Error.loads(data)
     add_record(error)
-    commit_session()
-    print("[%s]: created" % error.shortlink)
+    save_record(error, 'created')
     return error
 
 

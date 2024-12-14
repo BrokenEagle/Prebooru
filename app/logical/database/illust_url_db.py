@@ -3,7 +3,7 @@
 # ## LOCAL IMPORTS
 from ...models import IllustUrl
 from ...enum_imports import site_descriptor
-from .base_db import update_column_attributes
+from .base_db import update_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
@@ -28,7 +28,7 @@ def create_illust_url_from_parameters(createparams):
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(illust_url, update_columns, createparams)
-    print("[%s]: created" % illust_url.shortlink)
+    save_record(illust_url, 'created')
     return illust_url
 
 
@@ -40,7 +40,7 @@ def update_illust_url_from_parameters(illust_url, updateparams):
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     if update_column_attributes(illust_url, update_columns, updateparams):
-        print("[%s]: updated" % illust_url.shortlink)
+        save_record(illust_url, 'updated')
 
 
 # #### Query

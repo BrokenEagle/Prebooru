@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...models import ImageHash
-from .base_db import update_column_attributes, flush_session, commit_or_flush
+from .base_db import update_column_attributes, save_record, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -22,9 +22,8 @@ def create_image_hash_from_parameters(createparams, commit=False):
     image_hash = ImageHash()
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(image_hash, update_columns, createparams, commit=False)
-    print("[%s]: created" % image_hash.shortlink)
-    commit_or_flush(commit)
+    update_column_attributes(image_hash, update_columns, createparams)
+    save_record(image_hash, 'created', commit=commit)
     return image_hash
 
 

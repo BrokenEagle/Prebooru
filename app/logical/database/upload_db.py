@@ -9,7 +9,7 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ...enum_imports import upload_status
 from ...models import Upload, UploadUrl
-from .base_db import update_column_attributes, add_record, commit_session
+from .base_db import update_column_attributes, add_record, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -36,10 +36,10 @@ def create_upload_from_parameters(createparams):
     upload = Upload(**data)
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(upload, update_columns, createparams, commit=False)
+    update_column_attributes(upload, update_columns, createparams)
     if 'image_urls' in createparams and len(createparams['image_urls']):
         _update_illust_urls(upload, createparams['image_urls'])
-    print("[%s]: created" % upload.shortlink)
+    save_record(upload, 'created', commit=False)
     data = upload.to_json()
     commit_session()
     return data

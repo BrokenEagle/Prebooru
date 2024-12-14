@@ -6,7 +6,7 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ...models import Booru, Label
 from .base_db import update_column_attributes, update_relationship_collections, set_association_attributes,\
-    will_update_record, add_record, delete_record, commit_session
+    will_update_record, add_record, delete_record, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -48,7 +48,7 @@ def create_booru_from_parameters(createparams):
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(booru, update_columns, createparams)
     _update_relations(booru, createparams, create=True)
-    print("[%s]: created" % booru.shortlink)
+    save_record(booru, 'created')
     return booru
 
 
@@ -56,7 +56,7 @@ def create_booru_from_json(data):
     booru = Booru.loads(data)
     add_record(booru)
     commit_session()
-    print("[%s]: created" % booru.shortlink)
+    save_record(booru, 'created')
     return booru
 
 
@@ -70,9 +70,8 @@ def update_booru_from_parameters(booru, updateparams):
     update_results.append(update_column_attributes(booru, update_columns, updateparams))
     update_results.append(_update_relations(booru, updateparams, create=False))
     if any(update_results):
-        print("[%s]: updated" % booru.shortlink)
         booru.updated = get_current_time()
-        commit_session()
+        save_record(booru, 'updated')
         return True
     return False
 

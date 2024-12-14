@@ -64,7 +64,7 @@ def set_association_attributes(params, associations):
             params[association_key] = params[key]
 
 
-def update_column_attributes(item, attrs, dataparams, commit=True):
+def update_column_attributes(item, attrs, dataparams):
     """For updating column attributes with scalar values"""
     printer = buffered_print('update_column_attributes', safe=True, header=False)
     is_dirty = False
@@ -77,11 +77,10 @@ def update_column_attributes(item, attrs, dataparams, commit=True):
         add_record(item)
     if is_dirty:
         printer.print()
-        safe_db_commit(commit)
     return is_dirty
 
 
-def update_relationship_collections(item, relationships, updateparams, commit=True):
+def update_relationship_collections(item, relationships, updateparams):
     """For updating multiple values to collection relationships with scalar values"""
     printer = buffered_print('update_relationship_collections', safe=True, header=False)
     is_dirty = False
@@ -107,11 +106,10 @@ def update_relationship_collections(item, relationships, updateparams, commit=Tr
             is_dirty = True
     if is_dirty:
         printer.print()
-        safe_db_commit(commit)
     return is_dirty
 
 
-def append_relationship_collections(item, relationships, updateparams, commit=True):
+def append_relationship_collections(item, relationships, updateparams):
     """For appending a single value to collection relationships with scalar values"""
     printer = buffered_print('append_relationship_collections', safe=True, header=False)
     is_dirty = False
@@ -131,8 +129,17 @@ def append_relationship_collections(item, relationships, updateparams, commit=Tr
             is_dirty = True
     if is_dirty:
         printer.print()
-        safe_db_commit(commit)
     return is_dirty
+
+
+def save_record(record, action, commit=True, safe=False):
+    if record.id is None:
+        # Flush the record before printing, so that new records get an ID
+        flush_session(safe)
+    print("[%s]: %s\n" % (record.shortlink, action))
+    # Commit only after printing to avoid unnecessarily requerying the record
+    if commit:
+        commit_session(safe)
 
 
 def add_record(record):
@@ -143,34 +150,59 @@ def delete_record(record):
     SESSION.delete(record)
 
 
-def commit_session():
-    SESSION.commit()
+def commit_session(safe=False):
+    if safe:
+        safe_commit_session()
+    else:
+        SESSION.commit()
 
 
-def flush_session():
-    SESSION.flush()
+def flush_session(safe=False):
+    if safe:
+        safe_flush_session()
+    else:
+        SESSION.flush()
 
 
 def commit_or_flush(commit, safe=False):
     if safe:
-        safe_db_commit(commit)
-    elif commit:
-        commit_session()
+        safe_commit_or_flush(commit)
     else:
-        flush_session()
+        _commit_or_flush(commit)
 
 
-def safe_db_commit(commit):
+def safe_commit_session():
     try:
-        if commit:
-            commit_session()
-        else:
-            flush_session()
+        SESSION.commit()
+    except Exception as e:
+        safe_print("\asafe_commit_session : %s" % str(e))
+        print("Unlocking the database...")
+        SESSION.rollback()
+        log_error('base_db.safe_commit_session', str(e))
+        _handle_db_exception(e)
+        raise
+
+
+def safe_flush_session():
+    try:
+        SESSION.flush()
+    except Exception as e:
+        safe_print("\asafe_flush_session : %s" % str(e))
+        print("Unlocking the database...")
+        SESSION.rollback()
+        log_error('base_db.safe_flush_session', str(e))
+        _handle_db_exception(e)
+        raise
+
+
+def safe_commit_or_flush(commit):
+    try:
+        _commit_or_flush(commit)
     except Exception as e:
         safe_print("\asafe_db_commit : %s" % str(e))
         print("Unlocking the database...")
         SESSION.rollback()
-        log_error('base_db.safe_db_commit', str(e))
+        log_error('base_db.safe_commit_or_flush', str(e))
         _handle_db_exception(e)
         raise
 
@@ -198,3 +230,10 @@ def _handle_db_exception(error):
     if isinstance(error, sqlalchemy.exc.OperationalError) and error.code == 'e3q8':
         print("!!!Sleeping for DB lock!!!")
         time.sleep(30)
+
+
+def _commit_or_flush(commit):
+    if commit:
+        commit_session()
+    else:
+        flush_session()

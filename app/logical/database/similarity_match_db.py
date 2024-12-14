@@ -5,7 +5,7 @@ from sqlalchemy import or_
 
 # ## LOCAL IMPORTS
 from ...models import SimilarityMatch
-from .base_db import update_column_attributes, delete_record, commit_or_flush
+from .base_db import update_column_attributes, save_record, delete_record, commit_or_flush
 
 # ## GLOBAL VARIABLES
 
@@ -27,8 +27,8 @@ def create_similarity_match_from_parameters(createparams):
         createparams['forward_id'], createparams['reverse_id'] = createparams['reverse_id'], createparams['forward_id']
     settable_keylist = set(createparams.keys()).intersection(CREATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_column_attributes(similarity_match, update_columns, createparams, commit=False)
-    print("[%s]: created\n" % similarity_match.shortlink)
+    update_column_attributes(similarity_match, update_columns, createparams)
+    save_record(similarity_match, 'created', commit=False)
     return similarity_match
 
 
@@ -38,9 +38,9 @@ def update_similarity_match_from_parameters(similarity_match, updateparams):
     update_results = []
     settable_keylist = set(updateparams.keys()).intersection(UPDATE_ALLOWED_ATTRIBUTES)
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
-    update_results.append(update_column_attributes(similarity_match, update_columns, updateparams, commit=False))
+    update_results.append(update_column_attributes(similarity_match, update_columns, updateparams))
     if any(update_results):
-        print("[%s]: updated\n" % similarity_match.shortlink)
+        save_record(similarity_match, 'updated', commit=False)
 
 
 # ###### DELETE

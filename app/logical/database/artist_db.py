@@ -10,7 +10,7 @@ from utility.time import get_current_time
 from ...models import Artist, ArtistUrl, Booru, Label, Description
 from ..utility import set_error
 from .base_db import update_column_attributes, update_relationship_collections, append_relationship_collections,\
-    set_timesvalue, set_association_attributes, add_record, delete_record, commit_session
+    set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -63,15 +63,14 @@ def create_artist_from_parameters(createparams):
     update_columns = settable_keylist.intersection(COLUMN_ATTRIBUTES)
     update_column_attributes(artist, update_columns, createparams)
     _update_relations(artist, createparams, overwrite=True, create=True)
-    print("[%s]: created" % artist.shortlink)
+    save_record(artist, 'created')
     return artist
 
 
 def create_artist_from_json(data):
     artist = Artist.loads(data)
     add_record(artist)
-    commit_session()
-    print("[%s]: created" % artist.shortlink)
+    save_record(artist, 'created')
     return artist
 
 
@@ -89,9 +88,8 @@ def update_artist_from_parameters(artist, updateparams):
     update_results.append(update_column_attributes(artist, update_columns, updateparams))
     update_results.append(_update_relations(artist, updateparams, overwrite=False, create=False))
     if any(update_results):
-        print("[%s]: updated" % artist.shortlink)
         artist.updated = get_current_time()
-        commit_session()
+        save_record(artist, 'updated')
 
 
 def recreate_artist_relations(artist, updateparams):
