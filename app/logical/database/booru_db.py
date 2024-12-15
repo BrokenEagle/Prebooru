@@ -56,8 +56,6 @@ def update_booru_from_parameters(booru, updateparams):
     _set_all_names(updateparams, booru)
     col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams, safe=True)
     rel_result = _set_relations(booru, updateparams)
-    if rel_result:
-        booru.updated = get_current_time()
     if col_result or rel_result:
         save_record(booru, 'updated')
     return booru

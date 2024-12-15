@@ -3,9 +3,6 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
 
-# ## PACKAGE IMPORTS
-from utility.time import get_current_time
-
 # ## LOCAL IMPORTS
 from ...models import Illust, SiteTag, Description
 from ..utility import set_error
@@ -72,8 +69,6 @@ def update_illust_from_parameters(illust, updateparams):
     col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams, safe=True)
     rel_result = _set_relations(illust, updateparams)
     url_result = _set_illust_urls(illust, updateparams)
-    if rel_result or url_result:
-        illust.updated = get_current_time()
     if col_result or rel_result or url_result:
         save_record(illust, 'updated')
 

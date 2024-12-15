@@ -68,7 +68,6 @@ def set_column_attributes(item, any_columns, null_columns, dataparams, safe=Fals
     """For updating column attributes with scalar values"""
     printer = buffered_print('set_column_attributes', safe=True, header=False)
     is_dirty = False
-    current_time = None
     allowed_attrs = any_columns + null_columns
     for attr in allowed_attrs:
         if attr not in dataparams or (attr in null_columns and getattr(item, attr) is not None):
@@ -79,13 +78,10 @@ def set_column_attributes(item, any_columns, null_columns, dataparams, safe=Fals
             is_dirty = True
     if item not in SESSION:
         if hasattr(item, 'created'):
-            current_time = get_current_time()
-            item.created = current_time
+            item.created = get_current_time()
         add_record(item)
     if is_dirty:
-        if hasattr(item, 'updated'):
-            current_time = get_current_time() if current_time is None else current_time
-            item.updated = current_time
+        _update_record(item)
         flush_session(safe=safe)
         printer.print()
     return is_dirty
@@ -116,6 +112,7 @@ def set_relationship_collections(item, relationships, dataparams, safe=False):
             collection.remove(remove_item)
             is_dirty = True
     if is_dirty:
+        _update_record(item)
         flush_session(safe=safe)
         printer.print()
     return is_dirty
@@ -141,6 +138,7 @@ def append_relationship_collections(item, relationships, dataparams, safe=False)
             collection.append(add_item)
             is_dirty = True
     if is_dirty:
+        _update_record(item)
         flush_session(safe=safe)
         printer.print()
     return is_dirty
@@ -248,3 +246,8 @@ def _commit_or_flush(commit):
         commit_session()
     else:
         flush_session()
+
+
+def _update_record(item):
+    if hasattr(item, 'updated'):
+        item.updated = get_current_time()

@@ -75,8 +75,6 @@ def update_artist_from_parameters(artist, updateparams):
     col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams, safe=True)
     rel_result = _set_relations(artist, updateparams)
     web_result = _set_artist_webpages(artist, updateparams)
-    if rel_result or web_result:
-        artist.updated = get_current_time()
     if col_result or rel_result or web_result:
         save_record(artist, 'updated', safe=True)
 
