@@ -6,7 +6,7 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ...models import Booru, Label
 from .base_db import set_column_attributes, set_relationship_collections, set_association_attributes,\
-    will_update_record, add_record, delete_record, save_record, commit_session
+    will_update_record, add_record, delete_record, save_record, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -29,25 +29,16 @@ UPDATE_ALLOWED_COLUMNS = set(COLUMN_ATTRIBUTES).intersection(UPDATE_ALLOWED_ATTR
 
 # ## FUNCTIONS
 
-# #### Helper functions
-
-def set_all_names(params, booru):
-    if 'current_name' in params and params['current_name']:
-        booru_names = list(booru.names) if booru is not None else []
-        params['names'] = params.get('names', booru_names)
-        params['names'] = list(set(params['names'] + [params['current_name']]))
-
-
 # #### Router helper functions
 
 # ###### Create
 
 def create_booru_from_parameters(createparams):
-    set_all_names(createparams, None)
-    set_association_attributes(createparams, ASSOCIATION_ATTRIBUTES)
     booru = Booru()
+    _set_all_names(createparams, booru)
     set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    _update_relations(booru, createparams, create=True)
+    flush_session(safe=True)
+    _set_relations(booru, createparams)
     save_record(booru, 'created')
     return booru
 
@@ -63,18 +54,19 @@ def create_booru_from_json(data):
 # ###### Update
 
 def update_booru_from_parameters(booru, updateparams):
-    update_results = []
-    set_all_names(updateparams, booru)
-    update_results.append(set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
-    update_results.append(_update_relations(booru, updateparams, create=False))
-    if any(update_results):
+    _set_all_names(updateparams, booru)
+    col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams)
+    rel_result = _set_relations(booru, updateparams)
+    if rel_result:
+        booru.updated = get_current_time()
+    if col_result or rel_result:
         save_record(booru, 'updated')
-        return True
-    return False
+    return booru
 
 
 def recreate_booru_relations(booru, updateparams):
-    _update_relations(booru, updateparams, create=False)
+    _set_relations(booru, updateparams)
+    commit_session()
 
 
 def will_update_booru(booru, data):
@@ -120,9 +112,12 @@ def get_all_boorus_page(limit):
 
 # #### Private functions
 
-def _update_relations(booru, updateparams, create=None):
-    set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    allowed_attributes = CREATE_ALLOWED_ATTRIBUTES if create else UPDATE_ALLOWED_ATTRIBUTES
-    settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)
-    update_relationships = [rel for rel in UPDATE_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-    return set_relationship_collections(booru, update_relationships, updateparams)
+def _set_all_names(params, booru):
+    if isinstance(params.get('current_name'), str):
+        names = set(params.get('names', list(booru.names)) + [params['current_name']])
+        params['names'] = list(names)
+
+
+def _set_relations(booru, setparams, create=None):
+    set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
+    return set_relationship_collections(booru, ALL_SCALAR_RELATIONSHIPS, setparams)
