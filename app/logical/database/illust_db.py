@@ -47,8 +47,7 @@ def create_illust_from_parameters(createparams):
     set_timesvalue(createparams, 'site_created')
     set_timesvalue(createparams, 'site_updated')
     set_timesvalue(createparams, 'site_uploaded')
-    set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    flush_session(safe=True)
+    set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams, safe=True)
     _set_relations(illust, createparams)
     _set_illust_urls(illust, createparams)
     save_record(illust, 'created')
@@ -70,7 +69,7 @@ def update_illust_from_parameters(illust, updateparams):
     set_timesvalue(updateparams, 'site_created')
     set_timesvalue(updateparams, 'site_updated')
     set_timesvalue(updateparams, 'site_uploaded')
-    col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams)
+    col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams, safe=True)
     rel_result = _set_relations(illust, updateparams)
     url_result = _set_illust_urls(illust, updateparams)
     if rel_result or url_result:

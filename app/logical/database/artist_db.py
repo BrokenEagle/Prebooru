@@ -50,8 +50,7 @@ def create_artist_from_parameters(createparams):
         createparams['site_id'] = Artist.site_enum.by_name(createparams['site']).id
     set_timesvalue(createparams, 'site_created')
     _set_all_site_accounts(createparams, artist)
-    set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    flush_session(safe=True)
+    set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams, safe=True)
     _set_relations(artist, createparams)
     _set_artist_webpages(artist, createparams)
     save_record(artist, 'created', safe=True)
@@ -73,7 +72,7 @@ def update_artist_from_parameters(artist, updateparams):
     set_timesvalue(updateparams, 'site_created')
     _set_all_site_accounts(updateparams, artist)
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams)
+    col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams, safe=True)
     rel_result = _set_relations(artist, updateparams)
     web_result = _set_artist_webpages(artist, updateparams)
     if rel_result or web_result:

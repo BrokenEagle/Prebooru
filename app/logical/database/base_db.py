@@ -64,7 +64,7 @@ def set_association_attributes(params, associations):
             params[association_key] = params[key]
 
 
-def set_column_attributes(item, any_columns, null_columns, dataparams):
+def set_column_attributes(item, any_columns, null_columns, dataparams, safe=False):
     """For updating column attributes with scalar values"""
     printer = buffered_print('set_column_attributes', safe=True, header=False)
     is_dirty = False
@@ -86,11 +86,12 @@ def set_column_attributes(item, any_columns, null_columns, dataparams):
         if hasattr(item, 'updated'):
             current_time = get_current_time() if current_time is None else current_time
             item.updated = current_time
+        flush_session(safe=safe)
         printer.print()
     return is_dirty
 
 
-def set_relationship_collections(item, relationships, dataparams):
+def set_relationship_collections(item, relationships, dataparams, safe=False):
     """For updating multiple values to collection relationships with scalar values"""
     printer = buffered_print('set_relationship_collections', safe=True, header=False)
     is_dirty = False
@@ -115,11 +116,12 @@ def set_relationship_collections(item, relationships, dataparams):
             collection.remove(remove_item)
             is_dirty = True
     if is_dirty:
+        flush_session(safe=safe)
         printer.print()
     return is_dirty
 
 
-def append_relationship_collections(item, relationships, dataparams):
+def append_relationship_collections(item, relationships, dataparams, safe=False):
     """For appending a single value to collection relationships with scalar values"""
     printer = buffered_print('append_relationship_collections', safe=True, header=False)
     is_dirty = False
@@ -139,14 +141,12 @@ def append_relationship_collections(item, relationships, dataparams):
             collection.append(add_item)
             is_dirty = True
     if is_dirty:
+        flush_session(safe=safe)
         printer.print()
     return is_dirty
 
 
 def save_record(record, action, commit=True, safe=False):
-    if record.id is None:
-        # Flush the record before printing, so that new records get an ID
-        flush_session(safe)
     print("[%s]: %s\n" % (record.shortlink, action))
     # Commit only after printing to avoid unnecessarily requerying the record
     if commit:
