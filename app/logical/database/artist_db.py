@@ -5,12 +5,13 @@ from sqlalchemy import not_
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
+from utility.uprint import buffered_print
 
 # ## LOCAL IMPORTS
 from ...models import Artist, ArtistUrl, Booru, Label, Description
 from ..utility import set_error
 from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
-    set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session
+    set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -39,29 +40,21 @@ BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 
 # ## FUNCTIONS
 
-# #### Helper functions
-
-def set_all_site_accounts(params, artist):
-    if 'current_site_account' in params and params['current_site_account']:
-        artist_accounts = list(artist.site_accounts) if artist is not None else []
-        params['site_accounts'] = params.get('site_accounts', artist_accounts)
-        params['site_accounts'] = list(set(params['site_accounts'] + [params['current_site_account']]))
-
-
 # #### DB functions
 
 # ###### Create
 
 def create_artist_from_parameters(createparams):
+    artist = Artist(primary=True)
     if 'site' in createparams:
         createparams['site_id'] = Artist.site_enum.by_name(createparams['site']).id
-    createparams['primary'] = createparams['primary'] if 'primary' in createparams else True
     set_timesvalue(createparams, 'site_created')
-    set_all_site_accounts(createparams, None)
-    artist = Artist()
+    _set_all_site_accounts(createparams, artist)
     set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    _update_relations(artist, createparams, overwrite=True, create=True)
-    save_record(artist, 'created')
+    flush_session(safe=True)
+    _set_relations(artist, createparams)
+    _set_artist_webpages(artist, createparams)
+    save_record(artist, 'created', safe=True)
     return artist
 
 
@@ -75,60 +68,31 @@ def create_artist_from_json(data):
 # ###### Update
 
 def update_artist_from_parameters(artist, updateparams):
-    update_results = []
     if 'site' in updateparams:
         updateparams['site_id'] = Artist.site_enum.by_name(updateparams['site']).id
     set_timesvalue(updateparams, 'site_created')
-    set_all_site_accounts(updateparams, artist)
+    _set_all_site_accounts(updateparams, artist)
     set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    update_results.append(set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams))
-    update_results.append(_update_relations(artist, updateparams, overwrite=False, create=False))
-    if any(update_results):
-        save_record(artist, 'updated')
+    col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams)
+    rel_result = _set_relations(artist, updateparams)
+    web_result = _set_artist_webpages(artist, updateparams)
+    if rel_result or web_result:
+        artist.updated = get_current_time()
+    if col_result or rel_result or web_result:
+        save_record(artist, 'updated', safe=True)
 
 
 def recreate_artist_relations(artist, updateparams):
-    _update_relations(artist, updateparams, overwrite=True, create=False)
+    rel_result = _set_relations(artist, updateparams)
+    web_result = _set_artist_webpages(artist, updateparams)
+    if rel_result or web_result:
+        artist.updated = get_current_time()
+        commit_session()
 
 
 def inactivate_artist(artist):
     artist.active = False
     commit_session()
-
-
-# #### Auxiliary functions
-
-def update_artist_webpages(artist, params):
-    existing_webpages = [webpage.url for webpage in artist.webpages]
-    current_webpages = []
-    is_dirty = False
-    for url in params:
-        is_active = url[0] != '-'
-        if not is_active:
-            url = url[1:]
-        artist_url = next(filter(lambda x: x.url == url, artist.webpages), None)
-        if artist_url is None:
-            data = {
-                'artist_id': artist.id,
-                'url': url,
-                'active': is_active,
-            }
-            artist_url = ArtistUrl(**data)
-            add_record(artist_url)
-            is_dirty = True
-        elif artist_url.active != is_active:
-            artist_url.active = is_active
-            is_dirty = True
-        current_webpages.append(url)
-    removed_webpages = set(existing_webpages).difference(current_webpages)
-    for url in removed_webpages:
-        # These will only be removable from the edit artist interface
-        artist_url = next(filter(lambda x: x.url == url, artist.webpages))
-        delete_record(artist_url)
-        is_dirty = True
-    if is_dirty:
-        commit_session()
-    return is_dirty
 
 
 # ###### Delete
@@ -195,20 +159,57 @@ def get_artists_without_boorus_page(limit):
 
 # #### Private functions
 
-def _update_relations(artist, updateparams, overwrite=None, create=None):
-    update_results = []
-    if isinstance(updateparams.get('profiles'), str):
-        updateparams['_profiles_append'] = updateparams['profiles'] if len(updateparams['profiles']) else None
-        updateparams['profiles'] = None
-    set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    allowed_attributes = CREATE_ALLOWED_ATTRIBUTES if create else UPDATE_ALLOWED_ATTRIBUTES
-    settable_keylist = set(updateparams.keys()).intersection(allowed_attributes)
-    relationship_list = ALL_SCALAR_RELATIONSHIPS if overwrite else UPDATE_SCALAR_RELATIONSHIPS
-    update_relationships = [rel for rel in relationship_list if rel[0] in settable_keylist]
-    update_results.append(set_relationship_collections(artist, update_relationships, updateparams))
-    if not overwrite:
-        append_relationships = [rel for rel in APPEND_SCALAR_RELATIONSHIPS if rel[0] in settable_keylist]
-        update_results.append(append_relationship_collections(artist, append_relationships, updateparams))
-    if 'webpages' in updateparams:
-        update_results.append(update_artist_webpages(artist, updateparams['webpages']))
-    return any(update_results)
+def _set_all_site_accounts(params, artist):
+    if isinstance(params.get('current_site_account'), str):
+        accounts = set(params.get('site_accounts', list(artist.site_accounts)) + [params['current_site_account']])
+        params['site_accounts'] = list(accounts)
+
+
+def _set_relations(artist, setparams):
+    if isinstance(setparams.get('profiles'), str):
+        setparams['_profiles_append'] = setparams['profiles'] if len(setparams['profiles']) else None
+        setparams['profiles'] = None
+    set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
+    set_rel_result = set_relationship_collections(artist, UPDATE_SCALAR_RELATIONSHIPS, setparams)
+    append_rel_result = append_relationship_collections(artist, APPEND_SCALAR_RELATIONSHIPS, setparams)
+    return any([set_rel_result, append_rel_result])
+
+
+def _set_artist_webpages(artist, params):
+    if 'webpages' not in params:
+        return False
+    printer = buffered_print('set_artist_webpages', safe=True, header=False)
+    update_results = False
+    existing_webpages = [webpage.url for webpage in artist.webpages]
+    current_webpages = []
+    for url in params['webpages']:
+        is_active = url[0] != '-'
+        if not is_active:
+            url = url[1:]
+        artist_url = next(filter(lambda x: x.url == url, artist.webpages), None)
+        if artist_url is None:
+            data = {
+                'artist_id': artist.id,
+                'url': url,
+                'active': is_active,
+            }
+            printer("Adding artist url [%s]:" % artist.shortlink, url, is_active)
+            artist_url = ArtistUrl(**data)
+            add_record(artist_url)
+            update_results = True
+        elif artist_url.active != is_active:
+            printer("Updating %s (%s):" % (artist_url.shortlink, artist_url.url), artist_url.active, is_active)
+            artist_url.active = is_active
+            update_results = True
+        current_webpages.append(url)
+    removed_webpages = set(existing_webpages).difference(current_webpages)
+    for url in removed_webpages:
+        # These will only be removable via the artist urls controller
+        printer("Inactivating %s (%s):" % (artist_url.shortlink, artist_url.url))
+        artist_url = next(filter(lambda x: x.url == url, artist.webpages))
+        artist_url.active = False
+        update_results = True
+    if update_results:
+        printer.print()
+        flush_session()
+    return update_results
