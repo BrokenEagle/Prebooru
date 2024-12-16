@@ -15,17 +15,9 @@ from .artist_url_db import create_artist_url_from_parameters, update_artist_url_
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'primary']
 UPDATE_SCALAR_RELATIONSHIPS = [('_site_accounts', 'name', Label), ('_names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = [('_profiles', 'body', Description)]
-ALL_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['site_accounts', 'names', 'profiles']
-NORMALIZED_ASSOCIATE_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
-
-CREATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'primary',
-                             '_site_accounts', '_names', '_profiles']
-UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'primary',
-                             '_site_accounts', '_names', '_profiles']
 
 ANY_WRITABLE_COLUMNS = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'primary']
 NULL_WRITABLE_ATTRIBUTES = []

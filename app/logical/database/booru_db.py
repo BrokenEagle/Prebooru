@@ -11,20 +11,12 @@ from .base_db import set_column_attributes, set_relationship_collections, set_as
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted']
 UPDATE_SCALAR_RELATIONSHIPS = [('_names', 'name', Label)]
 APPEND_SCALAR_RELATIONSHIPS = []
-ALL_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['names']
-NORMALIZED_ASSOCIATE_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
-
-CREATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
-UPDATE_ALLOWED_ATTRIBUTES = ['danbooru_id', 'current_name', 'banned', 'deleted', '_names']
 
 ANY_WRITABLE_COLUMNS = ['danbooru_id', 'current_name', 'banned', 'deleted']
 NULL_WRITABLE_ATTRIBUTES = []
-
-UPDATE_ALLOWED_COLUMNS = set(COLUMN_ATTRIBUTES).intersection(UPDATE_ALLOWED_ATTRIBUTES)
 
 
 # ## FUNCTIONS
@@ -56,7 +48,7 @@ def recreate_booru_relations(booru, updateparams):
 
 
 def will_update_booru(booru, data):
-    return will_update_record(booru, data, UPDATE_ALLOWED_COLUMNS)
+    return will_update_record(booru, data, ANY_WRITABLE_COLUMNS)
 
 
 # #### Set
@@ -118,4 +110,4 @@ def _set_all_names(params, booru):
 
 def _set_relations(booru, setparams, update):
     set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
-    return set_relationship_collections(booru, ALL_SCALAR_RELATIONSHIPS, setparams, update=update)
+    return set_relationship_collections(booru, UPDATE_SCALAR_RELATIONSHIPS, setparams, update=update)

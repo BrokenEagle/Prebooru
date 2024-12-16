@@ -18,17 +18,9 @@ from .base_db import set_column_attributes, set_relationship_collections, append
 
 # ## GLOBAL VARIABLES
 
-COLUMN_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active']
 UPDATE_SCALAR_RELATIONSHIPS = [('_tags', 'name', SiteTag)]
 APPEND_SCALAR_RELATIONSHIPS = [('_commentaries', 'body', Description)]
-ALL_SCALAR_RELATIONSHIPS = UPDATE_SCALAR_RELATIONSHIPS + APPEND_SCALAR_RELATIONSHIPS
 ASSOCIATION_ATTRIBUTES = ['tags', 'commentaries']
-NORMALIZED_ASSOCIATION_ATTRIBUTES = ['_' + key for key in ASSOCIATION_ATTRIBUTES]
-
-CREATE_ALLOWED_ATTRIBUTES = ['artist_id', 'site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active',
-                             '_tags', '_commentaries']
-UPDATE_ALLOWED_ATTRIBUTES = ['site_id', 'site_illust_id', 'site_created', 'pages', 'score', 'active', '_tags',
-                             '_commentaries']
 
 ANY_WRITABLE_COLUMNS = ['site_illust_id', 'site_created', 'pages', 'score', 'active']
 NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_id']
