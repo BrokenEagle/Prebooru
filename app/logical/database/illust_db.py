@@ -3,6 +3,9 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
 
+# ## PACKAGE IMPORTS
+from utility.time import get_current_time
+
 # ## LOCAL IMPORTS
 from ...models import Illust, SiteTag, Description
 from ..utility import set_error
@@ -37,7 +40,7 @@ NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_id']
 
 def create_illust_from_parameters(createparams, commit=True):
     illust = Illust()
-    return set_illust_from_parameters(illust, createparams, 'created', commit)
+    return set_illust_from_parameters(illust, createparams, 'created', commit, True)
 
 
 def create_illust_from_json(data):
@@ -49,13 +52,13 @@ def create_illust_from_json(data):
 
 # #### Update
 
-def update_illust_from_parameters(illust, updateparams, commit=True):
-    return set_illust_from_parameters(illust, updateparams, 'updated', commit)
+def update_illust_from_parameters(illust, updateparams, commit=True, update=True):
+    return set_illust_from_parameters(illust, updateparams, 'updated', commit, update)
 
 
 def recreate_illust_relations(illust, updateparams):
-    _set_relations(illust, updateparams)
-    commit_session()
+    if _set_relations(illust, updateparams):
+        commit_session()
 
 
 def set_illust_artist(illust, artist):
@@ -65,15 +68,16 @@ def set_illust_artist(illust, artist):
 
 # #### Set
 
-def set_illust_from_parameters(illust, setparams, action, commit):
+def set_illust_from_parameters(illust, setparams, action, commit, update):
     if 'site' in setparams:
         setparams['site_id'] = Illust.site_enum.by_name(setparams['site']).id
     set_timesvalue(setparams, 'site_created')
     set_timesvalue(setparams, 'site_updated')
     set_timesvalue(setparams, 'site_uploaded')
-    col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, safe=True)
-    rel_result = _set_relations(illust, setparams)
-    url_result = _set_illust_urls(illust, setparams)
+    col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
+                                       setparams, update=update, safe=True)
+    rel_result = _set_relations(illust, setparams, update)
+    url_result = _set_illust_urls(illust, setparams, update)
     if col_result or rel_result or url_result:
         save_record(illust, action, commit=commit)
     return illust
@@ -121,18 +125,18 @@ def get_site_illusts(site, site_illust_ids, load_urls=False):
 
 # #### Private functions
 
-def _set_relations(illust, setparams):
+def _set_relations(illust, setparams, update):
     if isinstance(setparams.get('commentaries'), str):
         setparams['_commentaries_append'] = setparams['commentaries']
         setparams['commentaries'] = None
     set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
-    set_rel_result = set_relationship_collections(illust, UPDATE_SCALAR_RELATIONSHIPS, setparams)
-    append_rel_result = append_relationship_collections(illust, APPEND_SCALAR_RELATIONSHIPS, setparams)
+    set_rel_result = set_relationship_collections(illust, UPDATE_SCALAR_RELATIONSHIPS, setparams, update=update)
+    append_rel_result = append_relationship_collections(illust, APPEND_SCALAR_RELATIONSHIPS, setparams, update=update)
     site_data_result = update_site_data_from_parameters(illust, setparams)
     return any([set_rel_result, append_rel_result, site_data_result])
 
 
-def _set_illust_urls(illust, params):
+def _set_illust_urls(illust, params, update):
     if 'illust_urls' not in params:
         return False
     update_results = False
@@ -154,8 +158,11 @@ def _set_illust_urls(illust, params):
         # These will only be removable via the illust urls controller
         illust_url = next(filter(lambda x: x.url == url, illust.urls))
         illust_url.active = False
-        flush_session()
         update_results = True
+    if update_results:
+        if update:
+            illust.updated = get_current_time()
+        flush_session()
     return update_results
 
 

@@ -29,13 +29,13 @@ COUNT_UNDECIDED_ELEMENTS = func.sum(func.iif(SubscriptionElement.keep_filter('id
 
 def create_subscription_from_parameters(createparams, commit=True):
     subscription = Subscription(status_id=subscription_status.idle.id)
-    return set_subscription_from_parameters(subscription, createparams, 'created', commit)
+    return set_subscription_from_parameters(subscription, createparams, 'created', commit, True)
 
 
 # #### Update
 
-def update_subscription_from_parameters(subscription, updateparams, commit=True):
-    return set_subscription_from_parameters(subscription, updateparams, 'updated', commit)
+def update_subscription_from_parameters(subscription, updateparams, commit=True, update=True):
+    return set_subscription_from_parameters(subscription, updateparams, 'updated', commit, update)
 
 
 def update_subscription_status(subscription, value):
@@ -62,8 +62,8 @@ def update_subscription_last_info(subscription):
 
 # #### Set
 
-def set_subscription_from_parameters(subscription, setparams, action, commit):
-    if set_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+def set_subscription_from_parameters(subscription, setparams, action, commit, update):
+    if set_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update=update):
         save_record(subscription, action, commit=commit)
     return subscription
 

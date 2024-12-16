@@ -64,7 +64,7 @@ def set_association_attributes(params, associations):
             params[association_key] = params[key]
 
 
-def set_column_attributes(item, any_columns, null_columns, dataparams, safe=False):
+def set_column_attributes(item, any_columns, null_columns, dataparams, update=False, safe=False):
     """For updating column attributes with scalar values"""
     printer = buffered_print('set_column_attributes', safe=True, header=False)
     is_dirty = False
@@ -81,13 +81,13 @@ def set_column_attributes(item, any_columns, null_columns, dataparams, safe=Fals
             item.created = get_current_time()
         add_record(item)
     if is_dirty:
-        _update_record(item)
+        _update_record(item, update)
         flush_session(safe=safe)
         printer.print()
     return is_dirty
 
 
-def set_relationship_collections(item, relationships, dataparams, safe=False):
+def set_relationship_collections(item, relationships, dataparams, update=False, safe=False):
     """For updating multiple values to collection relationships with scalar values"""
     printer = buffered_print('set_relationship_collections', safe=True, header=False)
     is_dirty = False
@@ -112,13 +112,13 @@ def set_relationship_collections(item, relationships, dataparams, safe=False):
             collection.remove(remove_item)
             is_dirty = True
     if is_dirty:
-        _update_record(item)
+        _update_record(item, update)
         flush_session(safe=safe)
         printer.print()
     return is_dirty
 
 
-def append_relationship_collections(item, relationships, dataparams, safe=False):
+def append_relationship_collections(item, relationships, dataparams, update=False, safe=False):
     """For appending a single value to collection relationships with scalar values"""
     printer = buffered_print('append_relationship_collections', safe=True, header=False)
     is_dirty = False
@@ -138,7 +138,7 @@ def append_relationship_collections(item, relationships, dataparams, safe=False)
             collection.append(add_item)
             is_dirty = True
     if is_dirty:
-        _update_record(item)
+        _update_record(item, update)
         flush_session(safe=safe)
         printer.print()
     return is_dirty
@@ -247,6 +247,6 @@ def _commit_or_flush(commit):
         flush_session()
 
 
-def _update_record(item):
-    if hasattr(item, 'updated'):
+def _update_record(item, update):
+    if update and hasattr(item, 'updated'):
         item.updated = get_current_time()

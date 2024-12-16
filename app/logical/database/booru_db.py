@@ -33,7 +33,7 @@ UPDATE_ALLOWED_COLUMNS = set(COLUMN_ATTRIBUTES).intersection(UPDATE_ALLOWED_ATTR
 
 def create_booru_from_parameters(createparams, commit=True):
     booru = Booru()
-    return set_booru_from_parameters(booru, createparams, 'created', commit)
+    return set_booru_from_parameters(booru, createparams, 'created', commit, True)
 
 
 def create_booru_from_json(data):
@@ -46,13 +46,13 @@ def create_booru_from_json(data):
 
 # #### Update
 
-def update_booru_from_parameters(booru, updateparams, commit=True):
-    return set_booru_from_parameters(booru, updateparams, 'updated', commit)
+def update_booru_from_parameters(booru, updateparams, commit=True, update=True):
+    return set_booru_from_parameters(booru, updateparams, 'updated', commit, update)
 
 
 def recreate_booru_relations(booru, updateparams):
-    _set_relations(booru, updateparams)
-    commit_session()
+    if _set_relations(booru, updateparams, False):
+        commit_session()
 
 
 def will_update_booru(booru, data):
@@ -61,10 +61,11 @@ def will_update_booru(booru, data):
 
 # #### Set
 
-def set_booru_from_parameters(booru, setparams, action, commit):
+def set_booru_from_parameters(booru, setparams, action, commit, update):
     _set_all_names(setparams, booru)
-    col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, safe=True)
-    rel_result = _set_relations(booru, setparams)
+    col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
+                                       setparams, update=update, safe=True)
+    rel_result = _set_relations(booru, setparams, update)
     if col_result or rel_result:
         save_record(booru, action, commit=commit)
     return booru
@@ -115,6 +116,6 @@ def _set_all_names(params, booru):
         params['names'] = list(names)
 
 
-def _set_relations(booru, setparams, create=None):
+def _set_relations(booru, setparams, update):
     set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
-    return set_relationship_collections(booru, ALL_SCALAR_RELATIONSHIPS, setparams)
+    return set_relationship_collections(booru, ALL_SCALAR_RELATIONSHIPS, setparams, update=update)

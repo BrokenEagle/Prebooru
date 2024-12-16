@@ -44,7 +44,7 @@ BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 
 def create_artist_from_parameters(createparams, commit=True):
     artist = Artist(primary=True)
-    return set_artist_from_parameters(artist, createparams, 'created', commit)
+    return set_artist_from_parameters(artist, createparams, 'created', commit, True)
 
 
 def create_artist_from_json(data):
@@ -56,15 +56,14 @@ def create_artist_from_json(data):
 
 # #### Update
 
-def update_artist_from_parameters(artist, updateparams, commit=True):
-    return set_artist_from_parameters(artist, updateparams, 'updated', commit)
+def update_artist_from_parameters(artist, updateparams, commit=True, update=True):
+    return set_artist_from_parameters(artist, updateparams, 'updated', commit, update)
 
 
 def recreate_artist_relations(artist, updateparams):
-    rel_result = _set_relations(artist, updateparams)
-    web_result = _set_artist_webpages(artist, updateparams)
+    rel_result = _set_relations(artist, updateparams, False)
+    web_result = _set_artist_webpages(artist, updateparams, False)
     if rel_result or web_result:
-        artist.updated = get_current_time()
         commit_session()
 
 
@@ -75,15 +74,16 @@ def inactivate_artist(artist):
 
 # #### Set
 
-def set_artist_from_parameters(artist, setparams, action, commit):
+def set_artist_from_parameters(artist, setparams, action, commit, update):
     if 'site' in setparams:
         setparams['site_id'] = Artist.site_enum.by_name(setparams['site']).id
     set_timesvalue(setparams, 'site_created')
     _set_all_site_accounts(setparams, artist)
     set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
-    col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, safe=True)
-    rel_result = _set_relations(artist, setparams)
-    web_result = _set_artist_webpages(artist, setparams)
+    col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
+                                       setparams, update=update, safe=True)
+    rel_result = _set_relations(artist, setparams, update)
+    web_result = _set_artist_webpages(artist, setparams, update)
     if col_result or rel_result or web_result:
         save_record(artist, action, commit=commit, safe=True)
     return artist
@@ -159,17 +159,17 @@ def _set_all_site_accounts(params, artist):
         params['site_accounts'] = list(accounts)
 
 
-def _set_relations(artist, setparams):
+def _set_relations(artist, setparams, update):
     if isinstance(setparams.get('profiles'), str):
         setparams['_profiles_append'] = setparams['profiles'] if len(setparams['profiles']) else None
         setparams['profiles'] = None
     set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
-    set_rel_result = set_relationship_collections(artist, UPDATE_SCALAR_RELATIONSHIPS, setparams)
-    append_rel_result = append_relationship_collections(artist, APPEND_SCALAR_RELATIONSHIPS, setparams)
+    set_rel_result = set_relationship_collections(artist, UPDATE_SCALAR_RELATIONSHIPS, setparams, update=update)
+    append_rel_result = append_relationship_collections(artist, APPEND_SCALAR_RELATIONSHIPS, setparams, update=update)
     return any([set_rel_result, append_rel_result])
 
 
-def _set_artist_webpages(artist, params):
+def _set_artist_webpages(artist, params, update):
     if 'webpages' not in params:
         return False
     printer = buffered_print('set_artist_webpages', safe=True, header=False)
@@ -204,6 +204,8 @@ def _set_artist_webpages(artist, params):
         artist_url.active = False
         update_results = True
     if update_results:
+        if update:
+            artist.updated = get_current_time()
         printer.print()
         flush_session()
     return update_results
