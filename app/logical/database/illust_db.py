@@ -10,7 +10,7 @@ from utility.time import get_current_time
 from ...models import Illust, SiteTag, Description
 from ..utility import set_error
 from .illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
-from .site_data_db import update_site_data_from_parameters
+from .site_data_db import create_site_data_from_parameters, update_site_data_from_parameters
 from .pool_element_db import delete_pool_element
 from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
     set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session, flush_session
@@ -132,7 +132,12 @@ def _set_relations(illust, setparams, update):
     set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
     set_rel_result = set_relationship_collections(illust, UPDATE_SCALAR_RELATIONSHIPS, setparams, update=update)
     append_rel_result = append_relationship_collections(illust, APPEND_SCALAR_RELATIONSHIPS, setparams, update=update)
-    site_data_result = update_site_data_from_parameters(illust, setparams)
+    setparams['illust_id'] = illust.id
+    setparams['site'] = illust.site.name
+    if illust.site_data is None:
+        site_data_result = create_site_data_from_parameters(setparams)
+    else:
+        site_data_result = update_site_data_from_parameters(illust.site_data, setparams)
     return any([set_rel_result, append_rel_result, site_data_result])
 
 
