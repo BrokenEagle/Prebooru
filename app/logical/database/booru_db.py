@@ -29,17 +29,11 @@ UPDATE_ALLOWED_COLUMNS = set(COLUMN_ATTRIBUTES).intersection(UPDATE_ALLOWED_ATTR
 
 # ## FUNCTIONS
 
-# #### Router helper functions
-
-# ###### Create
+# #### Create
 
 def create_booru_from_parameters(createparams):
     booru = Booru()
-    _set_all_names(createparams, booru)
-    set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams, safe=True)
-    _set_relations(booru, createparams)
-    save_record(booru, 'created')
-    return booru
+    return set_booru_from_parameters(booru, createparams, 'created')
 
 
 def create_booru_from_json(data):
@@ -50,15 +44,10 @@ def create_booru_from_json(data):
     return booru
 
 
-# ###### Update
+# #### Update
 
 def update_booru_from_parameters(booru, updateparams):
-    _set_all_names(updateparams, booru)
-    col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams, safe=True)
-    rel_result = _set_relations(booru, updateparams)
-    if col_result or rel_result:
-        save_record(booru, 'updated')
-    return booru
+    return set_booru_from_parameters(booru, updateparams, 'updated')
 
 
 def recreate_booru_relations(booru, updateparams):
@@ -70,7 +59,18 @@ def will_update_booru(booru, data):
     return will_update_record(booru, data, UPDATE_ALLOWED_COLUMNS)
 
 
-# ###### Delete
+# #### Set
+
+def set_booru_from_parameters(booru, setparams, action):
+    _set_all_names(setparams, booru)
+    col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, safe=True)
+    rel_result = _set_relations(booru, setparams)
+    if col_result or rel_result:
+        save_record(booru, action)
+    return booru
+
+
+# #### Delete
 
 def delete_booru(booru):
     delete_record(booru)

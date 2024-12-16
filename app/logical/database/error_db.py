@@ -13,15 +13,11 @@ NULL_WRITABLE_ATTRIBUTES = []
 
 # ## FUNCTIONS
 
-# #### DB functions
-
-# ###### CREATE
+# #### Create
 
 def create_error_from_parameters(createparams):
     error = Error()
-    set_column_attributes(error, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(error, 'created', commit=False)
-    return error
+    return set_error_from_parameters(error, createparams, 'created')
 
 
 def create_error_from_json(data):
@@ -30,10 +26,6 @@ def create_error_from_json(data):
     save_record(error, 'created')
     return error
 
-
-# #### Misc functions
-
-# ###### Create
 
 def create_error(module_name, message):
     error = create_error_from_parameters({'module': module_name, 'message': message})
@@ -47,13 +39,22 @@ def create_and_append_error(module_name, message, instance):
     return error
 
 
-# ###### Delete
+# #### Set
+
+def set_error_from_parameters(error, setparams, action):
+    if set_column_attributes(error, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(error, action)
+    return error
+
+
+# #### Delete
+
 def delete_error(error):
     delete_record(error)
     commit_session()
 
 
-# ###### Add relationship
+# #### Add relationship
 
 def extend_errors(instance, errors):
     for error in errors:
@@ -68,7 +69,7 @@ def append_error(instance, error, commit=True):
     commit_or_flush(commit)
 
 
-# ###### Test
+# #### Test
 
 def is_error(instance):
     return isinstance(instance, Error)

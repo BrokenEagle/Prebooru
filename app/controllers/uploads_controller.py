@@ -178,8 +178,9 @@ def create(get_request=False):
         createparams['type'] = 'post'
     elif createparams['illust_url_id']:
         createparams['type'] = 'file'
-    retdata['item'] = create_upload_from_parameters(createparams)
-    SCHEDULER.add_job("process_upload-%d" % retdata['item']['id'], process_upload, args=(retdata['item']['id'],))
+    upload = create_upload_from_parameters(createparams)
+    retdata['item'] = upload.to_json()
+    SCHEDULER.add_job("process_upload-%d" % upload.id, process_upload, args=(upload.id,))
     if RECHECK_UPLOADS is None:
         RECHECK_UPLOADS = RepeatTimer(30, _recheck_pending_uploads)
         RECHECK_UPLOADS.setDaemon(True)

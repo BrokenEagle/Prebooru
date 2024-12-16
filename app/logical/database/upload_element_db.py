@@ -14,23 +14,24 @@ NULL_WRITABLE_ATTRIBUTES = ['upload_id', 'illust_url_id', 'md5']
 
 # ## FUNCTIONS
 
-# #### Route DB functions
+# #### Create
 
-# ###### CREATE
-
-def create_upload_element_from_parameters(createparams, commit=True):
+def create_upload_element_from_parameters(createparams):
     upload_element = UploadElement(status_id=upload_element_status.pending.id)
-    set_column_attributes(upload_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(upload_element, 'created', commit=commit)
+    return set_upload_element_from_parameters(upload_element, createparams, 'created')
+
+
+# #### Update
+
+def update_upload_element_from_parameters(upload_element, updateparams):
+    return set_upload_element_from_parameters(upload_element, updateparams, 'updated')
+
+
+# #### Set
+
+def set_upload_element_from_parameters(upload_element, setparams, action):
+    if 'status' in setparams:
+        setparams['status_id'] = UploadElement.status_enum.by_name(setparams['status']).id
+    if set_column_attributes(upload_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(upload_element, action)
     return upload_element
-
-
-# ###### UPDATE
-
-# ###### Update
-
-def update_upload_element_from_parameters(upload_element, updateparams, commit=True):
-    if 'status' in updateparams:
-        updateparams['status_id'] = UploadElement.status_enum.by_name(updateparams['status']).id
-    if set_column_attributes(upload_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        save_record(upload_element, 'updated', commit=commit)

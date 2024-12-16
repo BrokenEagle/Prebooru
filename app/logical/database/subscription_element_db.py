@@ -34,18 +34,14 @@ else:
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### CREATE
+# #### Create
 
 def create_subscription_element_from_parameters(createparams):
     subscription_element = SubscriptionElement(status_id=subscription_element_status.active.id)
-    set_column_attributes(subscription_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(subscription_element, 'created')
-    return subscription_element
+    return set_subscription_element_from_parameters(subscription_element, createparams, 'created')
 
 
-# ###### UPDATE
+# #### Update
 
 def batch_update_subscription_element_keep(subscription_elements, value):
     for subscription_element in subscription_elements:
@@ -61,6 +57,14 @@ def update_subscription_element_keep(subscription_element, value):
 def update_subscription_element_status(subscription_element, value):
     subscription_element.status_id = subscription_element_status.by_name(value).id
     commit_session()
+
+
+# #### Set
+
+def set_subscription_element_from_parameters(subscription_element, setparams, action):
+    if set_column_attributes(subscription_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(subscription_element, action)
+    return subscription_element
 
 
 # #### Misc

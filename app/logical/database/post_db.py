@@ -29,15 +29,11 @@ SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### Create
+# #### Create
 
 def create_post_from_parameters(createparams):
     post = Post(alternate=False, simcheck=False)
-    set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(post, 'created')
-    return post
+    return set_post_from_parameters(post, createparams, 'created')
 
 
 def create_post_from_json(data):
@@ -47,11 +43,10 @@ def create_post_from_json(data):
     return post
 
 
-# ###### Update
+# #### Update
 
 def update_post_from_parameters(post, updateparams):
-    if set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        save_record(post, 'updated')
+    return set_post_from_parameters(post, updateparams, 'updated')
 
 
 def set_post_alternate(post, alternate):
@@ -69,7 +64,15 @@ def set_post_simcheck(post, simcheck):
     flush_session()
 
 
-# ###### Delete
+# #### Set
+
+def set_post_from_parameters(post, setparams, action):
+    if set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(post, action)
+    return post
+
+
+# #### Delete
 
 def delete_post(post):
     for pool_element in post._pools:
@@ -78,7 +81,7 @@ def delete_post(post):
     commit_session()
 
 
-# #### Misc functions
+# #### Misc
 
 def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, duration, has_audio):
     params = {

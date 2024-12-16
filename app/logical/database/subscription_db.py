@@ -4,7 +4,7 @@
 from sqlalchemy import func
 
 # ## PACKAGE IMPORTS
-from utility.time import get_current_time, hours_from_now, add_days, days_ago
+from utility.time import get_current_time, add_days, days_ago
 
 # ## LOCAL IMPORTS
 from ...enum_imports import subscription_status
@@ -25,28 +25,17 @@ COUNT_UNDECIDED_ELEMENTS = func.sum(func.iif(SubscriptionElement.keep_filter('id
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### Create
+# #### Create
 
 def create_subscription_from_parameters(createparams):
-    if 'status' in createparams:
-        createparams['status_id'] = Subscription.status_enum.by_name(createparams['status']).id
     subscription = Subscription(status_id=subscription_status.idle.id)
-    set_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(subscription, 'created')
-    return subscription
+    return set_subscription_from_parameters(subscription, createparams, 'created')
 
 
-# ###### Update
+# #### Update
 
 def update_subscription_from_parameters(subscription, updateparams):
-    if 'status' in updateparams:
-        updateparams['status_id'] = Subscription.status_enum.by_name(updateparams['status']).id
-    if subscription.requery is not None and subscription.requery > hours_from_now(subscription.interval):
-        update_subscription_requery(subscription, hours_from_now(subscription.interval))
-    if set_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        save_record(subscription, 'updated')
+    return set_subscription_from_parameters(subscription, updateparams, 'updated')
 
 
 def update_subscription_status(subscription, value):
@@ -71,7 +60,15 @@ def update_subscription_last_info(subscription):
     commit_session()
 
 
-# ###### Delete
+# #### Set
+
+def set_subscription_from_parameters(subscription, setparams, action):
+    if set_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(subscription, action)
+    return subscription
+
+
+# #### Delete
 
 def delete_subscription(subscription):
     delete_record(subscription)

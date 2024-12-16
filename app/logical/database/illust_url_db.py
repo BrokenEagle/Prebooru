@@ -18,21 +18,24 @@ NULL_WRITABLE_ATTRIBUTES = ['illust_id']
 # #### Create
 
 def create_illust_url_from_parameters(createparams):
-    if 'site' in createparams:
-        createparams['site_id'] = IllustUrl.site_enum.by_name(createparams['site']).id
     illust_url = IllustUrl()
-    set_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(illust_url, 'created')
-    return illust_url
+    return set_illust_url_from_parameters(illust_url, createparams, 'created')
 
 
 # #### Update
 
 def update_illust_url_from_parameters(illust_url, updateparams):
-    if 'site' in updateparams:
-        updateparams['site'] = IllustUrl.site_enum.by_name(updateparams['site']).id
-    if set_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        save_record(illust_url, 'updated')
+    return set_illust_url_from_parameters(illust_url, updateparams, 'updated')
+
+
+# #### Set
+
+def set_illust_url_from_parameters(illust_url, setparams, action):
+    if 'site' in setparams:
+        setparams['site'] = IllustUrl.site_enum.by_name(setparams['site']).id
+    if set_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(illust_url, action)
+    return illust_url
 
 
 # #### Query

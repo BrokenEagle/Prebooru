@@ -16,25 +16,29 @@ NULL_WRITABLE_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
 
 # ## FUNCTIONS
 
-# #### DB functions
-
-# ###### CREATE
+# #### Create
 
 def create_media_file_from_parameters(createparams):
     media_file = MediaFile(expires=days_from_now(1))
-    set_column_attributes(media_file, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(media_file, 'created')
-    return media_file
+    return set_media_file_from_parameters(media_file, createparams, 'created')
 
 
-# ###### UPDATE
+# #### Update
 
 def update_media_file_expires(media_file):
     media_file.expires = days_from_now(1)
     commit_session()
 
 
-# ###### DELETE
+# #### Set
+
+def set_media_file_from_parameters(media_file, setparams, action):
+    if set_column_attributes(media_file, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(media_file, action)
+    return media_file
+
+
+# #### Delete
 
 def batch_delete_media_files(media_files):
     id_list = [media.id for media in media_files]

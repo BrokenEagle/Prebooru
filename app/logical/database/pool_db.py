@@ -19,22 +19,17 @@ NULL_WRITABLE_ATTRIBUTES = []
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### Create
+# #### Create
 
 def create_pool_from_parameters(createparams):
     pool = Pool(element_count=0)
-    set_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(pool, 'created')
-    return pool
+    return set_pool_from_parameters(pool, createparams, 'created')
 
 
-# ###### Update
+# #### Update
 
 def update_pool_from_parameters(pool, updateparams):
-    if set_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        save_record(pool, 'updated')
+    return set_pool_from_parameters(pool, updateparams, 'updated')
 
 
 def update_pool_positions(pool):
@@ -42,6 +37,14 @@ def update_pool_positions(pool):
     pool.element_count = pool._get_element_count()
     pool.checked = get_current_time()
     commit_session()
+
+
+# #### Set
+
+def set_pool_from_parameters(pool, setparams, action):
+    if set_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(pool, action)
+    return pool
 
 
 # #### Query

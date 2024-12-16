@@ -13,25 +13,29 @@ NULL_WRITABLE_ATTRIBUTES = ['post_id', 'ratio', 'hash']
 
 # ## FUNCTIONS
 
-# #### DB functions
+# #### Create
 
-# ###### CREATE
-
-def create_image_hash_from_parameters(createparams, commit=False):
+def create_image_hash_from_parameters(createparams):
     image_hash = ImageHash()
-    set_column_attributes(image_hash, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(image_hash, 'created', commit=commit)
+    return set_image_hash_from_parameters(image_hash, createparams, 'created')
+
+
+# #### Set
+
+def set_image_hash_from_parameters(image_hash, setparams, action):
+    if set_column_attributes(image_hash, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(image_hash, action)
     return image_hash
 
 
-# ###### DELETE
+# #### Delete
 
 def delete_image_hash_by_post_id(post_id):
     ImageHash.query.filter(ImageHash.post_id == post_id).delete()
     flush_session()
 
 
-# #### Misc functions
+# #### Query
 
 def get_image_hash_by_post_id(post_id):
     return ImageHash.query.filter(ImageHash.post_id == post_id).all()

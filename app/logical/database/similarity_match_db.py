@@ -15,27 +15,30 @@ NULL_WRITABLE_ATTRIBUTES = ['forward_id', 'reverse_id']
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### CREATE
+# #### Create
 
 def create_similarity_match_from_parameters(createparams):
     similarity_match = SimilarityMatch()
     if createparams['forward_id'] > createparams['reverse_id']:
         createparams['forward_id'], createparams['reverse_id'] = createparams['reverse_id'], createparams['forward_id']
-    set_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(similarity_match, 'created', commit=False)
+    return set_similarity_match_from_parameters(similarity_match, createparams, 'created')
+
+
+# #### Update
+
+def update_similarity_match_from_parameters(similarity_match, updateparams):
+    return set_similarity_match_from_parameters(similarity_match, updateparams, 'updated')
+
+
+# #### Set
+
+def set_similarity_match_from_parameters(similarity_match, setparams, action):
+    if set_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(similarity_match, action)
     return similarity_match
 
 
-# ###### UPDATE
-
-def update_similarity_match_from_parameters(similarity_match, updateparams):
-    if set_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        save_record(similarity_match, 'updated', commit=False)
-
-
-# ###### DELETE
+# #### Delete
 
 def delete_similarity_match(similarity_match, commit=False):
     delete_record(similarity_match)

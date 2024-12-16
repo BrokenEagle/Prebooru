@@ -33,22 +33,11 @@ NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_id']
 
 # ## FUNCTIONS
 
-# #### DB functions
-
-# ###### CREATE
+# #### Create
 
 def create_illust_from_parameters(createparams):
     illust = Illust()
-    if 'site' in createparams:
-        createparams['site_id'] = Illust.site_enum.by_name(createparams['site']).id
-    set_timesvalue(createparams, 'site_created')
-    set_timesvalue(createparams, 'site_updated')
-    set_timesvalue(createparams, 'site_uploaded')
-    set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams, safe=True)
-    _set_relations(illust, createparams)
-    _set_illust_urls(illust, createparams)
-    save_record(illust, 'created')
-    return illust
+    return set_illust_from_parameters(illust, createparams, 'created')
 
 
 def create_illust_from_json(data):
@@ -58,19 +47,10 @@ def create_illust_from_json(data):
     return illust
 
 
-# ###### UPDATE
+# #### Update
 
 def update_illust_from_parameters(illust, updateparams):
-    if 'site' in updateparams:
-        updateparams['site_id'] = Illust.site_enum.by_name(updateparams['site']).id
-    set_timesvalue(updateparams, 'site_created')
-    set_timesvalue(updateparams, 'site_updated')
-    set_timesvalue(updateparams, 'site_uploaded')
-    col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams, safe=True)
-    rel_result = _set_relations(illust, updateparams)
-    url_result = _set_illust_urls(illust, updateparams)
-    if col_result or rel_result or url_result:
-        save_record(illust, 'updated')
+    return set_illust_from_parameters(illust, updateparams, 'updated')
 
 
 def recreate_illust_relations(illust, updateparams):
@@ -83,7 +63,23 @@ def set_illust_artist(illust, artist):
     commit_session()
 
 
-# ###### Delete
+# #### Set
+
+def set_illust_from_parameters(illust, setparams, action):
+    if 'site' in setparams:
+        setparams['site_id'] = Illust.site_enum.by_name(setparams['site']).id
+    set_timesvalue(setparams, 'site_created')
+    set_timesvalue(setparams, 'site_updated')
+    set_timesvalue(setparams, 'site_uploaded')
+    col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, safe=True)
+    rel_result = _set_relations(illust, setparams)
+    url_result = _set_illust_urls(illust, setparams)
+    if col_result or rel_result or url_result:
+        save_record(illust, action)
+    return illust
+
+
+# #### Delete
 
 def delete_illust(illust):
     for pool_element in illust._pools:
@@ -92,7 +88,7 @@ def delete_illust(illust):
     commit_session()
 
 
-# ###### Misc
+# #### Misc
 
 def illust_delete_commentary(illust, description_id):
     retdata = {'error': False, 'descriptions': [commentary.to_json() for commentary in illust._commentaries]}

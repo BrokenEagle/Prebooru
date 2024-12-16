@@ -26,15 +26,11 @@ ID_MODEL_DICT = {
 
 # ## FUNCTIONS
 
-# #### Route DB functions
-
-# ###### Create
+# #### Create
 
 def create_notation_from_parameters(createparams):
     notation = Notation(no_pool=True)
-    set_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams)
-    save_record(notation, 'created')
-    return notation
+    return set_notation_from_parameters(notation, createparams, 'created')
 
 
 def create_notation_from_json(data):
@@ -44,14 +40,21 @@ def create_notation_from_json(data):
     return notation
 
 
-# ###### Update
+# #### Update
 
 def update_notation_from_parameters(notation, updateparams):
-    if set_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams):
-        save_record(notation, 'updated')
+    return set_notation_from_parameters(notation, updateparams, 'updated')
 
 
-# ###### Delete
+# #### Set
+
+def set_notation_from_parameters(notation, setparams, action):
+    if set_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(notation, action)
+    return notation
+
+
+# #### Delete
 
 def delete_notation(notation):
     if notation._pool is not None:
@@ -60,7 +63,7 @@ def delete_notation(notation):
     commit_session()
 
 
-# #### Misc functions
+# #### Misc
 
 def append_notation_to_item(notation, append_key, dataparams):
     model = ID_MODEL_DICT[append_key]

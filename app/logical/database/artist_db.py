@@ -40,21 +40,11 @@ BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 
 # ## FUNCTIONS
 
-# #### DB functions
-
-# ###### Create
+# #### Create
 
 def create_artist_from_parameters(createparams):
     artist = Artist(primary=True)
-    if 'site' in createparams:
-        createparams['site_id'] = Artist.site_enum.by_name(createparams['site']).id
-    set_timesvalue(createparams, 'site_created')
-    _set_all_site_accounts(createparams, artist)
-    set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, createparams, safe=True)
-    _set_relations(artist, createparams)
-    _set_artist_webpages(artist, createparams)
-    save_record(artist, 'created', safe=True)
-    return artist
+    return set_artist_from_parameters(artist, createparams, 'created')
 
 
 def create_artist_from_json(data):
@@ -64,19 +54,10 @@ def create_artist_from_json(data):
     return artist
 
 
-# ###### Update
+# #### Update
 
 def update_artist_from_parameters(artist, updateparams):
-    if 'site' in updateparams:
-        updateparams['site_id'] = Artist.site_enum.by_name(updateparams['site']).id
-    set_timesvalue(updateparams, 'site_created')
-    _set_all_site_accounts(updateparams, artist)
-    set_association_attributes(updateparams, ASSOCIATION_ATTRIBUTES)
-    col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, updateparams, safe=True)
-    rel_result = _set_relations(artist, updateparams)
-    web_result = _set_artist_webpages(artist, updateparams)
-    if col_result or rel_result or web_result:
-        save_record(artist, 'updated', safe=True)
+    return set_artist_from_parameters(artist, updateparams, 'updated')
 
 
 def recreate_artist_relations(artist, updateparams):
@@ -92,7 +73,23 @@ def inactivate_artist(artist):
     commit_session()
 
 
-# ###### Delete
+# #### Set
+
+def set_artist_from_parameters(artist, setparams, action):
+    if 'site' in setparams:
+        setparams['site_id'] = Artist.site_enum.by_name(setparams['site']).id
+    set_timesvalue(setparams, 'site_created')
+    _set_all_site_accounts(setparams, artist)
+    set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
+    col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, safe=True)
+    rel_result = _set_relations(artist, setparams)
+    web_result = _set_artist_webpages(artist, setparams)
+    if col_result or rel_result or web_result:
+        save_record(artist, action, safe=True)
+    return artist
+
+
+# #### Delete
 
 def delete_artist(artist):
     from ..records.illust_rec import archive_illust_for_deletion
@@ -102,7 +99,7 @@ def delete_artist(artist):
     commit_session()
 
 
-# ###### Misc
+# #### Misc
 
 def get_blank_artist():
     artist = Artist.query.enum_join(Artist.site_enum)\
