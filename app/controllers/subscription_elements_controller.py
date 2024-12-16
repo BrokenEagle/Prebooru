@@ -6,12 +6,14 @@ from sqlalchemy.orm import selectinload
 
 # ## PACKAGE IMPORTS
 from utility.data import eval_bool_string
+from utility.time import days_from_now
 
 # ## LOCAL IMPORTS
 from ..models import SubscriptionElement, IllustUrl, Illust
 from ..logical.utility import search_url_for, set_error
-from ..logical.database.subscription_element_db import get_elements_by_id, update_subscription_element_keep,\
-    batch_update_subscription_element_keep
+from ..logical.database.base_db import commit_session
+from ..logical.database.subscription_element_db import get_elements_by_id,\
+    update_subscription_element_from_parameters
 from ..logical.database.post_db import get_posts_by_md5s, get_post_by_md5
 from ..logical.database.archive_db import get_archive_posts_by_md5s, get_archive
 from ..logical.records.subscription_rec import redownload_element, reinstantiate_element, relink_element,\
@@ -156,7 +158,9 @@ def batch_keep_html():
     missing_ids = list(set(id_list).difference([element.id for element in elements]))
     if len(missing_ids) > 0:
         flash(f"Unable to find elements: {repr(missing_ids)}")
-    batch_update_subscription_element_keep(elements, data_params['keep'])
+    for element in elements:
+        _update_subscription_element_keep(element, data_params['keep'], commit=False)
+    commit_session()
     return redirect(request.referrer)
 
 
@@ -168,7 +172,7 @@ def keep_html(id):
         flash("Keep argument not found.", 'error')
     else:
         flash("Element updated.")
-        update_subscription_element_keep(element, value)
+        _update_subscription_element_keep(element, value)
     return redirect(request.referrer)
 
 
@@ -186,7 +190,7 @@ def keep_json(id):
         messages.append("Preview argument not found.")
     if len(messages) > 0:
         return {'error': True, 'message': '<br>'.join(messages)}
-    update_subscription_element_keep(element, value)
+    _update_subscription_element_keep(element, value)
     if has_preview:
         html = render_template_ws("subscription_elements/_element_preview.html", element=element)
     else:
@@ -236,3 +240,13 @@ def _json_preview(results, element):
     results['item'] = element.to_json()
     results['html'] = render_template_ws("subscription_elements/_element_preview.html", element=element)
     return results
+
+
+def _update_subscription_element_keep(element, value, commit=True):
+    if value == 'yes' or value == 'archive':
+        expires = days_from_now(1)  # Posts will be unlinked/archived after this period
+    elif value == 'no':
+        expires = days_from_now(7)  # Posts will be deleted after this period
+    elif value == 'maybe':
+        expires = None  # Keep the element around until/unless a decision is made on it
+    update_subscription_element_from_parameters(element, {'keep': value, 'expires': expires}, commit=commit)

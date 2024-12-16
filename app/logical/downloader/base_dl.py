@@ -6,12 +6,13 @@ import filetype
 # ## PACKAGE IMPORTS
 from utility.data import get_buffer_checksum
 from utility.uprint import print_warning
+from utility.time import days_from_now
 
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
 from ..database.upload_element_db import update_upload_element_from_parameters
-from ..database.subscription_element_db import link_subscription_post, update_subscription_element_status,\
-    duplicate_subscription_post, update_subscription_element_keep
+from ..database.subscription_element_db import update_subscription_element_from_parameters,\
+    get_subscription_elements_by_md5
 from ..database.post_db import post_append_illust_url, get_post_by_md5, update_post_from_parameters
 from ..database.error_db import create_error, extend_errors, is_error
 
@@ -28,15 +29,21 @@ def record_outcome(post, record):
             print_warning("\aInvalid data returned in outcome:", [item for item in post_errors if not is_error(item)])
         extend_errors(record, valid_errors)
         if record.model_name == 'subscription_element' and record.status.name == 'active':
-            update_subscription_element_status(record, 'error')
-            update_subscription_element_keep(record, 'unknown')
+            update_subscription_element_from_parameters(record, {'status': 'error', 'keep': 'unknown'})
         elif record.model_name == 'upload_element' and record.status.name == 'pending':
             update_upload_element_from_parameters(record, {'status': 'error'}, commit=True)
         return False
     if record.model_name == 'upload_element':
         update_upload_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
     elif record.model_name == 'subscription_element':
-        link_subscription_post(record, post)
+        params = {
+            'status': 'active',
+            'md5': post.md5,
+            'post_id': post.id,
+            'expires': days_from_now(record.subscription.expiration),
+            'keep_id': None
+        }
+        update_subscription_element_from_parameters(record, params)
     return True
 
 
@@ -67,12 +74,24 @@ def check_existing(buffer, illust_url, record):
             if post.type.name != 'user':
                 update_post_from_parameters(post, {'type': 'user'})
         elif record.model_name == 'subscription_element':
-            duplicate_subscription_post(record, post.md5)
+            params = {
+                'status': 'duplicate',
+                'keep': 'unknown',
+                'md5': post.md5,
+                'expires': None,
+            }
+            update_subscription_element_from_parameters(record, params)
         return None
     if record.model_name == 'subscription_element' and record.status_name != 'deleted':
-        record.md5 = md5  # Set the MD5 now so that the count function can be used
-        if record.duplicate_element_count > 0:
-            duplicate_subscription_post(record, md5)
+        element_ids = get_subscription_elements_by_md5(md5)
+        if len(element_ids) > 0:
+            params = {
+                'status': 'duplicate',
+                'keep': 'unknown',
+                'md5': md5,
+                'expires': None,
+            }
+            update_subscription_element_from_parameters(record, params)
             return None
     return md5
 

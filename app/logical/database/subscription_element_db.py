@@ -1,20 +1,16 @@
 # APP/LOGICAL/DATABASE/SUBSCRIPTION_ELEMENT_DB.PY
 
-# ## PYTHON IMPORTS
-import os
-
 # ## EXTERNAL IMPORTS
 from sqlalchemy import and_, or_
 
 # ## PACKAGE IMPORTS
-from config import EXPIRED_SUBSCRIPTION, ALTERNATE_MEDIA_DIRECTORY
+from config import EXPIRED_SUBSCRIPTION
 from utility.time import days_from_now, get_current_time
 
 # ## LOCAL IMPORTS
 from ...enum_imports import subscription_element_status, subscription_element_keep
 from ...models import Subscription, SubscriptionElement, Post
-from ..records.post_rec import archive_post_for_deletion, delete_post_and_media
-from .base_db import set_column_attributes, save_record, commit_session
+from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
@@ -43,81 +39,32 @@ def create_subscription_element_from_parameters(createparams, commit=True):
 
 # #### Update
 
-def batch_update_subscription_element_keep(subscription_elements, value):
-    for subscription_element in subscription_elements:
-        _update_subscription_element_keep(subscription_element, value)
-    commit_session()
-
-
-def update_subscription_element_keep(subscription_element, value):
-    _update_subscription_element_keep(subscription_element, value)
-    commit_session()
-
-
-def update_subscription_element_status(subscription_element, value):
-    subscription_element.status_id = subscription_element_status.by_name(value).id
-    commit_session()
+def update_subscription_element_from_parameters(subscription_element, updateparams, commit=True):
+    return set_subscription_element_from_parameters(subscription_element, updateparams, 'updated', commit)
 
 
 # #### Set
 
 def set_subscription_element_from_parameters(subscription_element, setparams, action, commit):
+    if 'status' in setparams:
+        setparams['status_id'] = SubscriptionElement.status_enum.by_name(setparams['status']).id
+    if 'keep' in setparams:
+        setparams['keep_id'] = SubscriptionElement.keep_enum.by_name(setparams['keep']).id
     if set_column_attributes(subscription_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(subscription_element, action, commit=commit)
     return subscription_element
-
-
-# #### Misc
-
-def link_subscription_post(element, post):
-    element.post = post
-    element.md5 = post.md5
-    element.status_id = subscription_element_status.active.id
-    element.expires = None
-    _update_subscription_element_keep(element, None)
-    commit_session()
-
-
-def unlink_subscription_post(element):
-    element.post = None
-    element.expires = None
-    element.status_id = subscription_element_status.unlinked.id
-    commit_session()
-
-
-def delete_subscription_post(element):
-    if element.post is not None:
-        if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
-            return False
-        delete_post_and_media(element.post)
-    element.expires = None
-    element.status_id = subscription_element_status.deleted.id
-    commit_session()
-    return True
-
-
-def archive_subscription_post(element):
-    if element.post is not None:
-        if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
-            return False
-        archive_post_for_deletion(element.post, None)
-    element.expires = None
-    element.status_id = subscription_element_status.archived.id
-    commit_session()
-
-
-def duplicate_subscription_post(element, md5):
-    element.expires = None
-    element.md5 = md5
-    element.status_id = subscription_element_status.duplicate.id
-    element.keep_id = subscription_element_keep.unknown.id
-    commit_session()
 
 
 # #### Query
 
 def get_elements_by_id(id_list):
     return SubscriptionElement.query.filter(SubscriptionElement.id.in_(id_list)).all()
+
+
+def get_subscription_elements_by_md5(md5):
+    return SubscriptionElement.query\
+                              .filter(SubscriptionElement.md5 == md5)\
+                              .all()
 
 
 def check_deleted_subscription_post(md5):

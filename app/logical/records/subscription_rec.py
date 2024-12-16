@@ -1,6 +1,7 @@
 # APP/LOGICAL/RECORDS/SUBSCRIPTION_REC.PY
 
 # ## PYTHON IMPORTS
+import os
 import threading
 
 # ## EXTERNAL IMPORTS
@@ -9,7 +10,7 @@ from sqlalchemy.orm import selectinload
 # ## PACKAGE IMPORTS
 from config import POPULATE_ELEMENTS_PER_PAGE, SYNC_MISSING_ILLUSTS_PER_PAGE, DOWNLOAD_POSTS_PER_PAGE,\
     UNLINK_ELEMENTS_PER_PAGE, DELETE_ELEMENTS_PER_PAGE, ARCHIVE_ELEMENTS_PER_PAGE,\
-    DOWNLOAD_POSTS_PAGE_LIMIT, EXPIRE_ELEMENTS_PAGE_LIMIT
+    DOWNLOAD_POSTS_PAGE_LIMIT, EXPIRE_ELEMENTS_PAGE_LIMIT, ALTERNATE_MEDIA_DIRECTORY
 from utility.time import days_from_now, hours_from_now, days_ago, get_current_time
 from utility.uprint import buffered_print, print_info
 
@@ -23,20 +24,18 @@ from ..logger import log_error
 from ..sources.base_src import get_post_source
 from ..downloader.network_dl import convert_network_subscription
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
-    update_subscription_element_status, link_subscription_post, pending_subscription_downloads_query,\
-    update_subscription_element_keep
+    pending_subscription_downloads_query, update_subscription_element_from_parameters,\
+    expired_subscription_elements
 from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
 from ..database.artist_db import get_site_artist
 from ..database.archive_db import get_archive
 from ..database.error_db import is_error, create_and_append_error
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
-from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
-    archive_subscription_post, expired_subscription_elements
 from ..database.subscription_db import add_subscription_error, update_subscription_from_parameters,\
     check_processing_subscriptions
 from ..database.base_db import safe_db_execute
-from .post_rec import recreate_archived_post
+from .post_rec import recreate_archived_post, archive_post_for_deletion, delete_post_and_media
 from .artist_rec import update_artist
 from .image_hash_rec import generate_post_image_hashes
 
@@ -212,7 +211,12 @@ def unlink_expired_subscription_elements(manual):
         print(f"\nunlink_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Unlinking {element.shortlink}")
-            unlink_subscription_post(element)
+            params = {
+                'status': 'unlinked',
+                'post_id': None,
+                'expires': None,
+            }
+            update_subscription_element_from_parameters(element, params)
             unlinked_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
@@ -229,9 +233,13 @@ def delete_expired_subscription_elements(manual):
     while True:
         print(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
-            if delete_subscription_post(element):
+            if element.post is not None:
+                if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+                    continue
                 print(f"Deleting post of {element.shortlink}")
-                deleted_elements.append(element.id)
+                delete_post_and_media(element.post)
+            update_subscription_element_from_parameters(element, {'status': 'deleted', 'expires': None})
+            deleted_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
@@ -247,9 +255,13 @@ def archive_expired_subscription_elements(manual):
     while True:
         print(f"\nexpire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
-            if archive_subscription_post(element):
+            if element.post is not None:
+                if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+                    continue
                 print(f"Archiving post of {element.shortlink}")
-                archived_elements.append(element.id)
+                archive_post_for_deletion(element.post, None)
+            update_subscription_element_from_parameters(element, {'status': 'archived', 'expires': None})
+            archived_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
@@ -291,7 +303,7 @@ def redownload_element(element):
         nonlocal element
         initial_errors = [error.id for error in element.errors]
         if convert_network_subscription(element) and element.post_id is not None:
-            update_subscription_element_status(element, 'active')
+            update_subscription_element_from_parameters(element, {'status': 'active'})
             if element.post.is_video:
                 SessionThread(target=convert_mp4_to_webp,
                               args=(element.post.file_path, element.post.video_preview_path)).start()
@@ -305,8 +317,7 @@ def redownload_element(element):
                 msg = f'Duplicate of {element.illust_url.post.shortlink}'
             return {'error': True, 'message': msg}
         else:
-            update_subscription_element_status(element, 'error')
-            update_subscription_element_keep(element, 'unknown')
+            update_subscription_element_from_parameters(element, {'status': 'error', 'keep': 'unknown'})
             new_errors = [error for error in element.errors if error.id not in initial_errors]
             msg = '; '.join(f"{error.module}: {error.message}" for error in new_errors) or "Unknown error."
             return {'error': True, 'message': msg}
@@ -323,9 +334,9 @@ def reinstantiate_element(element):
     archive = get_archive('post', element.md5)
     if archive is None:
         if get_post_by_md5(element.md5) is not None:
-            update_subscription_element_status(element, 'unlinked')
+            update_subscription_element_from_parameters(element, {'status': 'unlinked'})
         else:
-            update_subscription_element_status(element, 'deleted')
+            update_subscription_element_from_parameters(element, {'status': 'deleted'})
         return {'error': True, 'message': f'Post archive with MD5 {element.md5} does not exist.'}
     results = recreate_archived_post(archive, False)
     if results['error']:
@@ -334,8 +345,7 @@ def reinstantiate_element(element):
                                                     SubscriptionElement.status_filter('name', '__eq__', 'unlinked'))\
                                             .first()
         if unlinked is not None:
-            update_subscription_element_status(element, 'duplicate')
-            update_subscription_element_keep(element, 'unknown')
+            update_subscription_element_from_parameters(element, {'status': 'duplicate', 'keep': 'unknown'})
         return results
     relink_element(element)
     return {'error': False}
@@ -345,11 +355,18 @@ def relink_element(element):
     post = get_post_by_md5(element.md5)
     if post is None:
         if get_archive('post', element.md5) is not None:
-            update_subscription_element_status(element, 'archived')
+            update_subscription_element_from_parameters(element, {'status': 'archived'})
         else:
-            update_subscription_element_status(element, 'deleted')
+            update_subscription_element_from_parameters(element, {'status': 'deleted'})
         return {'error': True, 'message': f'Post with MD5 {element.md5} does not exist.'}
-    link_subscription_post(element, post)
+    params = {
+        'status': 'active',
+        'md5': post.md5,
+        'post_id': post.id,
+        'expires': days_from_now(element.subscription.expiration),
+        'keep_id': None
+    }
+    update_subscription_element_from_parameters(element, params)
     return {'error': False}
 
 
