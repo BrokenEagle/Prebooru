@@ -27,15 +27,13 @@ def create_error_from_json(data):
     return error
 
 
-def create_error(module_name, message):
-    error = create_error_from_parameters({'module': module_name, 'message': message})
-    commit_session()
-    return error
+def create_error(module_name, message, commit=True):
+    return create_error_from_parameters({'module': module_name, 'message': message}, commit=commit)
 
 
-def create_and_append_error(module_name, message, instance):
-    error = create_error_from_parameters({'module': module_name, 'message': message})
-    append_error(instance, error)
+def create_and_append_error(instance, module_name, message, commit=True):
+    error = create_error(module_name, message, commit=commit)
+    append_error(instance, error, commit=commit)
     return error
 
 
@@ -56,10 +54,10 @@ def delete_error(error):
 
 # #### Add relationship
 
-def extend_errors(instance, errors):
+def extend_errors(instance, errors, commit=True):
     for error in errors:
         append_error(instance, error, commit=False)
-    commit_session()
+    commit_or_flush(commit)
 
 
 def append_error(instance, error, commit=True):

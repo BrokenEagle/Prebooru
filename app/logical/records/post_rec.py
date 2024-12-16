@@ -24,7 +24,7 @@ from ..database.post_db import delete_post,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, set_post_alternate, alternate_posts_query,\
     get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
     get_artist_posts_without_danbooru_ids
-from ..database.error_db import create_error
+from ..database.error_db import create_and_append_error
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
 from .image_hash_rec import generate_post_image_hashes
@@ -364,6 +364,7 @@ def _get_video_thumb_binary(post):
         print("Downloading", download_url)
         buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)
         if isinstance(buffer, str):
-            create_error('records.post_rec._get_video_thumb_binary', "Download URL: %s => %s" % (download_url, buffer))
+            create_and_append_error(post, 'post_rec.get_video_thumb_binary',
+                                    "Download URL: %s => %s" % (download_url, buffer))
             continue
         return buffer

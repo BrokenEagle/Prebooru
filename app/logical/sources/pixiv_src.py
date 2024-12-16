@@ -337,7 +337,7 @@ def get_pixiv_illust(illust_id):
     print("Getting pixiv #%d" % illust_id)
     data = pixiv_request("https://www.pixiv.net/ajax/illust/%d" % illust_id)
     if data['error']:
-        return create_error('sources.pixiv.get_pixiv_illust', data['message'])
+        return _create_module_error('get_pixiv_illust', data['message'])
     return data['body']
 
 
@@ -345,14 +345,14 @@ def get_pixiv_artist(artist_id):
     print("Getting Pixiv user data...")
     data = pixiv_request("https://www.pixiv.net/ajax/user/%d?full=1" % artist_id)
     if data['error']:
-        return create_error('sources.pixiv.get_pixiv_artist', data['message'])
+        return _create_module_error('get_pixiv_artist', data['message'])
     return data['body']
 
 
 def get_all_pixiv_artist_illusts(artist_id):
     data = pixiv_request('https://www.pixiv.net/ajax/user/%d/profile/all' % artist_id)
     if data['error']:
-        return create_error('sources.pixiv.get_all_pixiv_artist_illusts', data['message'])
+        return _create_module_error('get_all_pixiv_artist_illusts', data['message'])
     ids = get_data_illust_ids(data['body'], 'illusts')
     ids += get_data_illust_ids(data['body'], 'manga')
     return ids
@@ -362,7 +362,7 @@ def get_pixiv_page_data(site_illust_id):
     print("Downloading pages for pixiv #%d" % site_illust_id)
     data = pixiv_request("https://www.pixiv.net/ajax/illust/%s/pages" % site_illust_id)
     if data['error']:
-        return create_error('sources.pixiv.get_page_data', data['message'])
+        return _create_module_error('get_page_data', data['message'])
     return {'illustId': site_illust_id, 'pages': data['body']}
 
 
@@ -370,7 +370,7 @@ def get_pixiv_profile_data(site_artist_id):
     print("Downloading profile data for pxuser #%d" % site_artist_id)
     data = pixiv_request("https://www.pixiv.net/ajax/user/%d/profile/all" % site_artist_id)
     if data['error']:
-        return create_error('sources.pixiv.get_page_data', data['message'])
+        return _create_module_error('get_page_data', data['message'])
     return {'userId': site_artist_id, 'profile': data['body']}
 
 
@@ -591,3 +591,9 @@ def get_artist_id_by_illust_id(site_illust_id):
 
 def print_auth():
     print("PHPSESSID:", PIXIV_PHPSESSID)
+
+
+# #### Private
+
+def _create_module_error(function, message):
+    return create_error(f'pixiv_src.{function}', message, commit=True)

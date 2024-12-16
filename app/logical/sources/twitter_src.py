@@ -1000,14 +1000,14 @@ def get_twitter_illust_timeline(illust_id):
     data = twitter_request("https://x.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons)
     try:
         if data['error']:
-            return create_error('sources.twitter.get_twitter_illust_timeline', data['message'])
+            return _create_module_error('get_twitter_illust_timeline', data['message'])
         found_tweets = get_graphql_timeline_entries(data['body'], [])
     except Exception as e:
         msg = "Error parsing Twitter data: %s" % str(e)
-        return create_error('sources.twitter.get_twitter_illust_timeline', msg)
+        return _create_module_error('get_twitter_illust_timeline', msg)
     if len(found_tweets) == 0:
         put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], unicode=True)
-        return create_error('sources.twitter.get_twitter_illust_timeline', "No tweets found in data.")
+        return _create_module_error('get_twitter_illust_timeline', "No tweets found in data.")
     # Normalize the hierarchical position of tweet info
     for tweet in found_tweets:
         if safe_get(tweet, 'result', 'tweet') is not None:
@@ -1016,7 +1016,7 @@ def get_twitter_illust_timeline(illust_id):
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
     if illust_id_str not in tweet_ids:
         put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], unicode=True)
-        return create_error('sources.twitter.get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
+        return _create_module_error('get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
     return found_tweets
 
 
@@ -1034,15 +1034,15 @@ def get_tweet_by_rest_id(tweet_id):
     data = twitter_request("https://x.com/i/api/graphql/7xflPyRiUxGVbJd4uWmbfg/TweetResultByRestId?" + url_params)
     try:
         if data['error']:
-            return create_error('twitter_src.get_tweet_by_rest_id', data['message'])
+            return _create_module_error('get_tweet_by_rest_id', data['message'])
         results = get_graphql_timeline_entries_v2(data['body'])
     except Exception as e:
         msg = "Error parsing Twitter data: %s" % str(e)
-        return create_error('twitter_src.get_tweet_by_rest_id', msg)
+        return _create_module_error('get_tweet_by_rest_id', msg)
     tweet = safe_get(results, 'tweets', tweet_id_str)
     return tweet\
         if tweet is not None\
-        else create_error('sources.twitter.get_tweet_by_rest_id', "Tweet not found: %d" % tweet_id)
+        else _create_module_error('get_tweet_by_rest_id', "Tweet not found: %d" % tweet_id)
 
 
 def get_media_page_v2(user_id, count, cursor=None):
@@ -1085,7 +1085,7 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
     count = 100 if last_id is None else 20
     page = 1
     tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status)
-    return create_error('sources.twitter.populate_twitter_media_timeline', tweet_ids)\
+    return _create_module_error('populate_twitter_media_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
 
@@ -1114,7 +1114,7 @@ def populate_twitter_search_timeline(account, since_date, until_date, filter_lin
     count = 100
     page = 1
     tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, **kwargs)
-    return create_error('sources.twitter.populate_twitter_search_timeline', tweet_ids)\
+    return _create_module_error('populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
 
 
@@ -1124,9 +1124,9 @@ def get_twitter_illust(illust_id):
                   '&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true'
     data = twitter_request(request_url)
     if data['error']:
-        return create_error('sources.twitter.get_twitter_illust', data['message'])
+        return _create_module_error('get_twitter_illust', data['message'])
     if len(data['body']) == 0:
-        return create_error('sources.twitter.get_twitter_illust', "Tweet not found: %d" % illust_id)
+        return _create_module_error('get_twitter_illust', "Tweet not found: %d" % illust_id)
     return data['body'][0]
 
 
@@ -1141,7 +1141,7 @@ def get_twitter_user_id(account):
                   'UserByScreenNameWithoutResults?%s' % urladdons
     data = twitter_request(request_url, wait=False)
     if data['error']:
-        return create_error('sources.twitter.get_user_id', data['message'])
+        return _create_module_error('get_user_id', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
 
 
@@ -1156,15 +1156,15 @@ def get_twitter_artist(artist_id):
                   'UserByRestIdWithoutResults?%s' % urladdons
     data = twitter_request(request_url)
     if data['error']:
-        return create_error('sources.twitter.get_twitter_artist', data['message'])
+        return _create_module_error('get_twitter_artist', data['message'])
     twitterdata = data['body']
     if 'errors' in twitterdata and len(twitterdata['errors']):
         msg = 'Twitter error: ' + '; '.join([error['message'] for error in twitterdata['errors']])
-        return create_error('sources.twitter.get_twitter_artist', msg)
+        return _create_module_error('get_twitter_artist', msg)
     userdata = safe_get(twitterdata, 'data', 'user')
     if userdata is None or 'rest_id' not in userdata or 'legacy' not in userdata:
         msg = "Error parsing data: %s" % json.dumps(twitterdata)
-        return create_error('sources.twitter.get_twitter_artist', msg)
+        return _create_module_error('get_twitter_artist', msg)
     retdata = userdata['legacy']
     retdata['id_str'] = userdata['rest_id']
     return retdata
@@ -1461,3 +1461,9 @@ def populate_all_artist_illusts(artist, job_id=None, params=None):
         job_status = get_job_status_data(job_id) or {}
         return job_status.pop('temp_ids', [])
     return []
+
+
+# ####
+
+def _create_module_error(function, message):
+    return create_error(f'twitter_src.{function}', message, commit=True)

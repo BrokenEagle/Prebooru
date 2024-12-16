@@ -5,6 +5,7 @@ import filetype
 
 # ## PACKAGE IMPORTS
 from utility.data import get_buffer_checksum
+from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
@@ -24,7 +25,7 @@ def record_outcome(post, record):
         post_errors = post
         valid_errors = [error for error in post_errors if is_error(error)]
         if len(valid_errors) != len(post_errors):
-            print("\aInvalid data returned in outcome:", [item for item in post_errors if not is_error(item)])
+            print_warning("\aInvalid data returned in outcome:", [item for item in post_errors if not is_error(item)])
         extend_errors(record, valid_errors)
         if record.model_name == 'subscription_element' and record.status.name == 'active':
             update_subscription_element_status(record, 'error')
@@ -42,19 +43,14 @@ def record_outcome(post, record):
 def load_post_image(buffer):
     image = load_image(buffer)
     if isinstance(image, str):
-        return create_error('downloader.base_dl.load_post_image', image)
+        return _create_module_error('load_post_image', image)
     try:
         if check_alpha(image):
             return convert_alpha(image)
         else:
             return image
     except Exception as e:
-        return create_error('downloader.base_dl.load_post_image', "Error removing alpha transparency: %s" % repr(e))
-
-
-def create_post_error(function, message, post_errors, module='downloader.base_dl'):
-    error = create_error(f'{module}.{function}', message)
-    post_errors.append(error)
+        return _create_module_error('load_post_image', "Error removing alpha transparency: %s" % repr(e))
 
 
 # #### Validation functions
@@ -86,11 +82,11 @@ def check_filetype(buffer, file_ext, post_errors):
         guess = filetype.guess(buffer)
     except Exception as e:
         msg = "Error reading file headers: %s" % repr(e)
-        create_post_error('check_filetype', msg, post_errors)
+        _create_and_collect_module_error('check_filetype', msg, post_errors)
         return file_ext
     if guess and guess.extension != file_ext:
         msg = "Mismatching file extensions: Reported - %s, Actual - %s" % (file_ext, guess.extension)
-        create_post_error('check_filetype', msg, post_errors)
+        _create_and_collect_module_error('check_filetype', msg, post_errors)
         file_ext = guess.extension
     return file_ext
 
@@ -100,20 +96,20 @@ def check_image_dimensions(image, illust_url, post_errors):
        (illust_url.height and image.height != illust_url.height):
         msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
               (illust_url.width, illust_url.height, image.width, image.height)
-        create_post_error('save_image', msg, post_errors)
+        _create_and_collect_module_error('save_image', msg, post_errors)
     return image.width, image.height
 
 
 def check_video_info(post, illust_url, post_errors):
     info = get_video_info(post.file_path)
     if isinstance(info, str):
-        create_post_error('check_video_info', info, post_errors)
+        _create_and_collect_module_error('check_video_info', info, post_errors)
         return illust_url.width, illust_url.height
     if (illust_url.width and info['width'] != illust_url.width) or\
        (illust_url.height and info['height'] != illust_url.height):
         msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
               (illust_url.width, illust_url.height, info['width'], info['height'])
-        create_post_error('check_video_info', msg, post_errors)
+        _create_and_collect_module_error('check_video_info', msg, post_errors)
     return info
 
 
@@ -122,19 +118,19 @@ def check_video_info(post, illust_url, post_errors):
 def create_post_preview(image, post, downsample=True):
     result = create_preview(image, post.preview_path, downsample)
     if result is not None:
-        return create_error('downloader.base_dl.create_post_preview', result)
+        return _create_module_error('create_post_preview', result)
 
 
 def create_post_sample(image, post, downsample=True):
     result = create_sample(image, post.sample_path, downsample)
     if result is not None:
-        return create_error('downloader.base_dl.create_post_sample', result)
+        return _create_module_error('create_post_sample', result)
 
 
 def create_post_data(buffer, post):
     result = create_data(buffer, post.file_path)
     if result is not None:
-        return create_error('downloader.base_dl.create_post_data', result)
+        return _create_module_error('create_post_data', result)
 
 
 # #### Save functions
@@ -178,3 +174,14 @@ def save_thumb(buffer, post, post_errors):
     error = create_post_sample(image, post, downsample)
     if error is not None:
         post_errors.append(error)
+
+
+# #### Private
+
+def _create_module_error(function, message):
+    return create_error(f'base_dl.{function}', message, commit=False)
+
+
+def _create_and_collect_module_error(function, message, post_errors):
+    error = _create_module_error(function, message)
+    post_errors.append(error)

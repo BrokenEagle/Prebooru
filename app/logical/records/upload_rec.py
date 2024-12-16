@@ -153,8 +153,8 @@ def process_network_upload(upload):
         illust = create_illust_from_source(site_illust_id, source)
         if illust is None:
             set_upload_status(upload, 'error')
-            msg = "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id)
-            create_and_append_error('records.upload_rec.process_network_upload', msg, upload)
+            create_and_append_error(upload, 'upload_rec.process_network_upload',
+                                    "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id))
             return
     elif illust.updated < requery_time:
         update_illust_from_source(illust)

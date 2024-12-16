@@ -149,8 +149,8 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
     if subscription.status.name == 'automatic':
         update_subscription_requery(subscription, hours_from_now(subscription.interval))
     if job_id is None and total == 0:
-        create_and_append_error('records.subscription_rec.sync_missing_subscription_illusts',
-                                "No new illusts found on latest subscription check.", subscription)
+        create_and_append_error(subscription, 'subscription_rec.sync_missing_subscription_illusts',
+                                "No new illusts found on latest subscription check.")
 
 
 def download_subscription_elements(subscription, job_id=None):
