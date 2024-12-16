@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from config import POPULATE_ELEMENTS_PER_PAGE, SYNC_MISSING_ILLUSTS_PER_PAGE, DOWNLOAD_POSTS_PER_PAGE,\
     UNLINK_ELEMENTS_PER_PAGE, DELETE_ELEMENTS_PER_PAGE, ARCHIVE_ELEMENTS_PER_PAGE,\
     DOWNLOAD_POSTS_PAGE_LIMIT, EXPIRE_ELEMENTS_PAGE_LIMIT
-from utility.time import days_from_now, hours_from_now, days_ago
+from utility.time import days_from_now, hours_from_now, days_ago, get_current_time
 from utility.uprint import buffered_print, print_info
 
 # ## LOCAL IMPORTS
@@ -33,8 +33,8 @@ from ..database.error_db import is_error, create_and_append_error
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
 from ..database.subscription_element_db import unlink_subscription_post, delete_subscription_post,\
     archive_subscription_post, expired_subscription_elements
-from ..database.subscription_db import update_subscription_requery, update_subscription_last_info,\
-    add_subscription_error, update_subscription_status, check_processing_subscriptions
+from ..database.subscription_db import add_subscription_error, update_subscription_from_parameters,\
+    check_processing_subscriptions
 from ..database.base_db import safe_db_execute
 from .post_rec import recreate_archived_post
 from .artist_rec import update_artist
@@ -87,13 +87,13 @@ def process_subscription_manual(subscription_id, job_id, params):
     def error_func(scope_vars, e):
         nonlocal subscription
         subscription = subscription or Subscription.find(subscription_id)
-        update_subscription_status(subscription, 'error')
+        update_subscription_from_parameters(subscription, {'status': 'error'}, update=False)
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
         subscription = subscription or Subscription.find(subscription_id)
         if error is None and subscription.status.name != 'error':
-            update_subscription_status(subscription, 'idle')
+            update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
         SessionTimer(15, _query_unlock).start()  # Check later to give the DB time to catch up
 
     def _query_unlock():
@@ -113,7 +113,7 @@ def process_subscription_manual(subscription_id, job_id, params):
 
 def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
     if subscription.status.name == 'automatic':
-        update_subscription_requery(subscription, hours_from_now(4))
+        update_subscription_from_parameters(subscription, {'requery': hours_from_now(4)}, update=False)
     artist = subscription.artist
     source = artist.site.source
     site_illust_ids = source.populate_all_artist_illusts(artist, job_id, params)
@@ -143,11 +143,14 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
             update_illust_from_parameters(illust, data_params)
         job_status['illusts'] += 1
     update_job_status(job_id, job_status)
-    update_subscription_last_info(subscription)
+    update_subscription_from_parameters(subscription,
+                                        {'last_id': artist.last_illust_id, 'checked': get_current_time()},
+                                        update=False)
     job_status['ids'] = None
     update_job_status(job_id, job_status)
     if subscription.status.name == 'automatic':
-        update_subscription_requery(subscription, hours_from_now(subscription.interval))
+        update_subscription_from_parameters(subscription, {'requery': hours_from_now(subscription.interval)},
+                                            update=False)
     if job_id is None and total == 0:
         create_and_append_error(subscription, 'subscription_rec.sync_missing_subscription_illusts',
                                 "No new illusts found on latest subscription check.")

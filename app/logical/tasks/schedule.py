@@ -23,10 +23,10 @@ from ..records.media_file_rec import batch_delete_media
 from ..records.subscription_rec import sync_missing_subscription_illusts, populate_subscription_elements,\
     download_missing_elements, unlink_expired_subscription_elements, delete_expired_subscription_elements,\
     archive_expired_subscription_elements
-from ..database.base_db import safe_db_execute
+from ..database.base_db import safe_db_execute, commit_session
 from ..database.pool_db import get_all_recheck_pools, update_pool_positions
-from ..database.subscription_db import get_available_subscriptions_query, update_subscription_status,\
-    get_busy_subscriptions, get_subscription_by_ids, update_subscriptions_status
+from ..database.subscription_db import get_available_subscriptions_query, update_subscription_from_parameters,\
+    get_busy_subscriptions, get_subscription_by_ids
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
@@ -151,16 +151,16 @@ def check_pending_subscriptions_task():
             schedule_from_child('subscriptions-callback', 'app.logical.tasks.schedule:_pending_subscription_callback',
                                 [subscription.id for subscription in subscriptions],
                                 seconds_from_now_local(150 * len(subscriptions)))
-            update_subscriptions_status(subscriptions, 'automatic')
+            _update_subscriptions_status(subscriptions, 'automatic')
             last_index = len(subscriptions) - 1
             for i, subscription in enumerate(subscriptions):
                 printer("Processing subscription:", subscription.id)
                 if not _process_pending_subscription(subscription, printer):
                     print_warning("Token has expired... disabling check pending subscriptions task.")
-                    update_subscription_status(subscription, 'idle')
+                    update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
                     update_subscriptions = [subscription for subscription in subscriptions
                                             if subscription.status.name == 'automatic']
-                    update_subscriptions_status(update_subscriptions, 'idle')
+                    _update_subscriptions_status(update_subscriptions, 'idle')
                     update_job_by_id('job_enable', 'check_pending_subscriptions', {'enabled': False})
                     break
                 if i != last_index:
@@ -312,7 +312,7 @@ def reset_subscription_status_task():
         subscriptions = get_busy_subscriptions()
         if len(subscriptions):
             for subscription in subscriptions:
-                update_subscription_status(subscription, 'idle')
+                update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
             printer("Subscriptions reset:", len(subscriptions))
             status = {'total': len(subscriptions)}
         else:
@@ -427,12 +427,12 @@ def _process_pending_subscription(subscription, printer):
 
     def error_func(scope_vars, error):
         nonlocal subscription
-        update_subscription_status(subscription, 'error')
+        update_subscription_from_parameters(subscription, {'status': 'error'}, update=False)
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
         if error is None and subscription.status.name != 'error':
-            update_subscription_status(subscription, 'idle')
+            update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
         elif str(error) == "Should not authenticate with user auth.":
             return False
         return True
@@ -447,5 +447,11 @@ def _pending_subscription_callback(subscription_ids):
     subscriptions = get_subscription_by_ids(subscription_ids)
     for subscription in subscriptions:
         if subscription.status.name == 'automatic':
-            update_subscription_status(subscription, 'idle')
+            update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
     SESSION.remove()
+
+
+def _update_subscriptions_status(subscriptions, status):
+    for subscription in subscriptions:
+        update_subscription_from_parameters(subscription, {'status': status}, commit=False, update=False)
+    commit_session()

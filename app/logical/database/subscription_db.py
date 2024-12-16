@@ -14,7 +14,7 @@ from .base_db import set_column_attributes, delete_record, save_record, commit_s
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['interval', 'expiration']
+ANY_WRITABLE_COLUMNS = ['interval', 'expiration', 'status_id', 'requery', 'last_id', 'checked']
 NULL_WRITABLE_ATTRIBUTES = ['artist_id']
 
 DISTINCT_ILLUST_COUNT = func.count(Illust.id.distinct())
@@ -38,31 +38,11 @@ def update_subscription_from_parameters(subscription, updateparams, commit=True,
     return set_subscription_from_parameters(subscription, updateparams, 'updated', commit, update)
 
 
-def update_subscription_status(subscription, value):
-    subscription.status_id = subscription_status.by_name(value).id
-    commit_session()
-
-
-def update_subscriptions_status(subscriptions, value):
-    for subscription in subscriptions:
-        subscription.status_id = subscription_status.by_name(value).id
-    commit_session()
-
-
-def update_subscription_requery(subscription, timeval):
-    subscription.requery = timeval
-    commit_session()
-
-
-def update_subscription_last_info(subscription):
-    subscription.checked = get_current_time()
-    subscription.last_id = subscription.artist.last_illust_id
-    commit_session()
-
-
 # #### Set
 
 def set_subscription_from_parameters(subscription, setparams, action, commit, update):
+    if 'status' in setparams:
+        setparams['status_id'] = Subscription.status_enum.by_name(setparams['status']).id
     if set_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update=update):
         save_record(subscription, action, commit=commit)
     return subscription
