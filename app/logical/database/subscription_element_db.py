@@ -36,9 +36,9 @@ else:
 
 # #### Create
 
-def create_subscription_element_from_parameters(createparams):
+def create_subscription_element_from_parameters(createparams, commit=True):
     subscription_element = SubscriptionElement(status_id=subscription_element_status.active.id)
-    return set_subscription_element_from_parameters(subscription_element, createparams, 'created')
+    return set_subscription_element_from_parameters(subscription_element, createparams, 'created', commit)
 
 
 # #### Update
@@ -61,9 +61,9 @@ def update_subscription_element_status(subscription_element, value):
 
 # #### Set
 
-def set_subscription_element_from_parameters(subscription_element, setparams, action):
+def set_subscription_element_from_parameters(subscription_element, setparams, action, commit):
     if set_column_attributes(subscription_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(subscription_element, action)
+        save_record(subscription_element, action, commit=commit)
     return subscription_element
 
 

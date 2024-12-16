@@ -21,14 +21,14 @@ NULL_WRITABLE_ATTRIBUTES = []
 
 # #### Create
 
-def create_pool_from_parameters(createparams):
+def create_pool_from_parameters(createparams, commit=True):
     pool = Pool(element_count=0)
     return set_pool_from_parameters(pool, createparams, 'created')
 
 
 # #### Update
 
-def update_pool_from_parameters(pool, updateparams):
+def update_pool_from_parameters(pool, updateparams, commit=True):
     return set_pool_from_parameters(pool, updateparams, 'updated')
 
 
@@ -41,9 +41,9 @@ def update_pool_positions(pool):
 
 # #### Set
 
-def set_pool_from_parameters(pool, setparams, action):
+def set_pool_from_parameters(pool, setparams, action, commit):
     if set_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(pool, action)
+        save_record(pool, action, commit=commit)
     return pool
 
 

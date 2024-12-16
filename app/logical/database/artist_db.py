@@ -42,9 +42,9 @@ BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 
 # #### Create
 
-def create_artist_from_parameters(createparams):
+def create_artist_from_parameters(createparams, commit=True):
     artist = Artist(primary=True)
-    return set_artist_from_parameters(artist, createparams, 'created')
+    return set_artist_from_parameters(artist, createparams, 'created', commit)
 
 
 def create_artist_from_json(data):
@@ -56,8 +56,8 @@ def create_artist_from_json(data):
 
 # #### Update
 
-def update_artist_from_parameters(artist, updateparams):
-    return set_artist_from_parameters(artist, updateparams, 'updated')
+def update_artist_from_parameters(artist, updateparams, commit=True):
+    return set_artist_from_parameters(artist, updateparams, 'updated', commit)
 
 
 def recreate_artist_relations(artist, updateparams):
@@ -75,7 +75,7 @@ def inactivate_artist(artist):
 
 # #### Set
 
-def set_artist_from_parameters(artist, setparams, action):
+def set_artist_from_parameters(artist, setparams, action, commit):
     if 'site' in setparams:
         setparams['site_id'] = Artist.site_enum.by_name(setparams['site']).id
     set_timesvalue(setparams, 'site_created')
@@ -85,7 +85,7 @@ def set_artist_from_parameters(artist, setparams, action):
     rel_result = _set_relations(artist, setparams)
     web_result = _set_artist_webpages(artist, setparams)
     if col_result or rel_result or web_result:
-        save_record(artist, action, safe=True)
+        save_record(artist, action, commit=commit, safe=True)
     return artist
 
 

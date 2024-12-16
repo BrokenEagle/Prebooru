@@ -17,24 +17,24 @@ NULL_WRITABLE_ATTRIBUTES = ['illust_id']
 
 # #### Create
 
-def create_illust_url_from_parameters(createparams):
+def create_illust_url_from_parameters(createparams, commit=True):
     illust_url = IllustUrl()
-    return set_illust_url_from_parameters(illust_url, createparams, 'created')
+    return set_illust_url_from_parameters(illust_url, createparams, 'created', commit)
 
 
 # #### Update
 
-def update_illust_url_from_parameters(illust_url, updateparams):
-    return set_illust_url_from_parameters(illust_url, updateparams, 'updated')
+def update_illust_url_from_parameters(illust_url, updateparams, commit=True):
+    return set_illust_url_from_parameters(illust_url, updateparams, 'updated', commit)
 
 
 # #### Set
 
-def set_illust_url_from_parameters(illust_url, setparams, action):
+def set_illust_url_from_parameters(illust_url, setparams, action, commit):
     if 'site' in setparams:
         setparams['site'] = IllustUrl.site_enum.by_name(setparams['site']).id
     if set_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(illust_url, action)
+        save_record(illust_url, action, commit=commit)
     return illust_url
 
 

@@ -28,9 +28,9 @@ ID_MODEL_DICT = {
 
 # #### Create
 
-def create_notation_from_parameters(createparams):
+def create_notation_from_parameters(createparams, commit=True):
     notation = Notation(no_pool=True)
-    return set_notation_from_parameters(notation, createparams, 'created')
+    return set_notation_from_parameters(notation, createparams, 'created', commit)
 
 
 def create_notation_from_json(data):
@@ -42,15 +42,15 @@ def create_notation_from_json(data):
 
 # #### Update
 
-def update_notation_from_parameters(notation, updateparams):
-    return set_notation_from_parameters(notation, updateparams, 'updated')
+def update_notation_from_parameters(notation, updateparams, commit=True):
+    return set_notation_from_parameters(notation, updateparams, 'updated', commit)
 
 
 # #### Set
 
-def set_notation_from_parameters(notation, setparams, action):
+def set_notation_from_parameters(notation, setparams, action, commit):
     if set_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(notation, action)
+        save_record(notation, action, commit=commit)
     return notation
 
 

@@ -28,16 +28,16 @@ ID_MODEL_DICT = {
 
 # #### Create
 
-def create_tag_from_parameters(createparams):
+def create_tag_from_parameters(createparams, commit=True):
     tag = TAG_MODEL_DICT[createparams['type']]()
-    return set_tag_from_parameters(tag, createparams, 'created')
+    return set_tag_from_parameters(tag, createparams, 'created', commit)
 
 
 # #### Set
 
-def set_tag_from_parameters(tag, setparams, action):
+def set_tag_from_parameters(tag, setparams, action, commit):
     if set_column_attributes(tag, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(tag, action)
+        save_record(tag, action, commit=commit)
     return tag
 
 

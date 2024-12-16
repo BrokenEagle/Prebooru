@@ -147,8 +147,7 @@ def append_relationship_collections(item, relationships, dataparams, safe=False)
 def save_record(record, action, commit=True, safe=False):
     print("[%s]: %s\n" % (record.shortlink, action))
     # Commit only after printing to avoid unnecessarily requerying the record
-    if commit:
-        commit_session(safe)
+    commit_or_flush(commit, safe=safe)
 
 
 def add_record(record):

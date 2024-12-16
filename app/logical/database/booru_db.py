@@ -31,9 +31,9 @@ UPDATE_ALLOWED_COLUMNS = set(COLUMN_ATTRIBUTES).intersection(UPDATE_ALLOWED_ATTR
 
 # #### Create
 
-def create_booru_from_parameters(createparams):
+def create_booru_from_parameters(createparams, commit=True):
     booru = Booru()
-    return set_booru_from_parameters(booru, createparams, 'created')
+    return set_booru_from_parameters(booru, createparams, 'created', commit)
 
 
 def create_booru_from_json(data):
@@ -46,8 +46,8 @@ def create_booru_from_json(data):
 
 # #### Update
 
-def update_booru_from_parameters(booru, updateparams):
-    return set_booru_from_parameters(booru, updateparams, 'updated')
+def update_booru_from_parameters(booru, updateparams, commit=True):
+    return set_booru_from_parameters(booru, updateparams, 'updated', commit)
 
 
 def recreate_booru_relations(booru, updateparams):
@@ -61,12 +61,12 @@ def will_update_booru(booru, data):
 
 # #### Set
 
-def set_booru_from_parameters(booru, setparams, action):
+def set_booru_from_parameters(booru, setparams, action, commit):
     _set_all_names(setparams, booru)
     col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, safe=True)
     rel_result = _set_relations(booru, setparams)
     if col_result or rel_result:
-        save_record(booru, action)
+        save_record(booru, action, commit=commit)
     return booru
 
 

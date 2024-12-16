@@ -17,24 +17,24 @@ NULL_WRITABLE_ATTRIBUTES = ['forward_id', 'reverse_id']
 
 # #### Create
 
-def create_similarity_match_from_parameters(createparams):
+def create_similarity_match_from_parameters(createparams, commit=True):
     similarity_match = SimilarityMatch()
     if createparams['forward_id'] > createparams['reverse_id']:
         createparams['forward_id'], createparams['reverse_id'] = createparams['reverse_id'], createparams['forward_id']
-    return set_similarity_match_from_parameters(similarity_match, createparams, 'created')
+    return set_similarity_match_from_parameters(similarity_match, createparams, 'created', commit)
 
 
 # #### Update
 
-def update_similarity_match_from_parameters(similarity_match, updateparams):
-    return set_similarity_match_from_parameters(similarity_match, updateparams, 'updated')
+def update_similarity_match_from_parameters(similarity_match, updateparams, commit=True):
+    return set_similarity_match_from_parameters(similarity_match, updateparams, 'updated', commit)
 
 
 # #### Set
 
-def set_similarity_match_from_parameters(similarity_match, setparams, action):
+def set_similarity_match_from_parameters(similarity_match, setparams, action, commit):
     if set_column_attributes(similarity_match, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(similarity_match, action)
+        save_record(similarity_match, action, commit=commit)
     return similarity_match
 
 

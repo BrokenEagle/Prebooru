@@ -18,9 +18,9 @@ NULL_WRITABLE_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
 
 # #### Create
 
-def create_media_file_from_parameters(createparams):
+def create_media_file_from_parameters(createparams, commit=True):
     media_file = MediaFile(expires=days_from_now(1))
-    return set_media_file_from_parameters(media_file, createparams, 'created')
+    return set_media_file_from_parameters(media_file, createparams, 'created', commit)
 
 
 # #### Update
@@ -32,9 +32,9 @@ def update_media_file_expires(media_file):
 
 # #### Set
 
-def set_media_file_from_parameters(media_file, setparams, action):
+def set_media_file_from_parameters(media_file, setparams, action, commit):
     if set_column_attributes(media_file, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(media_file, action)
+        save_record(media_file, action, commit=commit)
     return media_file
 
 

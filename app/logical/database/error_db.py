@@ -15,9 +15,9 @@ NULL_WRITABLE_ATTRIBUTES = []
 
 # #### Create
 
-def create_error_from_parameters(createparams):
+def create_error_from_parameters(createparams, commit=True):
     error = Error()
-    return set_error_from_parameters(error, createparams, 'created')
+    return set_error_from_parameters(error, createparams, 'created', commit)
 
 
 def create_error_from_json(data):
@@ -41,9 +41,9 @@ def create_and_append_error(module_name, message, instance):
 
 # #### Set
 
-def set_error_from_parameters(error, setparams, action):
+def set_error_from_parameters(error, setparams, action, commit):
     if set_column_attributes(error, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(error, action)
+        save_record(error, action, commit=commit)
     return error
 
 

@@ -35,9 +35,9 @@ NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_id']
 
 # #### Create
 
-def create_illust_from_parameters(createparams):
+def create_illust_from_parameters(createparams, commit=True):
     illust = Illust()
-    return set_illust_from_parameters(illust, createparams, 'created')
+    return set_illust_from_parameters(illust, createparams, 'created', commit)
 
 
 def create_illust_from_json(data):
@@ -49,8 +49,8 @@ def create_illust_from_json(data):
 
 # #### Update
 
-def update_illust_from_parameters(illust, updateparams):
-    return set_illust_from_parameters(illust, updateparams, 'updated')
+def update_illust_from_parameters(illust, updateparams, commit=True):
+    return set_illust_from_parameters(illust, updateparams, 'updated', commit)
 
 
 def recreate_illust_relations(illust, updateparams):
@@ -65,7 +65,7 @@ def set_illust_artist(illust, artist):
 
 # #### Set
 
-def set_illust_from_parameters(illust, setparams, action):
+def set_illust_from_parameters(illust, setparams, action, commit):
     if 'site' in setparams:
         setparams['site_id'] = Illust.site_enum.by_name(setparams['site']).id
     set_timesvalue(setparams, 'site_created')
@@ -75,7 +75,7 @@ def set_illust_from_parameters(illust, setparams, action):
     rel_result = _set_relations(illust, setparams)
     url_result = _set_illust_urls(illust, setparams)
     if col_result or rel_result or url_result:
-        save_record(illust, action)
+        save_record(illust, action, commit=commit)
     return illust
 
 

@@ -31,9 +31,9 @@ SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_
 
 # #### Create
 
-def create_post_from_parameters(createparams):
+def create_post_from_parameters(createparams, commit=True):
     post = Post(alternate=False, simcheck=False)
-    return set_post_from_parameters(post, createparams, 'created')
+    return set_post_from_parameters(post, createparams, 'created', commit)
 
 
 def create_post_from_json(data):
@@ -45,8 +45,8 @@ def create_post_from_json(data):
 
 # #### Update
 
-def update_post_from_parameters(post, updateparams):
-    return set_post_from_parameters(post, updateparams, 'updated')
+def update_post_from_parameters(post, updateparams, commit=True):
+    return set_post_from_parameters(post, updateparams, 'updated', commit)
 
 
 def set_post_alternate(post, alternate):
@@ -66,9 +66,9 @@ def set_post_simcheck(post, simcheck):
 
 # #### Set
 
-def set_post_from_parameters(post, setparams, action):
+def set_post_from_parameters(post, setparams, action, commit):
     if set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(post, action)
+        save_record(post, action, commit=commit)
     return post
 
 

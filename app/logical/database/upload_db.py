@@ -6,7 +6,7 @@ import re
 # ## LOCAL IMPORTS
 from ...enum_imports import upload_status
 from ...models import Upload, UploadUrl
-from .base_db import set_column_attributes, add_record, save_record, commit_session
+from .base_db import set_column_attributes, add_record, save_record, commit_session, commit_or_flush
 
 
 # ## GLOBAL VARIABLES
@@ -19,21 +19,22 @@ NULL_WRITABLE_ATTRIBUTES = ['request_url', 'media_filepath', 'sample_filepath', 
 
 # #### Create
 
-def create_upload_from_parameters(createparams):
+def create_upload_from_parameters(createparams, commit=True):
     upload = Upload(successes=0, failures=0, status_id=upload_status.pending.id)
-    set_upload_from_parameters(upload, createparams, 'created')
+    set_upload_from_parameters(upload, createparams, 'created', False)
     if 'image_urls' in createparams and len(createparams['image_urls']):
         _create_image_urls(upload, createparams['image_urls'])
+    commit_or_flush(commit)
     return upload
 
 
 # #### Set
 
-def set_upload_from_parameters(upload, setparams, action):
+def set_upload_from_parameters(upload, setparams, action, commit):
     if 'status' in setparams:
         setparams['status_id'] = Upload.status_enum.by_name(setparams['status']).id
     if set_column_attributes(upload, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
-        save_record(upload, action)
+        save_record(upload, action, commit=commit)
     return upload
 
 
