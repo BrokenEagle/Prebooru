@@ -12,7 +12,7 @@ from ..media import create_preview, create_sample, create_data, check_alpha, con
 from ..database.upload_element_db import update_upload_element_from_parameters
 from ..database.subscription_element_db import link_subscription_post, update_subscription_element_status,\
     duplicate_subscription_post, update_subscription_element_keep
-from ..database.post_db import post_append_illust_url, get_post_by_md5, set_post_type
+from ..database.post_db import post_append_illust_url, get_post_by_md5, update_post_from_parameters
 from ..database.error_db import create_error, extend_errors, is_error
 
 
@@ -65,7 +65,7 @@ def check_existing(buffer, illust_url, record):
         if record.model_name == 'upload_element':
             update_upload_element_from_parameters(record, {'status': 'duplicate', 'md5': post.md5})
             if post.type.name != 'user':
-                set_post_type(post, 'user')
+                update_post_from_parameters(post, {'type': 'user'})
         elif record.model_name == 'subscription_element':
             duplicate_subscription_post(record, post.md5)
         return None

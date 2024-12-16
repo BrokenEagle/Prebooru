@@ -8,15 +8,15 @@ from utility.time import days_ago
 
 # ## LOCAL IMPORTS
 from ...models import Post, SubscriptionElement, ImageHash
-from .base_db import set_column_attributes, add_record, delete_record, save_record, commit_session, flush_session
+from .base_db import set_column_attributes, add_record, delete_record, save_record, commit_session
 from .pool_element_db import delete_pool_element
 
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['type_id', 'simcheck']
+ANY_WRITABLE_COLUMNS = ['type_id', 'simcheck', 'alternate']
 NULL_WRITABLE_ATTRIBUTES = ['width', 'height', 'size', 'file_ext', 'md5', 'pixel_md5', 'duration', 'audio',
-                            'alternate', 'danbooru_id']
+                            'danbooru_id']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
                                                 .with_entities(SubscriptionElement.post_id)
@@ -49,24 +49,11 @@ def update_post_from_parameters(post, updateparams, commit=True):
     return set_post_from_parameters(post, updateparams, 'updated', commit)
 
 
-def set_post_alternate(post, alternate):
-    post.alternate = alternate
-    commit_session()
-
-
-def set_post_type(post, post_type):
-    post.type_id = Post.type_enum.by_name(post_type).id
-    commit_session()
-
-
-def set_post_simcheck(post, simcheck):
-    post.simcheck = simcheck
-    flush_session()
-
-
 # #### Set
 
 def set_post_from_parameters(post, setparams, action, commit):
+    if 'type' in setparams:
+        setparams['type_id'] = Post.type_enum.by_name(setparams['type']).id
     if set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(post, action, commit=commit)
     return post

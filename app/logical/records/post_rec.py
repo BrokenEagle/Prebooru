@@ -21,7 +21,7 @@ from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm
 from ..database.post_db import delete_post,\
-    get_posts_to_query_danbooru_id_page, update_post_from_parameters, set_post_alternate, alternate_posts_query,\
+    get_posts_to_query_danbooru_id_page, update_post_from_parameters, alternate_posts_query,\
     get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
     get_artist_posts_without_danbooru_ids
 from ..database.error_db import create_and_append_error
@@ -103,7 +103,8 @@ def check_posts_for_valid_md5():
 
 def move_post_media_to_alternate(post, reverse=False):
     temppost = post.copy()
-    temppost.alternate = not reverse
+    alternate = not reverse
+    temppost.alternate = alternate
     copy_file(post.file_path, temppost.file_path, True)
     if post.has_sample:
         copy_file(post.sample_path, temppost.sample_path)
@@ -113,7 +114,7 @@ def move_post_media_to_alternate(post, reverse=False):
         copy_file(post.video_sample_path, temppost.video_sample_path)
         copy_file(post.video_preview_path, temppost.video_preview_path)
     # Commit post as alternate location at this point since the files have been safely copied over
-    set_post_alternate(post, not reverse)
+    update_post_from_parameters(post, {'alternate': alternate})
     # Any errors after this point will just leave orphan images, which can always be cleaned up later
     temppost.alternate = reverse
     delete_file(temppost.file_path)
