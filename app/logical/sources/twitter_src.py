@@ -26,7 +26,7 @@ from ...enum_imports import site_descriptor, api_data_type
 from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
-from ..database.artist_db import inactivate_artist
+from ..database.artist_db import update_artist_from_parameters
 from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
@@ -1405,7 +1405,7 @@ def snowflake_to_timestring(snowflake):
 def populate_artist_recheck_active(artist):
     twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
     if is_error(twuser):
-        inactivate_artist(artist)
+        update_artist_from_parameters(artist, {'active': False}, update=False)
         return twuser
     # The timeline was empty of any tweets
     return []

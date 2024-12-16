@@ -58,11 +58,6 @@ def recreate_artist_relations(artist, updateparams):
         commit_session()
 
 
-def inactivate_artist(artist):
-    artist.active = False
-    commit_session()
-
-
 # #### Set
 
 def set_artist_from_parameters(artist, setparams, action, commit, update):
