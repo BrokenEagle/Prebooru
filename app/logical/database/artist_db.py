@@ -173,6 +173,7 @@ def _set_artist_webpages(artist, params, update):
     if 'webpages' not in params:
         return False
     printer = buffered_print('set_artist_webpages', safe=True, header=False)
+    printer("(%s)" % artist.shortlink)
     update_results = False
     existing_webpages = [webpage.url for webpage in artist.webpages]
     current_webpages = []
@@ -187,19 +188,19 @@ def _set_artist_webpages(artist, params, update):
                 'url': url,
                 'active': is_active,
             }
-            printer("Adding artist url [%s]:" % artist.shortlink, url, is_active)
+            printer("[new artist_url]:", url, is_active)
             artist_url = ArtistUrl(**data)
             add_record(artist_url)
             update_results = True
         elif artist_url.active != is_active:
-            printer("Updating %s (%s):" % (artist_url.shortlink, artist_url.url), artist_url.active, is_active)
+            printer("[%s]:" % artist_url.shortlink, artist_url.active, '->', is_active)
             artist_url.active = is_active
             update_results = True
         current_webpages.append(url)
     removed_webpages = set(existing_webpages).difference(current_webpages)
     for url in removed_webpages:
         # These will only be removable via the artist urls controller
-        printer("Inactivating %s (%s):" % (artist_url.shortlink, artist_url.url))
+        printer("-[%s]:" % artist_url.shortlink)
         artist_url = next(filter(lambda x: x.url == url, artist.webpages))
         artist_url.active = False
         update_results = True

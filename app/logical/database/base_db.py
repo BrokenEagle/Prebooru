@@ -67,16 +67,24 @@ def set_association_attributes(params, associations):
 def set_column_attributes(item, any_columns, null_columns, dataparams, update=False, safe=False):
     """For updating column attributes with scalar values"""
     printer = buffered_print('set_column_attributes', safe=True, header=False)
+    printer("(%s)" % item.shortlink)
     is_dirty = False
     allowed_attrs = any_columns + null_columns
+    create = item not in SESSION
     for attr in allowed_attrs:
         if attr not in dataparams or (attr in null_columns and getattr(item, attr) is not None):
             continue
         if getattr(item, attr) != dataparams[attr]:
-            printer("Setting basic attr (%s):" % item.shortlink, attr, getattr(item, attr), dataparams[attr])
+            to_val = _normalize_val(dataparams[attr])
+            if create:
+                printer("[%s]:" % _get_attr(item, attr), _get_val(item, attr, to_val))
+            else:
+                from_val = _normalize_val(getattr(item, attr))
+                printer("[%s]:" % _get_attr(item, attr),
+                        _get_val(item, attr, from_val), '->', _get_val(item, attr, to_val))
             setattr(item, attr, dataparams[attr])
             is_dirty = True
-    if item not in SESSION:
+    if create:
         if hasattr(item, 'created'):
             item.created = get_current_time()
         add_record(item)
@@ -90,6 +98,7 @@ def set_column_attributes(item, any_columns, null_columns, dataparams, update=Fa
 def set_relationship_collections(item, relationships, dataparams, update=False, safe=False):
     """For updating multiple values to collection relationships with scalar values"""
     printer = buffered_print('set_relationship_collections', safe=True, header=False)
+    printer("(%s)" % item.shortlink)
     is_dirty = False
     for attr, subattr, model in relationships:
         if dataparams.get(attr) is None:
@@ -98,7 +107,7 @@ def set_relationship_collections(item, relationships, dataparams, update=False, 
         current_values = [getattr(subitem, subattr) for subitem in collection]
         add_values = set(dataparams[attr]).difference(current_values)
         for value in add_values:
-            printer("Adding collection item (%s):" % item.shortlink, attr, value)
+            printer("+[%s]:" % attr, _normalize_val(value))
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
@@ -107,7 +116,7 @@ def set_relationship_collections(item, relationships, dataparams, update=False, 
             is_dirty = True
         remove_values = set(current_values).difference(dataparams[attr])
         for value in remove_values:
-            printer("Removing collection item (%s):" % item.shortlink, attr, value)
+            printer("-[%s]:" % attr, _normalize_val(value))
             remove_item = next(filter(lambda x: getattr(x, subattr) == value, collection))
             collection.remove(remove_item)
             is_dirty = True
@@ -121,6 +130,7 @@ def set_relationship_collections(item, relationships, dataparams, update=False, 
 def append_relationship_collections(item, relationships, dataparams, update=False, safe=False):
     """For appending a single value to collection relationships with scalar values"""
     printer = buffered_print('append_relationship_collections', safe=True, header=False)
+    printer("(%s)" % item.shortlink)
     is_dirty = False
     for attr, subattr, model in relationships:
         append_attr = attr + '_append'
@@ -130,7 +140,7 @@ def append_relationship_collections(item, relationships, dataparams, update=Fals
         current_values = [getattr(subitem, subattr) for subitem in collection]
         if dataparams[append_attr] not in current_values:
             value = dataparams[append_attr]
-            printer("Adding collection item (%s):" % item.shortlink, attr, value)
+            printer("[%s]:" % attr, _normalize_val(value))
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
@@ -250,3 +260,29 @@ def _commit_or_flush(commit):
 def _update_record(item, update):
     if update and hasattr(item, 'updated'):
         item.updated = get_current_time()
+
+
+def _normalize_val(val):
+    if isinstance(val, str):
+        return val[:80] + '...' if len(val) > 80 else val
+    if isinstance(val, dict):
+        return '<dict>'
+    return val
+
+
+def _get_attr(item, attr):
+    if attr.endswith('_id'):
+        key = attr[:-3]
+        enum = getattr(item, key + '_enum', None)
+        if enum is not None:
+            return key
+    return attr
+
+
+def _get_val(item, attr, val):
+    if isinstance(val, int) and attr.endswith('_id'):
+        key = attr[:-3]
+        enum = getattr(item, key + '_enum', None)
+        if enum is not None:
+            return enum.by_id(val).name
+    return val
