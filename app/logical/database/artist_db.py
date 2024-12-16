@@ -5,14 +5,13 @@ from sqlalchemy import not_
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
-from utility.uprint import buffered_print
 
 # ## LOCAL IMPORTS
-from ...models import Artist, ArtistUrl, Booru, Label, Description
+from ...models import Artist, Booru, Label, Description
 from ..utility import set_error
 from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
     set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session, flush_session
-
+from .artist_url_db import create_artist_url_from_parameters, update_artist_url_from_parameters
 
 # ## GLOBAL VARIABLES
 
@@ -172,8 +171,6 @@ def _set_relations(artist, setparams, update):
 def _set_artist_webpages(artist, params, update):
     if 'webpages' not in params:
         return False
-    printer = buffered_print('set_artist_webpages', safe=True, header=False)
-    printer("(%s)" % artist.shortlink)
     update_results = False
     existing_webpages = [webpage.url for webpage in artist.webpages]
     current_webpages = []
@@ -188,25 +185,20 @@ def _set_artist_webpages(artist, params, update):
                 'url': url,
                 'active': is_active,
             }
-            printer("[new artist_url]:", url, is_active)
-            artist_url = ArtistUrl(**data)
-            add_record(artist_url)
+            create_artist_url_from_parameters(data)
             update_results = True
         elif artist_url.active != is_active:
-            printer("[%s]:" % artist_url.shortlink, artist_url.active, '->', is_active)
-            artist_url.active = is_active
+            update_artist_url_from_parameters(artist_url, {'active': is_active})
             update_results = True
         current_webpages.append(url)
     removed_webpages = set(existing_webpages).difference(current_webpages)
     for url in removed_webpages:
         # These will only be removable via the artist urls controller
-        printer("-[%s]:" % artist_url.shortlink)
         artist_url = next(filter(lambda x: x.url == url, artist.webpages))
-        artist_url.active = False
+        update_artist_url_from_parameters(artist_url, {'active': False})
         update_results = True
     if update_results:
         if update:
             artist.updated = get_current_time()
-        printer.print()
         flush_session()
     return update_results
