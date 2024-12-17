@@ -41,6 +41,13 @@ def set_tag_from_parameters(tag, setparams, action, commit):
     return tag
 
 
+# #### Query
+
+def get_tags_by_names(names, type):
+    model = TAG_MODEL_DICT[type]
+    return model.query.filter(model.name.in_(names)).all()
+
+
 # #### Misc
 
 def append_tag_to_item(tag, append_key, dataparams):

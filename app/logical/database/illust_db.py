@@ -12,6 +12,7 @@ from ..utility import set_error
 from .illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from .site_data_db import create_site_data_from_parameters, update_site_data_from_parameters
 from .pool_element_db import delete_pool_element
+from .tag_db import create_tag_from_parameters, get_tags_by_names
 from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
     set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session, flush_session
 
@@ -66,6 +67,7 @@ def set_illust_from_parameters(illust, setparams, action, commit, update):
     set_timesvalue(setparams, 'site_created')
     set_timesvalue(setparams, 'site_updated')
     set_timesvalue(setparams, 'site_uploaded')
+    _create_tags(setparams)
     col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
                                        setparams, update=update, safe=True)
     rel_result = _set_relations(illust, setparams, update)
@@ -116,6 +118,20 @@ def get_site_illusts(site, site_illust_ids, load_urls=False):
 
 
 # #### Private functions
+
+def _create_tags(params):
+    if 'tags' not in params:
+        return
+    tags = get_tags_by_names(params['tags'], 'site_tag')
+    tags_found = [tag.name for tag in tags]
+    dirty = False
+    for name in params['tags']:
+        if name not in tags_found:
+            create_tag_from_parameters({'name': name, 'type': 'site_tag'}, commit=False)
+            dirty = True
+    if dirty:
+        commit_session()
+
 
 def _set_relations(illust, setparams, update):
     if isinstance(setparams.get('commentaries'), str):
