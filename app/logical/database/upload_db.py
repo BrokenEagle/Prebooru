@@ -28,6 +28,12 @@ def create_upload_from_parameters(createparams, commit=True):
     return upload
 
 
+# #### Update
+
+def update_upload_from_parameters(upload, updateparams, commit=True):
+    return set_upload_from_parameters(upload, updateparams, 'updated', commit)
+
+
 # #### Set
 
 def set_upload_from_parameters(upload, setparams, action, commit):
@@ -48,21 +54,6 @@ def get_pending_uploads():
 
 def has_duplicate_posts(upload):
     return any(re.match(r'Image already uploaded on post #\d+', error.message) for error in upload.errors)
-
-
-def set_upload_status(upload, value):
-    upload.status_id = upload_status.by_name(value).id
-    commit_session()
-
-
-def add_upload_success(upload):
-    upload.successes += 1
-    commit_session()
-
-
-def add_upload_failure(upload):
-    upload.failures += 1
-    commit_session()
 
 
 # #### Private

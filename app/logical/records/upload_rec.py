@@ -21,7 +21,7 @@ from ..records.image_hash_rec import generate_post_image_hashes
 from ..records.similarity_match_rec import generate_similarity_matches
 from ..database.base_db import safe_db_execute
 from ..database.illust_db import get_site_illust, get_site_illusts
-from ..database.upload_db import set_upload_status
+from ..database.upload_db import update_upload_from_parameters
 from ..database.upload_element_db import create_upload_element_from_parameters
 from ..database.post_db import get_posts_by_id
 from ..database.error_db import create_and_append_error, append_error
@@ -42,7 +42,7 @@ def process_upload(upload_id):
         nonlocal upload
         upload = Upload.find(upload_id)
         printer("Upload:", upload.id)
-        set_upload_status(upload, 'processing')
+        update_upload_from_parameters(upload, {'status': 'processing'})
         if upload.request_url is not None:
             process_network_upload(upload)
         elif upload.illust_url_id is not None and upload.media_filepath is not None:
@@ -56,7 +56,7 @@ def process_upload(upload_id):
     def error_func(scope_vars, e):
         nonlocal upload
         upload = upload or Upload.find(upload_id)
-        set_upload_status(upload, 'error')
+        update_upload_from_parameters(upload, {'status': 'error'})
 
     def finally_func(scope_vars, error, data):
         nonlocal upload
@@ -152,7 +152,7 @@ def process_network_upload(upload):
     if illust is None:
         illust = create_illust_from_source(site_illust_id, source)
         if illust is None:
-            set_upload_status(upload, 'error')
+            update_upload_from_parameters(upload, {'status': 'error'})
             create_and_append_error(upload, 'upload_rec.process_network_upload',
                                     "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id))
             return
@@ -166,6 +166,8 @@ def process_network_upload(upload):
     upload_elements = upload.elements
     image_upload = source.is_image_url(upload.request_url)
     normalized_request_url = no_file_extension(source.normalize_image_url(upload.request_url)) if image_upload else None
+    successes = upload.successes
+    failures = upload.failures
     for illust_url in illust.urls:
         normalized_illust_url = no_file_extension(illust_url.url)
         if image_upload and normalized_request_url != normalized_illust_url:
@@ -176,12 +178,12 @@ def process_network_upload(upload):
         if element is None:
             element = create_upload_element_from_parameters({'upload_id': upload.id, 'illust_url_id': illust_url.id})
         if convert_network_upload(element):
-            upload.successes += 1
+            successes += 1
         else:
-            upload.failures += 1
+            failures += 1
         if image_upload:
             break
-    set_upload_status(upload, 'complete')
+    update_upload_from_parameters(upload, {'status': 'complete', 'successes': successes, 'failures': failures})
 
 
 def process_file_upload(upload):
@@ -192,9 +194,9 @@ def process_file_upload(upload):
     if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist)
     if convert_file_upload(upload):
-        set_upload_status(upload, 'complete')
+        update_upload_from_parameters(upload, {'status': 'complete'})
     else:
-        set_upload_status(upload, 'error')
+        update_upload_from_parameters(upload, {'status': 'error'})
 
 
 # #### Secondary task functions
