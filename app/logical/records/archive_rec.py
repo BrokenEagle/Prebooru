@@ -88,6 +88,8 @@ def recreate_attachments(record, data):
             attach_model = getattr(model, attr).property.entity.class_
         reverse_attr = getattr(model, attr).property.back_populates
         attachments = data['attachments'][key]
+        if attachments is None:
+            continue
         attachments = [attachments] if isinstance(attachments, dict) else attachments
         for item in attachments:
             attach_record = attach_model.loads(item, record)
