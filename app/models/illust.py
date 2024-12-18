@@ -93,6 +93,14 @@ class Illust(JsonModel):
     def site_illust_id_str(self):
         return str(self.site_illust_id)
 
+    @property
+    def primary_url(self):
+        return self.source.get_primary_url(self)
+
+    @property
+    def secondary_url(self):
+        return self.source.get_secondary_url(self)
+
     def urls_paginate(self, page=None, per_page=None, options=None, url_type=None):
         def _get_options(options):
             if options is None:
@@ -142,6 +150,10 @@ class Illust(JsonModel):
     @property
     def site_domain(self):
         return self.site.domain
+
+    @property
+    def sitelink(self):
+        return "%s #%d" % (self.site.name.lower(), self.site_illust_id)
 
     @property
     def key(self):

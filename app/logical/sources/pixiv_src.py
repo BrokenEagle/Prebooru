@@ -154,12 +154,12 @@ def get_media_url(illust_url):
     return 'https://' + illust_url.site.domain + illust_url.url
 
 
-def get_post_url(illust):
+def get_primary_url(illust):
     return ILLUST_HREFURL % illust.site_illust_id
 
 
-def get_illust_url(site_illust_id):
-    return ILLUST_HREFURL % site_illust_id
+def get_secondary_url(illust):
+    return None
 
 
 def image_illust_download_urls(illust):

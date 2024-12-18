@@ -637,16 +637,12 @@ def get_sample_url(illust_url, original=False):
     return 'https://' + illust_url.sample_site.domain + illust_url.sample_url + addon
 
 
-def get_post_url(illust):
-    tweet_id = illust.site_illust_id
-    if not has_artist_urls(illust.artist):
-        return get_illust_url(tweet_id)
-    screen_name = artist_screen_name(illust.artist)
-    return "https://twitter.com/%s/status/%d" % (screen_name, tweet_id)
+def get_primary_url(illust):
+    return "https://twitter.com/i/web/status/%d" % illust.site_illust_id
 
 
-def get_illust_url(site_illust_id):
-    return "https://twitter.com/i/web/status/%d" % site_illust_id
+def get_secondary_url(illust):
+    return "https://twitter.com/%s/status/%d" % (illust.artist.current_site_account, illust.site_illust_id)
 
 
 def normalize_image_url(image_url):
