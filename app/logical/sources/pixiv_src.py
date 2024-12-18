@@ -262,6 +262,11 @@ def is_artist_url(artist_url):
     return is_artist_id_url(artist_url)
 
 
+def partial_media_url(url):
+    parse = urllib.parse.urlparse(url)
+    return parse.path
+
+
 def original_image_url(image_url):
     return normalized_image_url(image_url)
 
