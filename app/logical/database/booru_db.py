@@ -6,7 +6,7 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ...models import Booru, Label
 from .base_db import set_column_attributes, set_relationship_collections, set_association_attributes,\
-    will_update_record, add_record, delete_record, save_record, commit_session
+    will_update_record, add_record, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -61,13 +61,6 @@ def set_booru_from_parameters(booru, setparams, action, commit, update):
     if col_result or rel_result:
         save_record(booru, action, commit=commit)
     return booru
-
-
-# #### Delete
-
-def delete_booru(booru):
-    delete_record(booru)
-    commit_session()
 
 
 # #### Misc functions

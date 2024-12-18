@@ -6,9 +6,10 @@ from ...models import Booru
 from ..logger import handle_error_message
 from ..sources.base_src import get_artist_id_source
 from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
+from ..database.base_db import delete_record, commit_session
 from ..database.artist_db import get_site_artist
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
-    delete_booru, get_all_boorus_page, will_update_booru
+    get_all_boorus_page, will_update_booru
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
 from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
@@ -118,3 +119,10 @@ def relink_archived_booru(archive):
     if booru is None:
         return f"No booru found with key {archive.key}"
     recreate_links(booru, archive.data)
+
+
+def delete_booru(booru):
+    msg = "[%s]: deleted\n" % booru.shortlink
+    delete_record(booru)
+    commit_session()
+    print(msg)
