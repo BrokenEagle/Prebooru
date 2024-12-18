@@ -16,6 +16,16 @@ from ..enum_imports import archive_type
 from .base import JsonModel, EpochTimestamp, image_server_url, get_relation_definitions
 
 
+# ## FUNCTIONS
+
+def check_type(func):
+    def wrapper(*args):
+        if not args[0].is_post_type:
+            return None
+        return func(*args)
+    return wrapper
+
+
 # ## CLASSES
 
 class Archive(JsonModel):
@@ -33,37 +43,33 @@ class Archive(JsonModel):
         return self.type.name == 'post'
 
     @property
+    @check_type
     def has_preview(self):
-        if not self.is_post_type:
-            return
         return self.data['body']['width'] > PREVIEW_DIMENSIONS[0] or\
             self.data['body']['height'] > PREVIEW_DIMENSIONS[1]
 
     @property
+    @check_type
     def file_url(self):
-        if not self.is_post_type:
-            return
         return image_server_url('archive' + self._partial_network_path + self.data['body']['file_ext'], 'main')
 
     @property
+    @check_type
     def preview_url(self):
-        if not self.is_post_type:
-            return
         if not self.has_preview:
             return self.file_url
         return image_server_url('archive_preview' + self._partial_network_path + 'jpg', 'main')
 
     @property
+    @check_type
     def file_path(self):
-        if not self.is_post_type:
-            return
         return os.path.join(MEDIA_DIRECTORY, 'archive', self._partial_file_path + self.data['body']['file_ext'])
 
     @property
+    @check_type
     def preview_path(self):
-        if not self.is_post_type or not self.has_preview:
-            return
-        return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')
+        if self.has_preview:
+            return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')
 
     # ## Class properties
 
