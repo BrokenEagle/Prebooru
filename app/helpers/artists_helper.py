@@ -13,14 +13,6 @@ from .base_helper import general_link, external_link
 
 # #### URL functions
 
-def site_short_link(artist):
-    return artist.site.source.ARTIST_SHORTLINK % artist.site_artist_id
-
-
-def href_url(artist):
-    return artist.site.source.ARTIST_HREFURL % artist.site_artist_id
-
-
 def post_search(artist):
     return search_url_for('post.index_html', illust_urls={'illust': {'artist_id': artist.id}})
 
@@ -71,7 +63,7 @@ def post_search_link(artist):
 def site_artist_link(artist):
     if artist.site_id == site_descriptor.custom.id:
         return Markup('N/A')
-    return external_link(site_short_link(artist), href_url(artist))
+    return external_link(artist.sitelink, artist.primary_url)
 
 
 def artist_links(artist):

@@ -91,6 +91,10 @@ class Artist(JsonModel):
         return str(self.site_artist_id)
 
     @property
+    def primary_url(self):
+        return self.source.ARTIST_HREFURL % self.site_artist_id
+
+    @property
     def other_site_accounts(self):
         return [account for account in self.site_accounts if account != self.current_site_account]
 
@@ -128,6 +132,10 @@ class Artist(JsonModel):
     @property
     def first_illust_id(self):
         return self.first_illust.site_illust_id if self.first_illust is not None else None
+
+    @property
+    def sitelink(self):
+        return self.source.ARTIST_SHORTLINK % self.site_artist_id
 
     @property
     def site_domain(self):
