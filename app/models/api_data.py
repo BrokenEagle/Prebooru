@@ -26,6 +26,10 @@ class ApiData(JsonModel):
 
     # ## Class properties
 
+    @property
+    def source(self):
+        return self.site.source
+
     @classproperty(cached=True)
     def searchable_attributes(cls):
         return [x for x in super().searchable_attributes if x not in ['data']]

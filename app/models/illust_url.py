@@ -49,11 +49,15 @@ class IllustUrl(JsonModel):
 
     # ## Instance properties
 
+    @property
+    def source(self):
+        return self.site.source
+
     @memoized_property
     def type(self):
-        if self.site.source.video_url_mapper(self):
+        if self.source.video_url_mapper(self):
             return 'video'
-        elif self.site.source.image_url_mapper(self):
+        elif self.source.image_url_mapper(self):
             return 'image'
         else:
             return 'unknown'
@@ -61,18 +65,18 @@ class IllustUrl(JsonModel):
     @memoized_property
     def preview_url(self):
         if self.type == 'image':
-            return self.site.source.get_preview_url(self)
+            return self.source.get_preview_url(self)
         elif self.type == 'video':
             return self.full_sample_url
 
     @memoized_property
     def full_url(self):
-        return self.site.source.get_media_url(self)
+        return self.source.get_media_url(self)
 
     @memoized_property
     def full_sample_url(self):
         if self.type == 'video':
-            return self.site.source.get_sample_url(self)
+            return self.source.get_sample_url(self)
 
     @property
     def site_domain(self):

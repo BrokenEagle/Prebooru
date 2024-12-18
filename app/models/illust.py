@@ -86,6 +86,10 @@ class Illust(JsonModel):
     # ## Instance properties
 
     @property
+    def source(self):
+        return self.site.source
+
+    @property
     def site_illust_id_str(self):
         return str(self.site_illust_id)
 

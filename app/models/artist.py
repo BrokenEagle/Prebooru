@@ -83,6 +83,10 @@ class Artist(JsonModel):
     # ## Instance properties
 
     @property
+    def source(self):
+        return self.site.source
+
+    @property
     def site_artist_id_str(self):
         return str(self.site_artist_id)
 
@@ -131,7 +135,7 @@ class Artist(JsonModel):
 
     @property
     def booru_search_url(self):
-        return self.site.source.artist_booru_search_url(self)
+        return self.source.artist_booru_search_url(self)
 
     @property
     def key(self):
