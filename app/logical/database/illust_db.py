@@ -9,12 +9,11 @@ from utility.time import get_current_time
 # ## LOCAL IMPORTS
 from ...models import Illust, SiteTag, Description
 from ..utility import set_error
-from ..records.pool_rec import delete_pool_element
 from .illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from .site_data_db import create_site_data_from_parameters, update_site_data_from_parameters
 from .tag_db import create_tag_from_parameters, get_tags_by_names
 from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
-    set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session, flush_session
+    set_timesvalue, set_association_attributes, add_record, save_record, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -75,15 +74,6 @@ def set_illust_from_parameters(illust, setparams, action, commit, update):
     if col_result or rel_result or url_result:
         save_record(illust, action, commit=commit)
     return illust
-
-
-# #### Delete
-
-def delete_illust(illust):
-    for pool_element in illust._pools:
-        delete_pool_element(pool_element)
-    delete_record(illust)
-    commit_session()
 
 
 # #### Misc
