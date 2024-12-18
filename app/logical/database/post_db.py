@@ -8,8 +8,7 @@ from utility.time import days_ago
 
 # ## LOCAL IMPORTS
 from ...models import Post, SubscriptionElement, ImageHash
-from ..records.pool_rec import delete_pool_element
-from .base_db import set_column_attributes, add_record, delete_record, save_record, commit_session
+from .base_db import set_column_attributes, add_record, save_record, commit_session
 
 
 # ## GLOBAL VARIABLES
@@ -57,15 +56,6 @@ def set_post_from_parameters(post, setparams, action, commit):
     if set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(post, action, commit=commit)
     return post
-
-
-# #### Delete
-
-def delete_post(post):
-    for pool_element in post._pools:
-        delete_pool_element(pool_element)
-    delete_record(post)
-    commit_session()
 
 
 # #### Misc

@@ -20,7 +20,8 @@ from ..logger import handle_error_message
 from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm
-from ..database.post_db import delete_post,\
+from ..database.base_db import delete_record, commit_session
+from ..database.post_db import\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, alternate_posts_query,\
     get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
     get_artist_posts_without_danbooru_ids
@@ -29,6 +30,7 @@ from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
+from .pool_rec import delete_pool_element
 from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
 
 
@@ -295,6 +297,15 @@ def process_image_matches(post_ids):
         generate_similarity_matches(post, printer=printer)
     SESSION.commit()
     printer.print()
+
+
+def delete_post(post):
+    msg = "[%s]: deleted\n" % post.shortlink
+    for pool_element in post._pools:
+        delete_pool_element(pool_element)
+    delete_record(post)
+    commit_session()
+    print(msg)
 
 
 # #### Private functions
