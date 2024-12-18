@@ -9,9 +9,11 @@ from utility.data import inc_dict_entry
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Artist
+from ..utility import set_error
 from ..logger import handle_error_message
+from ..database.base_db import delete_record, commit_session
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, get_site_artist,\
-    delete_artist, get_artists_without_boorus_page
+    get_artists_without_boorus_page
 from ..database.booru_db import get_boorus, create_booru_from_parameters, booru_append_artist
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
@@ -103,6 +105,8 @@ def update_artist(artist, params):
 
 
 def archive_artist_for_deletion(artist, expires=30):
+    if artist.illust_count > 0:
+        return {'error': True, 'message': "Cannot delete artist with existing illusts"}
     archive = archive_record(artist, expires)
     if archive is None:
         return handle_error_message(f"Error archiving data [{artist.shortlink}].")
@@ -132,3 +136,22 @@ def relink_archived_artist(archive):
     if artist is None:
         return f"No artist found with key {archive.key}"
     recreate_links(artist, archive.data)
+
+
+def delete_artist(artist):
+    msg = "[%s]: deleted\n" % artist.shortlink
+    delete_record(artist)
+    commit_session()
+    print(msg)
+
+
+def artist_delete_profile(artist, description_id):
+    retdata = {'error': False, 'descriptions': [profile.to_json() for profile in artist._profiles]}
+    remove_profile = next((profile for profile in artist._profiles if profile.id == description_id), None)
+    if remove_profile is None:
+        msg = "Profile with description #%d does not exist on artist #%d." % (description_id, artist.id)
+        return set_error(retdata, msg)
+    artist._profiles.remove(remove_profile)
+    commit_session()
+    retdata['item'] = artist.to_json()
+    return retdata

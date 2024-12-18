@@ -8,9 +8,8 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import Artist, Booru, Label, Description
-from ..utility import set_error
 from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
-    set_timesvalue, set_association_attributes, add_record, delete_record, save_record, commit_session, flush_session
+    set_timesvalue, set_association_attributes, add_record, save_record, commit_session, flush_session
 from .artist_url_db import create_artist_url_from_parameters, update_artist_url_from_parameters
 
 # ## GLOBAL VARIABLES
@@ -75,16 +74,6 @@ def set_artist_from_parameters(artist, setparams, action, commit, update):
     return artist
 
 
-# #### Delete
-
-def delete_artist(artist):
-    from ..records.illust_rec import archive_illust_for_deletion
-    for illust in artist.illusts:
-        archive_illust_for_deletion(illust)
-    delete_record(artist)
-    commit_session()
-
-
 # #### Misc
 
 def get_blank_artist():
@@ -107,18 +96,6 @@ def artist_append_booru(artist, booru):
     artist.boorus.append(booru)
     artist.updated = get_current_time()
     commit_session()
-
-
-def artist_delete_profile(artist, description_id):
-    retdata = {'error': False, 'descriptions': [profile.to_json() for profile in artist._profiles]}
-    remove_profile = next((profile for profile in artist._profiles if profile.id == description_id), None)
-    if remove_profile is None:
-        msg = "Profile with description #%d does not exist on artist #%d." % (description_id, artist.id)
-        return set_error(retdata, msg)
-    artist._profiles.remove(remove_profile)
-    commit_session()
-    retdata['item'] = artist.to_json()
-    return retdata
 
 
 # #### Query functions

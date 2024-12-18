@@ -16,10 +16,11 @@ from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.sources.base_src import get_artist_required_params
 from ..logical.sources.danbooru_src import get_artists_by_url
-from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion
+from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion,\
+    artist_delete_profile
 from ..logical.records.post_rec import check_artist_posts_for_danbooru_id
 from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
-    artist_append_booru, artist_delete_profile
+    artist_append_booru
 from ..logical.database.booru_db import create_booru_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
