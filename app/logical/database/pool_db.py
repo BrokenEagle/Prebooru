@@ -3,12 +3,9 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy import or_
 
-# ## PACKAGE IMPORTS
-from utility.time import get_current_time
-
 # ## LOCAL IMPORTS
 from ...models import Pool
-from .base_db import set_column_attributes, save_record, commit_session
+from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
@@ -23,20 +20,13 @@ NULL_WRITABLE_ATTRIBUTES = []
 
 def create_pool_from_parameters(createparams, commit=True):
     pool = Pool(element_count=0)
-    return set_pool_from_parameters(pool, createparams, 'created', True)
+    return set_pool_from_parameters(pool, createparams, 'created', commit, True)
 
 
 # #### Update
 
 def update_pool_from_parameters(pool, updateparams, commit=True, update=True):
-    return set_pool_from_parameters(pool, updateparams, 'updated', update)
-
-
-def update_pool_positions(pool):
-    pool._elements.reorder()
-    pool.element_count = pool._get_element_count()
-    pool.checked = get_current_time()
-    commit_session()
+    return set_pool_from_parameters(pool, updateparams, 'updated', commit, update)
 
 
 # #### Set

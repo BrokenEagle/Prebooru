@@ -23,8 +23,9 @@ from ..records.media_file_rec import batch_delete_media
 from ..records.subscription_rec import sync_missing_subscription_illusts, populate_subscription_elements,\
     download_missing_elements, unlink_expired_subscription_elements, delete_expired_subscription_elements,\
     archive_expired_subscription_elements
+from ..records.pool_rec import update_pool_positions
 from ..database.base_db import safe_db_execute, commit_session
-from ..database.pool_db import get_all_recheck_pools, update_pool_positions
+from ..database.pool_db import get_all_recheck_pools
 from ..database.subscription_db import get_available_subscriptions_query, update_subscription_from_parameters,\
     get_busy_subscriptions, get_subscription_by_ids
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements

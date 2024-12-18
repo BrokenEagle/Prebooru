@@ -5,7 +5,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import Notation, Pool, Subscription, Booru, Artist, Illust, Post
-from .pool_element_db import delete_pool_element
+from ..records.pool_rec import delete_pool_element
 from .base_db import set_column_attributes, add_record, delete_record, save_record, commit_session, flush_session
 
 

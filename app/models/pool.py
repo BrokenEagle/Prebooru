@@ -4,6 +4,7 @@
 from flask import Markup
 
 # ## EXTERNAL IMPORTS
+from sqlalchemy import func
 from sqlalchemy.orm import lazyload, selectin_polymorphic
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -46,6 +47,13 @@ class Pool(JsonModel):
     elements = association_proxy('_elements', 'item', creator=lambda item: pool_element_create(item))
 
     # ## Instance properties
+
+    @property
+    def next_position(self):
+        if self.element_count == 0:
+            return 0
+        return PoolElement.query.filter(PoolElement.pool_id == self.id)\
+                                .with_entities(func.max(PoolElement.position)).scalar() + 1
 
     def remove(self, item):
         pool_element_delete(self.id, item)

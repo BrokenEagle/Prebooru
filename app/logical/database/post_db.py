@@ -8,8 +8,8 @@ from utility.time import days_ago
 
 # ## LOCAL IMPORTS
 from ...models import Post, SubscriptionElement, ImageHash
+from ..records.pool_rec import delete_pool_element
 from .base_db import set_column_attributes, add_record, delete_record, save_record, commit_session
-from .pool_element_db import delete_pool_element
 
 
 # ## GLOBAL VARIABLES
