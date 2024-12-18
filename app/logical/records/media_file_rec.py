@@ -6,12 +6,13 @@ from concurrent.futures import ThreadPoolExecutor
 # ## PACKAGE IMPORTS
 from utility.data import get_buffer_checksum
 from utility.file import create_directory, put_get_raw, delete_file
+from utility.time import days_from_now
 
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ..network import get_http_data
 from ..database.media_file_db import create_media_file_from_parameters, batch_delete_media_files,\
-    get_media_file_by_url, get_media_files_by_md5s, update_media_file_expires, get_media_file_by_id,\
+    get_media_file_by_url, get_media_files_by_md5s, update_media_file_from_parameters, get_media_file_by_id,\
     is_media_file
 
 
@@ -42,7 +43,7 @@ def get_or_create_media(download_url, source):
     if media_file is None:
         media_file = create_media(download_url, source)
     else:
-        update_media_file_expires(media_file)
+        update_media_file_from_parameters(media_file, {'expires': days_from_now(1)})
     results = media_file.id if is_media_file(media_file) else media_file
     SESSION.remove()
     return results

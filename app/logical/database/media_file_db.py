@@ -10,7 +10,7 @@ from .base_db import set_column_attributes, save_record, commit_session
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = []
+ANY_WRITABLE_COLUMNS = ['expires']
 NULL_WRITABLE_ATTRIBUTES = ['md5', 'file_ext', 'media_url']
 
 
@@ -25,9 +25,8 @@ def create_media_file_from_parameters(createparams, commit=True):
 
 # #### Update
 
-def update_media_file_expires(media_file):
-    media_file.expires = days_from_now(1)
-    commit_session()
+def update_media_file_from_parameters(media_file, updateparams, commit=True):
+    return set_media_file_from_parameters(media_file, updateparams, 'updated', commit)
 
 
 # #### Set
