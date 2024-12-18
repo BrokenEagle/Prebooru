@@ -7,10 +7,11 @@ import logging
 # ## PACKAGE IMPORTS
 from utility.uprint import exception_print
 from utility.file import delete_file
+from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ... import SESSION
-from ..database.base_db import record_from_json
+from ...models import Archive
+from ..database.base_db import record_from_json, add_record, commit_session, flush_session
 from ..database.archive_db import ARCHIVE_DIRECTORY, get_archive, create_archive, update_archive
 
 
@@ -70,7 +71,7 @@ def recreate_scalars(record, data):
             getattr(record, attr).append(value)
         if isinstance(scalar, tuple) and len(scalar) > 3:
             scalar[3](record)
-    SESSION.flush()
+    flush_session()
 
 
 def recreate_attachments(record, data):
@@ -93,9 +94,9 @@ def recreate_attachments(record, data):
         attachments = [attachments] if isinstance(attachments, dict) else attachments
         for item in attachments:
             attach_record = attach_model.loads(item, record)
-            SESSION.add(attach_record)
+            add_record(attach_record)
             attach_record.attach(reverse_attr, record)
-            SESSION.flush()
+            flush_session()
 
 
 def recreate_links(record, data):
@@ -109,7 +110,7 @@ def recreate_links(record, data):
             link_func = getattr(record, args[1])
             for value in data['links'][attr]:
                 if link_func(value):
-                    SESSION.flush()
+                    flush_session()
             continue
         link_model = getattr(model, attr).property.entity.class_
         for value in data['links'][attr]:
@@ -118,7 +119,7 @@ def recreate_links(record, data):
             link_record = link_model.find_by_key(value)
             if link_record is not None:
                 getattr(record, attr).append(link_record)
-                SESSION.flush()
+                flush_session()
 
 
 def remove_archive_media_file(archive):
@@ -129,3 +130,24 @@ def remove_archive_media_file(archive):
     except Exception as e:
         logging.error("Error deleting sample.")
         exception_print(e)
+
+
+def delete_expired_archive():
+    status = {}
+    status['nonposts'] =\
+        Archive.query.enum_join(Archive.type_enum)\
+               .filter(Archive.type_filter('name', '__ne__', 'post'),
+                       Archive.expires < get_current_time())\
+               .delete()
+    commit_session()
+    expired_data = Archive.query.enum_join(Archive.type_enum)\
+                                .filter(Archive.type_filter('name', '__eq__', 'post'),
+                                        Archive.expires < get_current_time())\
+                                .all()
+    status['posts'] = len(expired_data)
+    if len(expired_data) > 0:
+        for archive in expired_data:
+            remove_archive_media_file(archive)
+        Archive.query.filter(Archive.id.in_([data.id for data in expired_data])).delete()
+        commit_session()
+    return status

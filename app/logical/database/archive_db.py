@@ -55,30 +55,6 @@ def set_archive_temporary(item, days, commit=False):
     commit_or_flush(commit)
 
 
-# ###### DELETE
-
-def delete_expired_archive():
-    from ..records.archive_rec import remove_archive_media_file
-    status = {}
-    status['nonposts'] =\
-        Archive.query.enum_join(Archive.type_enum)\
-               .filter(Archive.type_filter('name', '__ne__', 'post'),
-                       Archive.expires < get_current_time())\
-               .delete()
-    commit_session()
-    expired_data = Archive.query.enum_join(Archive.type_enum)\
-                                .filter(Archive.type_filter('name', '__eq__', 'post'),
-                                        Archive.expires < get_current_time())\
-                                .all()
-    status['posts'] = len(expired_data)
-    if len(expired_data) > 0:
-        for archive in expired_data:
-            remove_archive_media_file(archive)
-        Archive.query.filter(Archive.id.in_([data.id for data in expired_data])).delete()
-        commit_session()
-    return status
-
-
 # #### Query functions
 
 def get_archive(type, key):

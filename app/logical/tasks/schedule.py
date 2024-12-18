@@ -24,6 +24,7 @@ from ..records.subscription_rec import sync_missing_subscription_illusts, popula
     download_missing_elements, unlink_expired_subscription_elements, delete_expired_subscription_elements,\
     archive_expired_subscription_elements
 from ..records.pool_rec import update_pool_positions
+from ..records.archive_rec import delete_expired_archive
 from ..database.base_db import safe_db_execute, commit_session
 from ..database.pool_db import get_all_recheck_pools
 from ..database.subscription_db import get_available_subscriptions_query, update_subscription_from_parameters,\
@@ -31,7 +32,7 @@ from ..database.subscription_db import get_available_subscriptions_query, update
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
-from ..database.archive_db import expired_archive_count, delete_expired_archive
+from ..database.archive_db import expired_archive_count
 from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id, get_job_status_data,\
     create_or_update_job_status
 from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready,\
