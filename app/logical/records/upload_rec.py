@@ -166,8 +166,6 @@ def process_network_upload(upload):
     upload_elements = upload.elements
     image_upload = source.is_image_url(upload.request_url)
     normalized_request_url = no_file_extension(source.normalize_image_url(upload.request_url)) if image_upload else None
-    successes = upload.successes
-    failures = upload.failures
     for illust_url in illust.urls:
         normalized_illust_url = no_file_extension(illust_url.url)
         if image_upload and normalized_request_url != normalized_illust_url:
@@ -177,13 +175,10 @@ def process_network_upload(upload):
         element = next((element for element in upload_elements if element.illust_url_id == illust_url.id), None)
         if element is None:
             element = create_upload_element_from_parameters({'upload_id': upload.id, 'illust_url_id': illust_url.id})
-        if convert_network_upload(element):
-            successes += 1
-        else:
-            failures += 1
+        convert_network_upload(element)
         if image_upload:
             break
-    update_upload_from_parameters(upload, {'status': 'complete', 'successes': successes, 'failures': failures})
+    update_upload_from_parameters(upload, {'status': 'complete'})
 
 
 def process_file_upload(upload):

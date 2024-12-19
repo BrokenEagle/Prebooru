@@ -24,8 +24,6 @@ class Upload(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     request_url = DB.Column(DB.String(255), nullable=True)
-    successes = DB.Column(DB.Integer, nullable=False)
-    failures = DB.Column(DB.Integer, nullable=False)
     status, status_id, status_name, status_enum, status_filter, status_col =\
         get_relation_definitions(upload_status, relname='status', relcol='id', colname='status_id',
                                  tblname='upload', nullable=False)
@@ -57,6 +55,24 @@ class Upload(JsonModel):
         query = query.options(*_get_options(options))
         query = query.order_by(UploadElement.id.asc())
         return query.count_paginate(per_page=per_page, page=page)
+
+    @memoized_property
+    def complete_count(self):
+        return self._elements_query.enum_join(UploadElement.status_enum)\
+                                   .filter(UploadElement.status_filter('name', '__eq__', 'complete'))\
+                                   .get_count()
+
+    @memoized_property
+    def error_count(self):
+        return self._elements_query.enum_join(UploadElement.status_enum)\
+                                   .filter(UploadElement.status_filter('name', '__eq__', 'error'))\
+                                   .get_count()
+
+    @memoized_property
+    def other_count(self):
+        return self._elements_query.enum_join(UploadElement.status_enum)\
+                                   .filter(UploadElement.status_filter('name', 'not_in', ['complete', 'error']))\
+                                   .get_count()
 
     @memoized_property
     def illust_urls(self):

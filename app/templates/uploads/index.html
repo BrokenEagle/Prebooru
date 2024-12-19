@@ -26,10 +26,6 @@
                     <td>{{ multi_post_preview(upload, 'upload') }}</td>
                     <td>
                         <span><strong>{{ upload.show_link }} {{ helpers.upload.post_search_link(upload) }}</strong></span>
-                        <br>
-                        <span><strong>Successes:</strong> {{ upload.successes }}</span>
-                        <br>
-                        <span><strong>Failures:</strong> {{ upload.failures }}</span>
                     </td>
                     <td>
                         <span><strong>Request:</strong> {{ helpers.base.url_link(upload.request_url) }}</span>

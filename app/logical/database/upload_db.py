@@ -11,7 +11,7 @@ from .base_db import set_column_attributes, add_record, save_record, commit_sess
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['successes', 'failures', 'status_id']
+ANY_WRITABLE_COLUMNS = ['status_id']
 NULL_WRITABLE_ATTRIBUTES = ['request_url', 'media_filepath', 'sample_filepath', 'illust_url_id']
 
 
@@ -20,7 +20,7 @@ NULL_WRITABLE_ATTRIBUTES = ['request_url', 'media_filepath', 'sample_filepath', 
 # #### Create
 
 def create_upload_from_parameters(createparams, commit=True):
-    upload = Upload(successes=0, failures=0, status_id=upload_status.pending.id)
+    upload = Upload(status_id=upload_status.pending.id)
     set_upload_from_parameters(upload, createparams, 'created', False)
     if 'image_urls' in createparams and len(createparams['image_urls']):
         _create_image_urls(upload, createparams['image_urls'])

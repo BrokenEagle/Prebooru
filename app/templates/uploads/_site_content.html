@@ -14,14 +14,18 @@
                     {{ upload.status.name }}
                 {% endif %}
             </li>
-            <li>
-                <strong>Successes:</strong> {{ upload.successes }}
-            </li>
-            <li>
-                <strong>Failures:</strong> {{ upload.failures }}
-            </li>
-            <li>
-                <strong>Uploaded:</strong> {{ helpers.base.format_timestamp(upload.created) }}
+            <li><strong>Elements:</strong>
+                <ul>
+                    <li>
+                        <strong>Complete:</strong> {{ upload.complete_count }}
+                    </li>
+                    <li>
+                        <strong>Error:</strong> {{ upload.error_count }}
+                    </li>
+                    <li>
+                        <strong>Other:</strong> {{ upload.other_count }}
+                    </li>
+                </ul>
             </li>
         </ul>
     </section>
