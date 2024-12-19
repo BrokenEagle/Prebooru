@@ -41,7 +41,7 @@
             <li>
                 <strong>Request url:</strong> {{ helpers.base.url_link(upload.request_url) }}
             </li>
-            <li>
+            <li style="max-height: 30em; overflow: auto;">
                 <strong>Image urls:</strong> {{ items_list(upload.image_urls, 'url') }}
             </li>
         </ul>
