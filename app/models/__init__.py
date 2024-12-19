@@ -31,7 +31,7 @@ def load_all():
         PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
         ImageHash, SimilarityMatch, ApiData, Archive,\
         UploadElement,\
-        MediaFile, Domain,\
+        MediaFile,\
         ServerInfo, Version,\
         JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
 
@@ -71,7 +71,6 @@ def load_all():
     from .api_data import ApiData
     from .archive import Archive
     from .media_file import MediaFile
-    from .domain import Domain
 
     # #### Server data
 
@@ -104,7 +103,7 @@ def initialize():
             PoolIllust, PoolNotation, Subscription, SubscriptionElement,
             ImageHash, SimilarityMatch, ApiData, Archive,
             UploadElement,
-            MediaFile, Domain,
+            MediaFile,
             ServerInfo, Version,
             JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus,
         ]
