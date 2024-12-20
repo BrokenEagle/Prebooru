@@ -33,6 +33,10 @@ def convert_network_element(element, post_type):
     return post is not None
 
 
+def convert_network_download(download_element):
+    return convert_network_element(download_element, 'user')
+
+
 def convert_network_upload(upload_element):
     return convert_network_element(upload_element, 'user')
 

@@ -1,0 +1,211 @@
+/** APP/STATIC/STYLES/DOWNLOADS.CSS **/
+
+/**** NEW/EDIT Page ****/
+div#download-url-info {
+    margin: 1em;
+}
+
+input#download-media-filepath,
+input#download-sample-filepath {
+    width: 100em;
+}
+
+input#download-request-url {
+    width: 50em;
+}
+
+textarea#download-image-url-string {
+    width: 50em;
+    height: 10em;
+}
+
+/**** SHOW Page ****/
+div#download-content {
+    margin-top: 2em;
+    display: flex;
+}
+
+aside#download-sidebar {
+    width: 25em;
+    border: 2px solid #ddd;
+    background: #f8f8f8;
+    padding: 0.5em;
+}
+
+aside#download-sidebar > section {
+    margin-bottom: 1em;
+}
+
+div#download-heading {
+    font-size: 32px;
+}
+
+div#download-site-content {
+    width: 80%;
+    display: flex;
+}
+
+div#download-site-content h4 {
+    text-decoration: underline;
+}
+
+div#download-site-content > section {
+    margin-left: 2em;
+}
+
+section#download-info.without-urls {
+    width: 100%;
+}
+
+section#download-info.with-urls {
+    width: 40%;
+}
+
+section#download-image-urls {
+    width: 60%;
+}
+
+section#download-image-urls ul {
+    max-height: 30em;
+    max-width: 100%;
+    overflow-y: auto;
+    padding-left: 2em;
+    margin-left: 0em;
+}
+
+div#download-posts {
+    margin-top: 2em;
+}
+
+div#download-elements-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+div.status-heading {
+    font-size: 1.25em;
+    padding-left: 0.5em;
+}
+
+div.download-element {
+    margin-top: 1em;
+    width: 25%;
+    height: 420px;
+    overflow-y: auto;
+}
+
+div.download-element-info div.errors-list {
+    border: 1px solid #ddd;
+    margin-top: 0.5em;
+    overflow-x: hidden;
+    padding: 5px;
+}
+
+div.no-post-preview {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    height: 310px;
+    text-align: center;
+    width: 310px;
+}
+
+div.no-post-preview > div {
+    margin-top: 1em;
+    color: #888;
+}
+
+/**** INDEX ****/
+div.download-preview {
+    display: grid;
+    grid-template-columns: repeat(2, 0fr);
+}
+
+div.download-preview > article.download-post {
+    height: 150px;
+    padding: 2px;
+    width: 150px;
+}
+
+div.download-preview > article.overflow {
+    background-color: grey;
+    height: 140px;
+    padding: 5px;
+    width: 140px;
+}
+
+div.download-preview > article.overflow > span {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+div.download-preview > span.explanation {
+    width: 150px;
+}
+
+div.download-preview img {
+    height: auto;
+    max-width: 150px;
+    max-height: 150px;
+    width: auto;
+}
+
+/**** ALL/SELECT ****/
+
+div#download-duplicate-section {
+    display: flex;
+    margin-top: 1em;
+}
+
+div#download-duplicate-info {
+    font-size: 20px;
+    font-weight: bold;
+    padding: 0.25em 0;
+}
+
+div#download-force-select-load {
+    font-weight: bold;
+    font-size: 20px;
+    margin-left: 1em;
+    border: 2px solid #EEE;
+    border-radius: 25px;
+    max-width: fit-content;
+    padding: 0.25em 0.5em;
+}
+
+div#force-input {
+    margin: 0.5em;
+}
+
+div#download-force-select-load a {
+    color: orange;
+}
+
+div.select-image-block {
+    border: 1px solid #eee;
+    display: inline-block;
+    margin: 5px;
+    padding: 5px;
+}
+
+div.select-image-block div.input label {
+    background: #e0f0f0;
+    border: 1px solid #8dd;
+    border-radius: 25px;
+    margin-bottom: 5px;
+    margin-top: 0;
+    padding: 5px;
+}
+
+div.select-image-block div.missing-image {
+    color: grey;
+    font-size: 150%;
+    font-style: italic;
+    margin-bottom: 1em;
+}
+
+div.select-image-block div.full-url {
+    font-size: 125%;
+    text-align: left;
+    word-break: break-word;
+}

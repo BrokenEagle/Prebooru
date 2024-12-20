@@ -11,6 +11,8 @@ if USE_ENUMS:
     from .logical.enums import SubscriptionStatusEnum as subscription_status
     from .logical.enums import SubscriptionElementStatusEnum as subscription_element_status
     from .logical.enums import SubscriptionElementKeepEnum as subscription_element_keep
+    from .logical.enums import DownloadStatusEnum as download_status
+    from .logical.enums import DownloadElementStatusEnum as download_element_status
     from .logical.enums import UploadStatusEnum as upload_status
     from .logical.enums import UploadElementStatusEnum as upload_element_status
     from .logical.enums import PoolElementTypeEnum as pool_element_type
@@ -23,6 +25,8 @@ else:
     from .models.model_enums import SubscriptionStatus as subscription_status
     from .models.model_enums import SubscriptionElementStatus as subscription_element_status
     from .models.model_enums import SubscriptionElementKeep as subscription_element_keep
+    from .models.model_enums import DownloadStatus as download_status
+    from .models.model_enums import DownloadElementStatus as download_element_status
     from .models.model_enums import UploadStatus as upload_status
     from .models.model_enums import UploadElementStatus as upload_element_status
     from .models.model_enums import PoolElementType as pool_element_type

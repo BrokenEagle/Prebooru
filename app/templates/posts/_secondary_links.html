@@ -11,7 +11,7 @@
         {{ subnav_link_to("Listing", 'post.index_html') }}
     {% endif %}
     {{ subnav_link_to("Tags", 'tag.index_html') }}
-    | {{ subnav_link_to("Upload", 'upload.create_html', attrs={'class': 'nav-control', 'onclick': 'return Posts.createUpload(this)'}) }}
+    | {{ subnav_link_to("Download", 'download.create_html', attrs={'class': 'nav-control', 'onclick': 'return Posts.createDownload(this)'}) }}
     {% if post.id is not none %}
         {{ subnav_link_to("Show", 'post.show_html', post.id) }}
         {{ subnav_link_to("Delete", 'post.delete_html', id=post.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}

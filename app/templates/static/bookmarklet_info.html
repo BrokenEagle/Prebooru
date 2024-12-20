@@ -10,20 +10,20 @@
 
 {% block content %}
     <div id="bookmarklet-info">
-        {% set all_bookmarklet = "javascript:window.open('http://127.0.0.1:%d/uploads/all?upload[request_url]='+encodeURIComponent(location.href),'_blank');false;" % helpers.base.PREBOORU_PORT %}
-        {% set select_bookmarklet = "javascript:window.open('http://127.0.0.1:%d/uploads/select?upload[request_url]='+encodeURIComponent(location.href),'_blank');false;" % helpers.base.PREBOORU_PORT %}
+        {% set all_bookmarklet = "javascript:window.open('http://127.0.0.1:%d/downloads/all?download[request_url]='+encodeURIComponent(location.href),'_blank');false;" % helpers.base.PREBOORU_PORT %}
+        {% set select_bookmarklet = "javascript:window.open('http://127.0.0.1:%d/downloads/select?download[request_url]='+encodeURIComponent(location.href),'_blank');false;" % helpers.base.PREBOORU_PORT %}
         <h4>Links</h4>
         <div id="bookmarklet-links">
             <a href="{{ all_bookmarklet }}">All to Prebooru</a> |
             <a href="{{ select_bookmarklet }}">Select to Danbooru</a>
         </div>
         <p>Bookmark the above links by dragging them to the bookmark toolbar.</p>
-        <h4>{{ helpers.base.general_link("All", url_for('upload.upload_all_html', show_form='true')) }}</h4>
-        <p>The all bookmarklet will open a new tab from a site post and upload all images available on that site post. The following is the code for this, and can be copied and modified instead.</p>
+        <h4>{{ helpers.base.general_link("All", url_for('download.download_all_html', show_form='true')) }}</h4>
+        <p>The all bookmarklet will open a new tab from a site post and download all images available on that site post. The following is the code for this, and can be copied and modified instead.</p>
         <code>{{ all_bookmarklet }}</code>
-        <h4>{{ helpers.base.general_link("Select", url_for('upload.upload_select_html', show_form='true')) }}</h4>
+        <h4>{{ helpers.base.general_link("Select", url_for('download.download_select_html', show_form='true')) }}</h4>
         <p>
-            The select bookmarklet will open a new tab from a site post and present all available images from that post, allowing one to select which images from the site post to upload. The following is the code for this, and can be copied and modified instead.
+            The select bookmarklet will open a new tab from a site post and present all available images from that post, allowing one to select which images from the site post to download. The following is the code for this, and can be copied and modified instead.
         </p>
         <code>{{ select_bookmarklet }}</code>
         <h4>Supported Sites</h4>

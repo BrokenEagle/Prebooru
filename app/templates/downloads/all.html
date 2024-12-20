@@ -1,0 +1,23 @@
+{% extends "downloads/_base.html" %}
+{% from "layouts/_macros.html" import render_form %}
+
+{% block title %}
+    Download All
+{% endblock title %}
+
+{% block content %}
+    <div class="form-heading heading">Download All</div>
+    {% if download.id is not none %}
+        <div id="download-duplicate-section">
+            <div id="download-duplicate-info">{{ download.show_link }}</div>
+        </div>
+    {% endif %}
+    {% call render_form(form, 'POST', download.create_url, manual=True) %}
+        <div id="force-input" class="input checkbox-input inline-input">
+            <label for="select-force">Force</label>
+            <input type="checkbox" id="select-force" name="force" value="true">
+        </div>
+        {{ form.request_url.label }} {{ form.request_url }}
+        <input type="hidden" name="request_url_only" value="true">
+    {% endcall %}
+{% endblock content %}

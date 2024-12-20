@@ -5,6 +5,7 @@
 # ## COLLATION IMPORTS
 from . import base_helper as base  # noqa: F401
 from . import posts_helper as post  # noqa: F401
+from . import downloads_helper as download  # noqa: F401
 from . import uploads_helper as upload  # noqa: F401
 from . import boorus_helper as booru  # noqa: F401
 from . import artists_helper as artist  # noqa: F401

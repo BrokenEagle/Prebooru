@@ -267,6 +267,7 @@ def index_html():
 
 @bp.route('/uploads/new', methods=['GET'])
 def new_html():
+    raise Exception("Migrated to downloads endpoint")
     """HTML access point to create function."""
     illust_url = None
     form = get_upload_form(**request.args)
@@ -288,6 +289,7 @@ def new_html():
 
 @bp.route('/uploads', methods=['POST'])
 def create_html():
+    raise Exception("Migrated to downloads endpoint")
     results = create()
     if results['error']:
         flash(results['message'], 'error')
@@ -302,6 +304,7 @@ def create_html():
 
 @bp.route('/uploads.json', methods=['POST'])
 def create_json():
+    raise Exception("Migrated to downloads endpoint")
     return create()
 
 
@@ -309,6 +312,7 @@ def create_json():
 
 @bp.route('/uploads/all', methods=['GET'])
 def upload_all_html():
+    raise Exception("Migrated to downloads endpoint")
     show_form = request.args.get('show_form', type=eval_bool_string)
     if show_form:
         return render_template("uploads/all.html", form=get_upload_form(), upload=Upload())
@@ -326,6 +330,7 @@ def upload_all_html():
 
 @bp.route('/uploads/select', methods=['GET'])
 def upload_select_html():
+    raise Exception("Migrated to downloads endpoint")
     show_form = request.args.get('show_form', type=eval_bool_string)
     if show_form:
         return render_template("uploads/select.html", illust_urls=None, form=get_upload_form(), upload=Upload())
@@ -343,6 +348,7 @@ def upload_select_html():
 
 @bp.route('/uploads/<int:id>/check', methods=['POST'])
 def upload_check_html(id):
+    raise Exception("Migrated to downloads endpoint")
     get_or_abort(Upload, id)
     SCHEDULER.add_job("process_upload-%d" % id, process_upload, args=(id,))
     return redirect(request.referrer)
@@ -350,6 +356,7 @@ def upload_check_html(id):
 
 @bp.route('/uploads/<int:id>/resubmit', methods=['POST'])
 def resubmit_html(id):
+    raise Exception("Migrated to downloads endpoint")
     upload = get_or_abort(Upload, id)
     update_upload_from_parameters(upload, {'status': 'pending'})
     SCHEDULER.add_job("process_upload-%d" % id, process_upload, args=(id,))

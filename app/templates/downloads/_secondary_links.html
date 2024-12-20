@@ -1,0 +1,12 @@
+{% from "layouts/_macros.html" import subnav_link_to %}
+
+<menu id="secondary-menu">
+    {{ subnav_link_to("Listing", 'download.index_html') }}
+    {{ subnav_link_to("New", 'download.new_html') }}
+    {{ subnav_link_to("Elements", 'download_element.index_html') }}
+    {{ subnav_link_to("Bookmarklet", 'static.bookmarklet_info_html') }}
+    {% if download.id != None %}
+        |
+        {{ subnav_link_to("Show", 'download.show_html', download.id) }}
+    {% endif %}
+</menu>

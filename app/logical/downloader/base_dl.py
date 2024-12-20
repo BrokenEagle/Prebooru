@@ -10,6 +10,7 @@ from utility.time import days_from_now
 
 # ## LOCAL IMPORTS
 from ..media import create_preview, create_sample, create_data, check_alpha, convert_alpha, load_image, get_video_info
+from ..database.download_element_db import update_download_element_from_parameters
 from ..database.upload_element_db import update_upload_element_from_parameters
 from ..database.subscription_element_db import update_subscription_element_from_parameters,\
     get_subscription_elements_by_md5
@@ -30,10 +31,14 @@ def record_outcome(post, record):
         extend_errors(record, valid_errors)
         if record.model_name == 'subscription_element' and record.status.name == 'active':
             update_subscription_element_from_parameters(record, {'status': 'error', 'keep': 'unknown'})
+        elif record.model_name == 'download_element' and record.status.name == 'pending':
+            update_download_element_from_parameters(record, {'status': 'error'}, commit=True)
         elif record.model_name == 'upload_element' and record.status.name == 'pending':
             update_upload_element_from_parameters(record, {'status': 'error'}, commit=True)
         return False
-    if record.model_name == 'upload_element':
+    if record.model_name == 'download_element':
+        update_download_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
+    elif record.model_name == 'upload_element':
         update_upload_element_from_parameters(record, {'status': 'complete', 'md5': post.md5})
     elif record.model_name == 'subscription_element':
         params = {
@@ -69,7 +74,11 @@ def check_existing(buffer, illust_url, record):
     post = get_post_by_md5(md5)
     if post is not None:
         post_append_illust_url(post, illust_url)
-        if record.model_name == 'upload_element':
+        if record.model_name == 'download_element':
+            update_download_element_from_parameters(record, {'status': 'duplicate', 'md5': post.md5})
+            if post.type.name != 'user':
+                update_post_from_parameters(post, {'type': 'user'})
+        elif record.model_name == 'upload_element':
             update_upload_element_from_parameters(record, {'status': 'duplicate', 'md5': post.md5})
             if post.type.name != 'user':
                 update_post_from_parameters(post, {'type': 'user'})

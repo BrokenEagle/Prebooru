@@ -1,0 +1,51 @@
+{% from "posts/_macros.html" import post_preview %}
+{% from "errors/_macros.html" import error_list %}
+
+{% macro download_elements_section(elements, element_count, download) -%}
+    <section id="download-elements">
+        <div id="download-elements-heading" class="large-2 heading">
+            <u>Elements</u>
+            (&thinsp;{{ element_count }}&thinsp;)
+            {{ helpers.download.post_search_link(download) }}
+        </div>
+        <div id="download-elements-container">
+            {% for element in elements %}
+                {% set illust_url = element.illust_url %}
+                <div id="download-element-{{ element.id }}" class="download-element">
+                    <div class="status-heading heading">{{ helpers.download.element_status(element) }}</div>
+                    {% if illust_url.post is not none %}
+                        <div class="download-element-preview">{{ post_preview(illust_url.post, True) }}</div>
+                    {% else %}
+                        <div class="no-post-preview">
+                            <div>
+                                <strong>(removed)</strong>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="download-element-info">
+                        <ul>
+                            <li>
+                                <strong>{{ element.show_link }}</strong>
+                            </li>
+                            <li>
+                                <strong>{{ illust_url.type.title() }} URL:</strong> {{ helpers.base.url_link(illust_url.full_url, max_len=45) }}
+                            </li>
+                            {% if illust_url.sample_url is not none %}
+                                <li>
+                                    <strong>Thumb URL:</strong> {{ helpers.base.url_link(illust_url.sample_url, max_len=45) }}
+                                </li>
+                            {% endif %}
+                            <li>
+                                <strong>Dimensions:</strong> {{ illust_url.width }} x {{ illust_url.height }}
+                            </li>
+                            <li>
+                                <strong>MD5:</strong> {{ helpers.base.val_or_na(element.md5, code=True) }}
+                            </li>
+                        </ul>
+                        {{ error_list(element.errors) }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{%- endmacro %}

@@ -20,6 +20,20 @@
                     </li>
                 </ul>
             </section>
+            <section id="static-downloads">
+                <h4>Downloads</h4>
+                <ul>
+                    <li>
+                        <a href="{{ url_for('download.index_html') }}">Listing</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('download.new_html') }}">New</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('download_element.index_html') }}">Elements</a>
+                    </li>
+                </ul>
+            </section>
             <section id="static-uploads">
                 <h4>Uploads</h4>
                 <ul>
@@ -139,10 +153,10 @@
                         <a href="{{ url_for('static.bookmarklet_info_html') }}">Info</a>
                     </li>
                     <li>
-                        <a href="{{ url_for('upload.upload_all_html', show_form='true') }}">Upload All</a>
+                        <a href="{{ url_for('download.download_all_html', show_form='true') }}">Download All</a>
                     </li>
                     <li>
-                        <a href="{{ url_for('upload.upload_select_html', show_form='true') }}">Upload Select</a>
+                        <a href="{{ url_for('download.download_select_html', show_form='true') }}">Download Select</a>
                     </li>
                 </ul>
             </section>

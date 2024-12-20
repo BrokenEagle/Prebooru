@@ -1,0 +1,28 @@
+{% extends "download_elements/_base.html" %}
+{% from "posts/_macros.html" import post_preview %}
+
+{% block title %}
+    {{ download_element.header }}
+{% endblock title %}
+
+{% block content %}
+    <div id="download-element-heading" class="heading">{{ download_element.header }}</div>
+    <div id="download-element-content">
+        {% set illust_url = download_element.illust_url %}
+        {{ post_preview(download_element.post) }}
+        <ul>
+            <li>
+                <strong>{{ download_element.download_show_link }}</strong>
+            </li>
+            <li>
+                <strong>URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}
+            </li>
+            <li>
+                <strong>MD5:</strong> {{ helpers.base.val_or_na(download_element.md5, code=True) }}
+            </li>
+            <li>
+                <strong>Status:</strong> {{ helpers.download.element_status(download_element) }}
+            </li>
+        </ul>
+    </div>
+{% endblock content %}

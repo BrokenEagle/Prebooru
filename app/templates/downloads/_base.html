@@ -1,0 +1,13 @@
+{% extends "layouts/base.html" %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/downloads.css') }}">
+{% endblock css %}
+
+{% block linkscript %}
+    <script src="{{ url_for('static', filename='javascript/downloads.js') }}"></script>
+{% endblock linkscript %}
+
+{% block secondary_links %}
+    {% include "downloads/_secondary_links.html" %}
+{% endblock secondary_links %}

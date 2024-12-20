@@ -60,6 +60,23 @@ class SubscriptionElementKeepEnum(AttrEnum):
     unknown = 127
 
 
+class DownloadStatusEnum(AttrEnum):
+    complete = 0
+    duplicate = 1
+    pending = 2
+    processing = 3
+    error = 126
+    unknown = 127
+
+
+class DownloadElementStatusEnum(AttrEnum):
+    complete = 0
+    duplicate = 1
+    pending = 2
+    error = 126
+    unknown = 127
+
+
 class UploadStatusEnum(AttrEnum):
     complete = 0
     duplicate = 1

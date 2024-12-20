@@ -1,0 +1,52 @@
+{% extends "downloads/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
+{% from "posts/_macros.html" import multi_post_preview %}
+{% from "errors/_macros.html" import errors_block %}
+
+{% block title %}
+    Downloads
+{% endblock title %}
+
+{% block content %}
+    <table id="downloads-table" class="striped" width="100%">
+        <thead>
+            <tr>
+                <th width="1%">Preview</th>
+                <th>Info</th>
+                <th>Urls</th>
+                <th>Errors</th>
+                <th>Status</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for download in page.items %}
+                {% set outer_loop = loop %}
+                <tr id="download-{{ download.id }}">
+                    <td>{{ multi_post_preview(download, 'download') }}</td>
+                    <td>
+                        <span><strong>{{ download.show_link }} {{ helpers.download.post_search_link(download) }}</strong></span>
+                    </td>
+                    <td>
+                        <span><strong>Request:</strong> {{ helpers.base.url_link(download.request_url) }}</span>
+                        <br>
+                        <span><strong>Image urls:</strong></span>
+                        {% for image_url in download.image_urls %}
+                            <br>
+                            &emsp;{{ helpers.base.url_link(image_url.url) }}
+                        {% else %}
+                            <em>none</em>
+                        {% endfor %}
+                    </td>
+                    <td>{{ errors_block(download.errors) }}</td>
+                    <td>{{ download.status.name }}</td>
+                    <td>{{ helpers.base.format_timestamp(download.created) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
+
+{% block pages %}
+    {{ page_navigation(page) }}
+{% endblock pages %}

@@ -82,10 +82,10 @@ Posts.submitForm = function (type, url) {
     return false;
 };
 
-Posts.createUpload = function(obj) {
+Posts.createDownload = function(obj) {
     let url = prompt("Enter the URL of the post to upload from:");
     if (url !== null) {
-        Prebooru.postRequest(obj.href, {'upload[request_url]': url});
+        Prebooru.postRequest(obj.href, {'download[request_url]': url});
     }
     return false;
 };

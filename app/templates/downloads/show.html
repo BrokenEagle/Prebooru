@@ -1,0 +1,28 @@
+{% extends "downloads/_base.html" %}
+{% from "layouts/_macros.html" import page_navigation %}
+{% from "download_elements/_macros.html" import download_elements_section %}
+
+{% block title %}
+    {{ download.header }}
+{% endblock title %}
+
+{% block content %}
+    <div id="download-heading" class="heading">{{ download.header }}</div>
+    <div id="download-content">
+        {% include "downloads/_sidebar.html" %}
+        {% include "downloads/_site_content.html" %}
+    </div>
+    <div id="download-posts">{{ download_elements_section(elements.items, elements.count, download) }}</div>
+{% endblock content %}
+
+{% block pages %}
+    {{ page_navigation(elements) }}
+{% endblock pages %}
+
+{% block pagescript %}
+    (function () {
+    const download_status = "{{ download.status.name }}";
+    Downloads.initializeReloadInterval(download_status);
+    })();
+    Prebooru.initializeLazyLoad('.download-element-preview');
+{% endblock pagescript %}

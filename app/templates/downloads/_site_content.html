@@ -1,0 +1,42 @@
+{% from "layouts/_macros.html" import items_list %}
+
+<div id="download-site-content">
+    {% set section_class = 'with-urls' if download.image_urls | length > 0 else 'without-urls' %}
+    <section id="download-info" class="{{ section_class }}">
+        <h4>Info</h4>
+        <ul>
+            <li>
+                <strong>Status:</strong>
+                {% if download.status.name == 'pending' %}
+                    {{ helpers.download.check_pending_link(download) }}
+                {% elif download.status.name == 'error' %}
+                    {{ helpers.download.resubmit_link(download) }}
+                {% else %}
+                    {{ download.status.name }}
+                {% endif %}
+            </li>
+            <li>
+                <strong>Request url:</strong> {{ helpers.base.url_link(download.request_url) }}
+            </li>
+            <li><strong>Elements:</strong>
+                <ul>
+                    <li>
+                        <strong>Complete:</strong> {{ download.complete_count }}
+                    </li>
+                    <li>
+                        <strong>Error:</strong> {{ download.error_count }}
+                    </li>
+                    <li>
+                        <strong>Other:</strong> {{ download.other_count }}
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+    {% if download.image_urls | length > 0 %}
+        <section id="download-image-urls">
+            <h4>Image URLs</h4>
+            {{ items_list(download.image_urls, 'url') }}
+        </section>
+    {% endif %}
+</div>

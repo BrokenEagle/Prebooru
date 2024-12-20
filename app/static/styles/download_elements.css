@@ -1,0 +1,43 @@
+/** APP/STATIC/STYLES/DOWNLOAD_ELEMENTS.CSS **/
+
+/**** MACROS ****/
+
+div.download-elements {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/**** INDEX Page ****/
+
+div.no-post {
+    background: #f0f0f0;
+    border: 1px solid #aaa;
+    height: 80px;
+    margin: 1em;
+    padding-top: 1em;
+    text-align: center;
+    width: 200px;
+}
+
+table#download-elements-table article.post {
+    height: 204px;
+    width: 204px;
+}
+
+table#download-elements-table article.post.no-post {
+    height: 75px;
+}
+
+table#download-elements-table article.post img {
+    height: auto;
+    max-height: 200px;
+    max-width: 200px;
+    width: auto;
+}
+
+/**** SHOW Page ****/
+
+div#download-element-heading {
+    font-size: 28px;
+    margin-top: 1em;
+}

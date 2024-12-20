@@ -31,6 +31,9 @@ def load_all():
         PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
         ImageHash, SimilarityMatch, ApiData, Archive,\
         UploadElement,\
+        Download, DownloadElement, DownloadUrl,\
+        UploadElement,\
+        Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,\
         MediaFile,\
         ServerInfo, Version,\
         JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
@@ -38,7 +41,7 @@ def load_all():
     # #### Enum data
     from .model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
         SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType,\
-        SiteDataType, TagType
+        SiteDataType, TagType, DownloadStatus, DownloadElementStatus
 
     # #### Site data
     from .tag import Tag, SiteTag, UserTag
@@ -54,6 +57,9 @@ def load_all():
     # #### Local data
     from .error import Error
     from .post import Post, PostTags
+    from .download import Download
+    from .download_element import DownloadElement
+    from .download_url import DownloadUrl
     from .upload import Upload
     from .upload_element import UploadElement
     from .upload_url import UploadUrl
@@ -103,6 +109,9 @@ def initialize():
             PoolIllust, PoolNotation, Subscription, SubscriptionElement,
             ImageHash, SimilarityMatch, ApiData, Archive,
             UploadElement,
+            Download, DownloadElement, DownloadUrl,
+            UploadElement,
+            Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,
             MediaFile,
             ServerInfo, Version,
             JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus,

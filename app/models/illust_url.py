@@ -13,6 +13,7 @@ from utility.obj import classproperty
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import site_descriptor
+from .download_element import DownloadElement
 from .upload_element import UploadElement
 from .subscription_element import SubscriptionElement
 from .base import JsonModel, get_relation_definitions
@@ -41,6 +42,8 @@ class IllustUrl(JsonModel):
     # ## Relationships
     upload_elements = DB.relationship(UploadElement, lazy=True, uselist=True, cascade="all, delete",
                                       backref=DB.backref('illust_url', lazy=True, uselist=False))
+    download_elements = DB.relationship(DownloadElement, lazy=True, uselist=True, cascade="all, delete",
+                                        backref=DB.backref('illust_url', lazy=True, uselist=False))
     subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False, cascade="all, delete",
                                            backref=DB.backref('illust_url', lazy=True, uselist=False))
     # (MtO) illust [Illust]

@@ -23,7 +23,7 @@ from ..logical.sources import pixiv_src, twitter_src
 
 HTTP_RG = re.compile(r'(\b(?:http|https)(?::\/{2}[\w]+)(?:[\/|\.]?)(?:[^\s<>\uff08\uff09\u3011\u3000"\[\]]*))',
                      re.IGNORECASE | re.ASCII)
-LOCAL_SHORTLINK_RG = re.compile(r'\b(booru|artist|illust|post|upload|pool|notation) #(\d+)\b', re.IGNORECASE)
+LOCAL_SHORTLINK_RG = re.compile(r'\b(booru|artist|illust|post|download|upload|pool|notation) #(\d+)\b', re.IGNORECASE)
 SITE_SHORTLINK_RG = re.compile(r'\b(pixiv|pxuser|twitter|twuser) #(\d+)\b', re.IGNORECASE)
 
 SITE_URL_DICT = {
