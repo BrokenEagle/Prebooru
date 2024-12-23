@@ -22,14 +22,12 @@ class Error(JsonModel):
     download_id = DB.Column(DB.Integer, DB.ForeignKey('download.id'), nullable=True)
     download_element_id = DB.Column(DB.Integer, DB.ForeignKey('download_element.id'), nullable=True)
     upload_id = DB.Column(DB.Integer, DB.ForeignKey('upload.id'), nullable=True)
-    upload_element_id = DB.Column(DB.Integer, DB.ForeignKey('upload_element.id'), nullable=True)
 
     # ## Relations
     # (OtO) post [Post]
     # (OtO) subscription [Subscription]
     # (OtO) subscription_element [SubscriptionElement]
     # (OtO) upload [Upload]
-    # (OtO) upload_element [UploadElement]
 
     @memoized_property
     def append_type(self):
@@ -37,8 +35,6 @@ class Error(JsonModel):
             return 'post'
         if self.upload_id is not None:
             return 'upload'
-        if self.upload_element_id is not None:
-            return 'upload_element'
         if self.subscription_id is not None:
             return 'subscription'
         if self.subscription_element_id is not None:
@@ -80,7 +76,6 @@ def initialize():
     DB.Index(None, Error.download_id, unique=False, sqlite_where=Error.download_id.is_not(None))
     DB.Index(None, Error.download_element_id, unique=False, sqlite_where=Error.download_element_id.is_not(None))
     DB.Index(None, Error.upload_id, unique=False, sqlite_where=Error.upload_id.is_not(None))
-    DB.Index(None, Error.upload_element_id, unique=False, sqlite_where=Error.upload_element_id.is_not(None))
 
     from .post import Post
     from .subscription import Subscription
@@ -88,7 +83,6 @@ def initialize():
     from .download import Download
     from .download_element import DownloadElement
     from .upload import Upload
-    from .upload_element import UploadElement
     # Access the opposite side of the relationship to force the back reference to be generated
     Post.errors.property._configure_started
     Subscription.errors.property._configure_started
@@ -96,5 +90,4 @@ def initialize():
     Download.errors.property._configure_started
     DownloadElement.errors.property._configure_started
     Upload.errors.property._configure_started
-    UploadElement.errors.property._configure_started
     Error.set_relation_properties()

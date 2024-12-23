@@ -454,42 +454,6 @@ class UploadStatus(EnumModel):
     }
 
 
-class UploadElementStatus(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
-    # ## Private
-
-    @classproperty(cached=True)
-    def error(cls):
-        return cls.by_name('error')
-
-    @classproperty(cached=True)
-    def complete(cls):
-        return cls.by_name('complete')
-
-    @classproperty(cached=True)
-    def duplicate(cls):
-        return cls.by_name('duplicate')
-
-    @classproperty(cached=True)
-    def pending(cls):
-        return cls.by_name('pending')
-
-    # ## Private
-
-    __initial_mapping__ = {
-        'complete': 0,
-        'duplicate': 1,
-        'pending': 2,
-    }
-    __mandatory_mapping__ = {
-        'error': 126,
-        'unknown': 127,
-    }
-
-
 # #### Polymorphic enums
 
 class PoolElementType(EnumModel):

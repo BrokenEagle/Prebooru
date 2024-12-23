@@ -15,9 +15,9 @@ from .base_dl import load_post_image, check_existing, check_filetype, check_imag
 # ## FUNCTIONS
 
 def convert_file_upload(upload):
-    if upload.file_illust_url.type == 'image':
+    if upload.illust_url.type == 'image':
         post = create_image_post(upload, 'user')
-    elif upload.file_illust_url.type == 'video':
+    elif upload.illust_url.type == 'video':
         post = create_video_post(upload, 'user')
     if post is not None:
         record_outcome(post, upload)
@@ -27,7 +27,7 @@ def convert_file_upload(upload):
 # #### Post creation functions
 
 def create_image_post(record, post_type):
-    illust_url = record.file_illust_url
+    illust_url = record.illust_url
     file_ext = get_file_extension(record.media_filepath)
     buffer = put_get_raw(record.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url, record)
@@ -51,7 +51,7 @@ def create_image_post(record, post_type):
 
 
 def create_video_post(record, post_type):
-    illust_url = record.file_illust_url
+    illust_url = record.illust_url
     file_ext = get_file_extension(record.media_filepath)
     buffer = put_get_raw(record.media_filepath, 'rb')
     md5 = check_existing(buffer, illust_url)

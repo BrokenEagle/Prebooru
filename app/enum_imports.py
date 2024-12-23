@@ -14,7 +14,6 @@ if USE_ENUMS:
     from .logical.enums import DownloadStatusEnum as download_status
     from .logical.enums import DownloadElementStatusEnum as download_element_status
     from .logical.enums import UploadStatusEnum as upload_status
-    from .logical.enums import UploadElementStatusEnum as upload_element_status
     from .logical.enums import PoolElementTypeEnum as pool_element_type
     from .logical.enums import SiteDataTypeEnum as site_data_type
     from .logical.enums import TagTypeEnum as tag_type
@@ -28,7 +27,6 @@ else:
     from .models.model_enums import DownloadStatus as download_status
     from .models.model_enums import DownloadElementStatus as download_element_status
     from .models.model_enums import UploadStatus as upload_status
-    from .models.model_enums import UploadElementStatus as upload_element_status
     from .models.model_enums import PoolElementType as pool_element_type
     from .models.model_enums import SiteDataType as site_data_type
     from .models.model_enums import TagType as tag_type

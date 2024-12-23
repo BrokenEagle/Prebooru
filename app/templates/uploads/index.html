@@ -1,6 +1,6 @@
 {% extends "uploads/_base.html" %}
 {% from "layouts/_macros.html" import page_navigation %}
-{% from "posts/_macros.html" import multi_post_preview %}
+{% from "posts/_macros.html" import post_preview %}
 {% from "errors/_macros.html" import errors_block %}
 
 {% block title %}
@@ -13,7 +13,7 @@
             <tr>
                 <th width="1%">Preview</th>
                 <th>Info</th>
-                <th>Urls</th>
+                <th>Media paths</th>
                 <th>Errors</th>
                 <th>Status</th>
                 <th>Uploaded</th>
@@ -23,20 +23,20 @@
             {% for upload in page.items %}
                 {% set outer_loop = loop %}
                 <tr id="upload-{{ upload.id }}">
-                    <td>{{ multi_post_preview(upload, 'upload') }}</td>
+                    <td>{{ post_preview(upload.post) }}</td>
                     <td>
                         <span><strong>{{ upload.show_link }} {{ helpers.upload.post_search_link(upload) }}</strong></span>
                     </td>
                     <td>
-                        <span><strong>Request:</strong> {{ helpers.base.url_link(upload.request_url) }}</span>
-                        <br>
-                        <span><strong>Image urls:</strong></span>
-                        {% for image_url in upload.image_urls %}
+                        {% if upload.illust_url_id is not none %}
+                            <span><strong> {{ upload.illust_url_show_link }} </strong></span>
                             <br>
-                            &emsp;{{ helpers.base.url_link(image_url.url) }}
-                        {% else %}
-                            <em>none</em>
-                        {% endfor %}
+                        {% endif %}
+                        <span><strong>Media filepath:</strong> {{ upload.media_filepath }}</span>
+                        {% if upload.sample_fileapth is not none %}
+                            <br>
+                            <span><strong>Sample filepath:</strong> {{ upload.sample_filepath }}</span>
+                        {% endif %}
                     </td>
                     <td>{{ errors_block(upload.errors) }}</td>
                     <td>{{ upload.status.name }}</td>

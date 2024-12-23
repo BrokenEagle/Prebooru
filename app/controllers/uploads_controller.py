@@ -1,31 +1,22 @@
 # APP/CONTROLLERS/UPLOADS_CONTROLLER.PY
 
-# ## PYTHON IMPORTS
-import threading
-
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy.orm import selectinload
-from wtforms import StringField, IntegerField, TextAreaField
+from wtforms import StringField, IntegerField
 
 # ## PACKAGE IMPORTS
-from utility import RepeatTimer
-from utility.time import minutes_ago
 from utility.data import eval_bool_string
-from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
-from .. import SCHEDULER, SESSION
-from ..models import Upload, UploadElement, IllustUrl, Illust
-from ..enum_imports import site_descriptor
+from .. import SCHEDULER
+from ..models import Upload, IllustUrl
 from ..logical.utility import set_error
 from ..logical.records.upload_rec import process_upload
-from ..logical.records.media_file_rec import batch_get_or_create_media
-from ..logical.database.upload_db import create_upload_from_parameters, update_upload_from_parameters,\
-    get_pending_uploads
+from ..logical.database.upload_db import create_upload_from_parameters, update_upload_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_form, get_data_params, hide_input, parse_string_list,\
-    nullify_blanks, set_default, get_or_abort, referrer_check, get_limit, get_page, index_html_response
+    get_params_value, paginate, default_order, get_form, get_data_params, hide_input,\
+    nullify_blanks, get_or_abort, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -38,28 +29,17 @@ INIT = False
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.illust).options(
-        selectinload(Illust._tags),
-        selectinload(Illust.artist),
-    ),
-    selectinload(Upload.image_urls),
+    selectinload(Upload.illust_url).selectinload(IllustUrl.post),
     selectinload(Upload.errors),
 )
 
-SHOW_ELEMENTS_HTML_OPTIONS = (
-    selectinload(UploadElement.illust_url).selectinload(IllustUrl.post).lazyload('*'),
-    selectinload(UploadElement.errors),
-)
-
 INDEX_HTML_OPTIONS = (
-    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.post),
-    selectinload(Upload.image_urls),
+    selectinload(Upload.illust_url).selectinload(IllustUrl.post),
     selectinload(Upload.errors),
 )
 
 JSON_OPTIONS = (
-    selectinload(Upload.elements).selectinload(UploadElement.illust_url).selectinload(IllustUrl.post),
-    selectinload(Upload.image_urls),
+    selectinload(Upload.illust_url).selectinload(IllustUrl.post),
     selectinload(Upload.errors),
 )
 
@@ -77,17 +57,6 @@ FORM_CONFIG = {
     'sample_filepath': {
         'field': StringField,
     },
-    'request_url': {
-        'name': 'Request URL',
-        'field': StringField,
-    },
-    'image_url_string': {
-        'name': 'Image URLs',
-        'field': TextAreaField,
-        'kwargs': {
-            'description': "Separated by carriage returns.",
-        },
-    },
 }
 
 
@@ -100,41 +69,20 @@ def get_upload_form(**kwargs):
 
 
 def uniqueness_check(createparams):
-    q = Upload.query
-    if createparams['illust_url_id']:
-        q = q.filter(Upload.illust_url_id == createparams['illust_url_id'])
-    elif createparams['request_url']:
-        q = q.filter(Upload.request_url == createparams['request_url'])
-    return q.first()
+    return Upload.query.filter(Upload.illust_url_id == createparams['illust_url_id']).first()
 
 
 def convert_data_params(dataparams):
     params = get_upload_form(**dataparams).data
-    if 'image_urls' in dataparams:
-        params['image_urls'] = dataparams['image_urls']
-    elif 'image_url_string' in dataparams:
-        dataparams['image_urls'] = params['image_urls'] = parse_string_list(dataparams, 'image_url_string', r'\r?\n')
     params = nullify_blanks(params)
     return params
 
 
 def convert_create_params(dataparams):
-    createparams = convert_data_params(dataparams)
-    set_default(createparams, 'image_urls', [])
-    if createparams['illust_url_id']:
-        createparams['request_url'] = None
-        createparams['image_urls'] = []
-    elif createparams['request_url']:
-        createparams['request_url'] = createparams['request_url'].split('#')[0]
-        createparams['illust_url_id'] = None
-    return createparams
+    return convert_data_params(dataparams)
 
 
-def check_create_params(dataparams, request_url_only):
-    if request_url_only and dataparams['request_url'] is None:
-        return ["Must include the request URL."]
-    if dataparams['illust_url_id'] is None and dataparams['request_url'] is None:
-        return ["Must include the illust URL ID or the request URL."]
+def check_create_params(dataparams):
     if dataparams['illust_url_id'] and not dataparams['media_filepath']:
         return ["Must include the media filepath for file uploads."]
     return []
@@ -154,77 +102,20 @@ def index():
 def create(get_request=False):
     global RECHECK_UPLOADS
     force_download = request.values.get('force', type=eval_bool_string)
-    image_urls_only = request.values.get('image_urls_only', type=eval_bool_string)
-    request_url_only = request.values.get('request_url_only', type=eval_bool_string) or get_request
     dataparams = get_data_params(request, 'upload')
     createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = check_create_params(createparams, request_url_only)
+    errors = check_create_params(createparams)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
-    if image_urls_only and len(createparams['image_urls']) == 0:
-        return set_error(retdata, "No image URLs set!")
     if not force_download:
         check_upload = uniqueness_check(createparams)
         if check_upload is not None:
             retdata['item'] = check_upload.to_json()
             return set_error(retdata, "Upload already exists.")
-    if createparams['request_url']:
-        site = site_descriptor.get_site_from_url(createparams['request_url'])
-        if site.name == 'custom':
-            msg = "Upload source currently not handled for request url: %s" % createparams['request_url']
-            return set_error(retdata, msg)
-        source = site.source
-        createparams['image_urls'] = [url for url in createparams['image_urls'] if source.is_image_url(url)]
-        createparams['type'] = 'post'
-    elif createparams['illust_url_id']:
-        createparams['type'] = 'file'
     upload = create_upload_from_parameters(createparams)
     retdata['item'] = upload.to_json()
     SCHEDULER.add_job("process_upload-%d" % upload.id, process_upload, args=(upload.id,))
-    if RECHECK_UPLOADS is None:
-        RECHECK_UPLOADS = RepeatTimer(30, _recheck_pending_uploads)
-        RECHECK_UPLOADS.setDaemon(True)
-        RECHECK_UPLOADS.start()
-    return retdata
-
-
-def upload_select():
-    force_load = request.values.get('force', type=eval_bool_string)
-    dataparams = get_data_params(request, 'upload')
-    selectparams = convert_data_params(dataparams)
-    retdata = {'error': False, 'data': selectparams, 'params': dataparams}
-    if 'request_url' not in selectparams:
-        return set_error(retdata, "Request URL not specified.")
-    selectparams['request_url'] = selectparams['request_url'].split('#')[0]
-    check_upload = uniqueness_check(selectparams)
-    if check_upload is not None and not force_load:
-        retdata['item'] = check_upload.to_json()
-        return set_error(retdata, "Upload already exists.")
-    errors = check_create_params(selectparams, True)
-    if len(errors):
-        return set_error(retdata, '\n'.join(errors))
-    site = site_descriptor.get_site_from_url(selectparams['request_url'])
-    if site.name == 'custom':
-        msg = "Upload source currently not handled for request url: %s" % selectparams['request_url']
-        return set_error(retdata, msg)
-    source = site.source
-    site_illust_id = source.get_illust_id(selectparams['request_url'])
-    illust_data = source.get_illust_data(site_illust_id)
-    media_batches = []
-    for url_data in illust_data['illust_urls']:
-        url_data['full_url'] = full_url = source.normalized_image_url(url_data['url'])
-        url_data['preview_url'] = source.small_image_url(full_url)
-        media_batches.append((url_data['preview_url'], source))
-    media_files = batch_get_or_create_media(media_batches)
-    for (i, media) in enumerate(media_files):
-        url_data = illust_data['illust_urls'][i]
-        if isinstance(media, str):
-            flash(media, 'error')
-            url_data['media_file'] = None
-        else:
-            url_data['media_file'] = media
-    retdata['item'] = illust_data['illust_urls']
     return retdata
 
 
@@ -240,10 +131,7 @@ def show_json(id):
 @bp.route('/uploads/<int:id>')
 def show_html(id):
     upload = get_or_abort(Upload, id, options=SHOW_HTML_OPTIONS)
-    elements = upload.elements_paginate(page=get_page(request),
-                                        per_page=get_limit(request, max_limit=8),
-                                        options=SHOW_ELEMENTS_HTML_OPTIONS)
-    return render_template("uploads/show.html", upload=upload, elements=elements)
+    return render_template("uploads/show.html", upload=upload)
 
 
 # ###### INDEX
@@ -267,7 +155,6 @@ def index_html():
 
 @bp.route('/uploads/new', methods=['GET'])
 def new_html():
-    raise Exception("Migrated to downloads endpoint")
     """HTML access point to create function."""
     illust_url = None
     form = get_upload_form(**request.args)
@@ -282,73 +169,27 @@ def new_html():
             illust_url = None
         else:
             hide_input(form, 'illust_url_id', illust_url.id)
-            hide_input(form, 'request_url')
-            hide_input(form, 'image_url_string')
     return render_template("uploads/new.html", form=form, upload=Upload(), illust_url=illust_url)
 
 
 @bp.route('/uploads', methods=['POST'])
 def create_html():
-    raise Exception("Migrated to downloads endpoint")
     results = create()
     if results['error']:
         flash(results['message'], 'error')
-        data = {'noprocess': True, 'upload[request_url]': results['data']['request_url']}
-        if referrer_check('upload.upload_all_html', request):
-            return redirect(url_for('upload.upload_all_html', **data))
-        if referrer_check('upload.upload_select_html', request):
-            return redirect(url_for('upload.upload_select_html', **data))
         return redirect(url_for('upload.new_html', **results['data']))
     return redirect(url_for('upload.show_html', id=results['item']['id']))
 
 
 @bp.route('/uploads.json', methods=['POST'])
 def create_json():
-    raise Exception("Migrated to downloads endpoint")
     return create()
 
 
 # ###### MISC
 
-@bp.route('/uploads/all', methods=['GET'])
-def upload_all_html():
-    raise Exception("Migrated to downloads endpoint")
-    show_form = request.args.get('show_form', type=eval_bool_string)
-    if show_form:
-        return render_template("uploads/all.html", form=get_upload_form(), upload=Upload())
-    results = create(True)
-    if results['error']:
-        flash(results['message'], 'error')
-        form = get_upload_form(**results['data'])
-        if 'item' in results:
-            upload = Upload.find(results['item']['id'])
-        else:
-            upload = Upload()
-        return render_template("uploads/all.html", form=form, upload=upload)
-    return redirect(url_for('upload.show_html', id=results['item']['id']))
-
-
-@bp.route('/uploads/select', methods=['GET'])
-def upload_select_html():
-    raise Exception("Migrated to downloads endpoint")
-    show_form = request.args.get('show_form', type=eval_bool_string)
-    if show_form:
-        return render_template("uploads/select.html", illust_urls=None, form=get_upload_form(), upload=Upload())
-    results = upload_select()
-    form = get_upload_form(request_url=results['data']['request_url'])
-    if results['error']:
-        flash(results['message'], 'error')
-        if 'item' in results:
-            upload = Upload.find(results['item']['id'])
-        else:
-            upload = Upload()
-        return render_template("uploads/select.html", illust_urls=None, form=form, upload=upload)
-    return render_template("uploads/select.html", form=form, illust_urls=results['item'], upload=Upload())
-
-
 @bp.route('/uploads/<int:id>/check', methods=['POST'])
 def upload_check_html(id):
-    raise Exception("Migrated to downloads endpoint")
     get_or_abort(Upload, id)
     SCHEDULER.add_job("process_upload-%d" % id, process_upload, args=(id,))
     return redirect(request.referrer)
@@ -356,41 +197,7 @@ def upload_check_html(id):
 
 @bp.route('/uploads/<int:id>/resubmit', methods=['POST'])
 def resubmit_html(id):
-    raise Exception("Migrated to downloads endpoint")
     upload = get_or_abort(Upload, id)
     update_upload_from_parameters(upload, {'status': 'pending'})
     SCHEDULER.add_job("process_upload-%d" % id, process_upload, args=(id,))
     return redirect(request.referrer)
-
-
-# #### Private
-
-def _recheck_pending_uploads():
-    global RECHECK_UPLOADS
-    pending_uploads = get_pending_uploads()
-    if len(pending_uploads) == 0 and RECHECK_UPLOADS is not None:
-        print("\nUploads recheck - exiting\n")
-        RECHECK_UPLOADS.cancel()
-        RECHECK_UPLOADS = None
-    else:
-        print("\nUploads recheck - %d pending\n" % len(pending_uploads))
-        for upload in pending_uploads:
-            if upload.created < minutes_ago(1):
-                job_id = "process_upload-%d" % upload.id
-                if SCHEDULER.get_job(job_id) is None:
-                    print_warning(f"Restarting stalled {upload.shortlink}")
-                    SCHEDULER.add_job(job_id, process_upload, args=(upload.id,))
-    SESSION.remove()
-
-
-def _initialize():
-    timer = threading.Timer(30, _recheck_pending_uploads)
-    timer.setDaemon(True)
-    timer.start()
-
-
-# ## INITIALIZE
-
-if not INIT:
-    _initialize()
-    INIT = True

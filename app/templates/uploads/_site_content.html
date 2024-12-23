@@ -14,35 +14,19 @@
                     {{ upload.status.name }}
                 {% endif %}
             </li>
-            <li><strong>Elements:</strong>
-                <ul>
-                    <li>
-                        <strong>Complete:</strong> {{ upload.complete_count }}
-                    </li>
-                    <li>
-                        <strong>Error:</strong> {{ upload.error_count }}
-                    </li>
-                    <li>
-                        <strong>Other:</strong> {{ upload.other_count }}
-                    </li>
-                </ul>
-            </li>
         </ul>
     </section>
     <section id="upload-sources">
         <h4>Sources</h4>
         <ul>
+            {% if upload.illust_url_id is not none %}
+                <li><strong>{{ upload.illust_url_show_link }}</strong></li>
+            {% endif %}
             <li>
                 <strong>Media filepath:</strong> {{ helpers.base.file_link(upload.media_filepath) }}
             </li>
             <li>
                 <strong>Sample filepath:</strong> {{ helpers.base.file_link(upload.sample_filepath) }}
-            </li>
-            <li>
-                <strong>Request url:</strong> {{ helpers.base.url_link(upload.request_url) }}
-            </li>
-            <li style="max-height: 30em; overflow: auto;">
-                <strong>Image urls:</strong> {{ items_list(upload.image_urls, 'url') }}
             </li>
         </ul>
     </section>

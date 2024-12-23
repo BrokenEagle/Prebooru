@@ -23,16 +23,14 @@ TABLES = {}
 def load_all():
     global\
         SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,\
-        SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,\
+        SubscriptionElementKeep, UploadStatus, PoolElementType, SiteDataType, TagType,\
         Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,\
         IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
         Booru, BooruNames, BooruArtists, Error, Post,\
-        PostTags, UploadUrl, Upload, Notation, Pool, PoolElement, PoolPost,\
+        PostTags, Upload, Notation, Pool, PoolElement, PoolPost,\
         PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
         ImageHash, SimilarityMatch, ApiData, Archive,\
-        UploadElement,\
         Download, DownloadElement, DownloadUrl,\
-        UploadElement,\
         Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,\
         MediaFile,\
         ServerInfo, Version,\
@@ -40,7 +38,7 @@ def load_all():
 
     # #### Enum data
     from .model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
-        SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType,\
+        SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, PoolElementType,\
         SiteDataType, TagType, DownloadStatus, DownloadElementStatus
 
     # #### Site data
@@ -61,8 +59,6 @@ def load_all():
     from .download_element import DownloadElement
     from .download_url import DownloadUrl
     from .upload import Upload
-    from .upload_element import UploadElement
-    from .upload_url import UploadUrl
     from .notation import Notation
     from .pool import Pool
     from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation
@@ -101,16 +97,14 @@ def initialize():
     models =\
         [
             SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,
-            SubscriptionElementKeep, UploadStatus, UploadElementStatus, PoolElementType, SiteDataType, TagType,
+            SubscriptionElementKeep, UploadStatus, PoolElementType, SiteDataType, TagType,
             Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,
             IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
             Booru, BooruNames, BooruArtists, Error, Post,
-            PostTags, UploadUrl, Upload, Notation, Pool, PoolElement, PoolPost,
+            PostTags, Upload, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionElement,
             ImageHash, SimilarityMatch, ApiData, Archive,
-            UploadElement,
             Download, DownloadElement, DownloadUrl,
-            UploadElement,
             Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,
             MediaFile,
             ServerInfo, Version,

@@ -53,7 +53,6 @@ def initialize_controllers():
     PREBOORU_APP.register_blueprint(controllers.download.bp)
     PREBOORU_APP.register_blueprint(controllers.download_element.bp)
     PREBOORU_APP.register_blueprint(controllers.upload.bp)
-    PREBOORU_APP.register_blueprint(controllers.upload_element.bp)
     PREBOORU_APP.register_blueprint(controllers.post.bp)
     PREBOORU_APP.register_blueprint(controllers.subscription.bp)
     PREBOORU_APP.register_blueprint(controllers.subscription_element.bp)

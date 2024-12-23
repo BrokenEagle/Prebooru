@@ -86,14 +86,6 @@ class UploadStatusEnum(AttrEnum):
     unknown = 127
 
 
-class UploadElementStatusEnum(AttrEnum):
-    complete = 0
-    duplicate = 1
-    pending = 2
-    error = 126
-    unknown = 127
-
-
 class PoolElementTypeEnum(AttrEnum):
     pool_post = 0
     pool_illust = 1

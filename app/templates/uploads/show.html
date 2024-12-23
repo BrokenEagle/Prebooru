@@ -1,6 +1,6 @@
 {% extends "uploads/_base.html" %}
 {% from "layouts/_macros.html" import page_navigation %}
-{% from "upload_elements/_macros.html" import upload_elements_section %}
+{% from "posts/_macros.html" import post_preview %}
 
 {% block title %}
     {{ upload.header }}
@@ -12,17 +12,15 @@
         {% include "uploads/_sidebar.html" %}
         {% include "uploads/_site_content.html" %}
     </div>
-    <div id="upload-posts">{{ upload_elements_section(elements.items, elements.count, upload) }}</div>
+    <div id="upload-post">
+        <div class="heading" style="font-size: 24px; margin-top: 1em;">Post:</div>
+        <div style="margin-top: 1em;">{{ post_preview(upload.post) }}</div>
+    </div>
 {% endblock content %}
-
-{% block pages %}
-    {{ page_navigation(elements) }}
-{% endblock pages %}
 
 {% block pagescript %}
     (function () {
     const upload_status = "{{ upload.status.name }}";
     Uploads.initializeReloadInterval(upload_status);
     })();
-    Prebooru.initializeLazyLoad('.upload-element-preview');
 {% endblock pagescript %}

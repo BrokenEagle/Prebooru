@@ -3,8 +3,6 @@
 <menu id="secondary-menu">
     {{ subnav_link_to("Listing", 'upload.index_html') }}
     {{ subnav_link_to("New", 'upload.new_html') }}
-    {{ subnav_link_to("Elements", 'upload_element.index_html') }}
-    {{ subnav_link_to("Bookmarklet", 'static.bookmarklet_info_html') }}
     {% if upload.id != None %}
         |
         {{ subnav_link_to("Show", 'upload.show_html', upload.id) }}
