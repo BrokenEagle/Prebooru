@@ -10,7 +10,7 @@ from .base import JsonModel
 class SimilarityMatch(JsonModel):
     # ## Columns
     forward_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, primary_key=True)
-    reverse_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, primary_key=True)
+    reverse_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, primary_key=True, index=True)
     score = DB.Column(DB.Float, nullable=False)
 
     # ## Relationships
@@ -39,6 +39,5 @@ class SimilarityMatch(JsonModel):
         DB.CheckConstraint(
             "forward_id < reverse_id",
             name="id_order"),
-        DB.Index(None, 'reverse_id', 'forward_id', unique=True),
         {'sqlite_with_rowid': False},
     )
