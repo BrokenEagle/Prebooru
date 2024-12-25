@@ -271,7 +271,7 @@ def archive_expired_subscription_elements(manual):
 def populate_subscription_elements(subscription, job_id=None):
     job_status = get_job_status_data(job_id) or {'elements': 0}
     q = IllustUrl.query.join(Illust).filter(Illust.artist_id == subscription.artist_id)
-    q = search_attributes(q, IllustUrl, {'post_exists': 'false', 'subscription_element_exists': 'false'})
+    q = search_attributes(q, IllustUrl, {'post_exists': 'false', 'has_subscription_element': 'false'})
     q = q.order_by(Illust.site_illust_id.asc(), IllustUrl.order.asc())
     total = q.get_count()
     page = 1
