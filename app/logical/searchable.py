@@ -24,7 +24,7 @@ from ..models import base
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG if DEBUG_LOG else logging.WARNING)
 
-TEXT_COMPARISON_TYPES = ['eq', 'ne', 'like', 'ilike', 'not_like', 'not_ilike', 'regex', 'not_regex']
+TEXT_COMPARISON_TYPES = ['eq', 'ne', 'like', 'glob', 'not_like', 'not_glob', 'regex', 'not_regex']
 
 COMMA_ARRAY_TYPES = ['comma', 'lower_comma', 'not_comma', 'not_lower_comma']
 SPACE_ARRAY_TYPES = ['space', 'lower_space', 'not_space', 'not_lower_space']
@@ -417,12 +417,12 @@ def text_comparison_matching(model, columnname, value, cmp_type):
         return getattr(model, columnname) != value
     if cmp_type == 'like':
         return getattr(model, columnname).like(sql_excape(value), escape='\x01')
-    if cmp_type == 'ilike':
-        return getattr(model, columnname).ilike(sql_excape(value), escape='\x01')
+    if cmp_type == 'glob':
+        return getattr(model, columnname).op('GLOB')(value)
     if cmp_type == 'not_like':
-        return not_(getattr(model, columnname).like(sql_excape(value), escape='\x01'))
-    if cmp_type == 'not_ilike':
-        return not_(getattr(model, columnname).ilike(sql_excape(value), escape='\x01'))
+        return getattr(model, columnname).not_like(sql_excape(value), escape='\x01')
+    if cmp_type == 'not_glob':
+        return getattr(model, columnname).op('NOT GLOB')(value)
     if cmp_type == 'regex':
         return getattr(model, columnname).regexp_match(value)
     if cmp_type == 'not_regex':
