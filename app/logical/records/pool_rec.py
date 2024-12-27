@@ -35,7 +35,6 @@ def add_to_pool(pool, dataparams):
 
 
 def add_item_to_pool(pool, id, id_key, itemclass, itemtype, retdata):
-    print('add_item_to_pool', pool, id, id_key, itemclass, itemtype, retdata)
     item = itemclass.find(id)
     if item is None:
         return set_error(retdata, "%s not found." % itemtype)
