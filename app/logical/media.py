@@ -4,6 +4,7 @@
 import cv2
 import numpy
 import ffmpeg
+import filetype
 from PIL import Image
 from io import BytesIO
 
@@ -20,6 +21,14 @@ MILLISECONDS_PER_SECOND = 1000
 
 
 # ## FUNCTIONS
+
+def check_filetype(buffer):
+    try:
+        guess = filetype.guess(buffer)
+    except Exception as e:
+        return ("Error reading file headers: %s" % repr(e),)
+    return guess.extension if guess is not None else None
+
 
 def check_alpha(image):
     if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):

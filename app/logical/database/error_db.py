@@ -37,6 +37,12 @@ def create_and_append_error(instance, module_name, message, commit=True):
     return error
 
 
+def create_and_extend_errors(instance, error_list, commit=True):
+    for params in error_list:
+        create_and_append_error(instance, *params, commit=False)
+    commit_or_flush(commit)
+
+
 # #### Set
 
 def set_error_from_parameters(error, setparams, action, commit):

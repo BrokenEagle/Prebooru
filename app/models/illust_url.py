@@ -18,6 +18,16 @@ from .subscription_element import SubscriptionElement
 from .base import JsonModel, get_relation_definitions
 
 
+# ## FUNCTIONS
+
+def check_video(func):
+    def wrapper(*args):
+        if args[0].type != 'video':
+            return None
+        return func(*args)
+    return wrapper
+
+
 # ## CLASSES
 
 class IllustUrl(JsonModel):
@@ -74,9 +84,36 @@ class IllustUrl(JsonModel):
         return self.source.get_media_url(self)
 
     @memoized_property
+    def original_url(self):
+        return self.source.get_full_url(self)
+
+    @memoized_property
+    def alternate_url(self):
+        return self.source.get_alternate_url(self)
+
+    @memoized_property
+    def url_extension(self):
+        return self.source.get_media_extension(self.full_url)
+
+    @memoized_property
+    @check_video
     def full_sample_url(self):
-        if self.type == 'video':
-            return self.source.get_sample_url(self)
+        return self.source.get_sample_url(self)
+
+    @memoized_property
+    @check_video
+    def original_sample_url(self):
+        return self.source.get_sample_url(self, True)
+
+    @memoized_property
+    @check_video
+    def alternate_sample_url(self):
+        return self.source.get_sample_url(self, False)
+
+    @memoized_property
+    @check_video
+    def sample_extension(self):
+        return self.source.get_media_extension(self.full_sample_url)
 
     @property
     def site_domain(self):

@@ -19,15 +19,17 @@ from ..utility import set_error, SessionThread
 from ..logger import handle_error_message
 from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
-    convert_mp4_to_webm
+    convert_mp4_to_webm, check_filetype, get_pixel_hash, check_alpha, convert_alpha, create_data, get_video_info
 from ..database.base_db import delete_record, commit_session
-from ..database.post_db import\
+from ..database.post_db import create_post_from_parameters,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, alternate_posts_query,\
     get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
     get_artist_posts_without_danbooru_ids
-from ..database.error_db import create_and_append_error
+from ..database.illust_url_db import update_illust_url_from_parameters
+from ..database.error_db import create_and_append_error, create_and_extend_errors
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
+from .illust_rec import download_illust_sample
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
 from .pool_rec import delete_pool_element
@@ -40,6 +42,121 @@ RELOCATE_PAGE_LIMIT = 10
 
 
 # ## FUNCTIONS
+
+def create_image_post(buffer, illust_url, post_type):
+    retdata = {'errors': [], 'post': None}
+    file_ext = check_filetype(buffer)
+    if isinstance(file_ext, tuple):
+        retdata['errors'].append(_module_error('create_image_post', file_ext[0]))
+        file_ext = None
+    if file_ext is None:
+        file_ext = illust_url.url_extension
+    image = _load_image(buffer)
+    if isinstance(image, tuple):
+        retdata['errors'].append(image)
+        return retdata
+    params = {
+        'md5': get_buffer_checksum(buffer),
+        'size': len(buffer),
+        'width': image.width,
+        'height': image.height,
+        'pixel_md5': get_pixel_hash(image),
+        'file_ext': file_ext,
+        'type': post_type,
+    }
+    temppost = Post(**params)
+    result = create_data(buffer, temppost.file_path)
+    if result is not None:
+        retdata['errors'].append(_module_error('create_image_post', result))
+        return retdata
+    # From this point forward, the post will be created and all errors attached to that post
+    retdata['post'] = post = create_post_from_parameters(params)
+    update_illust_url_from_parameters(illust_url, {'post_id': post.id})
+    create_image_post_sample_preview_images(post, image)
+    return retdata
+
+
+def create_image_post_sample_preview_images(post, image):
+    errors = []
+    if post.has_sample:
+        result = create_sample(image, post.sample_path, downsample=True)
+        if result is not None:
+            errors.append(_module_error('create_image_post', result))
+    if post.has_preview:
+        result = create_preview(image, post.preview_path, downsample=True)
+        if result is not None:
+            errors.append(_module_error('create_image_post', result))
+    create_and_extend_errors(post, errors)
+
+
+def create_video_post(buffer, illust_url, post_type):
+    retdata = {'errors': [], 'post': None}
+    file_ext = check_filetype(buffer)
+    if isinstance(file_ext, tuple):
+        retdata['errors'].append(_module_error('create_video_post', file_ext[0]))
+        file_ext = None
+    if file_ext is None:
+        file_ext = illust_url.url_extension
+    md5 = get_buffer_checksum(buffer)
+    temppost = Post(md5=md5, file_ext=file_ext)
+    result = create_data(buffer, temppost.file_path)
+    if result is not None:
+        retdata['errors'].append(_module_error('create_video_post', result))
+        return retdata
+    info = get_video_info(temppost.file_path)
+    if isinstance(info, str):
+        retdata['errors'].append(_module_error('create_video_post', file_ext[0]))
+        return retdata
+    # From this point forward, the post will be created and all errors attached to that post
+    params = merge_dicts(info, {
+        'md5': md5,
+        'size': len(buffer),
+        'file_ext': file_ext,
+        'type': post_type,
+    })
+    retdata['post'] = post = create_post_from_parameters(params)
+    if (info['width'] != illust_url.width) or (info['height'] != illust_url.height):
+        msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
+              (illust_url.width, illust_url.height, info['width'], info['height'])
+        create_and_append_error(post, *_module_error('create_video_post', msg))
+    update_illust_url_from_parameters(illust_url, {'post_id': post.id})
+    create_video_post_sample_preview_images(post)
+    return retdata
+
+
+def create_video_post_sample_preview_images(post):
+    errors = []
+    sample_buffer = None
+    # Try to download the sample from the source first
+    for illust_url in post.illust_urls:
+        if illust_url.sample_url is None:
+            continue
+        results = download_illust_sample(illust_url)
+        errors.extend(results['errors'])
+        if results['buffer'] is not None:
+            sample_buffer = results['buffer']
+            break
+    # Otherwise, try to create a sample from the video
+    if sample_buffer is None:
+        save_path = os.path.join(TEMP_DIRECTORY, post.md5 + '.' + 'jpg')
+        error = create_video_screenshot(post.file_path, save_path)
+        if error is None:
+            sample_buffer = put_get_raw(save_path, 'rb')
+        else:
+            errors.append(error)
+    if sample_buffer is not None:
+        sample_image = _load_image(sample_buffer)
+        if not isinstance(sample_image, tuple):
+            error = create_sample(sample_image, post.sample_path, downsample=post.has_sample)
+            if error is not None:
+                errors.append(error)
+            error = create_preview(sample_image, post.preview_path, downsample=post.has_preview)
+            if error is not None:
+                errors.append(error)
+        else:
+            errors.append(sample_image)
+    create_and_extend_errors(post, errors)
+
 
 def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
@@ -380,3 +497,20 @@ def _get_video_thumb_binary(post):
                                     "Download URL: %s => %s" % (download_url, buffer))
             continue
         return buffer
+
+
+def _load_image(buffer):
+    image = load_image(buffer)
+    if isinstance(image, str):
+        return _module_error('load_image', image)
+    try:
+        if check_alpha(image):
+            return convert_alpha(image)
+        else:
+            return image
+    except Exception as e:
+        return _module_error('load_image', "Error removing alpha transparency: %s" % repr(e))
+
+
+def _module_error(function, message):
+    return (f'post_rec.{function}', message)

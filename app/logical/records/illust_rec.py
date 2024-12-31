@@ -7,6 +7,7 @@ from utility.uprint import print_warning
 from ... import SESSION
 from ...models import Illust
 from ..logger import handle_error_message
+from ..network import get_http_data
 from ..database.base_db import delete_record, commit_session
 from ..database.artist_db import get_blank_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
@@ -18,6 +19,8 @@ from .archive_rec import archive_record, recreate_record, recreate_scalars, recr
 
 
 # ## FUNCTIONS
+
+# #### Illusts
 
 def create_illust_from_source(site_illust_id, source):
     createparams = source.get_illust_data(site_illust_id)
@@ -85,3 +88,51 @@ def delete_illust(illust):
     delete_record(illust)
     commit_session()
     print(msg)
+
+
+# #### Illust URLs
+
+def download_illust_url(illust_url):
+    retdata = {'errors': [], 'buffer': None}
+    buffer = _download_media(illust_url.original_url, illust_url.source.IMAGE_HEADERS)
+    if isinstance(buffer, tuple):
+        retdata['errors'].append(buffer)
+        if illust_url.alternate_url:
+            buffer = _download_media(illust_url.alternate_url, illust_url.source.IMAGE_HEADERS)
+            if isinstance(buffer, tuple):
+                retdata['errors'].append(buffer)
+            else:
+                retdata['buffer'] = buffer
+    else:
+        retdata['buffer'] = buffer
+    return retdata
+
+
+def download_illust_sample(illust_url):
+    retdata = {'errors': [], 'buffer': None}
+    buffer = _download_media(illust_url.original_sample_url, illust_url.source.IMAGE_HEADERS)
+    if isinstance(buffer, tuple):
+        retdata['errors'].append(buffer)
+        if illust_url.alternate_url:
+            buffer = _download_media(illust_url.alternate_sample_url, illust_url.source.IMAGE_HEADERS)
+            if isinstance(buffer, tuple):
+                retdata['errors'].append(buffer)
+            else:
+                retdata['buffer'] = buffer
+    else:
+        retdata['buffer'] = buffer
+    return retdata
+
+
+# #### Private functions
+
+def _download_media(download_url, headers):
+    print("Downloading", download_url)
+    buffer = get_http_data(download_url, headers=headers)
+    if isinstance(buffer, str):
+        return _module_error('download_media', "Download URL: %s => %s" % (download_url, buffer))
+    return buffer
+
+
+def _module_error(function, message):
+    return (f'illust_rec.{function}', message)
