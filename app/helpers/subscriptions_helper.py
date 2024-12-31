@@ -184,7 +184,7 @@ def average_interval_lookup(subscription, average_intervals):
 
 def average_interval(subscription, days):
     interval = get_average_interval_for_subscriptions([subscription], days)
-    if len(interval) == 0:
+    if len(interval) == 0 or interval[0][1] is None:
         return Markup('<em>N/A</em>')
     return "%0.2f hours" % (interval[0][1] / 3600)
 
