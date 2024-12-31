@@ -13,9 +13,9 @@ from .base_db import set_column_attributes, add_record, save_record, commit_sess
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['type_id', 'simcheck', 'alternate']
-NULL_WRITABLE_ATTRIBUTES = ['width', 'height', 'size', 'file_ext', 'md5', 'pixel_md5', 'duration', 'audio',
-                            'danbooru_id']
+ANY_WRITABLE_COLUMNS = ['type_id', 'simcheck', 'alternate', 'width', 'height', 'size', 'file_ext', 'md5', 'pixel_md5',
+                        'duration', 'audio']
+NULL_WRITABLE_ATTRIBUTES = ['danbooru_id']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
                                                 .with_entities(SubscriptionElement.post_id)

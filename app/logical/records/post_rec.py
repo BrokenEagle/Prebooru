@@ -29,7 +29,7 @@ from ..database.illust_url_db import update_illust_url_from_parameters
 from ..database.error_db import create_and_append_error, create_and_extend_errors
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
-from .illust_rec import download_illust_sample
+from .illust_rec import download_illust_url, download_illust_sample
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
 from .pool_rec import delete_pool_element
@@ -74,6 +74,35 @@ def create_image_post(buffer, illust_url, post_type):
     update_illust_url_from_parameters(illust_url, {'post_id': post.id})
     create_image_post_sample_preview_images(post, image)
     return retdata
+
+
+def update_image_post(post, buffer, illust_url):
+    file_ext = check_filetype(buffer)
+    if isinstance(file_ext, tuple):
+        create_and_append_error(post, *_module_error('create_image_post', file_ext[0]))
+        file_ext = None
+    if file_ext is None:
+        file_ext = illust_url.url_extension
+    image = _load_image(buffer)
+    if isinstance(image, tuple):
+        create_and_append_error(post, *image)
+        return False
+    params = {
+        'md5': get_buffer_checksum(buffer),
+        'size': len(buffer),
+        'width': image.width,
+        'height': image.height,
+        'pixel_md5': get_pixel_hash(image),
+        'file_ext': file_ext,
+    }
+    temppost = Post(**params)
+    result = create_data(buffer, temppost.file_path)
+    if result is not None:
+        create_and_append_error(post, *_module_error('create_image_post', result))
+        return False
+    update_post_from_parameters(post, params)
+    create_image_post_sample_preview_images(post, image)
+    return True
 
 
 def create_image_post_sample_preview_images(post, image):
@@ -124,6 +153,37 @@ def create_video_post(buffer, illust_url, post_type):
     return retdata
 
 
+def update_video_post(post, buffer, illust_url):
+    file_ext = check_filetype(buffer)
+    if isinstance(file_ext, tuple):
+        create_and_append_error(post, *_module_error('create_video_post', file_ext[0]))
+        file_ext = None
+    if file_ext is None:
+        file_ext = illust_url.url_extension
+    md5 = get_buffer_checksum(buffer)
+    temppost = Post(md5=md5, file_ext=file_ext)
+    result = create_data(buffer, temppost.file_path)
+    if result is not None:
+        create_and_append_error(post, *_module_error('create_video_post', result))
+        return False
+    info = get_video_info(temppost.file_path)
+    if isinstance(info, str):
+        create_and_append_error(post, *_module_error('create_video_post', file_ext[0]))
+        return False
+    params = merge_dicts(info, {
+        'md5': md5,
+        'size': len(buffer),
+        'file_ext': file_ext,
+    })
+    update_post_from_parameters(post, params)
+    if (info['width'] != illust_url.width) or (info['height'] != illust_url.height):
+        msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
+              (illust_url.width, illust_url.height, info['width'], info['height'])
+        create_and_append_error(post, *_module_error('create_video_post', msg))
+    create_video_post_sample_preview_images(post)
+    return True
+
+
 def create_video_post_sample_preview_images(post):
     errors = []
     sample_buffer = None
@@ -156,6 +216,30 @@ def create_video_post_sample_preview_images(post):
         else:
             errors.append(sample_image)
     create_and_extend_errors(post, errors)
+
+
+def redownload_post(post):
+    post_illust_url = None
+    buffer = None
+    for illust_url in post.illust_urls:
+        if illust_url.type == 'unknown':
+            continue
+        results = download_illust_url(illust_url)
+        if results['buffer'] is not None:
+            create_and_extend_errors(post, results['errors'])
+            post_illust_url = illust_url
+            buffer = results['buffer']
+            break
+    if post_illust_url is not None:
+        if post_illust_url.type == 'image':
+            return update_image_post(post, buffer, illust_url)
+        success = update_video_post(post, buffer, illust_url)
+        if success and post.is_video:
+            create_video_sample_preview_files(post)
+        return success
+    else:
+        create_and_append_error(post, *_module_error('redownload_post', "Unable to download from any illust URL"))
+        return False
 
 
 def check_all_posts_for_danbooru_id():
@@ -200,7 +284,6 @@ def check_posts_for_danbooru_id(posts, status=None):
 
 
 def check_posts_for_valid_md5():
-    from ..downloader.network_dl import redownload_post
     page = get_all_posts_page(100)
     while True:
         print(f"check_posts_for_valid_md5: {page.first} - {page.last} / Total({page.count})")
@@ -302,9 +385,7 @@ def recreate_archived_post(archive):
     # Once the file move is successful, keep going even if there are errors.
     retdata = create_sample_preview_files(post)
     if post.is_video:
-        SessionThread(target=create_video_sample_preview_files,
-                      args=(post.file_path, post.video_preview_path,
-                            post.video_sample_path, create_sample)).start()
+        create_video_sample_preview_files(post)
     SessionThread(target=process_image_matches, args=([post.id],)).start()
     retdata['item'] = post.to_json()
     set_archive_temporary(archive, 7)
@@ -382,10 +463,10 @@ def create_sample_preview_files(post, retdata=None):
     return retdata
 
 
-def create_video_sample_preview_files(file_path, vpreview_path, vsample_path, create_sample):
-    convert_mp4_to_webp(file_path, vpreview_path)
-    if create_sample:
-        convert_mp4_to_webm(file_path, vsample_path)
+def create_video_sample_preview_files(post, video_sample=True):
+    convert_mp4_to_webp(post.file_path, post.video_preview_path)
+    if video_sample:
+        convert_mp4_to_webm(post.file_path, post.video_sample_path)
 
 
 def relocate_old_posts_to_alternate(manual):
