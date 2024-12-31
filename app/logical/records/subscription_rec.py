@@ -13,6 +13,7 @@ from config import POPULATE_ELEMENTS_PER_PAGE, SYNC_MISSING_ILLUSTS_PER_PAGE, DO
     DOWNLOAD_POSTS_PAGE_LIMIT, EXPIRE_ELEMENTS_PAGE_LIMIT, ALTERNATE_MEDIA_DIRECTORY
 from utility.time import days_from_now, hours_from_now, days_ago, get_current_time
 from utility.uprint import buffered_print, print_info
+from utility.data import get_buffer_checksum
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -22,20 +23,22 @@ from ..searchable import search_attributes
 from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..sources.base_src import get_post_source
-from ..downloader.network_dl import convert_network_subscription
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
     pending_subscription_downloads_query, update_subscription_element_from_parameters,\
-    expired_subscription_elements
+    expired_subscription_elements, get_subscription_elements_by_md5
 from ..database.post_db import get_post_by_md5, get_posts_by_id
+from ..database.illust_url_db import update_illust_url_from_parameters
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
 from ..database.artist_db import get_site_artist
 from ..database.archive_db import get_archive
-from ..database.error_db import is_error, create_and_append_error
+from ..database.error_db import is_error, create_and_append_error, create_and_extend_errors
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
 from ..database.subscription_db import add_subscription_error, update_subscription_from_parameters,\
     check_processing_subscriptions
 from ..database.base_db import safe_db_execute
-from .post_rec import recreate_archived_post, archive_post_for_deletion, delete_post_and_media
+from .post_rec import create_image_post, create_video_post, recreate_archived_post, archive_post_for_deletion,\
+    delete_post_and_media
+from .illust_rec import download_illust_url
 from .artist_rec import update_artist
 from .image_hash_rec import generate_post_image_hashes
 
@@ -170,7 +173,7 @@ def download_subscription_elements(subscription, job_id=None):
         job_status['range'] = f"({page.first} - {page.last}) / {page.count}"
         update_job_status(job_id, job_status)
         for element in page.items:
-            if convert_network_subscription(element):
+            if create_post_from_subscription_element(element):
                 job_status['downloads'] += 1
         active_elements = [element for element in page.items if element.status.name == 'active']
         _process_image_matches(active_elements)
@@ -192,7 +195,7 @@ def download_missing_elements(manual=False):
         print(f"download_missing_elements: {page.first} - {page.last} / Total({page.count})")
         for element in page.items:
             print(f"Downloading {element.shortlink}")
-            convert_network_subscription(element)
+            create_post_from_subscription_element(element)
             element_count += 1
         _process_image_matches(page.items)
         _process_videos(page.items)
@@ -298,11 +301,52 @@ def populate_subscription_elements(subscription, job_id=None):
     update_job_status(job_id, job_status)
 
 
+def create_post_from_subscription_element(element):
+    illust_url = element.illust_url
+    if illust_url.type == 'unknown':
+        return False
+    if illust_url.post_id is not None:
+        params = {
+            'status': 'duplicate',
+            'md5': illust_url.post.md5,
+        }
+        update_subscription_element_from_parameters(element, params)
+        return False
+    results = download_illust_url(illust_url)
+    create_and_extend_errors(element, results['errors'])
+    if results['buffer'] is None:
+        update_subscription_element_from_parameters(element, {'status': 'error'})
+        return False
+    buffer = results['buffer']
+    md5 = get_buffer_checksum(buffer)
+    post = get_post_by_md5(md5)
+    if post is not None:
+        update_illust_url_from_parameters(illust_url, {'post_id': post.id})
+        _update_duplicate_element(element, md5)
+        return False
+    if element.status_name != 'deleted':
+        element_ids = get_subscription_elements_by_md5(md5)
+        if len(element_ids) > 0:
+            _update_duplicate_element(element, md5)
+            return False
+    if illust_url.type == 'image':
+        results = create_image_post(buffer, illust_url, 'subscription')
+    else:
+        results = create_video_post(buffer, illust_url, 'subscription')
+    create_and_extend_errors(element, results['errors'])
+    if results['post'] is None:
+        update_subscription_element_from_parameters(element, {'status': 'error'})
+        return False
+    else:
+        update_subscription_element_from_parameters(element, {'post_id': results['post'].id, 'md5': md5})
+        return True
+
+
 def redownload_element(element):
     def try_func(scope_vars):
         nonlocal element
         initial_errors = [error.id for error in element.errors]
-        if convert_network_subscription(element) and element.post_id is not None:
+        if create_post_from_subscription_element(element) and element.post_id is not None:
             update_subscription_element_from_parameters(element, {'status': 'active'})
             if element.post.is_video:
                 SessionThread(target=convert_mp4_to_webp,
@@ -462,3 +506,13 @@ def _process_videos(elements):
         post_ids = [post.id for post in video_posts]
         thread = SessionThread(target=_process, args=(post_ids,))
         thread.start()
+
+
+def _update_duplicate_element(element, md5):
+    params = {
+        'status': 'duplicate',
+        'keep': 'unknown',
+        'md5': md5,
+        'expires': None,
+    }
+    update_subscription_element_from_parameters(element, params)
