@@ -7,7 +7,7 @@ from sqlalchemy import or_
 from utility.time import days_ago
 
 # ## LOCAL IMPORTS
-from ...models import Post, SubscriptionElement, ImageHash
+from ...models import Post, SubscriptionElement, ImageHash, IllustUrl, Illust, Artist
 from .base_db import set_column_attributes, add_record, save_record, commit_session
 
 
@@ -132,7 +132,8 @@ def get_all_posts_page(limit):
 
 
 def get_posts_to_query_danbooru_id_page(limit):
-    query = Post.query.filter(Post.danbooru_id.is_(None), NO_SUBELEMENT_CLAUSE)
+    query = Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)
+    query = query.filter(Post.danbooru_id.is_(None), Artist.primary.is_(True), NO_SUBELEMENT_CLAUSE)
     return query.limit_paginate(per_page=limit)
 
 

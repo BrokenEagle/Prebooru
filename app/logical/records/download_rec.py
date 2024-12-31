@@ -63,8 +63,9 @@ def process_download(download_id):
             printer("Starting secondary threads.")
             post_ids = download.complete_post_ids
             SessionThread(target=process_image_matches, args=(post_ids,)).start()
-            SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
-            SessionThread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
+            if download.artist.primary:
+                SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
+                SessionThread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
             video_post_ids = [post.id for post in download.complete_posts if post.is_video]
             if len(video_post_ids):
                 SessionThread(target=process_videos, args=(video_post_ids,)).start()

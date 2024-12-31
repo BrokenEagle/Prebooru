@@ -57,8 +57,9 @@ def process_upload(upload_id):
             printer("Starting secondary threads.")
             post_ids = [upload.post_id]
             SessionThread(target=process_image_matches, args=(post_ids,)).start()
-            SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
-            SessionThread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
+            if upload.artist.primary:
+                SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
+                SessionThread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
             if upload.post.is_video:
                 SessionThread(target=process_videos, args=(post_ids,)).start()
 
