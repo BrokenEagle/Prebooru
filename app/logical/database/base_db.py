@@ -225,6 +225,10 @@ def safe_commit_or_flush(commit):
         raise
 
 
+def session_query(q):
+    return SESSION.query(q)
+
+
 def record_from_json(model, data):
     record = model.loads(data)
     add_record(record)

@@ -9,7 +9,7 @@ from utility.time import get_current_time, add_days, days_ago
 # ## LOCAL IMPORTS
 from ...enum_imports import subscription_status
 from ...models import Subscription, SubscriptionElement, IllustUrl, Illust
-from .base_db import set_column_attributes, delete_record, save_record, commit_session
+from .base_db import set_column_attributes, delete_record, save_record, commit_session, session_query
 
 
 # ## GLOBAL VARIABLES
@@ -72,9 +72,10 @@ def get_busy_subscriptions():
 
 
 def check_processing_subscriptions():
-    return Subscription.query.enum_join(Subscription.status_enum)\
-                             .filter(Subscription.status_filter('name', '__eq__', 'manual'))\
-                             .get_count() > 0
+    q = Subscription.query.enum_join(Subscription.status_enum)\
+                          .filter(Subscription.status_filter('name', '__eq__', 'manual'))\
+                          .exists()
+    return session_query(q).scalar()
 
 
 def get_subscription_by_ids(subscription_ids):
