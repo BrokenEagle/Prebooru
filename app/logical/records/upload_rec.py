@@ -6,6 +6,8 @@ import itertools
 # ## PACKAGE IMPORTS
 from utility.time import minutes_ago, days_ago
 from utility.uprint import buffered_print
+from utility.data import get_buffer_checksum
+from utility.file import put_get_raw
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -18,9 +20,11 @@ from ..records.image_hash_rec import generate_post_image_hashes
 from ..records.similarity_match_rec import generate_similarity_matches
 from ..database.base_db import safe_db_execute
 from ..database.upload_db import update_upload_from_parameters
-from ..database.post_db import get_posts_by_id
+from ..database.post_db import update_post_from_parameters, get_posts_by_id, get_post_by_md5
+from ..database.illust_url_db import update_illust_url_from_parameters
+from ..database.error_db import create_and_extend_errors
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
-from ..downloader.file_dl import convert_file_upload
+from .post_rec import create_image_post, create_video_post
 
 
 # ## FUNCTIONS
@@ -77,10 +81,39 @@ def process_file_upload(upload):
         update_illust_from_source(illust)
     if illust.artist.updated < requery_time:
         update_artist_from_source(illust.artist)
-    if convert_file_upload(upload):
-        update_upload_from_parameters(upload, {'status': 'complete'})
+    create_post_from_upload(upload)
+
+
+def create_post_from_upload(upload):
+    illust_url = upload.illust_url
+    if illust_url.type == 'unknown':
+        raise Exception("Unable to create post for unknown illust URL type")
+    if illust_url.post_id is not None:
+        params = {
+            'status': 'duplicate',
+        }
+        update_upload_from_parameters(upload, params)
+        if illust_url.post.type_name != 'user':
+            update_post_from_parameters(illust_url.post, {'type': 'user'})
+        return
+    buffer = put_get_raw(upload.media_filepath, 'rb')
+    md5 = get_buffer_checksum(buffer)
+    post = get_post_by_md5(md5)
+    if post is not None:
+        update_illust_url_from_parameters(illust_url, {'post_id': post.id})
+        update_upload_from_parameters(upload, {'status': 'duplicate'})
+        if post.type_name != 'user':
+            update_post_from_parameters(post, {'type': 'user'})
+        return
+    if illust_url.type == 'image':
+        results = create_image_post(buffer, illust_url, 'user')
     else:
+        results = create_video_post(buffer, illust_url, 'user')
+    create_and_extend_errors(upload, results['errors'])
+    if results['post'] is None:
         update_upload_from_parameters(upload, {'status': 'error'})
+    else:
+        update_upload_from_parameters(upload, {'status': 'complete'})
 
 
 # #### Secondary task functions
