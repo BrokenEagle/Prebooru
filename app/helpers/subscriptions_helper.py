@@ -38,7 +38,7 @@ ELEMENTS_PER_BATCH = {
 # ###### URL functions
 
 def post_search(subscription):
-    return search_url_for('post.index_html', type='subscription',
+    return search_url_for('post.index_html',
                           illust_urls={'illust': {'artist': {'subscription': {'id': subscription.id}}}})
 
 

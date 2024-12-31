@@ -227,7 +227,8 @@ def url_for_with_params(endpoint, **kwargs):
     url_args = {}
     for arg in kwargs:
         url_args[arg] = kwargs[arg]
-    for arg in (k for k in request.args if k not in kwargs):
+    set_args = list(k for k in request.args if k not in kwargs)
+    for arg in set_args:
         url_args[arg] = request.args[arg]
     if request.endpoint.find('.show_html') >= 0:
         url_args['id'] = int(re.search(r'\d+$', request.path).group(0))
