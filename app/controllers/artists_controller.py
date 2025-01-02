@@ -182,7 +182,8 @@ def convert_update_params(dataparams):
     updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
-    updateparams['profiles'] = dataparams['profile']
+    if 'profile' in dataparams:
+        updateparams['profiles'] = dataparams['profile']
     return updateparams
 
 
@@ -370,7 +371,7 @@ def update_html(id):
     return redirect(url_for('artist.show_html', id=artist.id))
 
 
-@bp.route('/artists/<int:id>', methods=['PUT'])
+@bp.route('/artists/<int:id>.json', methods=['PUT'])
 def update_json(id):
     artist = get_or_error(Artist, id)
     if type(artist) is dict:
