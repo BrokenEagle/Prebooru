@@ -201,7 +201,7 @@ def artist_links(artist):
 # Tag
 
 def tag_search_url(tag):
-    return TAG_SEARCH_HREFURL % tag.name
+    return TAG_SEARCH_HREFURL % urllib.parse.quote_plus(tag.name)
 
 
 #   URL
