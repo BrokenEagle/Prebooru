@@ -65,7 +65,7 @@ def process_download(download_id):
         if download.status.name == 'complete' and len(download.complete_posts) > 0:
             printer("Starting secondary threads.")
             post_ids = download.complete_post_ids
-            SessionThread(target=process_image_matches, args=(post_ids,)).start()
+            SessionThread(target=process_image_matches, args=(post_ids, download.artist.primary)).start()
             if download.artist.primary:
                 SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
                 SessionThread(target=check_for_new_artist_boorus, args=(post_ids,)).start()
@@ -208,12 +208,13 @@ def create_post_from_download_element(element):
 
 # #### Secondary task functions
 
-def process_image_matches(post_ids):
+def process_image_matches(post_ids, primary):
     printer = buffered_print("Process Image Matches")
     posts = get_posts_by_id(post_ids)
     for post in posts:
         generate_post_image_hashes(post, printer=printer)
-        generate_similarity_matches(post, printer=printer)
+        if primary:
+            generate_similarity_matches(post, printer=printer)
     SESSION.commit()
     printer.print()
 
