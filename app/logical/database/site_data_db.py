@@ -42,7 +42,7 @@ def update_site_data_from_parameters(site_data, updateparams, commit=True):
         delete_record(site_data)
         commit_session()
         site_data = SITE_DATA_MODEL_DICT[updateparams['site']]()
-    return set_site_data_from_parameters(site_data, updateparams, 'created', commit)
+    return set_site_data_from_parameters(site_data, updateparams, 'updated', commit)
 
 
 # #### Set
