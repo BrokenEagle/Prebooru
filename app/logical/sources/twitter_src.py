@@ -59,7 +59,7 @@ HAS_TAG_SEARCH = True
 
 # ###### Hostname regexes
 
-TWITTER_HOST_RG = re.compile(r'^https?://twitter\.com', re.IGNORECASE)
+TWITTER_HOST_RG = re.compile(r'^https?://(?:twitter|x)\.com', re.IGNORECASE)
 TWIMG_HOST_RG = re.compile(r'^https?://pbs\.twimg\.com', re.IGNORECASE)
 TWVIDEO_HOST_RG = re.compile(r'^https?://video(?:-cf)?\.twimg\.com', re.IGNORECASE)
 
