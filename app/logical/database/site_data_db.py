@@ -29,9 +29,6 @@ SITE_DATA_MODEL_DICT = {
 # #### Create
 
 def create_site_data_from_parameters(createparams, commit=True):
-    site_key = next((key for key in createparams if key in SITE_DATA_MODEL_DICT), None)
-    if site_key is None:
-        return False
     site_data = SITE_DATA_MODEL_DICT[createparams['site']]()
     return set_site_data_from_parameters(site_data, createparams, 'created', commit)
 
