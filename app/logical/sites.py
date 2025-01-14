@@ -3,6 +3,8 @@
 # ## PYTHON IMPORTS
 import urllib
 
+# ## PACKAGE IMPORTS
+from utility.data import merge_dicts
 
 # ## GLOBAL VARIABLES
 
@@ -16,7 +18,11 @@ SITES = {
     'twvideo_cf': 'video-cf.twimg.com',
 }
 
-DOMAINS = {v: k for k, v in SITES.items()}
+DOMAIN_ALIASES = {
+    'x.com': 'twitter',
+}
+
+DOMAINS = merge_dicts({v: k for k, v in SITES.items()}, DOMAIN_ALIASES)
 
 
 # ## FUNCTIONS
