@@ -2,7 +2,7 @@
 
 # ## PYTHON IMPORTS
 import re
-import urllib
+import urllib.parse
 import traceback
 from functools import reduce
 from types import SimpleNamespace

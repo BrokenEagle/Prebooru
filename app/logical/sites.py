@@ -1,7 +1,7 @@
 # APP/LOGICAL/SITES.PY
 
 # ## PYTHON IMPORTS
-import urllib
+import urllib.parse
 
 # ## PACKAGE IMPORTS
 from utility.data import merge_dicts

@@ -7,7 +7,7 @@ import sys
 import time
 import json
 import html
-import urllib
+import urllib.parse
 import datetime
 
 # ## EXTERNAL IMPORTS

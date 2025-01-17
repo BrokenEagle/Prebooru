@@ -3,7 +3,7 @@
 # ## PYTHON IMPORTS
 import re
 import time
-import urllib
+import urllib.parse
 
 # ## EXTERNAL IMPORTS
 import httpx
