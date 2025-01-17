@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import threading
+import urllib.parse
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
@@ -116,6 +117,19 @@ def check_create_params(dataparams):
     return []
 
 
+def validate_request_url(request_url):
+    parse = urllib.parse.urlparse(request_url)
+    if not all([parse.scheme, parse.netloc]):
+        return "Request url is not a valid URL"
+    site = site_descriptor.get_site_from_url(request_url)
+    if site.name == 'custom':
+        return "%s not a valid domain for request URLs" % parse.netloc
+    source = site.source
+    if not source.is_request_url(request_url):
+        return "Request URL not valid for %s" % site.name
+    return source
+
+
 # #### Route auxiliary functions
 
 def index():
@@ -127,7 +141,7 @@ def index():
     return q
 
 
-def create(get_request=False):
+def create():
     global RECHECK_DOWNLOADS
     force_download = request.values.get('force', type=eval_bool_string)
     image_urls_only = request.values.get('image_urls_only', type=eval_bool_string)
@@ -144,13 +158,10 @@ def create(get_request=False):
         if check_download is not None:
             retdata['item'] = check_download.to_json()
             return set_error(retdata, "Download already exists.")
-    if createparams['request_url']:
-        site = site_descriptor.get_site_from_url(createparams['request_url'])
-        if site.name == 'custom':
-            msg = "Download source currently not handled for request url: %s" % createparams['request_url']
-            return set_error(retdata, msg)
-        source = site.source
-        createparams['image_urls'] = [url for url in createparams['image_urls'] if source.is_image_url(url)]
+    source = validate_request_url(createparams['request_url'])
+    if isinstance(source, str):
+        return set_error(retdata, source)
+    createparams['image_urls'] = [url for url in createparams['image_urls'] if source.is_image_url(url)]
     download = create_download_from_parameters(createparams)
     retdata['item'] = download.to_json()
     SCHEDULER.add_job("process_download-%d" % download.id, process_download, args=(download.id,))
@@ -176,11 +187,9 @@ def download_select():
     errors = check_create_params(selectparams)
     if len(errors):
         return set_error(retdata, '\n'.join(errors))
-    site = site_descriptor.get_site_from_url(selectparams['request_url'])
-    if site.name == 'custom':
-        msg = "Download source currently not handled for request url: %s" % selectparams['request_url']
-        return set_error(retdata, msg)
-    source = site.source
+    source = validate_request_url(selectparams['request_url'])
+    if isinstance(source, str):
+        return set_error(retdata, source)
     site_illust_id = source.get_illust_id(selectparams['request_url'])
     illust_data = source.get_illust_data(site_illust_id)
     media_batches = []
@@ -270,7 +279,7 @@ def download_all_html():
     show_form = request.args.get('show_form', type=eval_bool_string)
     if show_form:
         return render_template("downloads/all.html", form=get_download_form(), download=Download())
-    results = create(True)
+    results = create()
     if results['error']:
         flash(results['message'], 'error')
         form = get_download_form(**results['data'])
