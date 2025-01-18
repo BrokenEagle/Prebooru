@@ -305,11 +305,7 @@ def create_post_from_subscription_element(element):
     if illust_url.type == 'unknown':
         return False
     if illust_url.post_id is not None:
-        params = {
-            'status': 'duplicate',
-            'md5': illust_url.post.md5,
-        }
-        update_subscription_element_from_parameters(element, params)
+        _update_duplicate_element(element, illust_url.post.md5)
         return False
     results = download_illust_url(illust_url)
     create_and_extend_errors(element, results['errors'])
