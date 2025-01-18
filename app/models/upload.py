@@ -19,9 +19,9 @@ class Upload(JsonModel):
     status, status_id, status_name, status_enum, status_filter, status_col =\
         get_relation_definitions(upload_status, relname='status', relcol='id', colname='status_id',
                                  tblname='upload', nullable=False)
-    media_filepath = DB.Column(DB.TEXT, nullable=True)
+    media_filepath = DB.Column(DB.TEXT, nullable=False)
     sample_filepath = DB.Column(DB.TEXT, nullable=True)
-    illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=True)
+    illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # ## Relationships
