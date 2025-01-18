@@ -12,8 +12,8 @@ from ...models import Artist
 from ..utility import set_error
 from ..logger import handle_error_message
 from ..database.base_db import delete_record, commit_session
-from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters, get_site_artist,\
-    get_artists_without_boorus_page
+from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters_standard,\
+    get_site_artist, get_artists_without_boorus_page
 from ..database.booru_db import get_boorus, create_booru_from_parameters, booru_append_artist
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
@@ -92,16 +92,7 @@ def create_artist_from_source(site_artist_id, source):
 def update_artist_from_source(artist):
     source = artist.site.source
     params = source.get_artist_data(artist.site_artist_id)
-    update_artist(artist, params)
-
-
-def update_artist(artist, params):
-    if params['active']:
-        # These are only removable through the HTML/JSON UPDATE routes
-        params['webpages'] += ['-' + w.url for w in artist.webpages if w.url not in params['webpages']]
-        params['names'] += [name for name in artist.names if name not in params['names']]
-        params['site_accounts'] += [name for name in artist.site_accounts if name not in params['site_accounts']]
-    update_artist_from_parameters(artist, params)
+    update_artist_from_parameters_standard(artist, params)
 
 
 def archive_artist_for_deletion(artist, expires=30):

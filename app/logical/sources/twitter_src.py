@@ -26,11 +26,10 @@ from ...enum_imports import site_descriptor, api_data_type
 from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
-from ..database.artist_db import update_artist_from_parameters
+from ..database.artist_db import update_artist_from_parameters_standard
 from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
-from ..records.artist_rec import update_artist
 
 
 # ## GLOBAL VARIABLES
@@ -1401,7 +1400,7 @@ def snowflake_to_timestring(snowflake):
 def populate_artist_recheck_active(artist):
     twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
     if is_error(twuser):
-        update_artist_from_parameters(artist, {'active': False}, update=False)
+        update_artist_from_parameters_standard(artist, {'active': False})
         return twuser
     # The timeline was empty of any tweets
     return []
@@ -1421,7 +1420,7 @@ def populate_artist_illusts_from_media_timeline(artist, job_id, last_id):
 def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, until_date, filter_links):
     # Get the lastest screenname for the search timeline
     params = get_artist_data(artist.site_artist_id)
-    update_artist(artist, params)
+    update_artist_from_parameters_standard(artist, params)
     job_status = get_job_status_data(job_id) or {}
     if job_status.get('timeline') != 'search':
         job_status.pop('ids', None)

@@ -29,7 +29,7 @@ from ..database.subscription_element_db import create_subscription_element_from_
 from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_url_db import update_illust_url_from_parameters
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
-from ..database.artist_db import get_site_artist
+from ..database.artist_db import get_site_artist, update_artist_from_parameters_standard
 from ..database.archive_db import get_archive
 from ..database.error_db import is_error, create_and_append_error, create_and_extend_errors
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
@@ -39,7 +39,6 @@ from ..database.base_db import safe_db_execute
 from .post_rec import create_image_post, create_video_post, recreate_archived_post, archive_post_for_deletion,\
     delete_post_and_media
 from .illust_rec import download_illust_url
-from .artist_rec import update_artist
 from .image_hash_rec import generate_post_image_hashes
 
 
@@ -124,7 +123,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
         return
     if artist.updated < days_ago(1):
         params = source.get_artist_data(artist.site_artist_id)
-        update_artist(artist, params)
+        update_artist_from_parameters_standard(artist, params)
     site_illust_ids = sorted(x for x in set(site_illust_ids))
     job_status = get_job_status_data(job_id) or {'illusts': 0}
     job_status['stage'] = 'illusts'
