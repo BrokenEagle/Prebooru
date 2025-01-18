@@ -28,6 +28,7 @@ from ..database.post_db import create_post_from_parameters,\
 from ..database.illust_url_db import update_illust_url_from_parameters
 from ..database.error_db import create_and_append_error, create_and_extend_errors
 from ..database.archive_db import set_archive_temporary
+from ..sources.danbooru_src import get_danbooru_posts_by_md5s
 from .base_rec import delete_data
 from .illust_rec import download_illust_url, download_illust_sample
 from .image_hash_rec import generate_post_image_hashes
@@ -265,7 +266,6 @@ def check_artist_posts_for_danbooru_id(artist_id):
 
 def check_posts_for_danbooru_id(posts, status=None):
     status = status or {}
-    from ..sources.danbooru_src import get_danbooru_posts_by_md5s
     post_md5s = [post.md5 for post in posts]
     for i in range(0, len(post_md5s), 1000):
         md5_sublist = post_md5s[i: i + 1000]
