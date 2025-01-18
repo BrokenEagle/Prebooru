@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
 from utility.data import get_buffer_checksum, merge_dicts, inc_dict_entry
 from utility.file import create_directory, put_get_raw, copy_file, delete_file
-from utility.uprint import buffered_print
+from utility.uprint import buffered_print, print_info
 
 # ### LOCAL IMPORTS
 from ... import SESSION
@@ -248,7 +248,7 @@ def check_all_posts_for_danbooru_id():
     status = {'total': 0}
     page = get_posts_to_query_danbooru_id_page(5000)
     while True:
-        print(f"check_all_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})")
+        print_info(f"\ncheck_all_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})\n")
         if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, status) or not page.has_next:
             return status
         page = page.next()
@@ -258,7 +258,7 @@ def check_artist_posts_for_danbooru_id(artist_id):
     artist = Artist.find(artist_id)
     page = get_artist_posts_without_danbooru_ids(artist)
     while True:
-        print(f"check_artist_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})")
+        print_info(f"\ncheck_artist_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})\n")
         if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, {}) or not page.has_next:
             break
         page = page.next()
@@ -286,7 +286,7 @@ def check_posts_for_danbooru_id(posts, status=None):
 def check_posts_for_valid_md5():
     page = get_all_posts_page(100)
     while True:
-        print(f"check_posts_for_valid_md5: {page.first} - {page.last} / Total({page.count})")
+        print_info(f"\ncheck_posts_for_valid_md5: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
             buffer = put_get_raw(post.file_path, 'rb')
             checksum = get_buffer_checksum(buffer)
@@ -405,7 +405,7 @@ def generate_missing_image_hashes(manual):
     query = query.options(selectinload(Post.subscription_element))
     page = query.limit_paginate(per_page=20)
     while page.count > 0:
-        print(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
+        print_info(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
             generate_post_image_hashes(post)
             if post.subscription_element is None:
@@ -423,7 +423,7 @@ def calculate_similarity_matches(manual):
     query = query.options(selectinload(Post.image_hashes))
     page = query.limit_paginate(per_page=50)
     while page.count > 0:
-        print(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
+        print_info(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
             generate_similarity_matches(post)
         SESSION.commit()
@@ -477,7 +477,7 @@ def relocate_old_posts_to_alternate(manual):
     query = alternate_posts_query(ALTERNATE_MOVE_DAYS)
     page = query.limit_paginate(per_page=50)
     while True:
-        print(f"relocate_old_posts_to_alternate: {page.first} - {page.last} / Total({page.count})")
+        print_info(f"\nrelocate_old_posts_to_alternate: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
             print(f"Moving {post.shortlink}")
             move_post_media_to_alternate(post)

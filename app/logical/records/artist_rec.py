@@ -5,6 +5,7 @@ import itertools
 
 # ## PACKAGE IMPORTS
 from utility.data import inc_dict_entry
+from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -28,7 +29,7 @@ def check_all_artists_for_boorus():
     page = get_artists_without_boorus_page(100)
     booru_dict = {}
     while True:
-        print(f"check_all_artists_for_boorus: {page.first} - {page.last} / Total({page.count})")
+        print_info(f"\ncheck_all_artists_for_boorus: {page.first} - {page.last} / Total({page.count})\n")
         if len(page.items) == 0\
            or not check_artists_for_boorus(page.items, booru_dict, status)\
            or not page.has_next:

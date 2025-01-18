@@ -1,5 +1,8 @@
 # APP/LOGICAL/RECORDS/BOORU_REC.PY
 
+# ## PACKAGE IMPORTS
+from utility.uprint import print_info
+
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Booru
@@ -22,7 +25,7 @@ def check_all_boorus():
     status = {'total': 0}
     page = get_all_boorus_page(100)
     while True:
-        print(f"check_all_boorus: {page.first} - {page.last} / Total({page.count})")
+        print_info(f"\ncheck_all_boorus: {page.first} - {page.last} / Total({page.count})\n")
         if len(page.items) == 0 or not check_boorus(page.items, status) or not page.has_next:
             return status
         page = page.next()

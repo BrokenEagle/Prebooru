@@ -168,7 +168,7 @@ def download_subscription_elements(subscription, job_id=None):
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
     while True:
-        print(f"download_subscription_elements: {page.first} - {page.last} / Total({page.count})")
+        print_info(f"\ndownload_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         job_status['range'] = f"({page.first} - {page.last}) / {page.count}"
         update_job_status(job_id, job_status)
         for element in page.items:
@@ -191,7 +191,7 @@ def download_missing_elements(manual=False):
     page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
     element_count = 0
     while True:
-        print(f"download_missing_elements: {page.first} - {page.last} / Total({page.count})")
+        print_info(f"\ndownload_missing_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Downloading {element.shortlink}")
             create_post_from_subscription_element(element)
@@ -210,7 +210,7 @@ def unlink_expired_subscription_elements(manual):
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=UNLINK_ELEMENTS_PER_PAGE)
     while True:
-        print(f"\nunlink_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
+        print_info(f"\nunlink_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             print(f"Unlinking {element.shortlink}")
             params = {
@@ -233,7 +233,7 @@ def delete_expired_subscription_elements(manual):
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=DELETE_ELEMENTS_PER_PAGE)
     while True:
-        print(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
+        print_info(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             if element.post is not None:
                 if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
@@ -255,7 +255,7 @@ def archive_expired_subscription_elements(manual):
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.limit_paginate(per_page=ARCHIVE_ELEMENTS_PER_PAGE)
     while True:
-        print(f"\nexpire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})\n")
+        print_info(f"\nexpire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
             if element.post is not None:
                 if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
