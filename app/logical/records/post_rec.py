@@ -411,7 +411,7 @@ def generate_missing_image_hashes(manual):
             if post.subscription_element is None:
                 generate_similarity_matches(post)
         SESSION.commit()
-        if not page.has_next or page.page > max_pages:
+        if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
     return {'total': page.count}
@@ -427,7 +427,7 @@ def calculate_similarity_matches(manual):
         for post in page.items:
             generate_similarity_matches(post)
         SESSION.commit()
-        if not page.has_next or page.page > max_pages:
+        if not page.has_next or page.page >= max_pages:
             break
         page = page.next()
     return {'total': page.count}
@@ -482,7 +482,7 @@ def relocate_old_posts_to_alternate(manual):
             print(f"Moving {post.shortlink}")
             move_post_media_to_alternate(post)
             moved += 1
-        if not page.has_next or page.page > max_pages:
+        if not page.has_next or page.page >= max_pages:
             return moved
         page = page.next()
 
