@@ -23,7 +23,7 @@ from .error import Error
 from .illust_url import IllustUrl
 from .subscription_element import SubscriptionElement
 from .notation import Notation
-from .tag import UserTag, user_tag_creator
+from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
@@ -71,7 +71,7 @@ class Post(JsonModel):
                                            backref=DB.backref('post', lazy=True, uselist=False))
     notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
                                 backref=DB.backref('post', uselist=False, lazy=True))
-    _tags = DB.relationship(UserTag, secondary=PostTags, lazy=True, backref=DB.backref('posts', lazy=True))
+    tags = DB.relationship(UserTag, secondary=PostTags, lazy=True)
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
     _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False))
     image_hashes = DB.relationship(ImageHash, lazy=True, cascade='all,delete',
@@ -84,7 +84,7 @@ class Post(JsonModel):
                                                  foreign_keys=[SimilarityMatch.reverse_id])
 
     # ## Association proxies
-    tags = association_proxy('_tags', 'name', creator=user_tag_creator)
+    tag_names = association_proxy('tags', 'name')
     pools = association_proxy('_pools', 'pool')
 
     # ## Instance properties
@@ -264,7 +264,7 @@ class Post(JsonModel):
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['preview_url', 'sample_url', 'file_url', 'illust_urls', 'errors']
+        return super().json_attributes + ['preview_url', 'sample_url', 'file_url', 'tags', 'illust_urls', 'errors']
 
     # ## Private
 

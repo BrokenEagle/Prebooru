@@ -40,7 +40,7 @@ INIT = False
 
 SHOW_HTML_OPTIONS = (
     selectinload(Download.elements).selectinload(DownloadElement.illust_url).selectinload(IllustUrl.illust).options(
-        selectinload(Illust._tags),
+        selectinload(Illust.tags),
         selectinload(Illust.artist),
     ),
     selectinload(Download.image_urls),

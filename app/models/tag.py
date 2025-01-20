@@ -94,14 +94,14 @@ class SiteTag(Tag):
     @property
     def _illust_query(self):
         from .illust import Illust
-        return Illust.query.join(Tag, Illust._tags).filter(Tag.id == self.id)
+        return Illust.query.join(Tag, Illust.tags).filter(Tag.id == self.id)
 
     @property
     def _post_query(self):
         from .post import Post
         from .illust_url import IllustUrl
         from .illust import Illust
-        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust._tags)\
+        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust.tags)\
                          .filter(Tag.id == self.id)
 
     __mapper_args__ = {
@@ -134,13 +134,13 @@ class UserTag(Tag):
         from .illust import Illust
         from .illust_url import IllustUrl
         from .post import Post
-        return Illust.query.join(IllustUrl).join(Post, IllustUrl.post).join(UserTag, Post._tags)\
+        return Illust.query.join(IllustUrl).join(Post, IllustUrl.post).join(UserTag, Post.tags)\
                            .filter(UserTag.id == self.id)
 
     @property
     def _post_query(self):
         from .post import Post
-        return Post.query.join(UserTag, Post._tags).filter(UserTag.id == self.id)
+        return Post.query.join(UserTag, Post.tags).filter(UserTag.id == self.id)
 
     __mapper_args__ = {
         'polymorphic_identity': tag_type.user_tag.id,

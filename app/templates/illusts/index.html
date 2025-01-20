@@ -46,7 +46,7 @@
                         <span><strong>Site ID:</strong> {{ illust.site_illust_id }}</span>
                     </td>
                     <td>
-                        <div class="simple-tags-container">{{ simple_tag_list(illust._tags, 'illust') }}</div>
+                        <div class="simple-tags-container">{{ simple_tag_list(illust.tags, 'illust') }}</div>
                     </td>
                     <td>
                         {% for illust_url in illust.urls %}

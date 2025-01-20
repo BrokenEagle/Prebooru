@@ -31,12 +31,12 @@ def append_tag_to_item(tag, append_key, dataparams):
         items = [item]
         single = True
     for item in items:
-        if tag in item._tags:
+        if tag in item.tags:
             if single:
                 return set_error(retdata, "Tag '%s' already added to %s." % (tag.name, item.shortlink))
             else:
                 continue
-        item._tags.append(tag)
+        item.tags.append(tag)
     flush_session()
     if single:
         retdata['append'] = item.to_json()
@@ -52,9 +52,9 @@ def remove_tag_from_item(tag, remove_key, dataparams):
     if item is None:
         msg = "Unable to remove tag; %s #%d does not exist." % (table_name, dataparams[remove_key])
         return set_error(retdata, msg)
-    elif tag not in item._tags:
+    elif tag not in item.tags:
         return set_error(retdata, "Tag '%s' does not exist on %s." % (tag.name, item.shortlink))
-    item._tags.remove(tag)
+    item.tags.remove(tag)
     commit_session()
     retdata['remove'] = item.to_json()
     return retdata

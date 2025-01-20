@@ -74,8 +74,7 @@ class Illust(JsonModel):
     titles = DB.relationship(Description, secondary=IllustTitles, lazy=True, uselist=True)
     commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True, uselist=True)
     additional_commentaries = DB.relationship(Description, secondary=AdditionalCommentaries, lazy=True, uselist=True)
-    _tags = DB.relationship(SiteTag, secondary=IllustTags, lazy=True, uselist=True,
-                            backref=DB.backref('illusts', lazy=True, uselist=True))
+    tags = DB.relationship(SiteTag, secondary=IllustTags, lazy=True, uselist=True)
     urls = DB.relationship(IllustUrl, lazy=True, uselist=True, cascade="all, delete",
                            backref=DB.backref('illust', lazy=True, uselist=False))
     notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
@@ -86,15 +85,9 @@ class Illust(JsonModel):
     # (OtO) artist [Artist]
 
     # ## Association proxies
-<<<<<<< HEAD
-    tags = association_proxy('_tags', 'name', creator=site_tag_creator)
-    title_body = enum_association_proxy('title_id', 'title', 'title', description_creator)
-    commentary_body = enum_association_proxy('commentary_id', 'commentary', 'body', description_creator)
-=======
-    tag_names = association_proxy('tags', 'name')
+    tag_names = association_proxy('tags', 'name', creator=site_tag_creator)
     title_body = relation_association_proxy('title_id', 'title', 'body', description_creator)
     commentary_body = relation_association_proxy('commentary_id', 'commentary', 'body', description_creator)
->>>>>>> 23bbffb7... fixup-illust-rework
     pools = association_proxy('_pools', 'pool')
     boorus = association_proxy('artist', 'boorus')
     title_bodies = association_proxy('titles', 'body', creator=description_creator)
@@ -235,10 +228,9 @@ class Illust(JsonModel):
 
     archive_excludes = {'site', 'site_id', 'title_id', 'commentary_id'}
     archive_includes = {('site', 'site_name'), ('title', 'title_body'), ('commentary', 'commentary_body')}
-    archive_scalars = [('titles', 'title_bodies'),
+    archive_scalars = [('tags', 'tag_names'), ('titles', 'title_bodies'),
                        ('commentaries', 'commentary_bodies'),
-                       ('additional_commentaries', 'additional_commentary_bodies'),
-                       'tags']
+                       ('additional_commentaries', 'additional_commentary_bodies')]
     archive_attachments = ['urls', 'notations']
     archive_links = [('artist', 'site_artist_id'),
                      ('posts', 'active_urls', 'link_key', 'attach_post_by_link_key')]
@@ -249,7 +241,7 @@ class Illust(JsonModel):
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return cls.repr_attributes + ['site_illust_id_str', 'title_body', 'commentary_body', 'tags', 'urls']
+        return cls.repr_attributes + ['site_illust_id_str', 'title_body', 'commentary_body', 'tag_names', 'urls']
 
     # ## Private
 

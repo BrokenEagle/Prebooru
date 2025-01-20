@@ -672,9 +672,9 @@ def illust_commentaries_dtext(illust):
     if illust.commentary_id is None:
         return []
     commentary = illust.commentary_body
-    for tag in illust.tags:
-        hashtag = '#' + tag
-        hashtag_link = r'"%s":[https://twitter.com/hashtag/%s]' % (hashtag, tag)
+    for name in illust.tag_names:
+        hashtag = '#' + name
+        hashtag_link = r'"%s":[https://twitter.com/hashtag/%s]' % (hashtag, name)
         commentary = re.sub(r'%s(?=$|\s)' % hashtag, hashtag_link, commentary)
     return [commentary]
 

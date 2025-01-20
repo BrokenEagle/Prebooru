@@ -422,7 +422,7 @@ def edit_html(id):
     """HTML access point to update function."""
     illust = get_or_abort(Illust, id)
     editparams = illust.basic_json(True)
-    editparams['tag_string'] = '\r\n'.join(illust.tags)
+    editparams['tag_string'] = '\r\n'.join(illust.tag_names)
     editparams['title'] = illust.title_body
     editparams['commentary'] = illust.commentary_body
     form = get_illust_form(**editparams)

@@ -122,8 +122,6 @@ def _create_tags(params):
 
 
 def _set_relations(illust, params, update):
-    if 'tags' in params:
-        params['_tags'] = params['tags']
     ver_result = set_version_relations(illust, VERSION_RELATIONSHIPS, params, update=update)
     rel_result = set_relationship_collections(illust, SCALAR_RELATIONSHIPS, params, update=update)
     return ver_result or rel_result

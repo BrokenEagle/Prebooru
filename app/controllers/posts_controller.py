@@ -34,7 +34,7 @@ DEFAULT_DELETE_EXPIRES = 30  # Days
 
 SHOW_HTML_OPTIONS = (
     selectinload(Post.illust_urls).selectinload(IllustUrl.illust).options(
-        selectinload(Illust._tags),
+        selectinload(Illust.tags),
         selectinload(Illust.title),
         selectinload(Illust.commentary),
         selectinload(Illust.artist).selectinload(Artist.boorus),
