@@ -76,6 +76,7 @@ HAS_EXTERNAL_IMAGE_SERVER = False
 # ## TASK VARIABLES
 """Format for task variables is PERIOD {days, hours, minutes}, DURATION, JITTER (seconds), LEEWAY (seconds)."""
 EXPUNGE_CACHE_RECORDS = ('hours', 8, 600, 60)
+EXPUNGE_UNUSED_RECORDS = ('weeks', 1, 600, 60)
 EXPUNGE_ARCHIVE_RECORDS = ('hours', 12, 1200, 180)
 GENERATE_MISSING_IMAGE_HASHES = ('days', 2, 3600, 180)
 CALCULATE_SIMILARITY_MATCHES = ('days', 1, 3600, 360)
