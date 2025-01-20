@@ -183,6 +183,9 @@ def start_server(args):
     if SERVER_PID is not None:
         print("Server process already running: %d" % SERVER_PID)
         exit(-1)
+    if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        import app
+        app.MAIN_PROCESS = True
     initialize_server()
     if args.extension:
         try:

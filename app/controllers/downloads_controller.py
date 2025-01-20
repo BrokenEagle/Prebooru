@@ -16,7 +16,7 @@ from utility.data import eval_bool_string
 from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
-from .. import SCHEDULER, SESSION
+from .. import SCHEDULER, SESSION, MAIN_PROCESS
 from ..models import Download, DownloadElement, IllustUrl, Illust
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
@@ -34,7 +34,6 @@ from .base_controller import show_json_response, index_json_response, search_fil
 bp = Blueprint("download", __name__)
 
 RECHECK_DOWNLOADS = None
-INIT = False
 
 # #### Load options
 
@@ -351,6 +350,5 @@ def _initialize():
 
 # ## INITIALIZE
 
-if not INIT:
+if MAIN_PROCESS:
     _initialize()
-    INIT = True

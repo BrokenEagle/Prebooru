@@ -1,5 +1,8 @@
 # APP/CONTROLLERS/SUBSCRIPTIONS_CONTROLLER.PY
 
+# ## PYTHON IMPORTS
+import threading
+
 # ## EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
 from flask import Blueprint, request, render_template, abort, url_for, flash, redirect
@@ -11,15 +14,17 @@ from utility.data import eval_bool_string
 from utility.time import hours_from_now
 
 # ## LOCAL IMPORTS
-from .. import SCHEDULER, SESSION
+from .. import SCHEDULER, MAIN_PROCESS
 from ..models import Subscription, Artist
 from ..logical.utility import set_error
 from ..logical.records.subscription_rec import process_subscription_manual
 from ..logical.database.subscription_db import create_subscription_from_parameters,\
-    update_subscription_from_parameters, delay_subscription_elements,\
+    update_subscription_from_parameters, delay_subscription_elements, get_busy_subscriptions,\
     delete_subscription, get_average_interval_for_subscriptions
 from ..logical.database.server_info_db import get_subscriptions_ready
 from ..logical.database.jobs_db import get_job_status_data, create_or_update_job_status
+from ..logical.database.server_info_db import update_subscriptions_ready
+from ..logical.database.base_db import commit_session
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
     check_param_requirements, nullify_blanks, set_default, hide_input, parse_type, parse_bool_parameter,\
@@ -307,7 +312,7 @@ def process_html(id):
         'params': data_params,
     })
     create_or_update_job_status(job_id, job_status)
-    SESSION.commit()
+    commit_session()
     SCHEDULER.add_job(job_id, process_subscription_manual, args=(subscription.id, job_id, data_params))
     flash("Subscription started.")
     return redirect(url_for('subscription.show_html', id=subscription.id, job=job_id))
@@ -366,3 +371,26 @@ def delay_html(id):
         delay_subscription_elements(subscription, delay_days)
         flash("Updated elements.")
     return redirect(request.referrer)
+
+
+# #### Private
+
+def _reset_subscription_status():
+    subscriptions = get_busy_subscriptions()
+    for subscription in subscriptions:
+        update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False, commit=False)
+    commit_session()
+    print("\nSubscriptions check - %d reset\n" % len(subscriptions))
+    update_subscriptions_ready()
+
+
+def _initialize():
+    timer = threading.Timer(30, _reset_subscription_status)
+    timer.setDaemon(True)
+    timer.start()
+
+
+# ## INITIALIZE
+
+if MAIN_PROCESS:
+    _initialize()

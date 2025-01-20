@@ -28,7 +28,7 @@ from ..records.archive_rec import delete_expired_archive
 from ..database.base_db import safe_db_execute, commit_session
 from ..database.pool_db import get_all_recheck_pools
 from ..database.subscription_db import get_available_subscriptions_query, update_subscription_from_parameters,\
-    get_busy_subscriptions, get_subscription_by_ids
+    get_subscription_by_ids
 from ..database.subscription_element_db import total_missing_downloads, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
@@ -38,8 +38,7 @@ from ..database.label_db import prune_unused_labels
 from ..database.description_db import prune_unused_descriptions
 from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id, get_job_status_data,\
     create_or_update_job_status
-from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready,\
-    update_subscriptions_ready
+from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready
 from .reschedule import reschedule_from_child, schedule_from_child
 from . import JOB_CONFIG
 
@@ -328,26 +327,6 @@ def vacuum_analyze_database_task():
             connection.execute("ANALYZE")
 
     _execute_scheduled_task(_task, 'vacuum_analyze_database', busy_check=True)
-
-
-# #### Startup tasks
-
-@SCHEDULER.task('date', id="reset_subscription_status", next_run_time=seconds_from_now_local(60))
-def reset_subscription_status_task():
-    def _task(printer, *args):
-        subscriptions = get_busy_subscriptions()
-        if len(subscriptions):
-            for subscription in subscriptions:
-                update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
-            printer("Subscriptions reset:", len(subscriptions))
-            status = {'total': len(subscriptions)}
-        else:
-            printer("No subscriptions to reset.")
-            status = None
-        update_subscriptions_ready()
-        return status
-
-    _execute_scheduled_task(_task, 'reset_subscription_status', has_manual=False, has_enabled=False, has_lock=False)
 
 
 # #### Private

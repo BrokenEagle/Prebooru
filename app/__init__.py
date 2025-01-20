@@ -37,6 +37,8 @@ from .logical.validate import validate_python
 
 # ## GLOBAL VARIABLES
 
+MAIN_PROCESS = False
+
 # For imports outside the relative path
 PREBOORU_DB_URL = os.environ.get('PREBOORU_DB', 'sqlite:///%s' % DB_PATH)
 SCHEDULER_DB_URL = os.environ.get('SCHEDULER_JOBSTORES', r'sqlite:///%s' % JOBS_PATH)
