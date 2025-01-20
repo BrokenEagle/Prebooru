@@ -107,18 +107,13 @@ def get_site_illusts(site, site_illust_ids, load_urls=False):
 # #### Private functions
 
 def _create_tags(params):
-    if 'tags' not in params:
+    if 'tags' not in params or len(params['tags']) == 0:
         return
     tags = get_tags_by_names(params['tags'], 'site_tag')
     tags_found = [tag.name for tag in tags]
-    dirty = False
     for name in params['tags']:
         if name not in tags_found:
             create_tag_from_parameters({'name': name, 'type': 'site_tag'}, commit=False)
-            dirty = True
-    if dirty:
-        commit_session()
-
 
 
 def _set_relations(illust, params, update):
