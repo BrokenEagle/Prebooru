@@ -100,23 +100,23 @@ def set_relationship_collections(item, relationships, dataparams, update=False, 
     printer = buffered_print('set_relationship_collections', safe=True, header=False)
     printer("(%s)" % item.shortlink)
     is_dirty = False
-    for attr, subattr, model in relationships:
-        if dataparams.get(attr) is None:
+    for collectionname, subattr, model in relationships:
+        if dataparams.get(collectionname) is None:
             continue
-        collection = getattr(item, attr)
+        collection = getattr(item, collectionname)
         current_values = [getattr(subitem, subattr) for subitem in collection]
-        add_values = set(dataparams[attr]).difference(current_values)
+        add_values = set(dataparams[collectionname]).difference(current_values)
         for value in add_values:
-            printer("+[%s]:" % attr, _normalize_val(value))
+            printer("+[%s]:" % collectionname, _normalize_val(value))
             add_item = model.query.filter_by(**{subattr: value}).first()
             if add_item is None:
                 add_item = model(**{subattr: value})
                 add_record(add_item)
             collection.append(add_item)
             is_dirty = True
-        remove_values = set(current_values).difference(dataparams[attr])
+        remove_values = set(current_values).difference(dataparams[collectionname])
         for value in remove_values:
-            printer("-[%s]:" % attr, _normalize_val(value))
+            printer("-[%s]:" % collectionname, _normalize_val(value))
             remove_item = next(filter(lambda x: getattr(x, subattr) == value, collection))
             collection.remove(remove_item)
             is_dirty = True
