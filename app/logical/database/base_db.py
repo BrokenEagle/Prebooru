@@ -88,7 +88,7 @@ def set_column_attributes(item, any_columns, null_columns, dataparams, update=Fa
         if hasattr(item, 'created'):
             item.created = get_current_time()
         add_record(item)
-    if is_dirty:
+    if is_dirty or create:
         _update_record(item, update)
         flush_session(safe=safe)
         printer.print()
@@ -152,6 +152,47 @@ def append_relationship_collections(item, relationships, dataparams, update=Fals
         flush_session(safe=safe)
         printer.print()
     return is_dirty
+
+
+def set_version_relations(item, relationships, dataparams, update=False, safe=False):
+    """For assigning a value to a relation and the current value if it exists to a version collection"""
+    printer = buffered_print('set_version_relations', safe=True, header=False)
+    printer("(%s)" % item.shortlink)
+    is_dirty = False
+    for relname, collname, subattr, model in relationships:
+        if relname not in dataparams:
+            continue
+        new_value = dataparams.get(relname)
+        swap = getattr(item, relname)
+        old_value = getattr(swap, subattr) if swap is not None else None
+        if new_value == old_value:
+            continue
+        descr = get_or_create(model, subattr, new_value) if new_value is not None else None
+        setattr(item, relname, descr)
+        collection = getattr(item, collname)
+        if descr is not None and descr in collection:
+            collection.remove(descr)
+        if swap is not None and swap not in collection:
+            collection.append(swap)
+        if swap is None:
+            printer("[%s]:" % relname, _normalize_val(new_value))
+        else:
+            printer("[%s]:" % relname, _normalize_val(old_value), '->', _normalize_val(new_value))
+        is_dirty = True
+    if is_dirty:
+        _update_record(item, update)
+        flush_session(safe=safe)
+        printer.print()
+    return is_dirty
+
+
+def get_or_create(model, attr, text):
+    item = model.query.filter_by(**{attr: text}).one_or_none()
+    if item is None:
+        item = model(**{attr: text})
+        SESSION.add(item)
+        SESSION.flush()
+    return item
 
 
 def save_record(record, action, commit=True, safe=False):

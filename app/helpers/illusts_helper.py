@@ -15,47 +15,7 @@ from ..logical.utility import search_url_for
 from .base_helper import external_link, general_link
 
 
-# ## GLOBAL VARIABLES
-
-SITE_DATA_LABELS = {
-    'site_updated': 'Updated',
-    'site_uploaded': 'Uploaded',
-}
-
-
 # ## FUNCTIONS
-
-# #### Form functions
-
-def form_class(form):
-    class_map = {
-        None: "",
-        site_descriptor.pixiv.id: "pixiv-data",
-        site_descriptor.twitter.id: "twitter-data",
-        site_descriptor.custom.id: "custom",
-    }
-    return class_map[form.site_id.data]
-
-
-# #### Iterator functions
-
-def site_metric_iterator(illust):
-    if illust.site_id == site_descriptor.custom.id or illust.site_data is None:
-        return
-    site_data_json = illust.site_data.to_json()
-    for key, val in site_data_json.items():
-        if key in ['retweets', 'replies', 'quotes', 'bookmarks', 'views']:
-            yield key, val
-
-
-def site_date_iterator(illust):
-    if illust.site_id == site_descriptor.custom.id or illust.site_data is None:
-        return
-    site_data_json = illust.site_data.to_json()
-    for key, val in site_data_json.items():
-        if key in ['site_updated', 'site_uploaded']:
-            yield SITE_DATA_LABELS[key], val
-
 
 # #### URL functions
 
@@ -124,9 +84,24 @@ def update_artist_link(illust):
     return general_link("Update artist", url, **addons)
 
 
-def delete_commentary_link(illust, commentary):
-    url = url_for('illust.delete_commentary_html', id=illust.id, description_id=commentary.id)
+def delete_title_link(illust, title):
+    url = url_for('illust.delete_title_html', id=illust.id, description_id=title.id)
     return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})
+
+
+def swap_title_link(illust, title):
+    url = url_for('illust.swap_title_html', id=illust.id, description_id=title.id)
+    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+
+
+def delete_commentary_link(illust, commentary, relation):
+    url = url_for('illust.delete_commentary_html', id=illust.id, description_id=commentary.id, relation=relation)
+    return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})
+
+
+def swap_commentary_link(illust, commentary):
+    url = url_for('illust.swap_commentary_html', id=illust.id, description_id=commentary.id)
+    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
 
 
 def urls_navigation_link(illust, url_type):
@@ -139,6 +114,16 @@ def urls_navigation_link(illust, url_type):
         url_type = None
     addons = {'class': 'type-active'} if url_type == active_type else {}
     return general_link(text, url, **addons)
+
+
+def titles_link(illust):
+    url = url_for('illust.titles_html', id=illust.id)
+    return general_link("Titles (%d)" % illust.titles_count, url)
+
+
+def commentaries_link(illust):
+    url = url_for('illust.commentaries_html', id=illust.id)
+    return general_link("Commentaries (%d)" % illust.commentaries_count, url)
 
 
 # ###### GENERAL

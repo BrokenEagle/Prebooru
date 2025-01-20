@@ -94,13 +94,6 @@ class PoolElementTypeEnum(AttrEnum):
     unknown = 127
 
 
-class SiteDataTypeEnum(AttrEnum):
-    twitter_data = 0
-    pixiv_data = 1
-    site_data = 126
-    unknown = 127
-
-
 class TagTypeEnum(AttrEnum):
     site_tag = 0
     user_tag = 1

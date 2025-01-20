@@ -31,17 +31,17 @@
     </section>
     <section id="post-commentaries">
         <h4>
-            <u>Commentaries</u>
+            <u>Commentary</u>
         </h4>
         {% for illust in post.illusts %}
             <div class="post-commentaries-container">
                 <strong>{{ illust.header }}:</strong>
                 {% if illust.title is not none %}
-                    <div class="post-title-block">{{ illust.title }}</div>
+                    <div class="post-title-block">{{ illust.title_body }}</div>
                 {% endif %}
-                {% call(commentary) items_block(illust._commentaries, '_commentaries', helpers.base.HR) %}
-                    <div class="post-commentaries-block">{{ helpers.base.convert_to_html(commentary.body) }}</div>
-                {% endcall %}
+                {% if illust.commentary is not none %}
+                    <div class="post-commentaries-block">{{ helpers.base.convert_to_html(illust.commentary_body) }}</div>
+                {% endif %}
             </div>
         {% endfor %}
     </section>

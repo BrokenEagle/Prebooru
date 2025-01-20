@@ -7,17 +7,17 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
+from utility.data import list_difference
 
 # ## LOCAL IMPORTS
 from .. import DB
 from ..enum_imports import site_descriptor
 from .tag import SiteTag, site_tag_creator
 from .illust_url import IllustUrl
-from .site_data import SiteData
 from .description import Description, description_creator
 from .notation import Notation
 from .pool_element import PoolIllust
-from .base import JsonModel, EpochTimestamp, secondarytable, polymorphic_accessor_factory, get_relation_definitions
+from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions, relation_association_proxy
 
 
 # ## GLOBAL VARIABLES
@@ -30,8 +30,20 @@ IllustTags = secondarytable(
     DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
 )
 
+IllustTitles = secondarytable(
+    'illust_titles',
+    DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
+    DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
+)
+
 IllustCommentaries = secondarytable(
     'illust_commentaries',
+    DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
+    DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
+)
+
+AdditionalCommentaries = secondarytable(
+    'additional_commentaries',
     DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
     DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
 )
@@ -48,6 +60,8 @@ class Illust(JsonModel):
     site_illust_id = DB.Column(DB.Integer, nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
+    title_id = DB.Column(DB.Integer, DB.ForeignKey('description.id'), nullable=True)
+    commentary_id = DB.Column(DB.Integer, DB.ForeignKey('description.id'), nullable=True)
     pages = DB.Column(DB.Integer, nullable=False)
     score = DB.Column(DB.Integer, nullable=False)
     active = DB.Column(DB.Boolean, nullable=False)
@@ -55,14 +69,15 @@ class Illust(JsonModel):
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # ## Relationships
-    _commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True, uselist=True,
-                                    backref=DB.backref('illusts', lazy=True, uselist=True))
+    title = DB.relationship(Description, lazy=True, uselist=False, foreign_keys=[title_id])
+    commentary = DB.relationship(Description, lazy=True, uselist=False, foreign_keys=[commentary_id])
+    titles = DB.relationship(Description, secondary=IllustTitles, lazy=True, uselist=True)
+    commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True, uselist=True)
+    additional_commentaries = DB.relationship(Description, secondary=AdditionalCommentaries, lazy=True, uselist=True)
     _tags = DB.relationship(SiteTag, secondary=IllustTags, lazy=True, uselist=True,
                             backref=DB.backref('illusts', lazy=True, uselist=True))
     urls = DB.relationship(IllustUrl, lazy=True, uselist=True, cascade="all, delete",
                            backref=DB.backref('illust', lazy=True, uselist=False))
-    site_data = DB.relationship(SiteData, lazy=True, uselist=False, cascade="all, delete",
-                                backref=DB.backref('illust', lazy=True, uselist=False))
     notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
                                 backref=DB.backref('illust', uselist=False, lazy=True))
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
@@ -71,17 +86,20 @@ class Illust(JsonModel):
     # (OtO) artist [Artist]
 
     # ## Association proxies
+<<<<<<< HEAD
     tags = association_proxy('_tags', 'name', creator=site_tag_creator)
-    commentaries = association_proxy('_commentaries', 'body', creator=description_creator)
+    title_body = enum_association_proxy('title_id', 'title', 'title', description_creator)
+    commentary_body = enum_association_proxy('commentary_id', 'commentary', 'body', description_creator)
+=======
+    tag_names = association_proxy('tags', 'name')
+    title_body = relation_association_proxy('title_id', 'title', 'body', description_creator)
+    commentary_body = relation_association_proxy('commentary_id', 'commentary', 'body', description_creator)
+>>>>>>> 23bbffb7... fixup-illust-rework
     pools = association_proxy('_pools', 'pool')
     boorus = association_proxy('artist', 'boorus')
-    title = association_proxy('site_data', 'title', getset_factory=polymorphic_accessor_factory)
-    retweets = association_proxy('site_data', 'retweets', getset_factory=polymorphic_accessor_factory)
-    replies = association_proxy('site_data', 'replies', getset_factory=polymorphic_accessor_factory)
-    quotes = association_proxy('site_data', 'quotes', getset_factory=polymorphic_accessor_factory)
-    bookmarks = association_proxy('site_data', 'bookmarks', getset_factory=polymorphic_accessor_factory)
-    site_updated = association_proxy('site_data', 'site_updated', getset_factory=polymorphic_accessor_factory)
-    site_uploaded = association_proxy('site_data', 'site_uploaded', getset_factory=polymorphic_accessor_factory)
+    title_bodies = association_proxy('titles', 'body', creator=description_creator)
+    commentary_bodies = association_proxy('commentaries', 'body', creator=description_creator)
+    additional_commentary_bodies = association_proxy('additional_commentaries', 'body', creator=description_creator)
 
     # ## Instance properties
 
@@ -128,6 +146,14 @@ class Illust(JsonModel):
     @property
     def post_count(self):
         return self._post_query.get_count()
+
+    @property
+    def titles_count(self):
+        return IllustTitles.query.filter_by(illust_id=self.id).get_count()
+
+    @property
+    def commentaries_count(self):
+        return IllustCommentaries.query.filter_by(illust_id=self.id).get_count()
 
     @property
     def type(self):
@@ -205,18 +231,25 @@ class Illust(JsonModel):
 
     @classproperty(cached=True)
     def load_columns(cls):
-        return super().load_columns + ['site_name']
+        return super().load_columns + ['site_name', 'title_body', 'commentary_body']
 
-    archive_excludes = {'site', 'site_id'}
-    archive_includes = {('site', 'site_name')}
-    archive_scalars = ['commentaries', 'tags']
-    archive_attachments = ['urls', ('data', 'site_data'), 'notations']
+    archive_excludes = {'site', 'site_id', 'title_id', 'commentary_id'}
+    archive_includes = {('site', 'site_name'), ('title', 'title_body'), ('commentary', 'commentary_body')}
+    archive_scalars = [('titles', 'title_bodies'),
+                       ('commentaries', 'commentary_bodies'),
+                       ('additional_commentaries', 'additional_commentary_bodies'),
+                       'tags']
+    archive_attachments = ['urls', 'notations']
     archive_links = [('artist', 'site_artist_id'),
                      ('posts', 'active_urls', 'link_key', 'attach_post_by_link_key')]
 
     @classproperty(cached=True)
+    def repr_attributes(cls):
+        return list_difference(super().json_attributes, ['site_id', 'title_id', 'commentary_id']) + ['site_name']
+
+    @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['site_illust_id_str', 'urls', 'tags', 'commentaries', 'site_data']
+        return cls.repr_attributes + ['site_illust_id_str', 'title_body', 'commentary_body', 'tags', 'urls']
 
     # ## Private
 

@@ -23,9 +23,10 @@ TABLES = {}
 def load_all():
     global\
         SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,\
-        SubscriptionElementKeep, UploadStatus, PoolElementType, SiteDataType, TagType,\
-        Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,\
-        IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
+        SubscriptionElementKeep, UploadStatus, PoolElementType, TagType,\
+        Tag, SiteTag, UserTag, Label, Description,\
+        Illust, IllustTags, IllustTitles, IllustCommentaries, AdditionalCommentaries, IllustUrl,\
+        ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
         Booru, BooruNames, BooruArtists, Error, Post,\
         PostTags, Upload, Notation, Pool, PoolElement, PoolPost,\
         PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
@@ -39,15 +40,14 @@ def load_all():
     # #### Enum data
     from .model_enums import SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus,\
         SubscriptionElementStatus, SubscriptionElementKeep, UploadStatus, PoolElementType,\
-        SiteDataType, TagType, DownloadStatus, DownloadElementStatus
+        TagType, DownloadStatus, DownloadElementStatus
 
     # #### Site data
     from .tag import Tag, SiteTag, UserTag
     from .label import Label
     from .description import Description
-    from .site_data import SiteData, PixivData, TwitterData
     from .illust_url import IllustUrl
-    from .illust import Illust, IllustTags, IllustCommentaries
+    from .illust import Illust, IllustTags, IllustTitles, IllustCommentaries, AdditionalCommentaries
     from .artist_url import ArtistUrl
     from .artist import Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles
     from .booru import Booru, BooruNames, BooruArtists
@@ -97,9 +97,10 @@ def initialize():
     models =\
         [
             SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,
-            SubscriptionElementKeep, UploadStatus, PoolElementType, SiteDataType, TagType,
-            Tag, SiteTag, UserTag, Label, Description, SiteData, PixivData, TwitterData, IllustUrl, Illust, IllustTags,
-            IllustCommentaries, ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
+            SubscriptionElementKeep, UploadStatus, PoolElementType, TagType,
+            Tag, SiteTag, UserTag, Label, Description,
+            Illust, IllustTags, IllustTitles, IllustCommentaries, AdditionalCommentaries, IllustUrl,
+            ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
             Booru, BooruNames, BooruArtists, Error, Post,
             PostTags, Upload, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionElement,

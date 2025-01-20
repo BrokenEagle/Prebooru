@@ -669,9 +669,9 @@ def artist_booru_search_url(artist):
 
 
 def illust_commentaries_dtext(illust):
-    if len(illust.commentaries) == 0:
+    if illust.commentary_id is None:
         return []
-    commentary = illust.commentaries[0]  # Twitter commentaries are unchangable.
+    commentary = illust.commentary_body
     for tag in illust.tags:
         hashtag = '#' + tag
         hashtag_link = r'"%s":[https://twitter.com/hashtag/%s]' % (hashtag, tag)
@@ -1287,7 +1287,7 @@ def get_illust_parameters_from_tweet(tweet):
         'replies': tweet.get('reply_count'),
         'quotes': tweet.get('quote_count'),
         'tags': get_illust_tags(tweet),
-        'commentaries': get_tweet_commentary(tweet) or None,
+        'commentary': get_tweet_commentary(tweet) or None,
         'illust_urls': get_tweet_illust_urls(tweet),
         'active': True,
         'site_artist_id': int(site_artist_id) if site_artist_id is not None else None,

@@ -122,6 +122,12 @@ def int_or_blank(string):
     return int(string) if isinstance(string, str) and string.isdigit() else None
 
 
+# #### List functions
+
+def list_difference(list1, list2):
+    return [v for v in list1 if v not in list2]
+
+
 # #### Dict functions
 
 def safe_get(input_dict, *keys):
@@ -153,3 +159,9 @@ def merge_dicts(a, b):
         else:
             a[key] = b[key]
     return a
+
+
+def swap_key_value(indict, oldkey, newkey):
+    if oldkey in createparams:
+        createparams[newkey] = createparams[oldkey]
+        del createparams[oldkey]

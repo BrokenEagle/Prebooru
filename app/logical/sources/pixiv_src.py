@@ -470,7 +470,7 @@ def get_illust_parameters_from_artwork(artwork, page_data):
         'replies': artwork['responseCount'],
         'views': artwork['viewCount'],
         'tags': get_illust_tags(artwork),
-        'commentaries': get_artwork_commentary(artwork),
+        'commentary': get_artwork_commentary(artwork),
         'illust_urls': illust_urls,
         'active': True,
         'site_artist_id': int(artwork['userId']),

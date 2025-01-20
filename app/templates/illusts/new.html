@@ -8,27 +8,7 @@
 {% block content %}
     <div id="illust-form-heading" class="heading">New illust</div>
     {% if artist is not none %}<div id="illust-form-info">For {{ artist.show_link }}:</div>{% endif %}
-    {% call(field_name, field_input) render_form(form, 'POST', illust.create_url, class=helpers.illust.form_class(form)) %}
-        {% if field_name == 'site_id' and artist is none %}
-            {{ field_input(onclick="Illusts.changeSite()") }}
-        {% else %}
-            {% set classlist = [] %}
-            {% if field_name in ['retweets', 'replies', 'quotes'] %}
-                {% do classlist.append('twitter-data') %}
-            {% endif %}
-            {% if field_name in ['title', 'bookmarks', 'site_updated', 'site_uploaded', 'replies', 'views'] %}
-                {% do classlist.append('pixiv-data') %}
-            {% endif %}
-            {{ field_input(classlist=classlist) }}
-        {% endif %}
+    {% call(field_name, field_input) render_form(form, 'POST', illust.create_url) %}
+        {{ field_input() }}
     {% endcall %}
 {% endblock content %}
-
-{% block pagescript %}
-    Illusts.SITE_MAP = {
-    "": "",
-    "{{ illust.site_enum.pixiv.id }}": 'pixiv-data',
-    "{{ illust.site_enum.twitter.id }}": 'twitter-data',
-    "{{ illust.site_enum.custom.id }}": 'custom-data',
-    };
-{% endblock pagescript %}

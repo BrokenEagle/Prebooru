@@ -3,22 +3,24 @@
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy import not_, or_
-from sqlalchemy.orm import selectinload, selectin_polymorphic
+from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, StringField
 from wtforms.validators import DataRequired
 
 # ## PACKAGE IMPORTS
-from utility.data import eval_bool_string, is_falsey, random_id
+from utility.data import eval_bool_string, is_falsey
 
 # ## LOCAL IMPORTS
-from ..models import Illust, IllustUrl, SiteData, Artist, Post, PoolIllust, PoolPost, TwitterData, PixivData
+from ..models import Illust, IllustUrl, Artist, Post, PoolIllust, PoolPost
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
 from ..logical.records.artist_rec import get_or_create_artist_from_source
-from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion
+from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion,\
+    illust_delete_title, illust_swap_title, illust_delete_commentary, illust_swap_commentary,\
+    illust_add_additional_commentary
 from ..logical.sources.base_src import get_post_source
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
-    illust_delete_commentary, set_illust_artist
+    set_illust_artist
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
     hide_input, int_or_blank, nullify_blanks, set_default, check_param_requirements, parse_array_parameter,\
@@ -29,15 +31,14 @@ from .base_controller import get_params_value, process_request_values, show_json
 
 bp = Blueprint("illust", __name__)
 
-CREATE_REQUIRED_PARAMS = ['site_id', 'site_illust_id']
+REQUIRED_PARAMS = ['site_id', 'site_illust_id']
 VALUES_MAP = {
     'illust_urls': 'illust_urls',
     'tags': 'tags',
     'tag_string': 'tags',
-    'commentaries': 'commentaries',
-    'commentary': 'commentaries',
-    **{k: k for k in SiteData.__table__.columns.keys() if k not in ['id', 'illust_id', 'type']},
-    **{k: k for k in Artist.__table__.columns.keys()},
+    'title': 'title',
+    'commentary': 'commentary',
+    **{k: k for k in Illust.__table__.columns.keys()},
 }
 
 ILLUST_POOLS_SUBQUERY = Illust.query.join(PoolIllust, Illust._pools).filter(Illust.id == PoolIllust.illust_id)\
@@ -51,13 +52,13 @@ POOL_SEARCH_KEYS = ['has_pools', 'has_post_pools', 'has_illust_pools']
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(Illust.site_data),
-    selectinload(Illust._tags),
-    selectinload(Illust._commentaries),
+    selectinload(Illust.tags),
+    selectinload(Illust.title),
+    selectinload(Illust.commentary),
+    selectinload(Illust.additional_commentaries),
     selectinload(Illust.artist).selectinload(Artist.boorus),
     selectinload(Illust.notations),
     selectinload(Illust._pools).selectinload(PoolIllust.pool),
-    selectin_polymorphic(Illust.site_data, [TwitterData, PixivData]),
 )
 
 SHOW_URLS_HTML_OPTIONS = (
@@ -65,15 +66,14 @@ SHOW_URLS_HTML_OPTIONS = (
 )
 
 INDEX_HTML_OPTIONS = (
-    selectinload(Illust._tags),
+    selectinload(Illust.tags),
     selectinload(Illust.urls).selectinload(IllustUrl.post).lazyload('*'),
 )
 
 JSON_OPTIONS = (
-    selectinload(Illust.site_data),  # Must be included separately, otherwise the selectin polymorphic doesn't work
-    selectinload(Illust._tags),
-    selectinload(Illust._commentaries),
-    selectin_polymorphic(Illust.site_data, [TwitterData, PixivData]),
+    selectinload(Illust.tags),
+    selectinload(Illust.title),
+    selectinload(Illust.commentary),
     selectinload(Illust.urls).lazyload('*'),
 )
 
@@ -104,20 +104,11 @@ FORM_CONFIG = {
     'site_illust_id': {
         'name': 'Site Illust ID',
         'field': IntegerField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
     },
     'site_created': {
-        'field': StringField,
-        'kwargs': {
-            'description': "Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).",
-        },
-    },
-    'site_updated': {
-        'field': StringField,
-        'kwargs': {
-            'description': "Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).",
-        },
-    },
-    'site_uploaded': {
         'field': StringField,
         'kwargs': {
             'description': "Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).",
@@ -127,21 +118,6 @@ FORM_CONFIG = {
         'field': IntegerField,
     },
     'score': {
-        'field': IntegerField,
-    },
-    'bookmarks': {
-        'field': IntegerField,
-    },
-    'views': {
-        'field': IntegerField,
-    },
-    'retweets': {
-        'field': IntegerField,
-    },
-    'replies': {
-        'field': IntegerField,
-    },
-    'quotes': {
         'field': IntegerField,
     },
     'tag_string': {
@@ -224,7 +200,6 @@ def convert_create_params(dataparams):
             url_data['active'] = parse_bool_parameter(url_data, 'active')
             if 'site_name' in url_data:
                 url_data['site_id'] = site_descriptor.by_name(url_data['site_name']).id
-    createparams['commentaries'] = [dataparams['commentary']] if len(dataparams['commentary']) else None
     return createparams
 
 
@@ -232,7 +207,6 @@ def convert_update_params(dataparams):
     updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
-    updateparams['commentaries'] = dataparams['commentary']
     return updateparams
 
 
@@ -259,21 +233,15 @@ def create():
     check_artist = Artist.find(createparams['artist_id'])
     if check_artist is None:
         return set_error(retdata, "artist #%s not found." % dataparams['artist_id'])
-    if createparams['site_id'] == site_descriptor.custom.id and createparams['site_illust_id'] is None:
-        for i in range(100):
-            createparams['site_illust_id'] = random_id()
-            if uniqueness_check(createparams, Illust()) is None:
-                break
-        else:
-            return set_error(retdata, "Unable to find available site illust ID... check the data or try again.")
-    else:
-        errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
-        if len(errors) > 0:
-            return set_error(retdata, '\n'.join(errors))
-        check_illust = uniqueness_check(createparams, Illust())
-        if check_illust is not None:
-            retdata['item'] = check_illust.to_json()
-            return set_error(retdata, "Illust already exists: %s" % check_illust.shortlink)
+    errors = check_param_requirements(createparams, REQUIRED_PARAMS, 'create')
+    if len(errors) > 0:
+        return set_error(retdata, '\n'.join(errors))
+    if createparams['site_id'] != check_artist.site_id:
+        return set_error(retdata, "site_id parameter must match artist site_id value")
+    check_illust = uniqueness_check(createparams, Illust())
+    if check_illust is not None:
+        retdata['item'] = check_illust.to_json()
+        return set_error(retdata, "Illust already exists: %s" % check_illust.shortlink)
     illust = create_illust_from_parameters(createparams)
     retdata['item'] = illust.to_json()
     return retdata
@@ -283,6 +251,9 @@ def update(illust):
     dataparams = get_data_params(request, 'illust')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
+    errors = check_param_requirements(updateparams, REQUIRED_PARAMS, 'update')
+    if len(errors) > 0:
+        return set_error(retdata, '\n'.join(errors))
     check_illust = uniqueness_check(updateparams, illust)
     if check_illust is not None:
         retdata['item'] = check_illust.to_json()
@@ -336,12 +307,42 @@ def update_artist(illust):
     return retdata
 
 
-def delete_commentary(illust):
+def delete_title(illust):
     description_id = request.values.get('description_id', type=int)
     retdata = {'error': False, 'params': {'description_id': description_id}}
     if description_id is None:
         return set_error(retdata, "Description ID not set or a bad value.")
-    retdata.update(illust_delete_commentary(illust, description_id))
+    retdata.update(illust_delete_title(illust, description_id))
+    return retdata
+
+
+def swap_title(illust):
+    description_id = request.values.get('description_id', type=int)
+    retdata = {'error': False, 'params': {'description_id': description_id}}
+    if description_id is None:
+        return set_error(retdata, "Description ID not set or a bad value.")
+    retdata.update(illust_swap_title(illust, description_id))
+    return retdata
+
+
+def delete_commentary(illust):
+    description_id = request.values.get('description_id', type=int)
+    rel_type = request.values.get('relation')
+    retdata = {'error': False, 'params': {'description_id': description_id, 'relation': rel_type}}
+    if description_id is None:
+        return set_error(retdata, "Description ID not set or a bad value.")
+    if rel_type not in ('old', 'additional'):
+        return set_error(retdata, "Invalid relation type set.")
+    retdata.update(illust_delete_commentary(rel_type, illust, description_id))
+    return retdata
+
+
+def swap_commentary(illust):
+    description_id = request.values.get('description_id', type=int)
+    retdata = {'error': False, 'params': {'description_id': description_id}}
+    if description_id is None:
+        return set_error(retdata, "Description ID not set or a bad value.")
+    retdata.update(illust_swap_commentary(illust, description_id))
     return retdata
 
 
@@ -422,9 +423,8 @@ def edit_html(id):
     illust = get_or_abort(Illust, id)
     editparams = illust.basic_json(True)
     editparams['tag_string'] = '\r\n'.join(illust.tags)
-    if illust.site_data is not None:
-        editparams.update({k: v for (k, v) in illust.site_data.to_json().items()
-                           if k not in ['id', 'illust_id', 'type']})
+    editparams['title'] = illust.title_body
+    editparams['commentary'] = illust.commentary_body
     form = get_illust_form(**editparams)
     hide_input(form, 'artist_id', illust.artist_id)
     hide_input(form, 'site_id', illust.site_id)
@@ -494,6 +494,28 @@ def update_artist_html(id):
     return redirect(url_for('illust.show_html', id=id))
 
 
+@bp.route('/illusts/<int:id>/title', methods=['DELETE'])
+def delete_title_html(id):
+    illust = get_or_abort(Illust, id)
+    results = delete_title(illust)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Commentary deleted.')
+    return redirect(request.referrer)
+
+
+@bp.route('/illusts/<int:id>/title', methods=['PUT'])
+def swap_title_html(id):
+    illust = get_or_abort(Illust, id)
+    results = swap_title(illust)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Commentary swapped.')
+    return redirect(request.referrer)
+
+
 @bp.route('/illusts/<int:id>/commentary', methods=['DELETE'])
 def delete_commentary_html(id):
     illust = get_or_abort(Illust, id)
@@ -502,10 +524,21 @@ def delete_commentary_html(id):
         flash(results['message'], 'error')
     else:
         flash('Commentary deleted.')
-    return redirect(url_for('illust.show_html', id=id))
+    return redirect(request.referrer)
 
 
-@bp.route('/illusts/<int:id>/notate', methods=['post'])
+@bp.route('/illusts/<int:id>/commentary', methods=['PUT'])
+def swap_commentary_html(id):
+    illust = get_or_abort(Illust, id)
+    results = swap_commentary(illust)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Commentary swapped.')
+    return redirect(request.referrer)
+
+
+@bp.route('/illusts/<int:id>/notate', methods=['POST'])
 def create_commentary_from_source(id):
     illust = get_or_abort(Illust, id)
     source_url = request.values.get('url')
@@ -522,5 +555,21 @@ def create_commentary_from_source(id):
         flash("No commentaries found at source.", 'error')
         return redirect(request.referrer)
     commentary = "From " + (source.ILLUST_SHORTLINK % site_illust_id) + ":\n\n" + commentary
-    update_illust_from_parameters(illust, {'commentaries': commentary})
+    results = illust_add_additional_commentary(illust, commentary)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Commentary added.')
     return redirect(url_for('illust.show_html', id=id))
+
+
+@bp.route('/illusts/<int:id>/titles', methods=['GET'])
+def titles_html(id):
+    illust = get_or_abort(Illust, id)
+    return render_template("illusts/titles.html", illust=illust)
+
+
+@bp.route('/illusts/<int:id>/commentaries', methods=['GET'])
+def commentaries_html(id):
+    illust = get_or_abort(Illust, id)
+    return render_template("illusts/commentaries.html", illust=illust)

@@ -275,11 +275,13 @@ def parse_list_type(params, key, parser):
     return [subitem for subitem in [parse_item(item, parser) for item in params[key]] if subitem is not None]
 
 
-def check_param_requirements(params, requirements):
+def check_param_requirements(params, requirements, action='create'):
 
     def _check_param(acc, key):
-        if params[key] is None:
-            return acc + ["%s not present or invalid." % key]
+        if key not in params and action == 'create':
+            return acc + ["%s not present." % key]
+        if params.get(key) is None:
+            return acc + ["%s cannot be null." % key]
         return acc
 
     return reduce(_check_param, requirements, [])

@@ -5,17 +5,26 @@ from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Illust
+from ...models import Illust, IllustTitles, IllustCommentaries, AdditionalCommentaries, Description
 from ..logger import handle_error_message
 from ..network import get_http_data
-from ..database.base_db import delete_record, commit_session
+from ..utility import set_error
+from ..database.base_db import delete_record, commit_session, get_or_create
 from ..database.artist_db import get_blank_artist
-from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters
+from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters_standard
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
 from .artist_rec import get_or_create_artist_from_source
 from .pool_rec import delete_pool_element
 from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
+
+
+# ## GLOBAL VARIABLES
+
+COMMENTARY_MODELS = {
+    'old': IllustCommentaries,
+    'additional': AdditionalCommentaries,
+}
 
 
 # ## FUNCTIONS
@@ -36,10 +45,7 @@ def create_illust_from_source(site_illust_id, source):
 def update_illust_from_source(illust):
     source = illust.site.source
     updateparams = source.get_illust_data(illust.site_illust_id)
-    if updateparams['active']:
-        # These are only removable through the HTML/JSON UPDATE routes
-        updateparams['tags'] += [tag for tag in illust.tags if tag not in updateparams['tags']]
-    update_illust_from_parameters(illust, updateparams)
+    update_illust_from_parameters_standard(illust, updateparams)
     if 'site_artist_id' in updateparams and illust.artist.site_artist_id != updateparams['site_artist_id']:
         artist = get_or_create_artist_from_source(updateparams['site_artist_id'], source)
         if artist is None:
@@ -90,6 +96,62 @@ def delete_illust(illust):
     print(msg)
 
 
+def illust_delete_title(illust, description_id):
+    retdata = _relation_params_check(illust, Description, IllustTitles, description_id, 'description_id', 'Title')
+    if retdata['error']:
+        return retdata
+    IllustTitles.query.filter_by(illust_id=illust.id, description_id=description_id).delete()
+    commit_session()
+    return retdata
+
+
+def illust_swap_title(illust, description_id):
+    retdata = _relation_params_check(illust, Description, IllustTitles, description_id, 'description_id', 'Title')
+    if retdata['error']:
+        return retdata
+    IllustTitles.query.filter_by(illust_id=illust.id, description_id=description_id).delete()
+    swap = illust.title
+    illust.title = retdata['attach']
+    if swap is not None:
+        illust.titles.append(swap)
+    commit_session()
+    return retdata
+
+
+def illust_delete_commentary(rel_type, illust, description_id):
+    secondary_table = COMMENTARY_MODELS[rel_type]
+    retdata = _relation_params_check(illust, Description, secondary_table, description_id, 'description_id', 'Title')
+    if retdata['error']:
+        return retdata
+    secondary_table.query.filter_by(illust_id=illust.id, description_id=description_id).delete()
+    commit_session()
+    return retdata
+
+
+def illust_swap_commentary(illust, description_id):
+    retdata = _relation_params_check(illust, Description, IllustCommentaries, description_id, 'description_id', 'Title')
+    if retdata['error']:
+        return retdata
+    IllustCommentaries.query.filter_by(illust_id=illust.id, description_id=description_id).delete()
+    swap = illust.commentary
+    illust.commentary = retdata['attach']
+    if swap is not None:
+        illust.commentaries.append(swap)
+    commit_session()
+    return retdata
+
+
+def illust_add_additional_commentary(illust, commentary):
+    retdata = {'error': False}
+    descr = get_or_create(Description, 'body', commentary)
+    m2m_row = AdditionalCommentaries.query.filter_by(illust_id=illust.id, description_id=descr.id).one_or_none()
+    if m2m_row is not None:
+        return set_error(retdata, "Commentary already included on %s." % illust.shortlink)
+    illust.additional_commentaries.append(descr)
+    commit_session()
+    return retdata
+
+
 # #### Illust URLs
 
 def download_illust_url(illust_url):
@@ -136,3 +198,18 @@ def _download_media(download_url, headers):
 
 def _module_error(function, message):
     return (f'illust_rec.{function}', message)
+
+
+# ## Private functions
+
+def _relation_params_check(illust, model, m2m_model, model_id, model_field, name):
+    retdata = {'error': False}
+    attach = model.find(model_id)
+    if attach is None:
+        return set_error(retdata, "%s #%d does not exist." % (model.model_name, model_id))
+    retdata['attach'] = attach
+    m2m_row = m2m_model.query.filter_by(**{'illust_id': illust.id, model_field: model_id}).one_or_none()
+    if m2m_row is None:
+        msg = "%s with %s does not exist on %s." % (name, attach.shortlink, illust.shortlink)
+        return set_error(retdata, msg)
+    return retdata

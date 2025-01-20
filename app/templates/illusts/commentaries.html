@@ -1,0 +1,30 @@
+{% extends "illusts/_base.html" %}
+{% from "layouts/_macros.html" import items_block %}
+
+{% block title %}
+    Old commentaries for {{ illust.header }}
+{% endblock title %}
+
+{% block content %}
+    <div id="illust-heading" class="heading">Old commentaries for {{ illust.header }}</div>
+    <div id="illust-titles-content" class="content">
+        <div id="illust-current-commentary" class="current-section">
+            <h4>Current commentary</h4>
+            {% if illust.commentary is not none %}
+                <div class="illust-commentary-block current-block">{{ helpers.base.convert_to_html(illust.commentary.body) }}</div>
+            {% else %}
+                <span class="explanation">There is no commentary.</span>
+            {% endif %}
+        </div>
+        <div id="illust-old-commentaries" class="old-section">
+            <h4>Old commentaries</h4>
+            {% call(commentary) items_block(illust.commentaries, 'old commentaries') %}
+                <div class="illust-commentaries-block old-block">
+                    <span class="illust-commentary-delete old-delete">(&thinsp;{{ helpers.illust.delete_commentary_link(illust, commentary, 'old') }}&thinsp;)</span>
+                    <span class="illust-commentary-swap old-swap">(&thinsp;{{ helpers.illust.swap_commentary_link(illust, commentary) }}&thinsp;)</span>
+                    {{ helpers.base.convert_to_html(commentary.body) }}
+                </div>
+            {% endcall %}
+        </div>
+    </div>
+{% endblock content %}

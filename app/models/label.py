@@ -12,6 +12,7 @@ def label_creator(name):
     if label is None:
         label = Label(name=name)
         SESSION.add(label)
+        SESSION.flush()
     return label
 
 

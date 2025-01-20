@@ -118,6 +118,27 @@ def secondarytable(*args):
     return table
 
 
+# #### Relationships
+
+def relation_association_proxy(column_name, relation_name, subattr, creator):
+    """The association proxy that comes with sqlalchemy does not handle setting the value ID via a creator."""
+
+    @property
+    def value(self):
+        relation = getattr(self, relation_name) if getattr(self, column_name) is not None else None
+        return getattr(relation, subattr) if relation is not None else None
+
+    @value.setter
+    def value(self, value):
+        if value is not None:
+            item = creator(value)
+            setattr(self, column_name, item.id)
+        else:
+            setattr(self, column_name, value)
+
+    return value
+
+
 # ## CLASSES
 
 class NormalizedDatetime(DATETIME):

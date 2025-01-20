@@ -93,7 +93,7 @@ section#illust-site-info {
     width: 25%;
 }
 
-section#illust-metrics {
+section#illust-values {
     width: 25%;
 }
 
@@ -105,17 +105,28 @@ div#illust-site-content-2 {
     margin-top: 2em;
 }
 
-section#illust-title,
-section#illust-commentaries {
-    margin-left: 1em;
+section#illust-main-commentary,
+section#illust-additional-commentaries {
+    max-height: 20em;
     width: 90%;
+    overflow-y: auto;
+    margin-left: 1em;
+    margin-bottom: 1em;
+}
+
+div#illust-main-commentary-block {
+    border: 1px solid #DDD;
+    padding: 0.5em;
 }
 
 div#illust-title-block {
-    padding: 0.5em;
+    font-size: 1.2em;
     font-weight: bold;
+    text-decoration: underline;
+    margin: 0.1em;
 }
 
+div#illust-commentary-container,
 div#illust-commentaries-container {
     border: 1px solid #eee;
     max-height: 200px;
@@ -231,4 +242,42 @@ div.illust-preview > article.overflow > span {
 
 div.illust-preview > span.explanation {
     width: 150px;
+}
+
+/****OLD COMMENTARIES/TITLES****/
+div.content {
+    display: flex;
+}
+
+div.current-section {
+    width: 45%;
+    margin-left: 1em;
+}
+div.old-section {
+    width: 50%;
+    margin-left: 1em;
+}
+
+div.current-block {
+    margin: 0.5em;
+}
+
+div.old-block {
+    margin: 0.2em;
+    padding: 0.2em 5em 0.2em 0.2em;
+    border: 1px solid #DDD;
+    min-height: 2.5em;
+    position: relative;
+}
+
+span.old-delete {
+    position: absolute;
+    right: 0.1em;
+    top: 0.1em;
+}
+
+span.old-swap {
+    position: absolute;
+    right: 0.1em;
+    top: 1.5em;
 }

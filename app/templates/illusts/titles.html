@@ -1,0 +1,30 @@
+{% extends "illusts/_base.html" %}
+{% from "layouts/_macros.html" import items_block %}
+
+{% block title %}
+    Old titles for {{ illust.header }}
+{% endblock title %}
+
+{% block content %}
+    <div id="illust-heading" class="heading">Old titles for {{ illust.header }}</div>
+    <div id="illust-content" class="content">
+        <div id="illust-current-title" class="current-section">
+            <h4>Current title</h4>
+            {% if illust.title is not none %}
+                <div class="illust-title-block current-block">{{ illust.title_body }}</div>
+            {% else %}
+                <span class="explanation">There is no title.</span>
+            {% endif %}
+        </div>
+        <div id="illust-old-titles" class="old-section">
+            <h4>Old titles</h4>
+            {% call(description) items_block(illust.titles, 'old titles') %}
+                <div class="illust-titles-block old-block">
+                    <span class="illust-title-delete old-delete">(&thinsp;{{ helpers.illust.delete_title_link(illust, description) }}&thinsp;)</span>
+                    <span class="illust-title-swap old-swap">(&thinsp;{{ helpers.illust.swap_title_link(illust, description) }}&thinsp;)</span>
+                    {{ helpers.base.convert_to_html(description.body) }}
+                </div>
+            {% endcall %}
+        </div>
+    </div>
+{% endblock content %}

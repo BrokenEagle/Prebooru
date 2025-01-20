@@ -12,6 +12,7 @@ def description_creator(body):
     if description is None:
         description = Description(body=body)
         SESSION.add(description)
+        SESSION.flush()
     return description
 
 

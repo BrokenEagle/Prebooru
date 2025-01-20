@@ -492,37 +492,6 @@ class PoolElementType(EnumModel):
     }
 
 
-class SiteDataType(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
-    # ## Private
-
-    @classproperty(cached=True)
-    def site_data(cls):
-        return cls.by_name('site_data')
-
-    @classproperty(cached=True)
-    def twitter_data(cls):
-        return cls.by_name('twitter_data')
-
-    @classproperty(cached=True)
-    def pixiv_data(cls):
-        return cls.by_name('pixiv_data')
-
-    # ## Private
-
-    __initial_mapping__ = {
-        'twitter_data': 0,
-        'pixiv_data': 1,
-    }
-    __mandatory_mapping__ = {
-        'site_data': 126,
-        'unknown': 127,
-    }
-
-
 class TagType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
