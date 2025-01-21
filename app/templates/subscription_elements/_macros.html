@@ -73,7 +73,7 @@
                     </li>
                     {% with artist = element.illust_url.illust.artist %}
                         <li>
-                            <strong>{{ helpers.base.general_link("%s (%s)" | format(artist.shortlink, artist.current_site_account), artist.show_url) }}</strong>
+                            <strong>{{ helpers.base.general_link("%s (%s)" | format(artist.shortlink, artist.site_account_value), artist.show_url) }}</strong>
                         </li>
                     {% endwith %}
                     <li>
@@ -115,7 +115,7 @@
             {% if show_illust %}
                 {% with artist = element.illust_url.illust.artist %}
                     <li>
-                        <strong>{{ helpers.base.general_link("%s (%s)" | format(artist.shortlink, artist.current_site_account), artist.show_url) }}</strong>
+                        <strong>{{ helpers.base.general_link("%s (%s)" | format(artist.shortlink, artist.site_account_value), artist.show_url) }}</strong>
                     </li>
                 {% endwith %}
                 <li>

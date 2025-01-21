@@ -5,21 +5,22 @@ from sqlalchemy import not_
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
+from utility.data import swap_key_value
 
 # ## LOCAL IMPORTS
 from ...models import Artist, Booru, Label, Description
-from .base_db import set_column_attributes, set_relationship_collections, append_relationship_collections,\
-    set_timesvalue, set_association_attributes, add_record, save_record, commit_session, flush_session
+from .base_db import set_column_attributes, set_version_relations, set_timesvalue,\
+    add_record, save_record, commit_session, flush_session
 from .artist_url_db import create_artist_url_from_parameters, update_artist_url_from_parameters
 
 # ## GLOBAL VARIABLES
 
-UPDATE_SCALAR_RELATIONSHIPS = [('_site_accounts', 'name', Label), ('_names', 'name', Label)]
-APPEND_SCALAR_RELATIONSHIPS = [('_profiles', 'body', Description)]
-ASSOCIATION_ATTRIBUTES = ['site_accounts', 'names', 'profiles']
+VERSION_RELATIONSHIPS = [('profile', 'profiles', 'body', Description),
+                         ('site_account', 'site_accounts', 'name', Label),
+                         ('name', 'names', 'name', Label)]
 
-ANY_WRITABLE_COLUMNS = ['site_id', 'site_artist_id', 'current_site_account', 'site_created', 'active', 'primary']
-NULL_WRITABLE_ATTRIBUTES = []
+ANY_WRITABLE_COLUMNS = ['site_id', 'site_artist_id', 'site_created', 'active', 'primary']
+NULL_WRITABLE_ATTRIBUTES = ['site_account_value', 'name_value', 'profile_body']
 
 BOORU_SUBQUERY = Artist.query\
     .join(Booru, Artist.boorus)\
@@ -33,8 +34,12 @@ BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 # #### Create
 
 def create_artist_from_parameters(createparams, commit=True):
-    artist = Artist(primary=True)
-    return set_artist_from_parameters(artist, createparams, 'created', commit, True)
+    createparams.setdefault('active', True)
+    createparams.setdefault('primary', True)
+    swap_key_value(createparams, 'site_account', 'site_account_value')
+    swap_key_value(createparams, 'name', 'name_value')
+    swap_key_value(createparams, 'profile', 'profile_body')
+    return set_artist_from_parameters(Artist(), createparams, 'created', commit, True)
 
 
 def create_artist_from_json(data):
@@ -50,13 +55,16 @@ def update_artist_from_parameters(artist, updateparams, commit=True, update=True
     return set_artist_from_parameters(artist, updateparams, 'updated', commit, update)
 
 
-def update_artist_from_parameters_standard(artist, params):
-    if params['active']:
+def update_artist_from_parameters_standard(artist, updateparams):
+    """Set parameters that are only removable through direct user interaction before updating."""
+    if updateparams['active']:
         # These are only removable through the HTML/JSON UPDATE routes
-        params['webpages'] += ['-' + w.url for w in artist.webpages if w.url not in params['webpages']]
-        params['names'] += [name for name in artist.names if name not in params['names']]
-        params['site_accounts'] += [name for name in artist.site_accounts if name not in params['site_accounts']]
-    update_artist_from_parameters(artist, params, commit=True, update=False)
+        if 'webpages' in updateparams:
+            updateparams['webpages'] += ['-' + w.url for w in artist.webpages if w.url not in updateparams['webpages']]
+    else:
+        # When deactivating automatically, don't allow any other parameters to be set
+        updateparams = {'active': False}
+    update_artist_from_parameters(artist, updateparams, commit=True, update=False)
 
 
 def recreate_artist_relations(artist, updateparams):
@@ -72,8 +80,6 @@ def set_artist_from_parameters(artist, setparams, action, commit, update):
     if 'site' in setparams:
         setparams['site_id'] = Artist.site_enum.by_name(setparams['site']).id
     set_timesvalue(setparams, 'site_created')
-    _set_all_site_accounts(setparams, artist)
-    set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
     col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
                                        setparams, update=update, safe=True)
     rel_result = _set_relations(artist, setparams, update)
@@ -94,7 +100,7 @@ def get_blank_artist():
         createparams = {
             'site': 0,
             'site_artist_id': 1,
-            'current_site_account': 'Prebooru',
+            'site_account': 'Prebooru',
             'active': True,
         }
         artist = create_artist_from_parameters(createparams)
@@ -125,20 +131,8 @@ def get_artists_without_boorus_page(limit):
 
 # #### Private functions
 
-def _set_all_site_accounts(params, artist):
-    if isinstance(params.get('current_site_account'), str):
-        accounts = set(params.get('site_accounts', list(artist.site_accounts)) + [params['current_site_account']])
-        params['site_accounts'] = list(accounts)
-
-
-def _set_relations(artist, setparams, update):
-    if isinstance(setparams.get('profiles'), str):
-        setparams['_profiles_append'] = setparams['profiles'] if len(setparams['profiles']) else None
-        setparams['profiles'] = None
-    set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
-    set_rel_result = set_relationship_collections(artist, UPDATE_SCALAR_RELATIONSHIPS, setparams, update=update)
-    append_rel_result = append_relationship_collections(artist, APPEND_SCALAR_RELATIONSHIPS, setparams, update=update)
-    return any([set_rel_result, append_rel_result])
+def _set_relations(artist, params, update):
+    return set_version_relations(artist, VERSION_RELATIONSHIPS, params, update=update)
 
 
 def _set_artist_webpages(artist, params, update):

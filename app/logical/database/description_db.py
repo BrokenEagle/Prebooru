@@ -4,7 +4,8 @@
 from sqlalchemy import union_all
 
 # ## LOCAL IMPORTS
-from ...models import Description, Illust, IllustTitles, IllustCommentaries, AdditionalCommentaries, ArtistProfiles
+from ...models import Description, Artist, Illust, IllustTitles, IllustCommentaries, AdditionalCommentaries,\
+    ArtistProfiles
 from .base_db import commit_session
 
 
@@ -16,6 +17,7 @@ DESCRIPTION_UNION_CLAUSE = union_all(
     IllustTitles.query.with_entities(IllustTitles.description_id),
     IllustCommentaries.query.with_entities(IllustCommentaries.description_id),
     AdditionalCommentaries.query.with_entities(AdditionalCommentaries.description_id),
+    Artist.query.filter(Artist.profile_id.is_not(None)).with_entities(Artist.profile_id),
     ArtistProfiles.query.with_entities(ArtistProfiles.description_id)
 )
 

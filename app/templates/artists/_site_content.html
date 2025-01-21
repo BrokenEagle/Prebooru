@@ -16,10 +16,18 @@
                     <strong>Site ID:</strong> {{ artist.site_artist_id }}
                 </li>
                 <li>
-                    <strong>Account:</strong> {{ helpers.base.val_or_none(artist.current_site_account) }}
+                    <strong>Links:</strong> {{ helpers.artist.artist_links(artist) | safe }}
+                </li>
+            </ul>
+        </section>
+        <section id="artist-values">
+            <h4>Values</h4>
+            <ul>
+                <li>
+                    <strong>Account:</strong> {{ artist.site_account_value }}
                 </li>
                 <li>
-                    <strong>Links:</strong> {{ helpers.artist.artist_links(artist) | safe }}
+                    <strong>Name:</strong> {{  helpers.base.val_or_none(artist.name_value) }}
                 </li>
                 <li>
                     <strong>Created:</strong> {{ helpers.base.format_timestamp(artist.site_created) }}
@@ -29,17 +37,6 @@
                 </li>
                 <li>
                     <strong>Primary:</strong> {{ artist.primary | tojson }}
-                </li>
-            </ul>
-        </section>
-        <section id="artist-labels">
-            <h4>Labels</h4>
-            <ul>
-                <li>
-                    <strong>Names:</strong> {{ items_list(artist._names, 'name') }}
-                </li>
-                <li>
-                    <strong>Accounts:</strong> {{ items_list(artist._site_accounts, 'name') }}
                 </li>
             </ul>
         </section>
@@ -54,14 +51,15 @@
     </div>
     <div id="artist-site-content-2">
         <section id="artist-profiles">
-            <h4>Profiles</h4>
+            <h4>Profile</h4>
             <div id="artist-profiles-container">
-                {% call(profile) items_block(artist._profiles, '_profiles') %}
+                {% if artist.profile is not none %}
                     <div class="artist-profiles-block">
-                        <span class="artist-profile-delete">(&thinsp;{{ helpers.artist.delete_profile_link(artist, profile) }}&thinsp;)</span>
-                        {{ helpers.base.convert_to_html(profile.body) }}
+                        {{ helpers.base.convert_to_html(artist.profile_body) }}
                     </div>
-                {% endcall %}
+                {% else %}
+                    <span class="explanation">There is no profile.</span>
+                {% endif %}
             </div>
         </section>
     </div>

@@ -9,7 +9,7 @@ from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Artist
+from ...models import Artist, ArtistSiteAccounts, ArtistNames, ArtistProfiles, Description, Label
 from ..utility import set_error
 from ..logger import handle_error_message
 from ..database.base_db import delete_record, commit_session
@@ -137,13 +137,82 @@ def delete_artist(artist):
     print(msg)
 
 
-def artist_delete_profile(artist, description_id):
-    retdata = {'error': False, 'descriptions': [profile.to_json() for profile in artist._profiles]}
-    remove_profile = next((profile for profile in artist._profiles if profile.id == description_id), None)
-    if remove_profile is None:
-        msg = "Profile with description #%d does not exist on artist #%d." % (description_id, artist.id)
-        return set_error(retdata, msg)
-    artist._profiles.remove(remove_profile)
+def artist_delete_site_account(artist, label_id):
+    retdata = _relation_params_check(artist, Label, ArtistSiteAccounts, label_id, 'label_id', 'Site account')
+    if retdata['error']:
+        return retdata
+    ArtistSiteAccounts.query.filter_by(artist_id=artist.id, label_id=label_id).delete()
     commit_session()
-    retdata['item'] = artist.to_json()
+    return retdata
+
+
+def artist_swap_site_account(artist, label_id):
+    retdata = _relation_params_check(artist, Label, ArtistSiteAccounts, label_id, 'label_id', 'Site account')
+    if retdata['error']:
+        return retdata
+    ArtistSiteAccounts.query.filter_by(artist_id=artist.id, label_id=label_id).delete()
+    swap = artist.site_account
+    artist.site_account = retdata['attach']
+    if swap is not None:
+        artist.site_accounts.append(swap)
+    commit_session()
+    return retdata
+
+
+def artist_delete_name(artist, label_id):
+    retdata = _relation_params_check(artist, Label, ArtistNames, label_id, 'label_id', 'Site account')
+    if retdata['error']:
+        return retdata
+    ArtistNames.query.filter_by(artist_id=artist.id, label_id=label_id).delete()
+    commit_session()
+    return retdata
+
+
+def artist_swap_name(artist, label_id):
+    retdata = _relation_params_check(artist, Label, ArtistNames, label_id, 'label_id', 'Name')
+    if retdata['error']:
+        return retdata
+    ArtistNames.query.filter_by(artist_id=artist.id, label_id=label_id).delete()
+    swap = artist.name
+    artist.name = retdata['attach']
+    if swap is not None:
+        artist.names.append(swap)
+    commit_session()
+    return retdata
+
+
+def artist_delete_profile(artist, description_id):
+    retdata = _relation_params_check(artist, Description, ArtistProfiles, description_id, 'description_id', 'Profile')
+    if retdata['error']:
+        return retdata
+    ArtistProfiles.query.filter_by(artist_id=artist.id, description_id=description_id).delete()
+    commit_session()
+    return retdata
+
+
+def artist_swap_profile(artist, description_id):
+    retdata = _relation_params_check(artist, Description, ArtistProfiles, description_id, 'description_id', 'Profile')
+    if retdata['error']:
+        return retdata
+    ArtistProfiles.query.filter_by(artist_id=artist.id, description_id=description_id).delete()
+    swap = artist.profile
+    artist.profile = retdata['attach']
+    if swap is not None:
+        artist.profiles.append(swap)
+    commit_session()
+    return retdata
+
+
+# ## Private functions
+
+def _relation_params_check(artist, model, m2m_model, model_id, model_field, name):
+    retdata = {'error': False}
+    attach = model.find(model_id)
+    if attach is None:
+        return set_error(retdata, "%s #%d does not exist." % (model.model_name, model_id))
+    retdata['attach'] = attach
+    m2m_row = m2m_model.query.filter_by(**{'artist_id': artist.id, model_field: model_id}).one_or_none()
+    if m2m_row is None:
+        msg = "%s with %s does not exist on %s." % (name, attach.shortlink, artist.shortlink)
+        return set_error(retdata, msg)
     return retdata

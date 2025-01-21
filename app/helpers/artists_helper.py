@@ -49,9 +49,46 @@ def check_posts_link(artist):
     return general_link("Check posts", url_for('artist.check_posts_html', id=artist.id), method="POST")
 
 
+def delete_account_link(artist, site_account):
+    return general_link("remove", url_for('artist.delete_account_html', id=artist.id, label_id=site_account.id),
+                        method="DELETE", **{'class': 'warning-link'})
+
+
+def swap_account_link(artist, site_account):
+    url = url_for('artist.swap_account_html', id=artist.id, label_id=site_account.id)
+    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+
+
+def delete_name_link(artist, name):
+    return general_link("remove", url_for('artist.delete_name_html', id=artist.id, label_id=name.id),
+                        method="DELETE", **{'class': 'warning-link'})
+
+
+def swap_name_link(artist, name):
+    url = url_for('artist.swap_name_html', id=artist.id, label_id=name.id)
+    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+
+
 def delete_profile_link(artist, profile):
     return general_link("remove", url_for('artist.delete_profile_html', id=artist.id, description_id=profile.id),
                         method="DELETE", **{'class': 'warning-link'})
+
+
+def swap_profile_link(artist, profile):
+    url = url_for('artist.swap_profile_html', id=artist.id, description_id=profile.id)
+    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+
+
+def accounts_link(artist):
+    return general_link("Accounts (%d)" % artist.site_accounts_count, url_for('artist.accounts_html', id=artist.id))
+
+
+def names_link(artist):
+    return general_link("Names (%d)" % artist.names_count, url_for('artist.names_html', id=artist.id))
+
+
+def profiles_link(artist):
+    return general_link("Profiles (%d)" % artist.profiles_count, url_for('artist.profiles_html', id=artist.id))
 
 
 # ###### GENERAL

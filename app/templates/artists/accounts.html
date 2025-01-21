@@ -1,0 +1,26 @@
+{% extends "artists/_base.html" %}
+{% from "layouts/_macros.html" import items_block %}
+
+{% block title %}
+    Old site accounts for {{ artist.header }}
+{% endblock title %}
+
+{% block content %}
+    <div id="artist-heading" class="heading">Old site accounts for {{ artist.header }}</div>
+    <div id="artist-titles-content" class="content">
+        <div id="artist-current-account" class="current-section">
+            <h4>Current account</h4>
+            <div class="artist-account-block current-block">{{ helpers.base.convert_to_html(artist.site_account_value) }}</div>
+        </div>
+        <div id="artist-old-accounts" class="old-section">
+            <h4>Old accounts</h4>
+            {% call(site_account) items_block(artist.site_accounts, 'old site accounts') %}
+                <div class="artist-accounts-block old-block">
+                    <span class="artist-account-delete old-delete">(&thinsp;{{ helpers.artist.delete_account_link(artist, site_account) }}&thinsp;)</span>
+                    <span class="artist-account-swap old-swap">(&thinsp;{{ helpers.artist.swap_account_link(artist, site_account) }}&thinsp;)</span>
+                    {{ helpers.base.convert_to_html(site_account.name) }}
+                </div>
+            {% endcall %}
+        </div>
+    </div>
+{% endblock content %}

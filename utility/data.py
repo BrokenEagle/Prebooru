@@ -162,6 +162,6 @@ def merge_dicts(a, b):
 
 
 def swap_key_value(indict, oldkey, newkey):
-    if oldkey in createparams:
-        createparams[newkey] = createparams[oldkey]
-        del createparams[oldkey]
+    if oldkey in indict:
+        indict[newkey] = indict[oldkey]
+        del indict[oldkey]

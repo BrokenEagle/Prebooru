@@ -641,7 +641,7 @@ def get_primary_url(illust):
 
 
 def get_secondary_url(illust):
-    return "https://twitter.com/%s/status/%d" % (illust.artist.current_site_account, illust.site_illust_id)
+    return "https://twitter.com/%s/status/%d" % (illust.artist.site_account_value, illust.site_illust_id)
 
 
 def normalize_image_url(image_url):
@@ -650,11 +650,11 @@ def normalize_image_url(image_url):
 
 
 def has_artist_urls(artist):
-    return (artist.current_site_account is not None) or (len(artist.site_accounts) == 1)
+    return True
 
 
 def artist_screen_name(artist):
-    return artist.current_site_account if artist.current_site_account is not None else artist.site_accounts[0]
+    return artist.site_account_value
 
 
 def artist_profile_urls(artist):
@@ -680,8 +680,6 @@ def illust_commentaries_dtext(illust):
 
 
 def artist_main_url(artist):
-    if not has_artist_urls(artist):
-        return ""
     screen_name = artist_screen_name(artist)
     return 'https://twitter.com/%s' % screen_name
 
@@ -692,7 +690,7 @@ def artist_media_url(artist):
 
 
 def artist_search_url(artist):
-    return f'https://twitter.com/search?src=typed_query&f=live&q=from%3A{artist.current_site_account}%20filter%3Alinks'
+    return f'https://twitter.com/search?src=typed_query&f=live&q=from%3A{artist.site_account_value}%20filter%3Alinks'
 
 
 def process_twitter_timestring(time_string):
@@ -1322,11 +1320,10 @@ def get_artist_parameters_from_twuser(twuser):
         'site_id': SITE.id,
         'site_artist_id': int(twuser['id_str']),
         'site_created': process_twitter_timestring(twuser['created_at']),
-        'current_site_account': twuser['screen_name'],
         'active': True,
-        'names': [twuser['name']],
-        'site_accounts': [twuser['screen_name']],
-        'profiles': get_twuser_profile(twuser) or None,
+        'name': twuser['name'],
+        'site_account': twuser['screen_name'],
+        'profile': get_twuser_profile(twuser) or None,
         'webpages': get_twuser_webpages(twuser),
     }
 
@@ -1429,7 +1426,7 @@ def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, unt
     job_status['stage'] = 'querying'
     since_date = since_date if since_date is not None and re.match(r'\d{4}-\d{2}-\d{2}', since_date) else None
     until_date = until_date if until_date is not None and re.match(r'\d{4}-\d{2}-\d{2}', until_date) else None
-    tweet_ids = populate_twitter_search_timeline(artist.current_site_account, since_date, until_date, filter_links,
+    tweet_ids = populate_twitter_search_timeline(artist.site_account_value, since_date, until_date, filter_links,
                                                  user_id=artist.site_artist_id, job_id=job_id, job_status=job_status)
     return populate_artist_recheck_active(artist) if tweet_ids is None else tweet_ids
 

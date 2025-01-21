@@ -6,25 +6,24 @@ from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, StringField
 from wtforms.validators import DataRequired
 
-# ## PACKAGE IMPORTS
-from utility.data import random_id
-
 # ## LOCAL IMPORTS
 from .. import SCHEDULER
 from ..models import Artist, Booru
 from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
+from ..logical.sources import source_by_site_name
 from ..logical.sources.base_src import get_artist_required_params
 from ..logical.sources.danbooru_src import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion,\
-    artist_delete_profile
+    artist_delete_site_account, artist_swap_site_account, artist_delete_name, artist_swap_name,\
+    artist_delete_profile, artist_swap_profile
 from ..logical.records.post_rec import check_artist_posts_for_danbooru_id
 from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
     artist_append_booru
 from ..logical.database.booru_db import create_booru_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
-    parse_array_parameter, check_param_requirements, int_or_blank, nullify_blanks, set_default, parse_bool_parameter,\
+    check_param_requirements, int_or_blank, nullify_blanks, set_default, parse_bool_parameter,\
     hide_input, index_html_response
 
 
@@ -32,16 +31,13 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("artist", __name__)
 
-CREATE_REQUIRED_PARAMS = ['site_id', 'site_artist_id']
+REQUIRED_PARAMS = ['site_id', 'site_artist_id', 'site_account']
 VALUES_MAP = {
-    'site_accounts': 'site_accounts',
-    'site_account_string': 'site_accounts',
-    'names': 'names',
-    'name_string': 'names',
+    'site_account': 'site_account',
+    'name': 'name',
+    'profile': 'profile',
     'webpages': 'webpages',
     'webpage_string': 'webpages',
-    'profiles': 'profiles',
-    'profile': 'profiles',
     **{k: k for k in Artist.__table__.columns.keys()},
 }
 
@@ -49,24 +45,24 @@ VALUES_MAP = {
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(Artist._site_accounts),
-    selectinload(Artist._names),
-    selectinload(Artist._profiles),
+    selectinload(Artist.site_account),
+    selectinload(Artist.name),
+    selectinload(Artist.profile),
     selectinload(Artist.webpages),
     selectinload(Artist.notations),
     selectinload(Artist.boorus),
 )
 
 INDEX_HTML_OPTIONS = (
-    selectinload(Artist._site_accounts),
-    selectinload(Artist._names),
+    selectinload(Artist.site_account),
+    selectinload(Artist.name),
     selectinload(Artist.webpages),
 )
 
 JSON_OPTIONS = (
-    selectinload(Artist._site_accounts),
-    selectinload(Artist._names),
-    selectinload(Artist._profiles),
+    selectinload(Artist.site_account),
+    selectinload(Artist.name),
+    selectinload(Artist.profile),
     selectinload(Artist.webpages),
 )
 
@@ -90,9 +86,9 @@ FORM_CONFIG = {
     'site_artist_id': {
         'name': 'Site Artist ID',
         'field': IntegerField,
-    },
-    'current_site_account': {
-        'field': StringField,
+        'kwargs': {
+            'validators': [DataRequired()],
+        },
     },
     'site_created': {
         'field': StringField,
@@ -100,19 +96,16 @@ FORM_CONFIG = {
             'description': "Format must be ISO8601 timestamp (e.g. 2021-05-24T04:46:51).",
         },
     },
-    'site_account_string': {
-        'name': 'Site Accounts',
-        'field': TextAreaField,
+    'site_account': {
+        'name': 'Site Account',
+        'field': StringField,
         'kwargs': {
-            'description': "Separated by whitespace.",
+            'validators': [DataRequired()],
         },
     },
-    'name_string': {
-        'name': 'Site Names',
-        'field': TextAreaField,
-        'kwargs': {
-            'description': "Separated by carriage returns.",
-        },
+    'name': {
+        'name': 'Name',
+        'field': StringField,
     },
     'webpage_string': {
         'name': 'Webpages',
@@ -160,9 +153,6 @@ def uniqueness_check(dataparams, artist):
 
 def convert_data_params(dataparams):
     params = get_artist_form(**dataparams).data
-    params['site_accounts'] = parse_array_parameter(dataparams, 'site_accounts', 'site_account_string', r'\s')
-    params['names'] = parse_array_parameter(dataparams, 'names', 'name_string', r'\r?\n')
-    params['webpages'] = parse_array_parameter(dataparams, 'webpages', 'webpage_string', r'\r?\n')
     params['active'] = parse_bool_parameter(dataparams, 'active')
     params['primary'] = parse_bool_parameter(dataparams, 'primary')
     params = nullify_blanks(params)
@@ -173,8 +163,6 @@ def convert_create_params(dataparams):
     createparams = convert_data_params(dataparams)
     set_default(createparams, 'active', True)
     set_default(createparams, 'primary', True)
-    createparams['profiles'] = [dataparams['profile']]
-    createparams['profiles'] = [dataparams['profile']] if len(dataparams['profile']) else None
     return createparams
 
 
@@ -182,8 +170,6 @@ def convert_update_params(dataparams):
     updateparams = convert_data_params(dataparams)
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
-    if 'profile' in dataparams:
-        updateparams['profiles'] = dataparams['profile']
     return updateparams
 
 
@@ -202,21 +188,13 @@ def create():
     dataparams = get_data_params(request, 'artist')
     createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    if createparams['site_id'] == site_descriptor.custom.id and createparams['site_artist_id'] is None:
-        for i in range(100):
-            createparams['site_artist_id'] = random_id()
-            if uniqueness_check(createparams, Artist()) is None:
-                break
-        else:
-            return set_error(retdata, "Unable to find available site artist ID... check the data or try again.")
-    else:
-        errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
-        if len(errors) > 0:
-            return set_error(retdata, '\n'.join(errors))
-        check_artist = uniqueness_check(createparams, Artist())
-        if check_artist is not None:
-            retdata['item'] = check_artist.to_json()
-            return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
+    errors = check_param_requirements(createparams, REQUIRED_PARAMS, 'create')
+    if len(errors) > 0:
+        return set_error(retdata, '\n'.join(errors))
+    check_artist = uniqueness_check(createparams, Artist())
+    if check_artist is not None:
+        retdata['item'] = check_artist.to_json()
+        return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
     artist = create_artist_from_parameters(createparams)
     retdata['item'] = artist.to_json()
     return retdata
@@ -226,6 +204,9 @@ def update(artist):
     dataparams = get_data_params(request, 'artist')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
+    errors = check_param_requirements(updateparams, REQUIRED_PARAMS, 'update')
+    if len(errors) > 0:
+        return set_error(retdata, '\n'.join(errors))
     check_artist = uniqueness_check(updateparams, artist)
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
@@ -246,7 +227,7 @@ def query_create():
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
         return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
-    source = retdata['site'].source
+    source = source_by_site_name(retdata['site_name'])
     createparams = retdata['data'] = source.get_artist_data(retdata['site_artist_id'])
     if not createparams['active']:
         return set_error(retdata, "Artist account does not exist!")
@@ -278,12 +259,57 @@ def query_booru(artist):
     return {'error': False, 'artist': artist, 'boorus': artist.boorus}
 
 
+def delete_site_account(artist):
+    label_id = request.values.get('label_id', type=int)
+    retdata = {'error': False, 'params': {'label_id': label_id}}
+    if label_id is None:
+        return set_error(retdata, "Description ID not set or a bad value.")
+    retdata.update(artist_delete_site_account(artist, label_id))
+    return retdata
+
+
+def swap_site_account(artist):
+    label_id = request.values.get('label_id', type=int)
+    retdata = {'error': False, 'params': {'label_id': label_id}}
+    if label_id is None:
+        return set_error(retdata, "Label ID not set or a bad value.")
+    retdata.update(artist_swap_site_account(artist, label_id))
+    return retdata
+
+
+def delete_name(artist):
+    label_id = request.values.get('label_id', type=int)
+    retdata = {'error': False, 'params': {'label_id': label_id}}
+    if label_id is None:
+        return set_error(retdata, "Label ID not set or a bad value.")
+    retdata.update(artist_delete_name(artist, label_id))
+    return retdata
+
+
+def swap_name(artist):
+    label_id = request.values.get('label_id', type=int)
+    retdata = {'error': False, 'params': {'label_id': label_id}}
+    if label_id is None:
+        return set_error(retdata, "Description ID not set or a bad value.")
+    retdata.update(artist_swap_name(artist, label_id))
+    return retdata
+
+
 def delete_profile(artist):
     description_id = request.values.get('description_id', type=int)
     retdata = {'error': False, 'params': {'description_id': description_id}}
     if description_id is None:
         return set_error(retdata, "Description ID not set or a bad value.")
     retdata.update(artist_delete_profile(artist, description_id))
+    return retdata
+
+
+def swap_profile(artist):
+    description_id = request.values.get('description_id', type=int)
+    retdata = {'error': False, 'params': {'description_id': description_id}}
+    if description_id is None:
+        return set_error(retdata, "Description ID not set or a bad value.")
+    retdata.update(artist_swap_profile(artist, description_id))
     return retdata
 
 
@@ -349,15 +375,15 @@ def edit_html(id):
     """HTML access point to update function."""
     artist = get_or_abort(Artist, id)
     editparams = artist.basic_json(True)
-    editparams['site_account_string'] = '\r\n'.join(artist.site_accounts)
-    editparams['name_string'] = '\r\n'.join(artist.names)
+    editparams['site_account'] = artist.site_account_value
+    editparams['name'] = artist.name_value
     marked_urls = ((('' if webpage.active else '-') + webpage.url) for webpage in artist.webpages)
     editparams['webpage_string'] = '\r\n'.join(marked_urls)
+    editparams['profile'] = artist.profile_body
     form = get_artist_form(**editparams)
     if artist.illust_count > 0:
         # Artists with illusts cannot have their critical identifiers changed
         hide_input(form, 'site_id')
-        hide_input(form, 'site_artist_id')
     return render_template("artists/edit.html", form=form, artist=artist)
 
 
@@ -393,7 +419,6 @@ def delete_html(id):
 
 
 # ###### MISC
-
 
 @bp.route('/artists/query_create', methods=['POST'])
 def query_create_html():
@@ -432,6 +457,50 @@ def query_booru_html(id):
     return redirect(url_for('artist.show_html', id=id))
 
 
+@bp.route('/artists/<int:id>/account', methods=['DELETE'])
+def delete_account_html(id):
+    artist = get_or_abort(Artist, id)
+    results = delete_site_account(artist)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Profile deleted.')
+    return redirect(request.referrer)
+
+
+@bp.route('/artists/<int:id>/account', methods=['PUT'])
+def swap_account_html(id):
+    artist = get_or_abort(Artist, id)
+    results = swap_site_account(artist)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Profile swapped.')
+    return redirect(request.referrer)
+
+
+@bp.route('/artists/<int:id>/name', methods=['DELETE'])
+def delete_name_html(id):
+    artist = get_or_abort(Artist, id)
+    results = delete_name(artist)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Profile deleted.')
+    return redirect(request.referrer)
+
+
+@bp.route('/artists/<int:id>/name', methods=['PUT'])
+def swap_name_html(id):
+    artist = get_or_abort(Artist, id)
+    results = swap_name(artist)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Profile swapped.')
+    return redirect(request.referrer)
+
+
 @bp.route('/artists/<int:id>/profile', methods=['DELETE'])
 def delete_profile_html(id):
     artist = get_or_abort(Artist, id)
@@ -440,7 +509,18 @@ def delete_profile_html(id):
         flash(results['message'], 'error')
     else:
         flash('Profile deleted.')
-    return redirect(url_for('artist.show_html', id=id))
+    return redirect(request.referrer)
+
+
+@bp.route('/artists/<int:id>/profile', methods=['PUT'])
+def swap_profile_html(id):
+    artist = get_or_abort(Artist, id)
+    results = swap_profile(artist)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Profile swapped.')
+    return redirect(request.referrer)
 
 
 @bp.route('/artists/<int:id>/check_posts', methods=['POST'])
@@ -449,3 +529,21 @@ def check_posts_html(id):
     SCHEDULER.add_job("check_artist_posts_for_danbooru_id-%d" % id, check_artist_posts_for_danbooru_id, args=(id,))
     flash('Job started.')
     return redirect(url_for('artist.show_html', id=id))
+
+
+@bp.route('/artists/<int:id>/accounts', methods=['GET'])
+def accounts_html(id):
+    artist = get_or_abort(Artist, id)
+    return render_template("artists/accounts.html", artist=artist)
+
+
+@bp.route('/artists/<int:id>/names', methods=['GET'])
+def names_html(id):
+    artist = get_or_abort(Artist, id)
+    return render_template("artists/names.html", artist=artist)
+
+
+@bp.route('/artists/<int:id>/profiles', methods=['GET'])
+def profiles_html(id):
+    artist = get_or_abort(Artist, id)
+    return render_template("artists/profiles.html", artist=artist)

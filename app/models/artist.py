@@ -6,6 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
+from utility.data import list_difference
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -18,7 +19,7 @@ from .subscription import Subscription
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions
+from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions, relation_association_proxy
 
 
 # ## GLOBAL VARIABLES
@@ -51,7 +52,9 @@ class Artist(JsonModel):
         get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
                                  tblname='artist', nullable=False)
     site_artist_id = DB.Column(DB.Integer, nullable=False)
-    current_site_account = DB.Column(DB.String(255), nullable=False)
+    site_account_id = DB.Column(DB.Integer, DB.ForeignKey('label.id'), nullable=False)
+    name_id = DB.Column(DB.Integer, DB.ForeignKey('label.id'), nullable=True)
+    profile_id = DB.Column(DB.Integer, DB.ForeignKey('description.id'), nullable=True)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     active = DB.Column(DB.Boolean, nullable=False)
     primary = DB.Column(DB.Boolean, nullable=False)
@@ -59,12 +62,12 @@ class Artist(JsonModel):
     updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # ## Relationships
-    _site_accounts = DB.relationship(Label, secondary=ArtistSiteAccounts, lazy=True, uselist=True,
-                                     backref=DB.backref('site_account_artists', lazy=True, uselist=True))
-    _names = DB.relationship(Label, secondary=ArtistNames, lazy=True, uselist=True,
-                             backref=DB.backref('name_artists', lazy=True, uselist=True))
-    _profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True, uselist=True,
-                                backref=DB.backref('artists', lazy=True, uselist=True))
+    site_account = DB.relationship(Label, lazy=True, uselist=False, foreign_keys=[site_account_id])
+    name = DB.relationship(Label, lazy=True, uselist=False, foreign_keys=[name_id])
+    profile = DB.relationship(Description, lazy=True, uselist=False)
+    site_accounts = DB.relationship(Label, secondary=ArtistSiteAccounts, lazy=True, uselist=True)
+    names = DB.relationship(Label, secondary=ArtistNames, lazy=True, uselist=True)
+    profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True, uselist=True)
     illusts = DB.relationship(Illust, lazy=True, uselist=True, cascade="all, delete",
                               backref=DB.backref('artist', lazy=True, uselist=False))
     subscription = DB.relationship(Subscription, lazy=True, uselist=False, cascade="all, delete",
@@ -76,9 +79,12 @@ class Artist(JsonModel):
     # (MtM) boorus [Booru]
 
     # ## Association proxies
-    site_accounts = association_proxy('_site_accounts', 'name', creator=label_creator)
-    names = association_proxy('_names', 'name', creator=label_creator)
-    profiles = association_proxy('_profiles', 'body', creator=description_creator)
+    site_account_value = relation_association_proxy('site_account_id', 'site_account', 'name', label_creator)
+    name_value = relation_association_proxy('name_id', 'name', 'name', label_creator)
+    profile_body = relation_association_proxy('profile_id', 'profile', 'body', description_creator)
+    site_account_values = association_proxy('site_accounts', 'name', creator=label_creator)
+    name_values = association_proxy('names', 'name', creator=label_creator)
+    profile_bodies = association_proxy('profiles', 'body', creator=description_creator)
 
     # ## Instance properties
 
@@ -93,10 +99,6 @@ class Artist(JsonModel):
     @property
     def primary_url(self):
         return self.source.ARTIST_HREFURL % self.site_artist_id
-
-    @property
-    def other_site_accounts(self):
-        return [account for account in self.site_accounts if account != self.current_site_account]
 
     @memoized_property
     def recent_posts(self):
@@ -116,6 +118,18 @@ class Artist(JsonModel):
     @property
     def post_count(self):
         return self._post_query.distinct_count()
+
+    @property
+    def site_accounts_count(self):
+        return ArtistSiteAccounts.query.filter_by(artist_id=self.id).get_count()
+
+    @property
+    def names_count(self):
+        return ArtistNames.query.filter_by(artist_id=self.id).get_count()
+
+    @property
+    def profiles_count(self):
+        return ArtistProfiles.query.filter_by(artist_id=self.id).get_count()
 
     @memoized_property
     def last_illust(self):
@@ -150,9 +164,9 @@ class Artist(JsonModel):
         return '%s-%d' % (self.site.name, self.site_artist_id)
 
     def delete(self):
-        self._names.clear()
-        self._profiles.clear()
-        self._site_accounts.clear()
+        self.names.clear()
+        self.profiles.clear()
+        self.site_accounts.clear()
         DB.session.delete(self)
         DB.session.commit()
 
@@ -169,18 +183,24 @@ class Artist(JsonModel):
 
     @classproperty(cached=True)
     def load_columns(cls):
-        return super().load_columns + ['site_name']
+        return super().load_columns + ['site_name', 'site_account_value', 'name_value', 'profile_body']
 
-    archive_excludes = {'site', 'site_id', 'current_site_account'}
-    archive_includes = {('site', 'site_name'), ('current_account', 'current_site_account')}
-    archive_scalars = ['profiles', 'names', ('accounts', 'other_site_accounts', 'site_accounts',
-                                             lambda x: x.site_accounts.append(x.current_site_account))]
+    archive_excludes = {'site', 'site_id', 'site_account_id', 'name_id', 'profile_id'}
+    archive_includes = {('site', 'site_name'), ('site_account', 'site_account_value'),
+                        ('name', 'name_value'), ('profile', 'profile_body')}
+    archive_scalars = [('site_accounts', 'site_account_values'), ('names', 'name_values'),
+                       ('profiles', 'profile_bodies')]
     archive_attachments = ['webpages', 'notations']
     archive_links = [('boorus', 'danbooru_id')]
 
     @classproperty(cached=True)
+    def repr_attributes(cls):
+        return list_difference(super().json_attributes, ['site_id', 'site_account_id', 'name_id', 'profile_id'])\
+            + ['site_name', 'site_account_value', 'name_value']
+
+    @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['site_artist_id_str', 'site_accounts', 'names', 'webpages', 'profiles']
+        return cls.repr_attributes + ['site_artist_id_str', 'profile_body', 'webpages']
 
     # ## Private
 

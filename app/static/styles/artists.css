@@ -69,11 +69,10 @@ section#artist-site-info {
     width: 25%;
 }
 
-section#artist-labels {
+section#artist-values {
     width: 25%;
 }
 
-section#artist-labels > ul,
 section#artist-webpages > ul {
     overflow-y: auto;
     height: 8em;
@@ -141,4 +140,42 @@ span.artist-webpage span.inactive {
 span.nonprimary-artist {
     color: #888;
     font-size: 0.8em;
+}
+
+/****OLD PROFILES/ACCOUNTS/NAMES****/
+div.content {
+    display: flex;
+}
+
+div.current-section {
+    width: 45%;
+    margin-left: 1em;
+}
+div.old-section {
+    width: 50%;
+    margin-left: 1em;
+}
+
+div.current-block {
+    margin: 0.5em;
+}
+
+div.old-block {
+    margin: 0.2em;
+    padding: 0.2em 5em 0.2em 0.2em;
+    border: 1px solid #DDD;
+    min-height: 2.5em;
+    position: relative;
+}
+
+span.old-delete {
+    position: absolute;
+    right: 0.1em;
+    top: 0.1em;
+}
+
+span.old-swap {
+    position: absolute;
+    right: 0.1em;
+    top: 1.5em;
 }

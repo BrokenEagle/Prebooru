@@ -110,7 +110,7 @@ def get_artist_required_params(url):
     source = get_artist_source(url)
     if source is None:
         return set_error(retdata, "Not a valid artist URL.")
-    retdata['site'] = source.SITE
+    retdata['site_name'] = source.SITE.name
     ret = source.get_artist_id(url)
     if ret is None:
         return set_error(retdata, "Unable to find site artist ID with URL.")

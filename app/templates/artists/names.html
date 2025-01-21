@@ -1,0 +1,26 @@
+{% extends "artists/_base.html" %}
+{% from "layouts/_macros.html" import items_block %}
+
+{% block title %}
+    Old names for {{ artist.header }}
+{% endblock title %}
+
+{% block content %}
+    <div id="artist-heading" class="heading">Old names for {{ artist.header }}</div>
+    <div id="artist-titles-content" class="content">
+        <div id="artist-current-name" class="current-section">
+            <h4>Current name</h4>
+            <div class="artist-name-block current-block">{{ helpers.base.convert_to_html(artist.name_value) }}</div>
+        </div>
+        <div id="artist-old-names" class="old-section">
+            <h4>Old names</h4>
+            {% call(name) items_block(artist.names, 'old names') %}
+                <div class="artist-names-block old-block">
+                    <span class="artist-name-delete old-delete">(&thinsp;{{ helpers.artist.delete_name_link(artist, name) }}&thinsp;)</span>
+                    <span class="artist-name-swap old-swap">(&thinsp;{{ helpers.artist.swap_name_link(artist, name) }}&thinsp;)</span>
+                    {{ helpers.base.convert_to_html(name.name) }}
+                </div>
+            {% endcall %}
+        </div>
+    </div>
+{% endblock content %}

@@ -31,7 +31,7 @@
                                     <strong>Site ID:</strong> {{ artist.site_artist_id }}
                                 </li>
                                 <li>
-                                    <strong>Account:</strong> {{ helpers.base.val_or_none(artist.current_site_account) }}
+                                    <strong>Account:</strong> {{ helpers.base.val_or_none(artist.site_account_value) }}
                                 </li>
                                 <li>
                                     <strong>Links:</strong> {{ helpers.artist.artist_links(artist) }}

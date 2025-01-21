@@ -1,0 +1,30 @@
+{% extends "artists/_base.html" %}
+{% from "layouts/_macros.html" import items_block %}
+
+{% block title %}
+    Old profiles for {{ artist.header }}
+{% endblock title %}
+
+{% block content %}
+    <div id="artist-heading" class="heading">Old profiles for {{ artist.header }}</div>
+    <div id="artist-titles-content" class="content">
+        <div id="artist-current-profile" class="current-section">
+            <h4>Current profile</h4>
+            {% if artist.profile is not none %}
+                <div class="artist-profile-block current-block">{{ helpers.base.convert_to_html(artist.profile_body) }}</div>
+            {% else %}
+                <span class="explanation">There is no profile.</span>
+            {% endif %}
+        </div>
+        <div id="artist-old-profiles" class="old-section">
+            <h4>Old profiles</h4>
+            {% call(profile) items_block(artist.profiles, 'old profiles') %}
+                <div class="artist-profiles-block old-block">
+                    <span class="artist-profile-delete old-delete">(&thinsp;{{ helpers.artist.delete_profile_link(artist, profile) }}&thinsp;)</span>
+                    <span class="artist-profile-swap old-swap">(&thinsp;{{ helpers.artist.swap_profile_link(artist, profile) }}&thinsp;)</span>
+                    {{ helpers.base.convert_to_html(profile.body) }}
+                </div>
+            {% endcall %}
+        </div>
+    </div>
+{% endblock content %}

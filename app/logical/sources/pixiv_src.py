@@ -106,12 +106,10 @@ MINIMUM_QUERY_INTERVAL = 2
 # #### Auxiliary functions
 
 def has_artist_urls(artist):
-    return (artist.current_site_account is not None) or (len(artist.site_accounts) == 1)
+    return True
 
 
 def artist_main_url(artist):
-    if not has_artist_urls(artist):
-        return ""
     return ARTIST_HREFURL % artist.site_artist_id
 
 
@@ -493,11 +491,10 @@ def get_artist_parameters_from_pxuser(pxuser, artwork):
         'site_id': SITE.id,
         'site_artist_id': int(pxuser['userId']),
         'site_created': None,
-        'current_site_account': artwork['userAccount'] if artwork is not None else None,
         'active': True,
-        'names': [pxuser['name']],
-        'site_accounts': [artwork['userAccount']] if artwork is not None else [],
-        'profiles': fixup_crlf(pxuser['comment']) or None,
+        'name': pxuser['name'],
+        'site_account': artwork['userAccount'],
+        'profile': fixup_crlf(pxuser['comment']) or None,
         'webpages': get_pixiv_user_webpages(pxuser)
     }
 
