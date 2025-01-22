@@ -18,8 +18,9 @@ from utility.uprint import print_warning
 # ## LOCAL IMPORTS
 from .. import SCHEDULER, SESSION, MAIN_PROCESS
 from ..models import Download, DownloadElement, IllustUrl, Illust
-from ..enum_imports import site_descriptor
 from ..logical.utility import set_error
+from ..logical.sites import site_name_by_url
+from ..logical.sources import source_by_site_name
 from ..logical.records.download_rec import process_download
 from ..logical.records.media_file_rec import batch_get_or_create_media
 from ..logical.database.download_db import create_download_from_parameters, update_download_from_parameters,\
@@ -120,12 +121,12 @@ def validate_request_url(request_url):
     parse = urllib.parse.urlparse(request_url)
     if not all([parse.scheme, parse.netloc]):
         return "Request url is not a valid URL"
-    site = site_descriptor.get_site_from_url(request_url)
-    if site.name == 'custom':
+    site_name = site_name_by_url(request_url)
+    if site_name == 'custom':
         return "%s not a valid domain for request URLs" % parse.netloc
-    source = site.source
+    source = source_by_site_name(site_name)
     if not source.is_request_url(request_url):
-        return "Request URL not valid for %s" % site.name
+        return "Request URL not valid for %s" % site_name
     return source
 
 
@@ -317,7 +318,7 @@ def download_check_html(id):
 @bp.route('/downloads/<int:id>/resubmit', methods=['POST'])
 def resubmit_html(id):
     download = get_or_abort(Download, id)
-    update_download_from_parameters(download, {'status': 'pending'})
+    update_download_from_parameters(download, {'status_name': 'pending'})
     SCHEDULER.add_job("process_download-%d" % id, process_download, args=(id,))
     return redirect(request.referrer)
 

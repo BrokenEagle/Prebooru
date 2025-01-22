@@ -7,12 +7,13 @@ import math
 from flask import url_for
 
 # ## PACKAGE IMPORTS
-from config import DEFAULT_PAGINATE_LIMIT, USE_ENUMS
+from config import DEFAULT_PAGINATE_LIMIT
+from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
-from ..enum_imports import pool_element_type
-from .base import JsonModel, get_relation_definitions
+from .model_enums import PoolElementType
+from .base import JsonModel, IntEnum, register_enum_column
 
 
 # ## FUNCTIONS
@@ -50,9 +51,7 @@ class PoolElement(JsonModel):
     illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
     notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
     position = DB.Column(DB.Integer, nullable=False)
-    type, type_id, type_name, type_enum, type_filter, type_col =\
-        get_relation_definitions(pool_element_type, relname='type', relcol='id', colname='type_id',
-                                 tblname='pool_element', nullable=False)
+    type_id = DB.Column(IntEnum, DB.ForeignKey('pool_element_type.id'), nullable=False)
 
     # ## Relationships
     # (MtO) pool [Pool]
@@ -71,13 +70,17 @@ class PoolElement(JsonModel):
 
     # ## Class properties
 
+    @classproperty(cached=False)
+    def repr_attributes(cls):
+        return ['id', 'pool_id', 'post_id', 'illust_id', 'notation_id', 'type']
+
     polymorphic_base = True
 
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': pool_element_type.pool_element.id,
-        'polymorphic_on': type if USE_ENUMS else type_id,
+        'polymorphic_identity': PoolElementType.pool_element.id,
+        'polymorphic_on': type_id,
     }
     __table_args__ = (
         DB.CheckConstraint(
@@ -96,12 +99,16 @@ class PoolPost(PoolElement):
 
     # ## Class properties
 
+    @classproperty(cached=False)
+    def repr_attributes(cls):
+        return ['id', 'pool_id', 'post_id', 'type']
+
     polymorphic_base = False
 
     # #### Private
 
     __mapper_args__ = {
-        'polymorphic_identity': pool_element_type.pool_post.id,
+        'polymorphic_identity': PoolElementType.pool_post.id,
     }
 
 
@@ -115,11 +122,15 @@ class PoolIllust(PoolElement):
 
     # ## Class properties
 
+    @classproperty(cached=False)
+    def repr_attributes(cls):
+        return ['id', 'pool_id', 'illust_id', 'type']
+
     polymorphic_base = False
 
     # #### Private
     __mapper_args__ = {
-        'polymorphic_identity': pool_element_type.pool_illust.id,
+        'polymorphic_identity': PoolElementType.pool_illust.id,
     }
 
 
@@ -133,11 +144,15 @@ class PoolNotation(PoolElement):
 
     # ## Class properties
 
+    @classproperty(cached=False)
+    def repr_attributes(cls):
+        return ['id', 'pool_id', 'notation_id', 'type']
+
     polymorphic_base = False
 
     # ## Private
     __mapper_args__ = {
-        'polymorphic_identity': pool_element_type.pool_notation.id,
+        'polymorphic_identity': PoolElementType.pool_notation.id,
     }
 
 
@@ -160,3 +175,4 @@ def initialize():
         'illust': PoolIllust,
         'notation': PoolNotation,
     }
+    register_enum_column(PoolElement, PoolElementType, 'type')

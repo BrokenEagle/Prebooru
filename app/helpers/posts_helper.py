@@ -52,7 +52,7 @@ def similar_search_links(post, format_url, proxy_url=None):
             else:
                 image_links.append('N/A')
             continue
-        source = illust.site.source
+        source = illust.source
         media_url = source.get_media_url(illust_url)
         if source.is_video_url(media_url):
             small_url = source.get_sample_url(illust_url)

@@ -10,7 +10,7 @@ from sqlalchemy.orm import lazyload, selectinload
 from utility.data import eval_bool_string, is_falsey
 
 # ## LOCAL IMPORTS
-from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust
+from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust, PostType
 from ..logical.records.post_rec import create_sample_preview_files, create_video_sample_preview_files,\
     archive_post_for_deletion
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -133,8 +133,8 @@ def index_html():
     q = index()
     if request.args.get('search[type]') is None:
         post_type = request.args.get('type')
-        if post_type in Post.type_enum.names:
-            q = q.enum_join(Post.type_enum).filter(Post.type_filter('name', '__eq__', post_type))
+        if PostType.has_name(post_type):
+            q = q.filter(Post.type_value == post_type)
     q = q.options(INDEX_HTML_OPTIONS)
     page = paginate(q, request, max_limit=MAX_LIMIT_HTML, distinct=True)
     edit_posts = request.values.get('edit_posts', type=eval_bool_string, default=False)

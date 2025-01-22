@@ -1,10 +1,11 @@
 # APP/LOGICAL/SITES.PY
 
+# ## PACKAGE IMPORTS
+from utility.data import merge_dicts
+
 # ## PYTHON IMPORTS
 import urllib.parse
 
-# ## PACKAGE IMPORTS
-from utility.data import merge_dicts
 
 # ## GLOBAL VARIABLES
 
@@ -22,42 +23,19 @@ DOMAIN_ALIASES = {
     'x.com': 'twitter',
 }
 
-DOMAINS = merge_dicts({v: k for k, v in SITES.items()}, DOMAIN_ALIASES)
+DOMAINS = merge_dicts({v: k for k, v in SITES.items() if v is not None}, DOMAIN_ALIASES)
 
 
 # ## FUNCTIONS
 
-@property
-def source(self):
-    from .sources import SOURCEDICT
-    return SOURCEDICT[self.name]
-
-
-@property
-def domain(self):
-    return SITES[self.name]
-
-
-@classmethod
-def get_site_from_domain(cls, domain):
-    if domain in DOMAINS:
-        s = DOMAINS[domain]
-        return getattr(cls, s)
-    return getattr(cls, 'custom')
-
-
-@classmethod
-def get_site_from_url(cls, url):
+def site_name_by_url(url):
     parse = urllib.parse.urlparse(url)
-    return cls.get_site_from_domain(parse.netloc)
+    return DOMAINS.get(parse.netloc)
 
 
-@classmethod
-def get_site_from_id(cls, id):
-    val = cls.find(id)
-    if val is not None:
-        return val.copy()
-    values = cls.values
-    if id in values:
-        name = cls.names[values.index(id)]
-        return cls(id=id, name=name)
+def site_name_by_domain(domain):
+    return DOMAINS.get(domain)
+
+
+def domain_by_site_name(site_name):
+    return SITES.get(site_name)

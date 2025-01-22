@@ -13,15 +13,14 @@ from .base_db import set_column_attributes, add_record, save_record, commit_sess
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['type_id', 'simcheck', 'alternate', 'width', 'height', 'size', 'file_ext', 'md5', 'pixel_md5',
-                        'duration', 'audio']
+ANY_WRITABLE_COLUMNS = ['type_name', 'simcheck', 'alternate', 'width', 'height', 'size', 'file_ext', 'md5',
+                        'pixel_md5', 'duration', 'audio']
 NULL_WRITABLE_ATTRIBUTES = ['danbooru_id']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
                                                 .with_entities(SubscriptionElement.post_id)
 NO_SUBELEMENT_CLAUSE = Post.id.not_in(SUBELEMENT_SUBCLAUSE)
 
-TYPE_CLAUSE = Post.type_filter('name', '__eq__', 'user')
 SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
                                                .with_entities(SubscriptionElement.post_id)
 
@@ -51,8 +50,6 @@ def update_post_from_parameters(post, updateparams, commit=True):
 # #### Set
 
 def set_post_from_parameters(post, setparams, action, commit):
-    if 'type' in setparams:
-        setparams['type_id'] = Post.type_enum.by_name(setparams['type']).id
     if set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(post, action, commit=commit)
     return post
@@ -67,7 +64,7 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, durati
         'file_ext': file_ext,
         'md5': md5,
         'size': size,
-        'type_id': Post.type_enum.by_name(post_type).id,
+        'type_name': post_type,
         'pixel_md5': pixel_md5,
         'duration': duration,
         'audio': has_audio,
@@ -123,8 +120,8 @@ def missing_image_hashes_query():
 
 
 def missing_similarity_matches_query():
-    query = Post.query.enum_join(Post.type_enum)
-    return query.filter(Post.simcheck.is_(False), or_(TYPE_CLAUSE, Post.id.not_in(SUBELEMENT_SUBQUERY)))
+    return Post.query.filter(Post.simcheck.is_(False),
+                             or_(Post.type_value == 'user', Post.id.not_in(SUBELEMENT_SUBQUERY)))
 
 
 def get_all_posts_page(limit):

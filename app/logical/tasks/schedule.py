@@ -182,7 +182,7 @@ def check_pending_subscriptions_task():
                 printer("Processing subscription:", subscription.id)
                 if not _process_pending_subscription(subscription, printer):
                     print_warning("Token has expired... disabling check pending subscriptions task.")
-                    update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
+                    update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False)
                     update_subscriptions = [subscription for subscription in subscriptions
                                             if subscription.status.name == 'automatic']
                     _update_subscriptions_status(update_subscriptions, 'idle')
@@ -432,12 +432,12 @@ def _process_pending_subscription(subscription, printer):
 
     def error_func(scope_vars, error):
         nonlocal subscription
-        update_subscription_from_parameters(subscription, {'status': 'error'}, update=False)
+        update_subscription_from_parameters(subscription, {'status_name': 'error'}, update=False)
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
         if error is None and subscription.status.name != 'error':
-            update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
+            update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False)
         elif str(error) == "Should not authenticate with user auth.":
             return False
         return True
@@ -452,11 +452,11 @@ def _pending_subscription_callback(subscription_ids):
     subscriptions = get_subscription_by_ids(subscription_ids)
     for subscription in subscriptions:
         if subscription.status.name == 'automatic':
-            update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
+            update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False)
     SESSION.remove()
 
 
 def _update_subscriptions_status(subscriptions, status):
     for subscription in subscriptions:
-        update_subscription_from_parameters(subscription, {'status': status}, commit=False, update=False)
+        update_subscription_from_parameters(subscription, {'status_name': status}, commit=False, update=False)
     commit_session()

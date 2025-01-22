@@ -56,16 +56,17 @@ def create_image_post(buffer, illust_url, post_type):
     if isinstance(image, tuple):
         retdata['errors'].append(image)
         return retdata
+    md5 = get_buffer_checksum(buffer)
     params = {
-        'md5': get_buffer_checksum(buffer),
+        'md5': md5,
         'size': len(buffer),
         'width': image.width,
         'height': image.height,
         'pixel_md5': get_pixel_hash(image),
         'file_ext': file_ext,
-        'type': post_type,
+        'type_name': post_type,
     }
-    temppost = Post(**params)
+    temppost = Post(md5=md5, file_ext=file_ext)
     result = create_data(buffer, temppost.file_path)
     if result is not None:
         retdata['errors'].append(_module_error('create_image_post', result))
@@ -88,15 +89,16 @@ def update_image_post(post, buffer, illust_url):
     if isinstance(image, tuple):
         create_and_append_error(post, *image)
         return False
+    md5 = get_buffer_checksum(buffer)
     params = {
-        'md5': get_buffer_checksum(buffer),
+        'md5': md5,
         'size': len(buffer),
         'width': image.width,
         'height': image.height,
         'pixel_md5': get_pixel_hash(image),
         'file_ext': file_ext,
     }
-    temppost = Post(**params)
+    temppost = Post(md5=md5, file_ext=file_ext)
     result = create_data(buffer, temppost.file_path)
     if result is not None:
         create_and_append_error(post, *_module_error('create_image_post', result))
@@ -142,7 +144,7 @@ def create_video_post(buffer, illust_url, post_type):
         'md5': md5,
         'size': len(buffer),
         'file_ext': file_ext,
-        'type': post_type,
+        'type_name': post_type,
     })
     retdata['post'] = post = create_post_from_parameters(params)
     if (info['width'] != illust_url.width) or (info['height'] != illust_url.height):
@@ -569,7 +571,7 @@ def _load_file(post):
 
 def _get_video_thumb_binary(post):
     for illust_url in post.illust_urls:
-        source = illust_url.site.source
+        source = illust_url.source
         download_url = source.get_sample_url(illust_url)
         print("Downloading", download_url)
         buffer = get_http_data(download_url, headers=source.IMAGE_HEADERS)

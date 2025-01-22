@@ -4,7 +4,7 @@
 from utility.file import get_http_filename, get_file_extension
 
 # ## LOCAL IMPORTS
-from ...enum_imports import site_descriptor
+from ...models.model_enums import SiteDescriptor
 from ..utility import set_error
 from ..database.error_db import is_error
 
@@ -14,7 +14,7 @@ from ..database.error_db import is_error
 class NoSource():
     """These mirror the functions in the other source files, for when a source is not found"""
 
-    SITE = site_descriptor.custom
+    SITE = SiteDescriptor.custom
 
     IMAGE_HEADERS = {}
 

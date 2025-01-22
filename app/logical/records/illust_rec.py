@@ -43,7 +43,7 @@ def create_illust_from_source(site_illust_id, source):
 
 
 def update_illust_from_source(illust):
-    source = illust.site.source
+    source = illust.source
     updateparams = source.get_illust_data(illust.site_illust_id)
     update_illust_from_parameters_standard(illust, updateparams)
     if 'site_artist_id' in updateparams and illust.artist.site_artist_id != updateparams['site_artist_id']:

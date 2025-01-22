@@ -20,3 +20,9 @@ SOURCEDICT = {
     'twvideo': twitter_src,
     'twvideo_cf': twitter_src,
 }
+
+
+# ## FUNCTIONS
+
+def source_by_site_name(name):
+    return SOURCEDICT.get(name)

@@ -2,13 +2,12 @@
 
 # ## LOCAL IMPORTS
 from ...models import IllustUrl
-from ...enum_imports import site_descriptor
 from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['site_id', 'url', 'sample_site_id', 'sample_url', 'width', 'height',
+ANY_WRITABLE_COLUMNS = ['site_name', 'url', 'sample_site_name', 'sample_url', 'width', 'height',
                         'order', 'active', 'post_id']
 NULL_WRITABLE_ATTRIBUTES = ['illust_id']
 
@@ -31,8 +30,6 @@ def update_illust_url_from_parameters(illust_url, updateparams, commit=True):
 # #### Set
 
 def set_illust_url_from_parameters(illust_url, setparams, action, commit):
-    if 'site' in setparams:
-        setparams['site'] = IllustUrl.site_enum.by_name(setparams['site']).id
     if set_column_attributes(illust_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(illust_url, action, commit=commit)
     return illust_url
@@ -41,21 +38,9 @@ def set_illust_url_from_parameters(illust_url, setparams, action, commit):
 # #### Query
 
 def get_illust_url_by_url(site, partial_url):
+    q = IllustUrl.query
     if isinstance(site, int):
-        enum_filter = IllustUrl.site_filter('id', '__eq__', site)
+        q = q.filter(IllustUrl.site_id == site)
     elif isinstance(site, str):
-        enum_filter = IllustUrl.site_filter('name', '__eq__', site)
-    return IllustUrl.query.enum_join(IllustUrl.site_enum)\
-                          .filter(enum_filter, IllustUrl.url == partial_url)\
-                          .one_or_none()
-
-
-# #### Misc
-
-def set_url_site(dataparams, source):
-    dataparams['site_id'] = site_descriptor.get_site_from_url(dataparams['url']).id
-    dataparams['url'] = source.partial_media_url(dataparams['url'])
-    dataparams['sample_site_id'] = site_descriptor.get_site_from_url(dataparams['sample']).id\
-        if dataparams.get('sample') is not None else None
-    dataparams['sample_url'] = source.partial_media_url(dataparams['sample'])\
-        if dataparams.get('sample') is not None else None
+        q = q.filter(IllustUrl.site_value == site)
+    return q.filter(IllustUrl.url == partial_url).one_or_none()

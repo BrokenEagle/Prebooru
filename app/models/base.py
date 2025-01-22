@@ -2,10 +2,10 @@
 
 # ## PYTHON IMPORTS
 import re
-import enum
 import json
 import zlib
 import datetime
+from types import SimpleNamespace
 from collections.abc import Iterable
 
 # ## EXTERNAL IMPORTS
@@ -16,7 +16,7 @@ from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.ext.associationproxy import _AssociationList
 
 # ## PACKAGE IMPORTS
-from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT, USE_ENUMS
+from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 from utility.time import process_utc_timestring, datetime_from_epoch, datetime_to_epoch
 from utility.obj import classproperty, StaticProperty
 
@@ -97,13 +97,6 @@ def relation_property_factory(model_key, table_name, relation_key):
     return _shortlink, _show_url, _show_link
 
 
-def get_relation_definitions(*args, **kwargs):
-    if USE_ENUMS:
-        return _get_relation_definitions_use_enums(*args, **kwargs)
-    else:
-        return _get_relation_definitions_use_models(*args, **kwargs)
-
-
 def secondarytable(*args):
     @property
     def _query(self):
@@ -116,6 +109,36 @@ def secondarytable(*args):
     for col in table.columns.keys():
         setattr(table, col, getattr(table.c, col))
     return table
+
+
+def register_enum_column(model, enum_model, relation):
+    id_col = getattr(model, relation + '_id')
+
+    @property
+    def enum_relation(self):
+        enum_val = getattr(self, relation + '_id')
+        return enum_model.mapping.by_id(enum_val)
+
+    @property
+    def enum_name(self):
+        enum = getattr(self, relation)
+        return enum.name if enum is not None else None
+
+    @enum_name.setter
+    def enum_name(self, value):
+        if value is None:
+            set_value = None
+        else:
+            enum = enum_model.by_name(value)
+            if enum is None:
+                raise ValueError(f"Invalid value for {relation}")
+            set_value = enum.id
+        setattr(self, relation + '_id', set_value)
+
+    setattr(model, relation + '_value', EnumColumn(id_col, enum_model.mapping))
+    setattr(model, relation + '_enum', enum_model)
+    setattr(model, relation + '_name', enum_name)
+    setattr(model, relation, enum_relation)
 
 
 # #### Relationships
@@ -140,6 +163,80 @@ def relation_association_proxy(column_name, relation_name, subattr, creator):
 
 
 # ## CLASSES
+
+class EnumNamespace(SimpleNamespace):
+    def __init__(self, item, model_name=None):
+        if isinstance(item, dict):
+            super().__init__(**item)
+            self._model_name = model_name
+        else:
+            super().__init__(**item.to_json())
+            self._model_name = item.__class__.__name__
+
+    def __repr__(self):
+        return f"{self._model_name}(id={self.id}, name={self.name})"
+
+
+class EnumMap():
+    def __init__(self, items, model_name=None, default_map=None, mandatory_map=None):
+        self._items = [EnumNamespace(item, model_name=model_name) for item in items]
+        self._id_map = {item.id: item for item in self._items}
+        self._name_map = {item.name: item for item in self._items}
+        self._default_map = default_map
+        self._mandatory_map = mandatory_map
+
+    @property
+    def needs_upgrade(self):
+        return len(set(self._default_map.keys()).symmetric_difference(self._name_map.keys())) > 0
+
+    def to_id(self, name):
+        return self.by_name(name).id if self.has_name(name) else None
+
+    def to_name(self, id):
+        return self.by_id(id).name if self.has_id(id) else None
+
+    def by_id(self, id):
+        return self._id_map[id] if self.has_id(id) else None
+
+    def by_name(self, name):
+        return self._name_map[name] if self.has_name(name) else None
+
+    def has_id(self, id):
+        return id in self._id_map
+
+    def has_name(self, name):
+        return name in self._name_map
+
+
+class EnumColumn():
+    def __init__(self, column, mapper):
+        self.column = column
+        self.mapper = mapper
+
+    def __ne__(self, value):
+        id = self.mapper.to_id(value)
+        return self.column != id if id is not None else True
+
+    def __eq__(self, value):
+        id = self.mapper.to_id(value)
+        return self.column == id if id is not None else True
+
+    def in_(self, values):
+        ids = [self.mapper.to_id(v) for v in values]
+        ids = [id for id in ids if id is not None]
+        return self.column.in_(ids) if len(ids) else True
+
+    def not_in(self, values):
+        ids = [self.mapper.to_id(v) for v in values]
+        ids = [id for id in ids if id is not None]
+        return self.column.not_in(ids) if len(ids) else True
+
+    def is_(self, value):
+        return self.column.is_(value) if value is None else True
+
+    def is_not(self, value):
+        return self.column.is_not(value) if value is None else True
+
 
 class NormalizedDatetime(DATETIME):
     def __init__(self, *args, **kwargs):
@@ -209,42 +306,9 @@ class BlobMD5(DB.TypeDecorator):
 
 
 class IntEnum(DB.TypeDecorator):
-    """
-    Enables passing in a Python enum and storing the enum's *value* in the database.
-    The default would have stored the enum's *name* (ie the string).
-    """
+    """Column class for enums that can be detected outside of the model definition."""
     impl = DB.Integer
     cache_ok = True
-
-    def __init__(self, enumtype, colname=None, tblname=None, nullable=False):
-        super(IntEnum, self).__init__()
-        self._enumtype = enumtype
-        self._enumname = enumtype.__name__
-        self._names = [e.name for e in self._enumtype]
-        self._values = [e.id for e in self._enumtype]
-        self._nullable = nullable
-        self._colname = colname
-        self._tblname = tblname
-
-    def process_bind_param(self, value, dialect):
-        if value in self._values:
-            return value
-        if value in self._names:
-            return self._enumtype[value].value
-        if isinstance(value, self._enumtype):
-            return value.id
-        if value is None and self._nullable:
-            return None
-        msg = f"Illegal value {repr(value)} to bind for enum {self._enumname} to [{self._tblname}:{self._colname}]."
-        raise ValueError(msg)
-
-    def process_result_value(self, value, dialect):
-        if value in self._values:
-            return self._enumtype(value)
-        if value is None and self._nullable:
-            return None
-        msg = f"Illegal value {repr(value)} found in DB for enum {self._enumname} on [{self._tblname}:{self._colname}]."
-        raise ValueError(msg)
 
 
 class CompressedJSON(DB.TypeDecorator):
@@ -395,11 +459,11 @@ class JsonModel(DB.Model):
                 data[key] = json_serialize(rel_value, attr)
         return _sorted_dict(data)
 
-    def basic_json(self, id_enum=False):
-        return self._json(self.basic_attributes, id_enum)
+    def basic_json(self):
+        return self._json(self.basic_attributes)
 
-    def to_json(self, id_enum=False):
-        return self._json(self.json_attributes, id_enum)
+    def to_json(self):
+        return self._json(self.json_attributes)
 
     def copy(self):
         """Return an uncommitted copy of the record."""
@@ -538,7 +602,7 @@ class JsonModel(DB.Model):
         model_name = self.__class__.__name__
         return f"{model_name}({inner_string})"
 
-    def _json(self, attributes, id_enum):
+    def _json(self, attributes):
         data = {}
         for attr in attributes:
             value = getattr(self, attr)
@@ -546,13 +610,6 @@ class JsonModel(DB.Model):
                 data[attr] = value if value is None else datetime.datetime.isoformat(value)
             elif type(value) is bytes:
                 data[attr] = value.hex()
-            elif isinstance(value, enum.Enum):
-                if id_enum:
-                    key = attr if attr.endswith('_id') else attr + '_id'
-                    data[key] = value.id
-                else:
-                    key = attr.strip('_id')
-                    data[key] = value.name
             elif type(value) is _AssociationList:
                 data[attr] = list(value)
             elif type(value) is InstrumentedList:
@@ -603,99 +660,6 @@ class JsonModel(DB.Model):
 
 
 # #### Private
-
-def _get_relation_definitions_use_enums(enm, relname=None, colname=None, tblname=None, nullable=None, **kwargs):
-    if relname is None:
-        raise Exception(f"Relation name is not defined for relation definition on {enm}.")
-    baseval = DB.Column(colname,
-                        IntEnum(enm, nullable=nullable, colname=colname, tblname=tblname),
-                        nullable=nullable)
-
-    @property
-    def idval(self):
-        attr = getattr(self, relname)
-        return attr.value if attr is not None else None
-
-    @idval.setter
-    def idval(self, value):
-        setattr(self, relname, enm(value) if value is not None else None)
-
-    @property
-    def nameval(self):
-        attr = getattr(self, relname)
-        return attr.name if attr is not None else None
-
-    @nameval.setter
-    def nameval(self, value):
-        setattr(self, relname, enm[value] if value is not None else None)
-
-    @classmethod
-    def filter(cls, relattr, op, *args):
-        if relattr is None:
-            return getattr(baseval, op)(*args)
-        else:
-            rel = getattr(cls, relname)
-            return _enum_filter(enm, rel, relattr, op, *args)
-
-    @classmethod
-    def colval(cls):
-        return getattr(cls, relname)
-
-    return baseval, idval, nameval, enm, filter, colval
-
-
-def _get_relation_definitions_use_models(rel, colname=None, relcol=None, backname=None, nullable=None, **kwargs):
-    if relcol is None:
-        raise Exception(f"Relation column is not defined for relation definition on {rel}.")
-    idval = DB.Column(DB.INTEGER, DB.ForeignKey(getattr(rel, relcol)), nullable=nullable)
-    relation_kw = {
-        'lazy': True,
-        'foreign_keys': [idval],
-    }
-    if backname is not None:
-        relation_kw['backref'] = DB.backref(backname, lazy=True)
-    baseval = DB.relation(rel, **relation_kw)
-
-    @property
-    def nameval(self):
-        id = getattr(self, colname)
-        return rel.by_id(id).name if id is not None else None
-
-    @nameval.setter
-    def nameval(self, value):
-        setattr(self, colname, rel.by_name(value).id if value is not None else None)
-
-    @classmethod
-    def filter(cls, relattr, op, *args):
-        if relattr is None:
-            enum_op = getattr(idval, op)
-        else:
-            enum_op = getattr(getattr(rel, relattr), op)
-        return enum_op(*args)
-
-    @classmethod
-    def colval(cls):
-        return getattr(cls, colname)
-
-    return baseval, idval, nameval, rel, filter, colval
-
-
-def _enum_filter(enm, rel, relattr, op, *args):
-    enum_op = getattr(rel, op)
-    if type(args[0]) in (set, list, tuple):
-        if relattr == 'id':
-            arg = [enm(a) for a in args[0]]
-        elif relattr == 'name':
-            arg = [enm[a] for a in args[0]]
-    elif args[0] is not None:
-        if relattr == 'id':
-            arg = enm(args[0])
-        elif relattr == 'name':
-            arg = enm[args[0]]
-    else:
-        arg = args[0]
-    return enum_op(arg, *args[1:])
-
 
 def _sorted_dict(data):
     return dict(sorted(data.items(), key=lambda x: x[0]))

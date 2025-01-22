@@ -279,7 +279,7 @@ def delete_html(id):
 @bp.route('/subscriptions/<int:id>/process', methods=['GET'])
 def process_form_html(id):
     subscription = get_or_abort(Subscription, id)
-    config = subscription.artist.site.source.PROCESS_FORM_CONFIG
+    config = subscription.artist.source.PROCESS_FORM_CONFIG
     form = get_process_form(config, last_id=subscription.last_id)
     return render_template("subscriptions/process.html", form=form, subscription=subscription)
 
@@ -291,15 +291,15 @@ def process_html(id):
         return redirect(request.referrer)
     subscription = get_or_abort(Subscription, id)
     artist = subscription.artist
-    source = artist.site.source
+    source = artist.source
     values = process_request_values(request.values)
     if values.get('type') == 'auto':
         data_params = None
-        update_subscription_from_parameters(subscription, {'status': 'automatic'}, update=False)
+        update_subscription_from_parameters(subscription, {'status_name': 'automatic'}, update=False)
     else:
         raw_params = get_data_params(request, 'process')
         data_params = get_process_data(source.PROCESS_FORM_CONFIG, raw_params)
-        update_subscription_from_parameters(subscription, {'status': 'manual'}, update=False)
+        update_subscription_from_parameters(subscription, {'status_name': 'manual'}, update=False)
     job_id = "process_subscription_manual-%d" % subscription.id
     job_status = get_job_status_data(job_id) or {}
     job_status.update({
@@ -321,7 +321,7 @@ def process_html(id):
 @bp.route('/subscriptions/<int:id>/reset', methods=['PUT'])
 def reset_html(id):
     subscription = get_or_abort(Subscription, id)
-    update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False)
+    update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False)
     flash("Subscription reset.")
     return redirect(request.referrer)
 
@@ -329,7 +329,7 @@ def reset_html(id):
 @bp.route('/subscriptions/<int:id>/retire', methods=['PUT'])
 def retire_html(id):
     subscription = get_or_abort(Subscription, id)
-    update_subscription_from_parameters(subscription, {'status': 'retired'}, update=False)
+    update_subscription_from_parameters(subscription, {'status_name': 'retired'}, update=False)
     flash("Subscription retired.")
     return redirect(request.referrer)
 
@@ -378,7 +378,7 @@ def delay_html(id):
 def _reset_subscription_status():
     subscriptions = get_busy_subscriptions()
     for subscription in subscriptions:
-        update_subscription_from_parameters(subscription, {'status': 'idle'}, update=False, commit=False)
+        update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False, commit=False)
     commit_session()
     print("\nSubscriptions check - %d reset\n" % len(subscriptions))
     update_subscriptions_ready()

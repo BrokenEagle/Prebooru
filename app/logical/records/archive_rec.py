@@ -134,16 +134,11 @@ def remove_archive_media_file(archive):
 
 def delete_expired_archive():
     status = {}
-    status['nonposts'] =\
-        Archive.query.enum_join(Archive.type_enum)\
-               .filter(Archive.type_filter('name', '__ne__', 'post'),
-                       Archive.expires < get_current_time())\
-               .delete()
+    status['nonposts'] = Archive.query.filter(Archive.type_value != 'post',
+                                              Archive.expires < get_current_time())\
+                                      .delete()
     commit_session()
-    expired_data = Archive.query.enum_join(Archive.type_enum)\
-                                .filter(Archive.type_filter('name', '__eq__', 'post'),
-                                        Archive.expires < get_current_time())\
-                                .all()
+    expired_data = Archive.query.filter(Archive.type_value == 'post', Archive.expires < get_current_time()).all()
     status['posts'] = len(expired_data)
     if len(expired_data) > 0:
         for archive in expired_data:

@@ -136,7 +136,7 @@ def column_type(model, columnname):
 
 def search_attributes(query, model, params):
     all_filters, query = all_attribute_filters(query, model, params)
-    query = query.filter(*all_filters)
+    query = query.safe_filter(*all_filters)
     return query
 
 
@@ -241,34 +241,15 @@ def numeric_filters(model, columnname, params):
 
 
 def enum_filters(model, columnname, params):
-    filters = ()
-    enum = getattr(model, columnname + '_enum')
-
-    def _normalize_parameter(value):
-        if isinstance(value, dict):
-            temp = value.get('name')
-            if temp is None:
-                raise Exception("%s - only [name] subkey supported for enums" % columnname)
-            value = temp
-        subvalues = value.split(',')
-        retvalues = []
-        for v in subvalues:
-            if v.isdigit() and int(v) in enum.values:
-                retvalues.append(int(v))
-            elif v in enum.names:
-                retvalues.append(enum[v].value)
-            else:
-                raise Exception("%s - value is not a valid enum: %s" % (columnname, v))
-        return retvalues
-
-    if columnname in params:
-        values = _normalize_parameter(params[columnname])
-        filters += (getattr(model, columnname).in_(values),) if len(values) else ()
-    if columnname + '_not' in params:
-        values = _normalize_parameter(params[columnname + '_not'])
-        filters += (not_(getattr(model, columnname).in_(values)),) if len(values) else ()
-    if columnname + '_exists' in params:
-        filters += (existence_matching(model, columnname, params[columnname + '_exists']),)
+    columnparam = columnname[:-3]
+    columnenum = getattr(model, columnparam + '_value')
+    filters = numeric_filters(model, columnname, params)
+    if columnparam in params:
+        filters += (columnenum == params[columnparam],)
+    if (columnparam + '_not') in params:
+        filters += (columnenum != params[columnparam + '_not'],)
+    if (columnparam + '_exists') in params:
+        filters += (existence_matching(model, columnname, params[columnparam + '_exists']),)
     return filters
 
 

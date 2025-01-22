@@ -78,17 +78,16 @@ def expired_api_data_count():
 
 # #### Private functions
 
-def _get_api_data(data_ids, site, type):
+def _get_api_data(data_ids, site, type_name):
+    q = ApiData.query
     if isinstance(site, int):
-        site_enum_filter = ApiData.site_filter('id', '__eq__', site)
+        q = q.filter(ApiData.site_id == site)
     elif isinstance(site, str):
-        site_enum_filter = ApiData.site_filter('name', '__eq__', site)
-    if isinstance(type, int):
-        type_enum_filter = ApiData.type_filter('id', '__eq__', type)
-    elif isinstance(type, str):
-        type_enum_filter = ApiData.type_filter('name', '__eq__', type)
-    q = ApiData.query.enum_join(ApiData.site_enum).enum_join(ApiData.type_enum)\
-                     .filter(site_enum_filter, type_enum_filter)
+        q = q.filter(ApiData.site_value == site)
+    if isinstance(type_name, int):
+        q = q.filter(ApiData.type_id == type_name)
+    elif isinstance(type_name, str):
+        q = q.filter(ApiData.type_value == type_name)
     if len(data_ids) == 1:
         q = q.filter(ApiData.data_id == data_ids[0])
     else:

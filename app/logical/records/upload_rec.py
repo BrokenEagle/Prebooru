@@ -39,7 +39,7 @@ def process_upload(upload_id):
         nonlocal upload
         upload = Upload.find(upload_id)
         printer("Upload:", upload.id)
-        update_upload_from_parameters(upload, {'status': 'processing'})
+        update_upload_from_parameters(upload, {'status_name': 'processing'})
         if upload.illust_url_id is not None and upload.media_filepath is not None:
             process_file_upload(upload)
         else:
@@ -51,7 +51,7 @@ def process_upload(upload_id):
     def error_func(scope_vars, e):
         nonlocal upload
         upload = upload or Upload.find(upload_id)
-        update_upload_from_parameters(upload, {'status': 'error'})
+        update_upload_from_parameters(upload, {'status_name': 'error'})
 
     def finally_func(scope_vars, error, data):
         nonlocal upload
@@ -89,21 +89,18 @@ def create_post_from_upload(upload):
     if illust_url.type == 'unknown':
         raise Exception("Unable to create post for unknown illust URL type")
     if illust_url.post_id is not None:
-        params = {
-            'status': 'duplicate',
-        }
-        update_upload_from_parameters(upload, params)
+        update_upload_from_parameters(upload, {'status_name': 'duplicate'})
         if illust_url.post.type_name != 'user':
-            update_post_from_parameters(illust_url.post, {'type': 'user'})
+            update_post_from_parameters(illust_url.post, {'type_name': 'user'})
         return
     buffer = put_get_raw(upload.media_filepath, 'rb')
     md5 = get_buffer_checksum(buffer)
     post = get_post_by_md5(md5)
     if post is not None:
         update_illust_url_from_parameters(illust_url, {'post_id': post.id})
-        update_upload_from_parameters(upload, {'status': 'duplicate'})
+        update_upload_from_parameters(upload, {'status_name': 'duplicate'})
         if post.type_name != 'user':
-            update_post_from_parameters(post, {'type': 'user'})
+            update_post_from_parameters(post, {'type_name': 'user'})
         return
     if illust_url.type == 'image':
         results = create_image_post(buffer, illust_url, 'user')
@@ -111,9 +108,9 @@ def create_post_from_upload(upload):
         results = create_video_post(buffer, illust_url, 'user')
     create_and_extend_errors(upload, results['errors'])
     if results['post'] is None:
-        update_upload_from_parameters(upload, {'status': 'error'})
+        update_upload_from_parameters(upload, {'status_name': 'error'})
     else:
-        update_upload_from_parameters(upload, {'status': 'complete'})
+        update_upload_from_parameters(upload, {'status_name': 'complete'})
 
 
 # #### Secondary task functions

@@ -1,12 +1,14 @@
 # APP/MODELS/MODEL_ENUMS.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy import inspect
+
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.data import merge_dicts
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..logical import sites
-from .base import JsonModel
+from .base import JsonModel, EnumMap
 
 
 # ## CLASSES
@@ -14,90 +16,67 @@ from .base import JsonModel
 class EnumModel(JsonModel):
     __abstract__ = True
 
-    @classproperty(cached=True)
-    def names(cls):
-        return list(cls.__initial_mapping__.keys()) + list(cls.__mandatory_mapping__.keys())
-
-    @classproperty(cached=True)
-    def values(cls):
-        return list(cls.__initial_mapping__.keys()) + list(cls.__mandatory_mapping__.keys())
-
-    @classproperty(cached=True)
-    def unknown(cls):
-        return cls.by_name('unknown')
+    @classmethod
+    def load(cls):
+        if inspect(DB.engine).has_table(cls.__tablename__):
+            cls.load_tables()
+        else:
+            cls.load_config()
 
     @classmethod
-    def by_name(cls, name):
-        cls._default_or_value()
-        return cls._name_items[name]
+    def load_config(cls):
+        cls.is_empty = True
+        default_map = merge_dicts(cls.__initial_mapping__, cls.__mandatory_mapping__)
+        cls._load([{'id': v, 'name': k} for (k, v) in default_map.items()])
+
+    @classmethod
+    def load_tables(cls):
+        items = cls.query.all()
+        if len(items) > 0:
+            cls.is_empty = False
+            cls._load(items)
+        else:
+            cls.load_config()
+
+    @classmethod
+    def to_id(cls, name):
+        return cls.mapping.to_id(name)
+
+    @classmethod
+    def to_name(cls, id):
+        return cls.mapping.to_name(id)
 
     @classmethod
     def by_id(cls, id):
-        cls._default_or_value()
-        return cls._id_items[id]
+        return cls.mapping.by_id(id)
+
+    @classmethod
+    def by_name(cls, name):
+        return cls.mapping.by_name(name)
+
+    @classmethod
+    def has_id(cls, id):
+        return cls.mapping.has_id(id)
+
+    @classmethod
+    def has_name(cls, name):
+        return cls.mapping.has_name(name)
 
     # ## Private
 
     @classmethod
-    def _default_or_value(cls):
-        if not hasattr(cls, '_name_items'):
-            items = cls.query.all()
-            if len(items) == 0:
-                items = [cls(id=id, name=name) for (name, id) in cls.cls.__mandatory_mapping__.items()] +\
-                        [cls(id=id, name=name) for (name, id) in cls.cls.__initial_mapping__.items()]
-            else:
-                items = [item.copy() for item in items]
-            cls._name_items = {item.name: item for item in items}
-            cls._id_items = {item.id: item for item in items}
+    def _load(cls, items):
+        default_map = merge_dicts(cls.__initial_mapping__, cls.__mandatory_mapping__)
+        cls.mapping = EnumMap(items, model_name=cls.__name__, default_map=default_map,
+                              mandatory_map=cls.__mandatory_mapping__)
+        for name in cls.mapping._name_map:
+            setattr(cls, name, cls.by_name(name))
 
-    _enum_model = True
-
-
-# #### Column enums
 
 class SiteDescriptor(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
-
-    # ## Instance properties
-
-    source = sites.source
-    domain = sites.domain
-
-    # ## Class properties
-
-    get_site_from_domain = sites.get_site_from_domain
-    get_site_from_url = sites.get_site_from_url
-    get_site_from_id = sites.get_site_from_id
-
-    @classproperty(cached=True)
-    def custom(cls):
-        return cls.by_name('custom')
-
-    @classproperty(cached=True)
-    def pixiv(cls):
-        return cls.by_name('pixiv')
-
-    @classproperty(cached=True)
-    def pximg(cls):
-        return cls.by_name('pximg')
-
-    @classproperty(cached=True)
-    def twitter(cls):
-        return cls.by_name('twitter')
-
-    @classproperty(cached=True)
-    def twimg(cls):
-        return cls.by_name('twimg')
-
-    @classproperty(cached=True)
-    def twvideo(cls):
-        return cls.by_name('twvideo')
-
-    @classproperty(cached=True)
-    def twvideo_cf(cls):
-        return cls.by_name('twvideo_cf')
 
     # ## Private
 
@@ -122,24 +101,6 @@ class ApiDataType(EnumModel):
 
     # ## Private
 
-    @classproperty(cached=True)
-    def illust(cls):
-        return cls.by_name('illust')
-
-    @classproperty(cached=True)
-    def artist(cls):
-        return cls.by_name('artist')
-
-    @classproperty(cached=True)
-    def profile(cls):
-        return cls.by_name('profile')
-
-    @classproperty(cached=True)
-    def page(cls):
-        return cls.by_name('page')
-
-    # ## Private
-
     __initial_mapping__ = {
         'illust': 0,
         'artist': 1,
@@ -155,24 +116,6 @@ class ArchiveType(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
-
-    # ## Class properties
-
-    @classproperty(cached=True)
-    def post(cls):
-        return cls.by_name('post')
-
-    @classproperty(cached=True)
-    def illust(cls):
-        return cls.by_name('illust')
-
-    @classproperty(cached=True)
-    def artist(cls):
-        return cls.by_name('artist')
-
-    @classproperty(cached=True)
-    def booru(cls):
-        return cls.by_name('booru')
 
     # ## Private
 
@@ -194,16 +137,6 @@ class PostType(EnumModel):
 
     # ## Private
 
-    @classproperty(cached=True)
-    def user(cls):
-        return cls.by_name('user')
-
-    @classproperty(cached=True)
-    def subscription(cls):
-        return cls.by_name('subscription')
-
-    # ## Private
-
     __initial_mapping__ = {
         'user': 0,
         'subscription': 1,
@@ -217,28 +150,6 @@ class SubscriptionStatus(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
-
-    # ## Private
-
-    @classproperty(cached=True)
-    def error(cls):
-        return cls.by_name('error')
-
-    @classproperty(cached=True)
-    def idle(cls):
-        return cls.by_name('idle')
-
-    @classproperty(cached=True)
-    def retired(cls):
-        return cls.by_name('retired')
-
-    @classproperty(cached=True)
-    def automatic(cls):
-        return cls.by_name('automatic')
-
-    @classproperty(cached=True)
-    def manual(cls):
-        return cls.by_name('manual')
 
     # ## Private
 
@@ -258,32 +169,6 @@ class SubscriptionElementStatus(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
-
-    # ## Private
-
-    @classproperty(cached=True)
-    def error(cls):
-        return cls.by_name('error')
-
-    @classproperty(cached=True)
-    def unlinked(cls):
-        return cls.by_name('unlinked')
-
-    @classproperty(cached=True)
-    def deleted(cls):
-        return cls.by_name('deleted')
-
-    @classproperty(cached=True)
-    def active(cls):
-        return cls.by_name('active')
-
-    @classproperty(cached=True)
-    def archived(cls):
-        return cls.by_name('archived')
-
-    @classproperty(cached=True)
-    def duplicate(cls):
-        return cls.by_name('duplicate')
 
     # ## Private
 
@@ -307,24 +192,6 @@ class SubscriptionElementKeep(EnumModel):
 
     # ## Private
 
-    @classproperty(cached=True)
-    def yes(cls):
-        return cls.by_name('yes')
-
-    @classproperty(cached=True)
-    def no(cls):
-        return cls.by_name('no')
-
-    @classproperty(cached=True)
-    def maybe(cls):
-        return cls.by_name('maybe')
-
-    @classproperty(cached=True)
-    def archive(cls):
-        return cls.by_name('archive')
-
-    # ## Private
-
     __initial_mapping__ = {
         'yes': 0,
         'no': 1,
@@ -340,28 +207,6 @@ class DownloadStatus(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
-
-    # ## Private
-
-    @classproperty(cached=True)
-    def error(cls):
-        return cls.by_name('error')
-
-    @classproperty(cached=True)
-    def complete(cls):
-        return cls.by_name('complete')
-
-    @classproperty(cached=True)
-    def duplicate(cls):
-        return cls.by_name('duplicate')
-
-    @classproperty(cached=True)
-    def pending(cls):
-        return cls.by_name('pending')
-
-    @classproperty(cached=True)
-    def processing(cls):
-        return cls.by_name('processing')
 
     # ## Private
 
@@ -384,24 +229,6 @@ class DownloadElementStatus(EnumModel):
 
     # ## Private
 
-    @classproperty(cached=True)
-    def error(cls):
-        return cls.by_name('error')
-
-    @classproperty(cached=True)
-    def complete(cls):
-        return cls.by_name('complete')
-
-    @classproperty(cached=True)
-    def duplicate(cls):
-        return cls.by_name('duplicate')
-
-    @classproperty(cached=True)
-    def pending(cls):
-        return cls.by_name('pending')
-
-    # ## Private
-
     __initial_mapping__ = {
         'complete': 0,
         'duplicate': 1,
@@ -417,28 +244,6 @@ class UploadStatus(EnumModel):
     # ## Columns
     id = DB.Column(DB.INTEGER, primary_key=True)
     name = DB.Column(DB.TEXT, nullable=False)
-
-    # ## Private
-
-    @classproperty(cached=True)
-    def error(cls):
-        return cls.by_name('error')
-
-    @classproperty(cached=True)
-    def complete(cls):
-        return cls.by_name('complete')
-
-    @classproperty(cached=True)
-    def duplicate(cls):
-        return cls.by_name('duplicate')
-
-    @classproperty(cached=True)
-    def pending(cls):
-        return cls.by_name('pending')
-
-    @classproperty(cached=True)
-    def processing(cls):
-        return cls.by_name('processing')
 
     # ## Private
 
@@ -463,24 +268,6 @@ class PoolElementType(EnumModel):
 
     # ## Private
 
-    @classproperty(cached=True)
-    def pool_element(cls):
-        return cls.by_name('pool_element')
-
-    @classproperty(cached=True)
-    def pool_post(cls):
-        return cls.by_name('pool_post')
-
-    @classproperty(cached=True)
-    def pool_illust(cls):
-        return cls.by_name('pool_illust')
-
-    @classproperty(cached=True)
-    def pool_notation(cls):
-        return cls.by_name('pool_notation')
-
-    # ## Private
-
     __initial_mapping__ = {
         'pool_post': 0,
         'pool_illust': 1,
@@ -499,20 +286,6 @@ class TagType(EnumModel):
 
     # ## Private
 
-    @classproperty(cached=True)
-    def tag(cls):
-        return cls.by_name('tag')
-
-    @classproperty(cached=True)
-    def site_tag(cls):
-        return cls.by_name('site_tag')
-
-    @classproperty(cached=True)
-    def user_tag(cls):
-        return cls.by_name('user_tag')
-
-    # ## Private
-
     __initial_mapping__ = {
         'site_tag': 0,
         'user_tag': 1,
@@ -521,3 +294,19 @@ class TagType(EnumModel):
         'tag': 126,
         'unknown': 127,
     }
+
+
+# ## Initialize
+
+SiteDescriptor.load()
+ApiDataType.load()
+ArchiveType.load()
+PostType.load()
+SubscriptionStatus.load()
+SubscriptionElementStatus.load()
+SubscriptionElementKeep.load()
+DownloadStatus.load()
+DownloadElementStatus.load()
+UploadStatus.load()
+PoolElementType.load()
+TagType.load()

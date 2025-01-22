@@ -5,9 +5,9 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import download_element_status
+from .model_enums import DownloadElementStatus
 from .error import Error
-from .base import JsonModel, BlobMD5, get_relation_definitions
+from .base import JsonModel, IntEnum, BlobMD5, register_enum_column
 
 
 # ## CLASSES
@@ -18,9 +18,7 @@ class DownloadElement(JsonModel):
     download_id = DB.Column(DB.Integer, DB.ForeignKey('download.id'), nullable=False, index=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    status, status_id, status_name, status_enum, status_filter, status_col =\
-        get_relation_definitions(download_element_status, relname='status', relcol='id', colname='status_id',
-                                 tblname='download_element', nullable=False)
+    status_id = DB.Column(IntEnum, DB.ForeignKey('download_element_status.id'), nullable=False)
 
     # ## Relationships
     errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
@@ -40,3 +38,4 @@ def initialize():
     # Access the opposite side of the relationship to force the back reference to be generated
     Download.elements.property._configure_started
     DownloadElement.set_relation_properties()
+    register_enum_column(DownloadElement, DownloadElementStatus, 'status')

@@ -17,8 +17,8 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import post_type
 from ..logical.utility import unique_objects
+from .model_enums import PostType
 from .error import Error
 from .illust_url import IllustUrl
 from .subscription_element import SubscriptionElement
@@ -27,7 +27,7 @@ from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
-from .base import JsonModel, EpochTimestamp, secondarytable, image_server_url, BlobMD5, get_relation_definitions
+from .base import JsonModel, IntEnum, EpochTimestamp, BlobMD5, secondarytable, image_server_url, register_enum_column
 
 
 # ## GLOBAL VARIABLES
@@ -53,9 +53,7 @@ class Post(JsonModel):
     size = DB.Column(DB.Integer, nullable=False)
     danbooru_id = DB.Column(DB.Integer, nullable=True)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    type, type_id, type_name, type_enum, type_filter, type_col =\
-        get_relation_definitions(post_type, relname='type', relcol='id', colname='type_id',
-                                 tblname='post', nullable=False)
+    type_id = DB.Column(IntEnum, DB.ForeignKey('post_type.id'), nullable=False)
     alternate = DB.Column(DB.Boolean, nullable=False)
     pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
     duration = DB.Column(DB.Float, nullable=True)
@@ -284,3 +282,9 @@ class Post(JsonModel):
     def _similar_match_query(self):
         clause = or_(SimilarityMatch.forward_id == self.id, SimilarityMatch.reverse_id == self.id)
         return SimilarityMatch.query.filter(clause)
+
+
+# ## INITIALIZATION
+
+def initialize():
+    register_enum_column(Post, PostType, 'type')

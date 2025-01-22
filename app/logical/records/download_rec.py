@@ -11,7 +11,7 @@ from utility.uprint import buffered_print, print_warning
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Download, Illust
+from ...models import Download
 from ..utility import unique_objects, SessionThread
 from ..sources.base_src import get_post_source
 from ..records.artist_rec import update_artist_from_source, check_artists_for_boorus
@@ -44,7 +44,7 @@ def process_download(download_id):
         nonlocal download
         download = Download.find(download_id)
         printer("Download:", download.id)
-        update_download_from_parameters(download, {'status': 'processing'})
+        update_download_from_parameters(download, {'status_name': 'processing'})
         process_network_download(download)
 
     def msg_func(scope_vars, e):
@@ -53,7 +53,7 @@ def process_download(download_id):
     def error_func(scope_vars, e):
         nonlocal download
         download = download or Download.find(download_id)
-        update_download_from_parameters(download, {'status': 'error'})
+        update_download_from_parameters(download, {'status_name': 'error'})
 
     def finally_func(scope_vars, error, data):
         nonlocal download
@@ -90,7 +90,7 @@ def populate_download_elements(download, illust=None):
         if illust is None:
             return
     else:
-        source = illust.site.source
+        source = illust.source
     all_download_urls = [source.normalize_image_url(download_url.url) for download_url in download.image_urls]
     download_elements = list(download.elements)
     for illust_url in illust.urls:
@@ -165,7 +165,7 @@ def process_network_download(download):
         create_post_from_download_element(element)
         if image_download:
             break
-    update_download_from_parameters(download, {'status': 'complete'})
+    update_download_from_parameters(download, {'status_name': 'complete'})
 
 
 def create_post_from_download_element(element):
@@ -173,27 +173,23 @@ def create_post_from_download_element(element):
     if illust_url.type == 'unknown':
         raise Exception("Unable to create post for unknown illust URL type")
     if illust_url.post_id is not None:
-        params = {
-            'status': 'duplicate',
-            'md5': illust_url.post.md5,
-        }
-        update_download_element_from_parameters(element, params)
+        update_download_element_from_parameters(element, {'status_name': 'duplicate', 'md5': illust_url.post.md5})
         if illust_url.post.type_name != 'user':
-            update_post_from_parameters(illust_url.post, {'type': 'user'})
+            update_post_from_parameters(illust_url.post, {'type_name': 'user'})
         return
     results = download_illust_url(illust_url)
     create_and_extend_errors(element, results['errors'])
     if results['buffer'] is None:
-        update_download_element_from_parameters(element, {'status': 'error'})
+        update_download_element_from_parameters(element, {'status_name': 'error'})
         return
     buffer = results['buffer']
     md5 = get_buffer_checksum(buffer)
     post = get_post_by_md5(md5)
     if post is not None:
         update_illust_url_from_parameters(illust_url, {'post_id': post.id})
-        update_download_element_from_parameters(element, {'status': 'duplicate', 'md5': md5})
+        update_download_element_from_parameters(element, {'status_name': 'duplicate', 'md5': md5})
         if post.type_name != 'user':
-            update_post_from_parameters(post, {'type': 'user'})
+            update_post_from_parameters(post, {'type_name': 'user'})
         return
     if illust_url.type == 'image':
         results = create_image_post(buffer, illust_url, 'user')
@@ -201,9 +197,9 @@ def create_post_from_download_element(element):
         results = create_video_post(buffer, illust_url, 'user')
     create_and_extend_errors(element, results['errors'])
     if results['post'] is None:
-        update_download_element_from_parameters(element, {'status': 'error'})
+        update_download_element_from_parameters(element, {'status_name': 'error'})
     else:
-        update_download_element_from_parameters(element, {'status': 'complete', 'md5': md5})
+        update_download_element_from_parameters(element, {'status_name': 'complete', 'md5': md5})
 
 
 # #### Secondary task functions
@@ -262,14 +258,11 @@ def _create_download_illust(download):
     if error is not None:
         append_error(download, error)
     requery_time = days_ago(1)
-    illust = Illust.query.enum_join(Illust.site_enum)\
-                         .filter(Illust.site_filter('id', '__eq__', source.SITE.id),
-                                 Illust.site_illust_id == site_illust_id)\
-                         .one_or_none()
+    illust = get_site_illust(site_illust_id, source.SITE.id)
     if illust is None:
         illust = create_illust_from_source(site_illust_id, source)
         if illust is None:
-            update_download_from_parameters(download, {'status': 'error'})
+            update_download_from_parameters(download, {'status_name': 'error'})
             create_and_append_error(download, 'download_rec.process_network_download',
                                     "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id))
             return

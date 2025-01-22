@@ -91,7 +91,7 @@ def create_artist_from_source(site_artist_id, source):
 
 
 def update_artist_from_source(artist):
-    source = artist.site.source
+    source = artist.source
     params = source.get_artist_data(artist.site_artist_id)
     update_artist_from_parameters_standard(artist, params)
 

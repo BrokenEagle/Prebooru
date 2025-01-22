@@ -12,8 +12,8 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import archive_type
-from .base import JsonModel, EpochTimestamp, image_server_url, get_relation_definitions
+from .model_enums import ArchiveType
+from .base import JsonModel, EpochTimestamp, image_server_url, register_enum_column
 
 
 # ## FUNCTIONS
@@ -31,9 +31,7 @@ def check_type(func):
 class Archive(JsonModel):
     # #### Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    type, type_id, type_name, type_enum, type_filter, type_col =\
-        get_relation_definitions(archive_type, relname='type', relcol='id', colname='type_id',
-                                 tblname='archive', nullable=False)
+    type_id = DB.Column(DB.Integer, DB.ForeignKey('archive_type.id'), nullable=False)
     key = DB.Column(DB.String(255), nullable=False)
     data = DB.Column(DB.JSON, nullable=False)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
@@ -94,3 +92,9 @@ class Archive(JsonModel):
     __table_args__ = (
         DB.UniqueConstraint('key', 'type_id'),
     )
+
+
+# ## Initialize
+
+def initialize():
+    register_enum_column(Archive, ArchiveType, 'type')

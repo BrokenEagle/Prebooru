@@ -22,7 +22,7 @@ VERSION_RELATIONSHIPS = [('title', 'titles', 'body', Description),
                          ('commentary', 'commentaries', 'body', Description)]
 
 ANY_WRITABLE_COLUMNS = ['site_illust_id', 'site_created', 'pages', 'score', 'active']
-NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_id', 'title_body', 'commentary_body']
+NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_name', 'title_body', 'commentary_body']
 
 
 # ## FUNCTIONS
@@ -74,8 +74,6 @@ def set_illust_artist(illust, artist):
 # #### Set
 
 def set_illust_from_parameters(illust, setparams, action, commit, update):
-    if 'site' in setparams:
-        setparams['site_id'] = Illust.site_enum.by_name(setparams['site']).id
     set_timesvalue(setparams, 'site_created')
     _create_tags(setparams)
     col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
@@ -90,18 +88,23 @@ def set_illust_from_parameters(illust, setparams, action, commit, update):
 # #### Query functions
 
 def get_site_illust(site_illust_id, site):
-    return Illust.query.enum_join(Illust.site_enum)\
-                       .filter(_enum_filter(site), Illust.site_illust_id == site_illust_id)\
-                       .one_or_none()
+    q = Illust.query
+    if isinstance(site, int):
+        q = q.filter(Illust.site_id == site)
+    elif isinstance(site, str):
+        q = q.filter(Illust.site_value == site)
+    return q.filter(Illust.site_illust_id == site_illust_id).one_or_none()
 
 
 def get_site_illusts(site, site_illust_ids, load_urls=False):
     q = Illust.query
     if load_urls:
         q = q.options(selectinload(Illust.urls))
-    return q.enum_join(Illust.site_enum)\
-            .filter(_enum_filter(site), Illust.site_illust_id.in_(site_illust_ids))\
-            .all()
+    if isinstance(site, int):
+        q = q.filter(Illust.site_id == site)
+    elif isinstance(site, str):
+        q = q.filter(Illust.site_value == site)
+    return q.filter(Illust.site_illust_id.in_(site_illust_ids)).all()
 
 
 # #### Private functions
@@ -150,10 +153,3 @@ def _set_illust_urls(illust, params, update):
             illust.updated = get_current_time()
         flush_session()
     return update_results
-
-
-def _enum_filter(site):
-    if isinstance(site, int):
-        return Illust.site_filter('id', '__eq__', site)
-    elif isinstance(site, str):
-        return Illust.site_filter('name', '__eq__', site)

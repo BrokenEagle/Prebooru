@@ -95,11 +95,10 @@ def index_html():
     if request.args.get('search[keep]') is None:
         if element_type in ['yes', 'no', 'maybe', 'archive', 'undecided']:
             q = q.filter(SubscriptionElement.post_id.__ne__(None))
-        q = q.enum_join(SubscriptionElement.keep_enum)
         if element_type in ['yes', 'no', 'maybe', 'archive']:
-            q = q.filter(SubscriptionElement.keep_filter('name', '__eq__', element_type))
+            q = q.filter(SubscriptionElement.keep_value == element_type)
         elif element_type == 'undecided':
-            q = q.filter(SubscriptionElement.keep_filter('name', 'is_', None))
+            q = q.filter(SubscriptionElement.keep_value.is_(None))
     q = q.options(INDEX_HTML_OPTIONS)
     elements = paginate(q, request, MAX_LIMIT_HTML)
     page = get_page(request)
@@ -249,4 +248,4 @@ def _update_subscription_element_keep(element, value, commit=True):
         expires = days_from_now(7)  # Posts will be deleted after this period
     elif value == 'maybe':
         expires = None  # Keep the element around until/unless a decision is made on it
-    update_subscription_element_from_parameters(element, {'keep': value, 'expires': expires}, commit=commit)
+    update_subscription_element_from_parameters(element, {'keep_name': value, 'expires': expires}, commit=commit)

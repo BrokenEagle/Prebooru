@@ -5,12 +5,12 @@ from flask import Markup
 from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
-from config import USE_ENUMS
+from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
-from ..enum_imports import tag_type
-from .base import JsonModel, get_relation_definitions
+from .model_enums import TagType
+from .base import JsonModel, IntEnum, register_enum_column
 
 
 # ## FUNCTIONS
@@ -37,9 +37,7 @@ class Tag(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.Unicode(255), nullable=False)
-    type, type_id, type_name, type_enum, type_filter, type_col =\
-        get_relation_definitions(tag_type, relname='type', relcol='id', colname='type_id',
-                                 tblname='tag', nullable=False)
+    type_id = DB.Column(IntEnum, DB.ForeignKey('tag_type.id'), nullable=False)
 
     # ## Instance properties
 
@@ -61,13 +59,17 @@ class Tag(JsonModel):
 
     # ## Class properties
 
+    @classproperty(cached=False)
+    def repr_attributes(cls):
+        return ['id', 'name', 'type']
+
     polymorphic_base = True
 
     # ## Private
 
     __mapper_args__ = {
-        'polymorphic_identity': tag_type.tag.id,
-        'polymorphic_on': type if USE_ENUMS else type_id,
+        'polymorphic_identity': TagType.tag.id,
+        'polymorphic_on': type_id,
     }
 
 
@@ -105,7 +107,7 @@ class SiteTag(Tag):
                          .filter(Tag.id == self.id)
 
     __mapper_args__ = {
-        'polymorphic_identity': tag_type.site_tag.id,
+        'polymorphic_identity': TagType.site_tag.id,
     }
 
 
@@ -143,7 +145,7 @@ class UserTag(Tag):
         return Post.query.join(UserTag, Post.tags).filter(UserTag.id == self.id)
 
     __mapper_args__ = {
-        'polymorphic_identity': tag_type.user_tag.id,
+        'polymorphic_identity': TagType.user_tag.id,
     }
 
 
@@ -151,3 +153,4 @@ class UserTag(Tag):
 
 def initialize():
     setattr(Tag, 'polymorphic_classes', [SiteTag, UserTag])
+    register_enum_column(Tag, TagType, 'type')

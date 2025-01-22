@@ -10,7 +10,8 @@ from utility.data import list_difference
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import site_descriptor
+from ..logical.sites import domain_by_site_name
+from .model_enums import SiteDescriptor
 from .artist_url import ArtistUrl
 from .illust import Illust
 from .label import Label, label_creator
@@ -19,7 +20,7 @@ from .subscription import Subscription
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions, relation_association_proxy
+from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, register_enum_column, relation_association_proxy
 
 
 # ## GLOBAL VARIABLES
@@ -48,9 +49,7 @@ ArtistProfiles = secondarytable(
 class Artist(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site, site_id, site_name, site_enum, site_filter, site_col =\
-        get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
-                                 tblname='artist', nullable=False)
+    site_id = DB.Column(IntEnum, DB.ForeignKey('site_descriptor.id'), nullable=False)
     site_artist_id = DB.Column(DB.Integer, nullable=False)
     site_account_id = DB.Column(DB.Integer, DB.ForeignKey('label.id'), nullable=False)
     name_id = DB.Column(DB.Integer, DB.ForeignKey('label.id'), nullable=True)
@@ -90,7 +89,8 @@ class Artist(JsonModel):
 
     @property
     def source(self):
-        return self.site.source
+        from ..logical.sources import source_by_site_name
+        return source_by_site_name(self.site.name)
 
     @property
     def site_artist_id_str(self):
@@ -153,7 +153,7 @@ class Artist(JsonModel):
 
     @property
     def site_domain(self):
-        return self.site.domain
+        return domain_by_site_name(self.site_name)
 
     @property
     def booru_search_url(self):
@@ -175,11 +175,8 @@ class Artist(JsonModel):
     @classmethod
     def find_by_key(cls, key):
         site_name, site_artist_id_str = key.split('-')
-        enum_filter = cls.site_filter('name', '__eq__', site_name)
-        id_filter = cls.site_artist_id == int(site_artist_id_str)
-        return cls.query.enum_join(cls.site_enum)\
-                        .filter(enum_filter, id_filter)\
-                        .one_or_none()
+        site_artist_id = int(site_artist_id_str)
+        return cls.query.filter(cls.site_value == site_name, cls.site_artist_id == site_artist_id).one_or_none()
 
     @classproperty(cached=True)
     def load_columns(cls):
@@ -221,3 +218,9 @@ class Artist(JsonModel):
     __table_args__ = (
         DB.UniqueConstraint('site_artist_id', 'site_id'),
     )
+
+
+# ## Initialize
+
+def initialize():
+    register_enum_column(Artist, SiteDescriptor, 'site')

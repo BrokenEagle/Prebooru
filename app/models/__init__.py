@@ -34,7 +34,7 @@ def load_all():
         Download, DownloadElement, DownloadUrl,\
         Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,\
         MediaFile,\
-        ServerInfo, Version,\
+        ServerInfo,\
         JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
 
     # #### Enum data
@@ -77,7 +77,6 @@ def load_all():
     # #### Server data
 
     from .server_info import ServerInfo
-    from .version import Version
 
     # #### Job data
     from .jobs import JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus
@@ -108,7 +107,7 @@ def initialize():
             Download, DownloadElement, DownloadUrl,
             Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,
             MediaFile,
-            ServerInfo, Version,
+            ServerInfo,
             JobInfo, JobEnable, JobLock, JobManual, JobTime, JobStatus,
         ]
     for model in models:
@@ -119,3 +118,12 @@ def initialize():
                 model._secondary_table = False
         elif issubclass(model, DB.Model):
             model.__table__._secondary_table = False
+
+
+def enums_need_upgrade():
+    models =\
+        [
+            SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,
+            SubscriptionElementKeep, UploadStatus, PoolElementType, TagType,
+        ]
+    return any(model.is_empty or model.mapping.needs_upgrade for model in models)

@@ -19,7 +19,7 @@ VERSION_RELATIONSHIPS = [('profile', 'profiles', 'body', Description),
                          ('site_account', 'site_accounts', 'name', Label),
                          ('name', 'names', 'name', Label)]
 
-ANY_WRITABLE_COLUMNS = ['site_id', 'site_artist_id', 'site_created', 'active', 'primary']
+ANY_WRITABLE_COLUMNS = ['site_name', 'site_artist_id', 'site_created', 'active', 'primary']
 NULL_WRITABLE_ATTRIBUTES = ['site_account_value', 'name_value', 'profile_body']
 
 BOORU_SUBQUERY = Artist.query\
@@ -77,8 +77,6 @@ def recreate_artist_relations(artist, updateparams):
 # #### Set
 
 def set_artist_from_parameters(artist, setparams, action, commit, update):
-    if 'site' in setparams:
-        setparams['site_id'] = Artist.site_enum.by_name(setparams['site']).id
     set_timesvalue(setparams, 'site_created')
     col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
                                        setparams, update=update, safe=True)
@@ -92,13 +90,10 @@ def set_artist_from_parameters(artist, setparams, action, commit, update):
 # #### Misc
 
 def get_blank_artist():
-    artist = Artist.query.enum_join(Artist.site_enum)\
-                         .filter(Artist.site_filter('name', '__eq__', 'custom'),
-                                 Artist.site_artist_id == 1)\
-                         .one_or_none()
+    artist = Artist.query.filter(Artist.site_value == 'custom', Artist.site_artist_id == 1).one_or_none()
     if not artist:
         createparams = {
-            'site': 0,
+            'site_name': 'custom',
             'site_artist_id': 1,
             'site_account': 'Prebooru',
             'active': True,
@@ -116,13 +111,12 @@ def artist_append_booru(artist, booru):
 # #### Query functions
 
 def get_site_artist(site_artist_id, site):
+    q = Artist.query
     if isinstance(site, int):
-        enum_filter = Artist.site_filter('id', '__eq__', site)
+        q = q.filter(Artist.site_id == site)
     elif isinstance(site, str):
-        enum_filter = Artist.site_filter('name', '__eq__', site)
-    return Artist.query.enum_join(Artist.site_enum)\
-                       .filter(enum_filter, Artist.site_artist_id == site_artist_id)\
-                       .one_or_none()
+        q = q.filter(Artist.site_value == site)
+    return q.filter(Artist.site_artist_id == site_artist_id).one_or_none()
 
 
 def get_artists_without_boorus_page(limit):

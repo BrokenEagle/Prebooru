@@ -7,20 +7,19 @@ from sqlalchemy import func
 from utility.time import get_current_time, add_days, days_ago
 
 # ## LOCAL IMPORTS
-from ...enum_imports import subscription_status
 from ...models import Subscription, SubscriptionElement, IllustUrl, Illust
 from .base_db import set_column_attributes, delete_record, save_record, commit_session, session_query
 
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['interval', 'expiration', 'status_id', 'requery', 'last_id', 'checked']
+ANY_WRITABLE_COLUMNS = ['interval', 'expiration', 'status_name', 'requery', 'last_id', 'checked']
 NULL_WRITABLE_ATTRIBUTES = ['artist_id']
 
 DISTINCT_ILLUST_COUNT = func.count(Illust.id.distinct())
-UNDECIDED_COUNT = func.count(SubscriptionElement.keep_filter('id', 'is_', None))
+UNDECIDED_COUNT = func.count(SubscriptionElement.keep_id.is_(None))
 DISTINCT_ELEMENT_COUNT = func.count(SubscriptionElement.id.distinct())
-COUNT_UNDECIDED_ELEMENTS = func.sum(func.iif(SubscriptionElement.keep_filter('id', 'is_', None), 1, 0)).label('count')
+COUNT_UNDECIDED_ELEMENTS = func.sum(func.iif(SubscriptionElement.keep_id.is_(None), 1, 0)).label('count')
 
 
 # ## FUNCTIONS
@@ -28,8 +27,8 @@ COUNT_UNDECIDED_ELEMENTS = func.sum(func.iif(SubscriptionElement.keep_filter('id
 # #### Create
 
 def create_subscription_from_parameters(createparams, commit=True):
-    subscription = Subscription(status_id=subscription_status.idle.id)
-    return set_subscription_from_parameters(subscription, createparams, 'created', commit, True)
+    createparams.setdefault('status_name', 'idle')
+    return set_subscription_from_parameters(Subscription(), createparams, 'created', commit, True)
 
 
 # #### Update
@@ -41,8 +40,6 @@ def update_subscription_from_parameters(subscription, updateparams, commit=True,
 # #### Set
 
 def set_subscription_from_parameters(subscription, setparams, action, commit, update):
-    if 'status' in setparams:
-        setparams['status_id'] = Subscription.status_enum.by_name(setparams['status']).id
     if set_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update=update):
         save_record(subscription, action, commit=commit)
     return subscription
@@ -59,22 +56,16 @@ def delete_subscription(subscription):
 
 def get_available_subscriptions_query():
     # Return only subscriptions which have already been processed manually (requery is not None)
-    status_filter = Subscription.status_filter('name', '__eq__', 'idle')
-    return Subscription.query.enum_join(Subscription.status_enum)\
-                             .filter(Subscription.requery < get_current_time(), status_filter)\
+    return Subscription.query.filter(Subscription.requery < get_current_time(), Subscription.status_value == 'idle')\
                              .order_by(Subscription.requery.asc())
 
 
 def get_busy_subscriptions():
-    return Subscription.query.enum_join(Subscription.status_enum)\
-                             .filter(Subscription.status_filter('name', 'in_', ['manual', 'automatic']))\
-                             .all()
+    return Subscription.query.filter(Subscription.status_value.in_(['manual', 'automatic'])).all()
 
 
 def check_processing_subscriptions():
-    q = Subscription.query.enum_join(Subscription.status_enum)\
-                          .filter(Subscription.status_filter('name', '__eq__', 'manual'))\
-                          .exists()
+    q = Subscription.query.filter(Subscription.status_value == 'manual').exists()
     return session_query(q).scalar()
 
 
@@ -83,11 +74,9 @@ def get_subscription_by_ids(subscription_ids):
 
 
 def ordered_subscriptions_by_pending_elements(limit):
-    return SubscriptionElement.query.enum_join(SubscriptionElement.status_enum)\
-                                    .with_entities(SubscriptionElement.subscription_id, DISTINCT_ELEMENT_COUNT)\
-                                    .filter(SubscriptionElement.keep_filter('name', 'is_', None),
-                                            SubscriptionElement.status_filter('name', '__eq__', 'active')
-                                            )\
+    return SubscriptionElement.query.with_entities(SubscriptionElement.subscription_id, DISTINCT_ELEMENT_COUNT)\
+                                    .filter(SubscriptionElement.keep_value.is_(None),
+                                            SubscriptionElement.status_value == 'active')\
                                     .group_by(SubscriptionElement.subscription_id)\
                                     .having(DISTINCT_ELEMENT_COUNT > 0)\
                                     .order_by(DISTINCT_ELEMENT_COUNT.desc())\
@@ -99,7 +88,7 @@ def ordered_subscriptions_by_pending_elements(limit):
 
 def add_subscription_error(subscription, error):
     subscription.errors.append(error)
-    subscription.status_id = subscription_status.error.id
+    subscription.status_name = 'error'
     subscription.checked = get_current_time()
     subscription.requery = None
     commit_session()
@@ -127,13 +116,11 @@ def get_average_interval_for_subscriptions(subscriptions, days):
                                         Subscription.checked - func.min(Illust.site_created),
                                         func.max(Illust.site_created) - func.min(Illust.site_created))
                                ) / DISTINCT_ILLUST_COUNT
-    keep_filter = SubscriptionElement.keep_filter('name', '__eq__', 'yes')
-    return SubscriptionElement.query.enum_join(SubscriptionElement.keep_enum)\
-                              .join(Subscription).join(IllustUrl).join(Illust).join(undecided_count_cte)\
+    return SubscriptionElement.query.join(Subscription).join(IllustUrl).join(Illust).join(undecided_count_cte)\
                               .with_entities(SubscriptionElement.subscription_id, average_interval_clause)\
                               .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
                                       Illust.site_created > days_ago(days),
-                                      keep_filter,
+                                      SubscriptionElement.keep_value == 'yes',
                                       )\
                               .group_by(SubscriptionElement.subscription_id)\
                               .having(DISTINCT_ILLUST_COUNT > 0).all()

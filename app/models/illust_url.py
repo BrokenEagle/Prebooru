@@ -9,13 +9,15 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
+from utility.data import list_difference
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import site_descriptor
+from ..logical.sites import domain_by_site_name
+from .model_enums import SiteDescriptor
 from .download_element import DownloadElement
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, get_relation_definitions
+from .base import JsonModel, IntEnum, register_enum_column
 
 
 # ## FUNCTIONS
@@ -33,13 +35,9 @@ def check_video(func):
 class IllustUrl(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site, site_id, site_name, site_enum, site_filter, site_col =\
-        get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
-                                 tblname='illust_url', nullable=False)
+    site_id = DB.Column(IntEnum, DB.ForeignKey('site_descriptor.id'), nullable=False)
     url = DB.Column(DB.TEXT, nullable=False)
-    sample_site, sample_site_id, sample_site_name, sample_site_enum, sample_site_filter, sample_site_col =\
-        get_relation_definitions(site_descriptor, relname='sample_site', relcol='id', colname='sample_site_id',
-                                 tblname='illust_url', nullable=True)
+    sample_site_id = DB.Column(IntEnum, DB.ForeignKey('site_descriptor.id'), nullable=True)
     sample_url = DB.Column(DB.TEXT, nullable=True)
     width = DB.Column(DB.Integer, nullable=False)
     height = DB.Column(DB.Integer, nullable=False)
@@ -61,7 +59,8 @@ class IllustUrl(JsonModel):
 
     @property
     def source(self):
-        return self.site.source
+        from ..logical.sources import source_by_site_name
+        return source_by_site_name(self.site.name)
 
     @memoized_property
     def type(self):
@@ -117,7 +116,11 @@ class IllustUrl(JsonModel):
 
     @property
     def site_domain(self):
-        return self.site.domain
+        return domain_by_site_name(self.site_name)
+
+    @property
+    def sample_site_domain(self):
+        return domain_by_site_name(self.sample_site_name)
 
     @property
     def key(self):
@@ -136,28 +139,40 @@ class IllustUrl(JsonModel):
 
     @classmethod
     def find_by_key(cls, full_url):
-        site = site_descriptor.get_site_from_url(full_url)
-        partial = site.source.partial_media_url(full_url)
-        return cls.query.filter(cls.column_map['site_id'] == site.id, cls.url == partial).one_or_none()
+        from ..logical.sites import site_name_by_url
+        from ..logical.sources import source_by_site_name
+        site_name = site_name_by_url(full_url)
+        source = source_by_site_name(site_name)
+        partial = source.partial_media_url(full_url)
+        return cls.query.filter(cls.site_value == site_name, cls.url == partial).one_or_none()
 
     @classmethod
     def loads(cls, data, *args):
+        from ..logical.sites import site_name_by_url
+        from ..logical.sources import source_by_site_name
         if 'url' in data and data['url'].startswith('http'):
-            site = site_descriptor.get_site_from_url(data['url'])
-            data['site_id'] = site.id
-            data['url'] = site.source.partial_media_url(data['url'])
+            site_name = site_name_by_url(data['url'])
+            source = source_by_site_name(site_name)
+            data['site_id'] = SiteDescriptor.to_id(site_name)
+            data['url'] = source.partial_media_url(data['url'])
         if 'sample' in data and data['sample'] is not None and data['sample'].startswith('http'):
-            site = site_descriptor.get_site_from_url(data['sample'])
-            data['sample_site_id'] = site.id
-            data['sample_url'] = site.source.partial_media_url(data['sample'])
+            sample_site_name = site_name_by_url(data['sample'])
+            sample_source = source_by_site_name(sample_site_name)
+            data['sample_site_id'] = SiteDescriptor.to_id(sample_site_name)
+            data['sample_url'] = sample_source.partial_media_url(data['sample'])
         return super().loads(data)
 
     archive_excludes = {'url', 'site', 'site_id', 'sample', 'sample_url', 'sample_site_id'}
     archive_includes = {('url', 'full_url'), ('sample', 'full_sample_url'), ('key', 'hash_key')}
 
     @classproperty(cached=True)
+    def repr_attributes(cls):
+        return list_difference(super().json_attributes, ['site_id', 'sample_site_id'])\
+            + ['site_name', 'sample_site_name']
+
+    @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['full_url', 'site_domain']
+        return cls.repr_attributes + ['full_url', 'full_sample_url', 'site_domain']
 
 
 # ## INITIALIZATION
@@ -168,3 +183,5 @@ def initialize():
     # Access the opposite side of the relationship to force the back reference to be generated
     Illust.urls.property._configure_started
     IllustUrl.set_relation_properties()
+    register_enum_column(IllustUrl, SiteDescriptor, 'site')
+    register_enum_column(IllustUrl, SiteDescriptor, 'sample_site')

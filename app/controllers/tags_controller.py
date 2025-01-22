@@ -7,7 +7,7 @@ from flask import Blueprint, request, render_template, flash, redirect
 from utility.data import eval_bool_string, int_or_array
 
 # ## LOCAL IMPORTS
-from ..models import Tag, UserTag, Post
+from ..models import Tag, UserTag, PostTags
 from ..logical.utility import set_error
 from ..logical.database.tag_db import create_tag_from_parameters
 from ..logical.records.tag_rec import append_tag_to_item, remove_tag_from_item
@@ -31,8 +31,7 @@ POLYMORPHIC_TAG_TYPES = ['site_tag', 'user_tag']
 # #### Helper functions
 
 def uniqueness_check(dataparams):
-    return Tag.query.enum_join(Tag.type_enum).filter(Tag.type_filter('name', '__eq__', dataparams['type']))\
-                    .filter_by(name=dataparams['name']).one_or_none()
+    return Tag.query.filter(Tag.name == dataparams['name'], Tag.type_value == dataparams['type']).one_or_none()
 
 
 def validate_type(dataparams):
@@ -181,7 +180,7 @@ def append_item_index_json():
         return result
     is_preview = request.values.get('preview', type=eval_bool_string, default=False)
     if is_preview:
-        tags = UserTag.query.join(Post, UserTag.posts).filter(Post.id == result['append']['id']).all()
+        tags = _get_user_tags_by_post_id(result['append']['id'])
         result['html'] = render_template_ws("tags/_section.html", tags=tags, section_id='tag-list', item_type='post',
                                             item_id=result['append']['id'])
     return result
@@ -208,7 +207,7 @@ def remove_item_show_json(id):
         return result
     is_preview = request.values.get('preview', type=eval_bool_string, default=False)
     if is_preview:
-        tags = UserTag.query.join(Post, UserTag.posts).filter(Post.id == result['remove']['id']).all()
+        tags = _get_user_tags_by_post_id(result['remove']['id'])
         result['html'] = render_template_ws("tags/_section.html", tags=tags, section_id='tag-list', item_type='post',
                                             item_id=result['remove']['id'])
     return result
@@ -221,9 +220,12 @@ def _get_user_tag():
     tag_name = retdata['name'] = request.values.get('tag[name]')
     if tag_name is None:
         return set_error(retdata, "Tag name parameter not included.")
-    tag = retdata['tag'] = Tag.query.enum_join(Tag.type_enum)\
-                              .filter(Tag.name == tag_name, Tag.type_filter('name', '__eq__', 'user_tag'))\
-                              .one_or_none()
+    tag = retdata['tag'] = Tag.query.filter(Tag.name == tag_name, Tag.type_value == 'user_tag').one_or_none()
     if tag is None:
         return set_error(retdata, "Tag with name %s not found." % tag_name)
     return retdata
+
+
+def _get_user_tags_by_post_id(post_id):
+    subquery = PostTags.query.filter(PostTags.post_id == post_id).with_entities(PostTags.tag_id)
+    return UserTag.query.filter(UserTag.id.in_(subquery)).all()

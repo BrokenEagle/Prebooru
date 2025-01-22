@@ -19,10 +19,15 @@ PREBOORU_ERROR = 0
 def initialize_server():
     global PREBOORU_APP, SCHEDULER, load_default, put_get_json, validate_version, validate_integrity,\
         validate_foreign_keys, validate_alembic_table
+    from utility.uprint import print_warning
     from app import PREBOORU_APP, SCHEDULER
     from app.logical.validate import validate_version, validate_integrity, validate_foreign_keys,\
         validate_alembic_table
+    from app.models import enums_need_upgrade
     initialize_environment()
+    if enums_need_upgrade():
+        print_warning("Enum tables need to be upgraded. Use migrate_enums.py for this.")
+        exit(-1)
     initialize_controllers()
     initialize_helpers()
 
@@ -247,7 +252,7 @@ def init_db(args):
 
     print("Creating tables")
     from app import DB, PREBOORU_APP
-    from app.models import NONCE  # noqa: F401, F811
+
     create_directory(DB_PATH)
     if args.drop:
         DB.drop_all()

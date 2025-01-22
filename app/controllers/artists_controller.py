@@ -6,10 +6,12 @@ from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, StringField
 from wtforms.validators import DataRequired
 
+# ## PACKAGE IMPORTS
+from utility.data import str_or_blank
+
 # ## LOCAL IMPORTS
 from .. import SCHEDULER
-from ..models import Artist, Booru
-from ..enum_imports import site_descriptor
+from ..models import Artist, Booru, SiteDescriptor
 from ..logical.utility import set_error
 from ..logical.sources import source_by_site_name
 from ..logical.sources.base_src import get_artist_required_params
@@ -23,7 +25,7 @@ from ..logical.database.artist_db import create_artist_from_parameters, update_a
 from ..logical.database.booru_db import create_booru_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
-    check_param_requirements, int_or_blank, nullify_blanks, set_default, parse_bool_parameter,\
+    check_param_requirements, nullify_blanks, set_default, parse_bool_parameter,\
     hide_input, index_html_response
 
 
@@ -31,8 +33,9 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("artist", __name__)
 
-REQUIRED_PARAMS = ['site_id', 'site_artist_id', 'site_account']
+REQUIRED_PARAMS = ['site_name', 'site_artist_id', 'site_account']
 VALUES_MAP = {
+    'site_name': 'site_name',
     'site_account': 'site_account',
     'name': 'name',
     'profile': 'profile',
@@ -40,7 +43,6 @@ VALUES_MAP = {
     'webpage_string': 'webpages',
     **{k: k for k in Artist.__table__.columns.keys()},
 }
-
 
 # #### Load options
 
@@ -70,17 +72,17 @@ JSON_OPTIONS = (
 # #### Form
 
 FORM_CONFIG = {
-    'site_id': {
+    'site_name': {
         'field': SelectField,
         'kwargs': {
             'choices': [
                 ("", ""),
-                (site_descriptor.pixiv.id, site_descriptor.pixiv.name.title()),
-                (site_descriptor.twitter.id, site_descriptor.twitter.name.title()),
-                (site_descriptor.custom.id, site_descriptor.custom.name.title()),
+                (SiteDescriptor.pixiv.name, SiteDescriptor.pixiv.name.title()),
+                (SiteDescriptor.twitter.name, SiteDescriptor.twitter.name.title()),
+                (SiteDescriptor.custom.name, SiteDescriptor.custom.name.title()),
             ],
             'validators': [DataRequired()],
-            'coerce': int_or_blank,
+            'coerce': str_or_blank,
         },
     },
     'site_artist_id': {
@@ -142,11 +144,10 @@ def get_artist_form(**kwargs):
 
 
 def uniqueness_check(dataparams, artist):
-    site_id = dataparams.get('site_id', artist.site_id)
+    site_name = dataparams.get('site_name', artist.site_name)
     site_artist_id = dataparams.get('site_artist_id', artist.site_artist_id)
-    if site_id != artist.site_id or site_artist_id != artist.site_artist_id:
-        return Artist.query.enum_join(Artist.site_enum)\
-                           .filter(Artist.site_filter('id', '__eq__', site_id),
+    if site_name != artist.site_name or site_artist_id != artist.site_artist_id:
+        return Artist.query.filter(Artist.site_value == site_name,
                                    Artist.site_artist_id == site_artist_id)\
                            .one_or_none()
 
@@ -237,7 +238,7 @@ def query_create():
 
 
 def query_booru(artist):
-    source = artist.site.source
+    source = artist.source
     search_url = source.artist_booru_search_url(artist)
     artist_data = get_artists_by_url(search_url)
     if artist_data['error']:
@@ -374,7 +375,8 @@ def create_json():
 def edit_html(id):
     """HTML access point to update function."""
     artist = get_or_abort(Artist, id)
-    editparams = artist.basic_json(True)
+    editparams = artist.basic_json()
+    editparams['site_name'] = artist.site_name
     editparams['site_account'] = artist.site_account_value
     editparams['name'] = artist.name_value
     marked_urls = ((('' if webpage.active else '-') + webpage.url) for webpage in artist.webpages)
@@ -383,7 +385,7 @@ def edit_html(id):
     form = get_artist_form(**editparams)
     if artist.illust_count > 0:
         # Artists with illusts cannot have their critical identifiers changed
-        hide_input(form, 'site_id')
+        hide_input(form, 'site_name')
     return render_template("artists/edit.html", form=form, artist=artist)
 
 

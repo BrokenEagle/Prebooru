@@ -199,7 +199,6 @@ def _close_session():
 
 
 def _load_models():
-    from . import enum_imports  # noqa: F401
     from . import models
     models.initialize()
     SESSION.remove()

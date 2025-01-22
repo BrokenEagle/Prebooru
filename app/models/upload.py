@@ -5,10 +5,10 @@ from sqlalchemy.util import memoized_property
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import upload_status
+from .model_enums import UploadStatus
 from .illust_url import IllustUrl
 from .error import Error
-from .base import JsonModel, EpochTimestamp, get_relation_definitions
+from .base import JsonModel, IntEnum, EpochTimestamp, register_enum_column
 
 
 # ## CLASSES
@@ -16,9 +16,7 @@ from .base import JsonModel, EpochTimestamp, get_relation_definitions
 class Upload(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    status, status_id, status_name, status_enum, status_filter, status_col =\
-        get_relation_definitions(upload_status, relname='status', relcol='id', colname='status_id',
-                                 tblname='upload', nullable=False)
+    status_id = DB.Column(IntEnum, DB.ForeignKey('upload_status.id'), nullable=False)
     media_filepath = DB.Column(DB.TEXT, nullable=False)
     sample_filepath = DB.Column(DB.TEXT, nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
@@ -69,7 +67,7 @@ class Upload(JsonModel):
 
     @memoized_property
     def _source(self):
-        return self.illust_url.site.source
+        return self.illust_url.source
 
 
 # ## INITIALIZATION
@@ -78,3 +76,4 @@ def initialize():
     # Access the opposite side of the relationship to force the back reference to be generated
     IllustUrl.uploads.property._configure_started
     Upload.set_relation_properties()
+    register_enum_column(Upload, UploadStatus, 'status')

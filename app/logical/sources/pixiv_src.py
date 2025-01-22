@@ -16,7 +16,8 @@ from utility.file import get_file_extension, get_http_filename
 from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
-from ...enum_imports import site_descriptor, api_data_type
+from ...models.model_enums import SiteDescriptor, ApiDataType
+from ..sites import site_name_by_domain
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, get_api_data, save_api_data
 from ..database.server_info_db import get_next_wait, update_next_wait
@@ -41,7 +42,7 @@ ILLUST_HREFURL = 'https://www.pixiv.net/artworks/%d'
 ARTIST_HREFURL = 'https://www.pixiv.net/users/%d'
 TAG_SEARCH_HREFURL = 'https://www.pixiv.net/tags/%s/artworks'
 
-SITE = site_descriptor.pixiv
+SITE = SiteDescriptor.pixiv
 
 HAS_TAG_SEARCH = True
 
@@ -149,7 +150,7 @@ def is_post_url(url):
 
 
 def get_media_url(illust_url):
-    return 'https://' + illust_url.site.domain + illust_url.url
+    return 'https://' + illust_url.site_domain + illust_url.url
 
 
 def get_primary_url(illust):
@@ -416,10 +417,10 @@ def get_illust_tags(artwork):
 def get_illust_urls_from_artwork(artwork):
     original_url = artwork['urls']['original']
     parse = urllib.parse.urlparse(original_url)
-    site = site_descriptor.get_site_from_domain(parse.netloc)
+    site_name = site_name_by_domain(parse.netloc)
     return [
         {
-            'site_id': site.id,
+            'site_name': site_name,
             'url': parse.path,
             'width': artwork['width'],
             'height': artwork['height'],
@@ -434,10 +435,10 @@ def get_illust_urls_from_page(page_data):
     for i in range(len(page_data['pages'])):
         image = page_data['pages'][i]
         parse = urllib.parse.urlparse(image['urls']['original'])
-        site = site_descriptor.get_site_from_domain(parse.netloc)
+        site_name = site_name_by_domain(parse.netloc)
         image_urls.append(
             {
-                'site_id': site.id,
+                'site_name': site_name,
                 'url': parse.path,
                 'width': image['width'],
                 'height': image['height'],
@@ -456,7 +457,7 @@ def get_illust_parameters_from_artwork(artwork, page_data):
         illust_urls = get_illust_urls_from_page(page_data)
     sub_data = artwork['userIllusts'][str(site_illust_id)]
     return {
-        'site_id': SITE.id,
+        'site_name': SITE.name,
         'site_illust_id': site_illust_id,
         'site_created': process_utc_timestring(artwork['createDate']),
         'pages': artwork['pageCount'],
@@ -488,7 +489,7 @@ def get_pixiv_user_webpages(pxuser):
 
 def get_artist_parameters_from_pxuser(pxuser, artwork):
     return {
-        'site_id': SITE.id,
+        'site_name': SITE.name,
         'site_artist_id': int(pxuser['userId']),
         'site_created': None,
         'active': True,
@@ -502,24 +503,24 @@ def get_artist_parameters_from_pxuser(pxuser, artwork):
 # Data lookup functions
 
 def get_page_data(site_illust_id):
-    page_data = get_api_data([site_illust_id], SITE.id, api_data_type.page.id)
+    page_data = get_api_data([site_illust_id], SITE.id, ApiDataType.page.id)
     if len(page_data) == 0:
         page_data = get_pixiv_page_data(site_illust_id)
         if is_error(page_data):
             return
-        save_api_data([page_data], 'illustId', SITE.id, api_data_type.page.id)
+        save_api_data([page_data], 'illustId', SITE.id, ApiDataType.page.id)
     else:
         page_data = page_data[0].data
     return page_data
 
 
 def get_profile_data(site_artist_id):
-    profile_data = get_api_data([site_artist_id], SITE.id, api_data_type.profile.id)
+    profile_data = get_api_data([site_artist_id], SITE.id, ApiDataType.profile.id)
     if len(profile_data) == 0:
         profile_data = get_pixiv_profile_data(site_artist_id)
         if is_error(profile_data):
             return
-        save_api_data([profile_data], 'userId', SITE.id, api_data_type.profile.id)
+        save_api_data([profile_data], 'userId', SITE.id, ApiDataType.profile.id)
     else:
         profile_data = profile_data[0].data
     return profile_data
@@ -532,7 +533,7 @@ def get_artist_api_data(site_artist_id):
         if is_error(pxuser):
             print("Error getting artist data!")
             return
-        save_api_data([pxuser], 'userId', SITE.id, api_data_type.artist.id)
+        save_api_data([pxuser], 'userId', SITE.id, ApiDataType.artist.id)
     return pxuser
 
 
@@ -546,7 +547,7 @@ def get_artist_data(site_artist_id):
         artwork_ids = [int(artwork_id) for artwork_id in (safe_get(profile_data, 'profile', 'illusts') or {}).keys()]
         artwork_ids += [int(artwork_id) for artwork_id in (safe_get(profile_data, 'profile', 'manga') or {}).keys()]
         if len(artwork_ids):
-            artworks = get_api_data(artwork_ids, SITE.id, api_data_type.illust.id)
+            artworks = get_api_data(artwork_ids, SITE.id, ApiDataType.illust.id)
             if len(artworks):
                 artwork = artworks[0].data
             else:
@@ -563,7 +564,7 @@ def get_illust_api_data(site_illust_id):
         if is_error(artwork):
             print("Error getting illust data!")
             return
-        save_api_data([artwork], 'illustId', SITE.id, api_data_type.illust.id)
+        save_api_data([artwork], 'illustId', SITE.id, ApiDataType.illust.id)
     return artwork
 
 

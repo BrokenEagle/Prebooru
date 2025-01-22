@@ -10,7 +10,7 @@ from flask import url_for, Markup, request
 from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
-from ..enum_imports import site_descriptor
+from ..models.model_enums import SiteDescriptor
 from ..logical.utility import search_url_for
 from .base_helper import external_link, general_link
 
@@ -44,7 +44,7 @@ def illust_url_search_link(illust, text):
 # ###### SHOW
 
 def danbooru_upload_link(illust):
-    if illust.site_id == site_descriptor.custom.id:
+    if illust.site_id == SiteDescriptor.custom.id:
         return Markup("N/A")
     return external_link("Danbooru", danbooru_batch_url(illust))
 
@@ -129,14 +129,14 @@ def commentaries_link(illust):
 # ###### GENERAL
 
 def site_illust_link(illust):
-    if illust.site_id == site_descriptor.custom.id:
+    if illust.site_id == SiteDescriptor.custom.id:
         # Need to add a post_url for CustomData, a subclass for SiteData
         return Markup("N/A")
     return external_link(illust.sitelink, illust.primary_url)
 
 
 def alt_site_illust_link(illust):
-    if illust.site_id == site_descriptor.custom.id:
+    if illust.site_id == SiteDescriptor.custom.id:
         return ""
     secondary_url = illust.secondary_url
     return external_link('»', secondary_url) if secondary_url is not None else ""

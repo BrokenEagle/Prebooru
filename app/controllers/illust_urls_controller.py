@@ -9,9 +9,10 @@ from wtforms.validators import DataRequired
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl
 from ..logical.utility import set_error
+from ..logical.sites import site_name_by_url
+from ..logical.sources import source_by_site_name
 from ..logical.sources.base_src import get_media_source
-from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters,\
-    set_url_site
+from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from ..logical.records.post_rec import redownload_post
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
@@ -85,11 +86,10 @@ def get_illust_url_form(**kwargs):
 
 def uniqueness_check(dataparams, illust_url):
     illust_id = dataparams.get('illust_id', illust_url.illust_id)
-    site_id = dataparams.get('site_id', illust_url.site_id)
+    site_name = dataparams.get('site_name', illust_url.site_name)
     url = dataparams.get('url', illust_url.url)
-    if site_id != illust_url.site_id or url != illust_url.url:
-        return IllustUrl.query.enum_join(IllustUrl.site_enum, IllustUrl.site_id == IllustUrl.site_enum.id)\
-                              .filter(IllustUrl.site_filter('id', '__eq__', site_id),
+    if site_name != illust_url.site_name or url != illust_url.url:
+        return IllustUrl.query.filter(IllustUrl.site_value == site_name,
                                       IllustUrl.illust_id == illust_id,
                                       IllustUrl.url == url)\
                               .one_or_none()
@@ -113,6 +113,16 @@ def convert_update_params(dataparams):
     updatelist = [VALUES_MAP[key] for key in dataparams if key in VALUES_MAP]
     updateparams = {k: v for (k, v) in updateparams.items() if k in updatelist}
     return updateparams
+
+
+def set_url_site(dataparams, source):
+    dataparams['site_name'] = site_name_by_url(dataparams['url'])
+    source = source_by_site_name(dataparams['site_name'])
+    dataparams['url'] = source.partial_media_url(dataparams['url'])
+    if dataparams.get('sample') is not None:
+        dataparams['sample_site_name'] = site_name_by_url(dataparams['sample'])
+        sample_source = source_by_site_name(dataparams['sample_site_name'])
+        dataparams['sample_url'] = sample_source.partial_media_url(dataparams['sample'])
 
 
 # #### Route helpers

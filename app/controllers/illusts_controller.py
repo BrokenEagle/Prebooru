@@ -8,12 +8,13 @@ from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, Stri
 from wtforms.validators import DataRequired
 
 # ## PACKAGE IMPORTS
-from utility.data import eval_bool_string, is_falsey
+from utility.data import eval_bool_string, is_falsey, str_or_blank
 
 # ## LOCAL IMPORTS
-from ..models import Illust, IllustUrl, Artist, Post, PoolIllust, PoolPost
-from ..enum_imports import site_descriptor
+from ..models import Illust, IllustUrl, Artist, Post, PoolIllust, PoolPost, SiteDescriptor
 from ..logical.utility import set_error
+from ..logical.sites import site_name_by_url
+from ..logical.sources import source_by_site_name
 from ..logical.records.artist_rec import get_or_create_artist_from_source
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion,\
     illust_delete_title, illust_swap_title, illust_delete_commentary, illust_swap_commentary,\
@@ -23,7 +24,7 @@ from ..logical.database.illust_db import create_illust_from_parameters, update_i
     set_illust_artist
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
-    hide_input, int_or_blank, nullify_blanks, set_default, check_param_requirements, parse_array_parameter,\
+    hide_input, nullify_blanks, set_default, check_param_requirements, parse_array_parameter,\
     parse_bool_parameter, get_page, get_limit, index_html_response
 
 
@@ -31,8 +32,9 @@ from .base_controller import get_params_value, process_request_values, show_json
 
 bp = Blueprint("illust", __name__)
 
-REQUIRED_PARAMS = ['site_id', 'site_illust_id']
+REQUIRED_PARAMS = ['site_name', 'site_illust_id']
 VALUES_MAP = {
+    'site_name': 'site_name',
     'illust_urls': 'illust_urls',
     'tags': 'tags',
     'tag_string': 'tags',
@@ -47,7 +49,6 @@ POST_POOLS_SUBQUERY = Illust.query.join(IllustUrl, Illust.urls).join(Post, Illus
     .filter(Post.id == PoolPost.post_id).with_entities(Illust.id)
 
 POOL_SEARCH_KEYS = ['has_pools', 'has_post_pools', 'has_illust_pools']
-
 
 # #### Load options
 
@@ -88,17 +89,17 @@ FORM_CONFIG = {
             'validators': [DataRequired()],
         },
     },
-    'site_id': {
+    'site_name': {
         'field': SelectField,
         'kwargs': {
             'choices': [
                 ("", ""),
-                (site_descriptor.pixiv.id, site_descriptor.pixiv.name.title()),
-                (site_descriptor.twitter.id, site_descriptor.twitter.name.title()),
-                (site_descriptor.custom.id, site_descriptor.custom.name.title()),
+                (SiteDescriptor.pixiv.name, SiteDescriptor.pixiv.name.title()),
+                (SiteDescriptor.twitter.name, SiteDescriptor.twitter.name.title()),
+                (SiteDescriptor.custom.name, SiteDescriptor.custom.name.title()),
             ],
             'validators': [DataRequired()],
-            'coerce': int_or_blank,
+            'coerce': str_or_blank,
         },
     },
     'site_illust_id': {
@@ -170,12 +171,12 @@ def get_illust_form(**kwargs):
 
 
 def uniqueness_check(dataparams, illust):
-    site_id = dataparams.get('site_id', illust.site_id)
+    site_name = dataparams.get('site_name', illust.site_name)
     site_illust_id = dataparams.get('site_illust_id', illust.site_illust_id)
-    if site_id != illust.site_id or site_illust_id != illust.site_illust_id:
-        return Illust.query.enum_join(Illust.site_enum).filter(Illust.site_filter('id', '__eq__', site_id),
-                                                               Illust.site_illust_id == site_illust_id)\
-                                                       .one_or_none()
+    if site_name != illust.site_name or site_illust_id != illust.site_illust_id:
+        return Illust.query.filter(Illust.site_value == site_name,
+                                   Illust.site_illust_id == site_illust_id)\
+                           .one_or_none()
 
 
 def convert_data_params(dataparams):
@@ -191,15 +192,11 @@ def convert_create_params(dataparams):
     set_default(createparams, 'pages', 1)
     set_default(createparams, 'score', 0)
     set_default(createparams, 'tags', [])
-    if 'site_name' in dataparams and dataparams['site_name'] in site_descriptor.names:
-        createparams['site_id'] = site_descriptor.by_name(dataparams['site_name']).id
     if 'illust_urls' in dataparams:
         # Arrays of hashes are sent as a hash where each index is a key
         createparams['illust_urls'] = [v for v in dataparams['illust_urls'].values()]
         for url_data in createparams['illust_urls']:
             url_data['active'] = parse_bool_parameter(url_data, 'active')
-            if 'site_name' in url_data:
-                url_data['site_id'] = site_descriptor.by_name(url_data['site_name']).id
     return createparams
 
 
@@ -236,8 +233,8 @@ def create():
     errors = check_param_requirements(createparams, REQUIRED_PARAMS, 'create')
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
-    if createparams['site_id'] != check_artist.site_id:
-        return set_error(retdata, "site_id parameter must match artist site_id value")
+    if createparams['site_name'] != check_artist.site_name:
+        return set_error(retdata, "site_name parameter must match artist site_name value")
     check_illust = uniqueness_check(createparams, Illust())
     if check_illust is not None:
         retdata['item'] = check_illust.to_json()
@@ -266,12 +263,12 @@ def update(illust):
 def query_create():
     """Query source and create illust."""
     params = dict(url=request.values.get('url'))
-    site = site_descriptor.get_site_from_url(params['url'])
-    createparams = {'site_id': site.id}
+    site_name = site_name_by_url(params['url'])
+    createparams = {'site_name': site_name}
     retdata = {'error': False, 'params': params, 'createparams': createparams}
-    if site.name == 'custom':
+    if site_name == 'custom':
         return set_error(retdata, "Query create does not support URLs from custom domains.")
-    source = site.source
+    source = source_by_site_name(site_name)
     createparams['site_illust_id'] = source.get_illust_id(params['url'])
     if createparams['site_illust_id'] is None:
         return set_error(retdata, "Unable to find site illust ID with URL.")
@@ -397,7 +394,7 @@ def new_html():
             form.artist_id.data = None
         else:
             hide_input(form, 'artist_id', artist.id)
-            hide_input(form, 'site_id', artist.site_id)
+            hide_input(form, 'site_name', artist.site_name)
     return render_template("illusts/new.html", form=form, artist=artist, illust=Illust())
 
 
@@ -421,13 +418,14 @@ def create_json():
 def edit_html(id):
     """HTML access point to update function."""
     illust = get_or_abort(Illust, id)
-    editparams = illust.basic_json(True)
+    editparams = illust.basic_json()
+    editparams['site_name'] = illust.site_name
     editparams['tag_string'] = '\r\n'.join(illust.tag_names)
     editparams['title'] = illust.title_body
     editparams['commentary'] = illust.commentary_body
     form = get_illust_form(**editparams)
     hide_input(form, 'artist_id', illust.artist_id)
-    hide_input(form, 'site_id', illust.site_id)
+    hide_input(form, 'site_name', illust.site_name)
     return render_template("illusts/edit.html", form=form, illust=illust)
 
 

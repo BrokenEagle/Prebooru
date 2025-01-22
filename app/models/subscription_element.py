@@ -1,10 +1,13 @@
 # APP/MODELS/SUBSCRIPTION_ELEMENT.PY
 
+# ## PACKAGE IMPORTS
+from utility.obj import classproperty
+
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import subscription_element_status, subscription_element_keep
+from .model_enums import SubscriptionElementStatus, SubscriptionElementKeep
 from .error import Error
-from .base import JsonModel, BlobMD5, EpochTimestamp, get_relation_definitions
+from .base import JsonModel, IntEnum, BlobMD5, EpochTimestamp, register_enum_column
 
 
 # ## CLASSES
@@ -16,13 +19,9 @@ class SubscriptionElement(JsonModel):
     post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
     illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
     md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    keep, keep_id, keep_name, keep_enum, keep_filter, keep_col =\
-        get_relation_definitions(subscription_element_keep, relname='keep', relcol='id', colname='keep_id',
-                                 tblname='subscription_element', nullable=True)
+    keep_id = DB.Column(IntEnum, DB.ForeignKey('subscription_element_keep.id'), nullable=True)
     expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    status, status_id, status_name, status_enum, status_filter, status_col =\
-        get_relation_definitions(subscription_element_status, relname='status', relcol='id', colname='status_id',
-                                 tblname='subscription_element', nullable=False)
+    status_id = DB.Column(IntEnum, DB.ForeignKey('subscription_element_status.id'), nullable=False)
 
     # ## Relationships
     errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
@@ -43,6 +42,10 @@ class SubscriptionElement(JsonModel):
 
     # ## Class properties
 
+    @classproperty(cached=False)
+    def repr_attributes(cls):
+        return ['id', 'subscription_id', 'post_id', 'illust_url_id', 'md5', 'expires', 'keep', 'status']
+
     # ## Private
 
     @property
@@ -59,3 +62,5 @@ def initialize():
     # Access the opposite side of the relationship to force the back reference to be generated
     Subscription.elements.property._configure_started
     SubscriptionElement.set_relation_properties()
+    register_enum_column(SubscriptionElement, SubscriptionElementStatus, 'status')
+    register_enum_column(SubscriptionElement, SubscriptionElementKeep, 'keep')

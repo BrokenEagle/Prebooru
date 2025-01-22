@@ -22,7 +22,8 @@ from utility.file import get_file_extension, get_http_filename, put_get_json
 from utility.uprint import print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
-from ...enum_imports import site_descriptor, api_data_type
+from ...models.model_enums import SiteDescriptor, ApiDataType
+from ..sites import site_name_by_domain
 from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
@@ -30,7 +31,6 @@ from ..database.artist_db import update_artist_from_parameters_standard
 from ..database.illust_db import get_site_illust
 from ..database.server_info_db import get_next_wait, update_next_wait
 from ..database.jobs_db import get_job_status_data, update_job_status
-
 
 # ## GLOBAL VARIABLES
 
@@ -49,7 +49,7 @@ ILLUST_HREFURL = 'https://twitter.com/i/web/status/%d'
 ARTIST_HREFURL = 'https://twitter.com/i/user/%d'
 TAG_SEARCH_HREFURL = 'https://twitter.com/hashtag/%s?src=hashtag_click&f=live'
 
-SITE = site_descriptor.twitter
+SITE = SiteDescriptor.twitter
 
 HAS_TAG_SEARCH = True
 
@@ -628,12 +628,12 @@ def normalized_image_url(image_url):
 
 
 def get_media_url(illust_url):
-    return 'https://' + illust_url.site.domain + illust_url.url
+    return 'https://' + illust_url.site_domain + illust_url.url
 
 
 def get_sample_url(illust_url, original=False):
     addon = ':orig' if original else ""
-    return 'https://' + illust_url.sample_site.domain + illust_url.sample_url + addon
+    return 'https://' + illust_url.sample_site_domain + illust_url.sample_url + addon
 
 
 def get_primary_url(illust):
@@ -765,7 +765,7 @@ def source_prework(site_illust_id):
             continue
         tweets.append(tweet)
         tweet_ids.add(tweet['id_str'])
-    save_api_data(tweets, 'id_str', SITE.id, api_data_type.illust.id)
+    save_api_data(tweets, 'id_str', SITE.id, ApiDataType.illust.id)
     twusers = []
     user_ids = set()
     for i in range(len(twitter_data)):
@@ -776,7 +776,7 @@ def source_prework(site_illust_id):
         user['id_str'] = id_str
         twusers.append(user)
         user_ids.add(id_str)
-    save_api_data(twusers, 'id_str', SITE.id, api_data_type.artist.id)
+    save_api_data(twusers, 'id_str', SITE.id, ApiDataType.artist.id)
 
 
 # #### Network auxiliary functions
@@ -791,11 +791,11 @@ def timeline_iterator(data, cursor, tweet_ids, seen_users, user_id=None, last_id
         print("Reached end of timeline!")
         return True
     media_tweets = [tweet for tweet in tweets if safe_get(tweet, 'entities', 'media')]
-    save_api_data(media_tweets, 'id_str', SITE.id, api_data_type.illust.id)
+    save_api_data(media_tweets, 'id_str', SITE.id, ApiDataType.illust.id)
     user_tweets = [tweet for tweet in media_tweets if user_id is None or tweet['user_id_str'] == str(user_id)]
     tweet_ids.extend(int(tweet['id_str']) for tweet in user_tweets)
     twusers = [twuser for twuser in results['users'].values() if twuser['id_str'] not in seen_users]
-    save_api_data(twusers, 'id_str', SITE.id, api_data_type.artist.id)
+    save_api_data(twusers, 'id_str', SITE.id, ApiDataType.artist.id)
     seen_users.extend(twuser['id_str'] for twuser in twusers)
     if last_id is not None and any(x for x in tweet_ids if x <= last_id):
         valid_ids = [x for x in tweet_ids if x > last_id]
@@ -1214,9 +1214,9 @@ def get_illust_url_info(entry, media_type):
         dimensions = (entry['sizes']['large']['w'], entry['sizes']['large']['h'])
     else:
         return None, None, None
-    site = site_descriptor.get_site_from_domain(parse.netloc)
+    site_name = site_name_by_domain(parse.netloc)
     url = parse.path + query_addon
-    return url, site, dimensions
+    return url, site_name, dimensions
 
 
 def get_tweet_illust_urls(tweet):
@@ -1227,7 +1227,7 @@ def get_tweet_illust_urls(tweet):
         if media_url is None:
             continue
         video_url.update(
-            sample_site_id=media_url['site_id'],
+            sample_site_name=media_url['site_name'],
             sample_url=media_url['url']
         )
         index = media_urls.index(media_url)
@@ -1239,11 +1239,11 @@ def get_tweet_image_urls(tweet):
     illust_urls = []
     url_data = safe_get(tweet, 'entities', 'media') or []
     for i in range(len(url_data)):
-        url, site, dimensions = get_illust_url_info(url_data[i], 'image')
+        url, site_name, dimensions = get_illust_url_info(url_data[i], 'image')
         if url is None:
             continue
         illust_urls.append({
-            'site_id': site.id,
+            'site_name': site_name,
             'url': url,
             'width': dimensions[0],
             'height': dimensions[1],
@@ -1259,11 +1259,11 @@ def get_tweet_video_urls(tweet):
     for i in range(len(url_data)):
         if url_data[i]['type'] not in ['animated_gif', 'video']:
             continue
-        url, site, dimensions = get_illust_url_info(url_data[i], 'video')
+        url, site_name, dimensions = get_illust_url_info(url_data[i], 'video')
         if url is None:
             continue
         video_urls.append({
-            'site_id': site.id,
+            'site_name': site_name,
             'url': url,
             'width': dimensions[0],
             'height': dimensions[1],
@@ -1276,7 +1276,7 @@ def get_tweet_video_urls(tweet):
 def get_illust_parameters_from_tweet(tweet):
     site_artist_id = safe_get(tweet, 'user', 'id_str') or safe_get(tweet, 'user_id_str')
     return {
-        'site_id': SITE.id,
+        'site_name': SITE.name,
         'site_illust_id': int(tweet['id_str']),
         'site_created': process_twitter_timestring(tweet['created_at']),
         'pages': len(tweet['extended_entities']['media']),
@@ -1317,7 +1317,7 @@ def get_twuser_webpages(twuser):
 
 def get_artist_parameters_from_twuser(twuser):
     return {
-        'site_id': SITE.id,
+        'site_name': SITE.name,
         'site_artist_id': int(twuser['id_str']),
         'site_created': process_twitter_timestring(twuser['created_at']),
         'active': True,
@@ -1336,7 +1336,7 @@ def get_artist_api_data(site_artist_id, reterror=False):
         twuser = get_twitter_artist(site_artist_id)
         if is_error(twuser):
             return twuser if reterror else None
-        save_api_data([twuser], 'id_str', SITE.id, api_data_type.artist.id)
+        save_api_data([twuser], 'id_str', SITE.id, ApiDataType.artist.id)
     return twuser
 
 
@@ -1353,7 +1353,7 @@ def get_illust_api_data(site_illust_id):
         tweet = get_tweet_by_rest_id(site_illust_id)
         if is_error(tweet):
             return
-        save_api_data([tweet], 'id_str', SITE.id, api_data_type.illust.id)
+        save_api_data([tweet], 'id_str', SITE.id, ApiDataType.illust.id)
     return tweet
 
 

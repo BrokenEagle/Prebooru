@@ -11,13 +11,14 @@ from utility.data import list_difference
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import site_descriptor
+from ..logical.sites import domain_by_site_name
+from .model_enums import SiteDescriptor
 from .tag import SiteTag, site_tag_creator
 from .illust_url import IllustUrl
 from .description import Description, description_creator
 from .notation import Notation
 from .pool_element import PoolIllust
-from .base import JsonModel, EpochTimestamp, secondarytable, get_relation_definitions, relation_association_proxy
+from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, register_enum_column, relation_association_proxy
 
 
 # ## GLOBAL VARIABLES
@@ -54,9 +55,7 @@ AdditionalCommentaries = secondarytable(
 class Illust(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
-    site, site_id, site_name, site_enum, site_filter, site_col =\
-        get_relation_definitions(site_descriptor, relname='site', relcol='id', colname='site_id',
-                                 tblname='illust', nullable=False)
+    site_id = DB.Column(IntEnum, DB.ForeignKey('site_descriptor.id'), nullable=False)
     site_illust_id = DB.Column(DB.Integer, nullable=False)
     site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
@@ -98,7 +97,8 @@ class Illust(JsonModel):
 
     @property
     def source(self):
-        return self.site.source
+        from ..logical.sources import source_by_site_name
+        return source_by_site_name(self.site.name)
 
     @property
     def site_illust_id_str(self):
@@ -168,7 +168,7 @@ class Illust(JsonModel):
 
     @property
     def site_domain(self):
-        return self.site.domain
+        return domain_by_site_name(self.site_name)
 
     @property
     def sitelink(self):
@@ -205,11 +205,8 @@ class Illust(JsonModel):
     @classmethod
     def find_by_key(cls, key):
         site_name, site_illust_id_str = key.split('-')
-        enum_filter = cls.site_filter('name', '__eq__', site_name)
-        id_filter = cls.site_illust_id == int(site_illust_id_str)
-        return cls.query.enum_join(cls.site_enum)\
-                        .filter(enum_filter, id_filter)\
-                        .one_or_none()
+        site_illust_id = int(site_illust_id_str)
+        return cls.query.filter(cls.site_value == site_name, cls.site_illust_id == site_illust_id).one_or_none()
 
     @classmethod
     def find_rel_by_key(cls, rel, key, value):
@@ -217,8 +214,7 @@ class Illust(JsonModel):
         from .post import Post
         if rel == 'artist':
             site_name = key.split('-')[0]
-            return Artist.query.filter(Artist.site_filter('name', '__eq__', site_name),
-                                       Artist.site_artist_id == value).one_or_none()
+            return Artist.query.filter(Artist.site_value == site_name, Artist.site_artist_id == value).one_or_none()
         if rel == 'posts':
             return Post.query.filter(Post.md5.in_(k['md5'] for k in key)).all()
 
@@ -266,3 +262,4 @@ def initialize():
     # Access the opposite side of the relationship to force the back reference to be generated
     Artist.illusts.property._configure_started
     Illust.set_relation_properties()
+    register_enum_column(Illust, SiteDescriptor, 'site')

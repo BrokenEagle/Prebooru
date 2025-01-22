@@ -9,12 +9,12 @@ from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import download_status
 from ..logical.batch_loader import selectinload_batch_primary
+from .model_enums import DownloadStatus
 from .download_url import DownloadUrl
 from .download_element import DownloadElement
 from .error import Error
-from .base import JsonModel, EpochTimestamp, get_relation_definitions
+from .base import JsonModel, IntEnum, EpochTimestamp, register_enum_column
 
 
 # ## CLASSES
@@ -23,9 +23,7 @@ class Download(JsonModel):
     # ## Columns
     id = DB.Column(DB.Integer, primary_key=True)
     request_url = DB.Column(DB.TEXT, nullable=False)
-    status, status_id, status_name, status_enum, status_filter, status_col =\
-        get_relation_definitions(download_status, relname='status', relcol='id', colname='status_id',
-                                 tblname='download', nullable=False)
+    status_id = DB.Column(IntEnum, DB.ForeignKey('download_status.id'), nullable=False)
     created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
 
     # ## Relationships
@@ -52,21 +50,15 @@ class Download(JsonModel):
 
     @memoized_property
     def complete_count(self):
-        return self._elements_query.enum_join(DownloadElement.status_enum)\
-                                   .filter(DownloadElement.status_filter('name', '__eq__', 'complete'))\
-                                   .get_count()
+        return self._elements_query.filter(DownloadElement.status_value == 'complete').get_count()
 
     @memoized_property
     def error_count(self):
-        return self._elements_query.enum_join(DownloadElement.status_enum)\
-                                   .filter(DownloadElement.status_filter('name', '__eq__', 'error'))\
-                                   .get_count()
+        return self._elements_query.filter(DownloadElement.status_value == 'error').get_count()
 
     @memoized_property
     def other_count(self):
-        return self._elements_query.enum_join(DownloadElement.status_enum)\
-                                   .filter(DownloadElement.status_filter('name', 'not_in', ['complete', 'error']))\
-                                   .get_count()
+        return self._elements_query.filter(DownloadElement.status_value.not_in(['complete', 'error'])).get_count()
 
     @memoized_property
     def illust_urls(self):
@@ -169,3 +161,9 @@ class Download(JsonModel):
         if len(self.illust_urls):
             selectinload_batch_primary(self.illust_urls, 'post')
         self._populate_posts = lambda: None
+
+
+# ## Initialize
+
+def initialize():
+    register_enum_column(Download, DownloadStatus, 'status')

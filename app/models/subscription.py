@@ -5,17 +5,18 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.time import average_timedelta, days_ago, get_current_time
+from utility.data import inc_dict_entry
 
 # ## LOCAL IMPORTS
 from .. import DB
-from ..enum_imports import subscription_status, subscription_element_status, subscription_element_keep
+from .model_enums import SubscriptionStatus, SubscriptionElementStatus, SubscriptionElementKeep
 from .illust import Illust
 from .illust import IllustUrl
 from .post import Post
 from .notation import Notation
 from .error import Error
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, EpochTimestamp, get_relation_definitions
+from .base import JsonModel, IntEnum, EpochTimestamp, register_enum_column
 
 
 # ## CLASSES
@@ -26,9 +27,7 @@ class Subscription(JsonModel):
     artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
     interval = DB.Column(DB.Float, nullable=False)
     expiration = DB.Column(DB.Float, nullable=True)
-    status, status_id, status_name, status_enum, status_filter, status_col =\
-        get_relation_definitions(subscription_status, relname='status', relcol='id', colname='status_id',
-                                 tblname='subscription', nullable=False)
+    status_id = DB.Column(IntEnum, DB.ForeignKey('subscription_status.id'), nullable=False)
     last_id = DB.Column(DB.Integer, nullable=True)
     requery = DB.Column(EpochTimestamp(nullable=True), nullable=True)
     checked = DB.Column(EpochTimestamp(nullable=True), nullable=True)
@@ -61,13 +60,14 @@ class Subscription(JsonModel):
 
     @memoized_property
     def undecided_elements(self):
-        return self._element_query.filter(SubscriptionElement.status_filter('name', '__eq__', 'active'),
-                                          SubscriptionElement.keep_filter('name', 'is_', None)).all()
+        return self._element_query.filter(SubscriptionElement.status_value == 'active',
+                                          SubscriptionElement.keep_value.is_(None))\
+                                  .all()
 
     @memoized_property
     def average_interval(self):
         datetimes = self._illust_query.filter(Illust.site_created > days_ago(365),
-                                              SubscriptionElement.keep_filter('name', '__eq__', 'yes'))\
+                                              SubscriptionElement.keep_value == 'yes')\
                                       .order_by(Illust.site_illust_id.desc())\
                                       .with_entities(Illust.site_created)\
                                       .all()
@@ -109,63 +109,64 @@ class Subscription(JsonModel):
     @memoized_property
     def undecided_count(self):
         self._populate_keep_counts()
-        return self._keep_counts['undecided']
+        return self._keep_counts.get('undecided', 0)
 
     @memoized_property
     def yes_count(self):
         self._populate_keep_counts()
-        return self._keep_counts['yes']
+        return self._keep_counts.get('yes', 0)
 
     @memoized_property
     def no_count(self):
         self._populate_keep_counts()
-        return self._keep_counts['no']
+        return self._keep_counts.get('no', 0)
 
     @memoized_property
     def maybe_count(self):
         self._populate_keep_counts()
-        return self._keep_counts['maybe']
+        return self._keep_counts.get('maybe', 0)
 
     @memoized_property
     def archive_count(self):
         self._populate_keep_counts()
-        return self._keep_counts['archive']
+        return self._keep_counts.get('undecided', 0)
 
     @memoized_property
     def active_count(self):
         self._populate_status_counts()
-        return self._status_counts['active']
+        return self._status_counts.get('active', 0)
 
     @memoized_property
     def unlinked_count(self):
         self._populate_status_counts()
-        return self._status_counts['unlinked']
+        return self._status_counts.get('unlinked', 0)
 
     @memoized_property
     def deleted_count(self):
         self._populate_status_counts()
-        return self._status_counts['deleted']
+        return self._status_counts.get('deleted', 0)
 
     @memoized_property
     def archived_count(self):
         self._populate_status_counts()
-        return self._status_counts['archived']
+        return self._status_counts.get('archived', 0)
 
     @memoized_property
     def duplicate_count(self):
         self._populate_status_counts()
-        return self._status_counts['duplicate']
+        return self._status_counts.get('deleted', 0)
 
     @memoized_property
     def error_count(self):
         self._populate_status_counts()
-        return self._status_counts['error']
+        return self._status_counts.get('error', 0)
 
     @memoized_property
     def last_keep(self):
-        return self._element_query.enum_join(SubscriptionElement.keep_enum).join(IllustUrl).join(Illust)\
-                                  .filter(SubscriptionElement.keep_filter('name', '__eq__', 'yes'))\
-                                  .order_by(Illust.site_created.desc()).first()
+        return self._element_query.join(IllustUrl).join(Illust)\
+                                  .filter(SubscriptionElement.keep_value == 'yes')\
+                                  .order_by(Illust.site_created.desc())\
+                                  .first()
 
     # ## Private
 
@@ -184,7 +185,7 @@ class Subscription(JsonModel):
         return Post.query.join(IllustUrl, Post.illust_urls)\
                          .join(Illust, IllustUrl.illust)\
                          .join(Artist, Illust.artist)\
-                         .filter(Artist.id == self.artist_id, Post.type_filter('name', '__eq__', 'subscription'))
+                         .filter(Artist.id == self.artist_id, Post.type_value == 'subscription')
 
     def _populate_storage_sizes(self):
         if hasattr(self, '_total_bytes'):
@@ -200,25 +201,21 @@ class Subscription(JsonModel):
     def _populate_keep_counts(self):
         if hasattr(self, '_keep_counts'):
             return
-        keep_counts = self._element_query.with_entities(SubscriptionElement.keep_col()).all()
-        counts = {name: 0 for name in subscription_element_keep.names + ['undecided']}
+        keep_counts = self._element_query.with_entities(SubscriptionElement.keep_id).all()
+        counts = {}
         for keep in keep_counts:
-            keep_enum = _get_enum_id(keep[0])
-            keep_value = subscription_element_keep.by_id(keep_enum) if keep_enum is not None else None
-            keep_name = keep_value.name if keep_value is not None else 'undecided'
-            counts[keep_name] = 1 + (counts[keep_name] if keep_name in counts else 0)
+            keep_name = SubscriptionElementKeep.to_name(keep[0]) or 'undecided'
+            inc_dict_entry(counts, keep_name)
         setattr(self, '_keep_counts', counts)
 
     def _populate_status_counts(self):
         if hasattr(self, '_status_counts'):
             return
-        status_counts = self._element_query.with_entities(SubscriptionElement.status_col()).all()
-        counts = {name: 0 for name in subscription_element_status.names}
+        status_counts = self._element_query.with_entities(SubscriptionElement.status_id).all()
+        counts = {}
         for status in status_counts:
-            status_enum = _get_enum_id(status[0])
-            status_value = subscription_element_status.by_id(status_enum)
-            status_name = status_value.name
-            counts[status_name] = 1 + (counts[status_name] if status_name in counts else 0)
+            status_name = SubscriptionElementStatus.to_name(status[0])
+            inc_dict_entry(counts, status_name)
         setattr(self, '_status_counts', counts)
 
 
@@ -229,9 +226,4 @@ def initialize():
     # Access the opposite side of the relationship to force the back reference to be generated
     Artist.subscription.property._configure_started
     Subscription.set_relation_properties()
-
-
-# ## Private
-
-def _get_enum_id(value):
-    return value if isinstance(value, int) or value is None else value.id
+    register_enum_column(Subscription, SubscriptionStatus, 'status')
