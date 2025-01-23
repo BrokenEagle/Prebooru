@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import re
+import copy
 import json
 import math
 import random
@@ -153,12 +154,13 @@ def inc_dict_entry(indict, key):
 
 
 def merge_dicts(a, b):
+    c = copy.deepcopy(a)
     for key in b:
-        if key in a and isinstance(a[key], dict) and isinstance(b[key], dict):
-            merge_dicts(a[key], b[key])
+        if key in c and isinstance(c[key], dict) and isinstance(b[key], dict):
+            c[key] = merge_dicts(c[key], b[key])
         else:
-            a[key] = b[key]
-    return a
+            c[key] = copy.deepcopy(b[key])
+    return c
 
 
 def swap_key_value(indict, oldkey, newkey):
