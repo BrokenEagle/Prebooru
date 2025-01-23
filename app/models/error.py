@@ -62,7 +62,7 @@ class Error(JsonModel):
 
     __table_args__ = (
         DB.CheckConstraint(
-            "((post_id IS NULL) + (subscription_id IS NULL) + (subscription_element_id IS NULL) + (upload_id IS NULL) + (upload_element_id IS NULL) + (download_id IS NULL) + (download_element_id IS NULL)) in (6, 7)",  # noqa: E501
+            "((post_id IS NULL) + (subscription_id IS NULL) + (subscription_element_id IS NULL) + (upload_id IS NULL) + (download_id IS NULL) + (download_element_id IS NULL)) in (5, 6)",  # noqa: E501
             name="attachments"),
     )
 
