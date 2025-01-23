@@ -8,9 +8,9 @@ from sqlalchemy.util import memoized_property
 from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
-from .. import DB, SESSION
+from .. import SESSION
 from .model_enums import TagType
-from .base import JsonModel, IntEnum, register_enum_column
+from .base import JsonModel, integer_column, text_column, enum_column, register_enum_column
 
 
 # ## FUNCTIONS
@@ -35,9 +35,9 @@ def user_tag_creator(name):
 
 class Tag(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    name = DB.Column(DB.Unicode(255), nullable=False)
-    type_id = DB.Column(IntEnum, DB.ForeignKey('tag_type.id'), nullable=False)
+    id = integer_column(primary_key=True)
+    name = text_column(nullable=False)
+    type_id = enum_column(foreign_key='tag_type.id', nullable=False)
 
     # ## Instance properties
 
@@ -74,9 +74,6 @@ class Tag(JsonModel):
 
 
 class SiteTag(Tag):
-    # ## Relations
-    # (MtM) illusts [Illust]
-
     # ## Instance properties
 
     @memoized_property
@@ -112,9 +109,6 @@ class SiteTag(Tag):
 
 
 class UserTag(Tag):
-    # ## Relations
-    # (MtM) posts [Post]
-
     # ## Instance properties
 
     @memoized_property

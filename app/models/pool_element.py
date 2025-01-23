@@ -13,7 +13,7 @@ from utility.obj import classproperty
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
 from .model_enums import PoolElementType
-from .base import JsonModel, IntEnum, register_enum_column
+from .base import JsonModel, integer_column, enum_column, register_enum_column
 
 
 # ## FUNCTIONS
@@ -45,13 +45,13 @@ def pool_element_delete(pool_id, item):
 
 class PoolElement(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    pool_id = DB.Column(DB.Integer, DB.ForeignKey('pool.id'), nullable=False, index=True)
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
-    illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
-    notation_id = DB.Column(DB.Integer, DB.ForeignKey('notation.id'), nullable=True)
-    position = DB.Column(DB.Integer, nullable=False)
-    type_id = DB.Column(IntEnum, DB.ForeignKey('pool_element_type.id'), nullable=False)
+    id = integer_column(primary_key=True)
+    pool_id = integer_column(foreign_key='pool.id', nullable=False, index=True)
+    post_id = integer_column(foreign_key='post.id', nullable=True)
+    illust_id = integer_column(foreign_key='illust.id', nullable=True)
+    notation_id = integer_column(foreign_key='notation.id', nullable=True)
+    position = integer_column(nullable=False)
+    type_id = enum_column(foreign_key='pool_element_type.id', nullable=False)
 
     # ## Relationships
     # (MtO) pool [Pool]

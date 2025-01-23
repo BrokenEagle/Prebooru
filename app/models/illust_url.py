@@ -17,7 +17,8 @@ from ..logical.sites import domain_by_site_name
 from .model_enums import SiteDescriptor
 from .download_element import DownloadElement
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, IntEnum, register_enum_column
+from .base import JsonModel, integer_column, text_column, enum_column, boolean_column, register_enum_column,\
+    relationship, backref
 
 
 # ## FUNCTIONS
@@ -34,23 +35,23 @@ def check_video(func):
 
 class IllustUrl(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(IntEnum, DB.ForeignKey('site_descriptor.id'), nullable=False)
-    url = DB.Column(DB.TEXT, nullable=False)
-    sample_site_id = DB.Column(IntEnum, DB.ForeignKey('site_descriptor.id'), nullable=True)
-    sample_url = DB.Column(DB.TEXT, nullable=True)
-    width = DB.Column(DB.Integer, nullable=False)
-    height = DB.Column(DB.Integer, nullable=False)
-    order = DB.Column(DB.Integer, nullable=False)
-    illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=False, index=True)
-    active = DB.Column(DB.Boolean, nullable=False)
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
+    id = integer_column(primary_key=True)
+    site_id = enum_column(foreign_key='site_descriptor.id', nullable=False)
+    url = text_column(nullable=False)
+    sample_site_id = enum_column(foreign_key='site_descriptor.id', nullable=True)
+    sample_url = text_column(nullable=True)
+    width = integer_column(nullable=False)
+    height = integer_column(nullable=False)
+    order = integer_column(nullable=False)
+    illust_id = integer_column(foreign_key='illust.id', nullable=False, index=True)
+    active = boolean_column(nullable=False)
+    post_id = integer_column(foreign_key='post.id', nullable=True)
 
     # ## Relationships
-    download_elements = DB.relationship(DownloadElement, lazy=True, uselist=True, cascade="all, delete",
-                                        backref=DB.backref('illust_url', lazy=True, uselist=False))
-    subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False, cascade="all, delete",
-                                           backref=DB.backref('illust_url', lazy=True, uselist=False))
+    download_elements = relationship(DownloadElement, uselist=True, cascade="all, delete",
+                                     backref=backref('illust_url', uselist=False))
+    subscription_element = relationship(SubscriptionElement, uselist=False, cascade="all, delete",
+                                        backref=backref('illust_url', uselist=False))
     # (MtO) illust [Illust]
     # (MtO) post [Post]
     # (OtO) upload [Upload]

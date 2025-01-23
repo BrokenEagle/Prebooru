@@ -27,59 +27,51 @@ from .tag import UserTag
 from .pool_element import PoolPost, pool_element_delete
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
-from .base import JsonModel, IntEnum, EpochTimestamp, BlobMD5, secondarytable, image_server_url, register_enum_column
+from .base import JsonModel, integer_column, enum_column, text_column, boolean_column, real_column, md5_column,\
+    timestamp_column, secondarytable, image_server_url, register_enum_column, relationship, backref
 
 
 # ## GLOBAL VARIABLES
 
 # Many-to-many tables
 
-PostTags = secondarytable(
-    'post_tags',
-    DB.Column('post_id', DB.Integer, DB.ForeignKey('post.id'), primary_key=True),
-    DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
-)
+PostTags = secondarytable('post_tags', ('post_id', 'post.id'), ('tag_id', 'tag.id'))
 
 
 # ## CLASSES
 
 class Post(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    width = DB.Column(DB.Integer, nullable=False)
-    height = DB.Column(DB.Integer, nullable=False)
-    file_ext = DB.Column(DB.String(6), nullable=False)
-    md5 = DB.Column(BlobMD5(nullable=False), index=True, unique=True, nullable=False)
-    size = DB.Column(DB.Integer, nullable=False)
-    danbooru_id = DB.Column(DB.Integer, nullable=True)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    type_id = DB.Column(IntEnum, DB.ForeignKey('post_type.id'), nullable=False)
-    alternate = DB.Column(DB.Boolean, nullable=False)
-    pixel_md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    duration = DB.Column(DB.Float, nullable=True)
-    audio = DB.Column(DB.Boolean, nullable=True)
-    simcheck = DB.Column(DB.Boolean, nullable=False)
+    id = integer_column(primary_key=True)
+    width = integer_column(nullable=False)
+    height = integer_column(nullable=False)
+    file_ext = text_column(nullable=False)
+    md5 = md5_column(index=True, unique=True, nullable=False)
+    size = integer_column(nullable=False)
+    danbooru_id = integer_column(nullable=True)
+    created = timestamp_column(nullable=False)
+    type_id = enum_column(foreign_key='post_type.id', nullable=False)
+    alternate = boolean_column(nullable=False)
+    pixel_md5 = md5_column(nullable=True)
+    duration = real_column(nullable=True)
+    audio = boolean_column(nullable=True)
+    simcheck = boolean_column(nullable=False)
 
     # ## Relationships
-    illust_urls = DB.relationship(IllustUrl, lazy=True, uselist=True,
-                                  backref=DB.backref('post', uselist=False, lazy=True))
-    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
-                             backref=DB.backref('post', uselist=False, lazy=True))
-    subscription_element = DB.relationship(SubscriptionElement, lazy=True, uselist=False,
-                                           backref=DB.backref('post', lazy=True, uselist=False))
-    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
-                                backref=DB.backref('post', uselist=False, lazy=True))
-    tags = DB.relationship(UserTag, secondary=PostTags, lazy=True)
+    illust_urls = relationship(IllustUrl, uselist=True, backref=backref('post', uselist=False))
+    errors = relationship(Error, uselist=True, cascade='all,delete', backref=backref('post', uselist=False))
+    subscription_element = relationship(SubscriptionElement, uselist=False, backref=backref('post', uselist=False))
+    notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('post', uselist=False))
+    tags = relationship(UserTag, secondary=PostTags, uselist=True)
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
-    _pools = DB.relationship(PoolPost, lazy=True, backref=DB.backref('item', lazy=True, uselist=False))
-    image_hashes = DB.relationship(ImageHash, lazy=True, cascade='all,delete',
-                                   backref=DB.backref('post', lazy=True, uselist=False))
-    similarity_matches_forward = DB.relationship(SimilarityMatch, lazy=True, cascade='all,delete',
-                                                 backref=DB.backref('forward_post', lazy=True, uselist=False),
-                                                 foreign_keys=[SimilarityMatch.forward_id])
-    similarity_matches_reverse = DB.relationship(SimilarityMatch, lazy=True, cascade='all,delete',
-                                                 backref=DB.backref('reverse_post', lazy=True, uselist=False),
-                                                 foreign_keys=[SimilarityMatch.reverse_id])
+    _pools = relationship(PoolPost, backref=backref('item', uselist=False))
+    image_hashes = relationship(ImageHash, cascade='all,delete', backref=backref('post', uselist=False))
+    similarity_matches_forward = relationship(SimilarityMatch, cascade='all,delete',
+                                              backref=backref('forward_post', uselist=False),
+                                              foreign_keys=[SimilarityMatch.forward_id])
+    similarity_matches_reverse = relationship(SimilarityMatch, cascade='all,delete',
+                                              backref=backref('reverse_post', uselist=False),
+                                              foreign_keys=[SimilarityMatch.reverse_id])
 
     # ## Association proxies
     tag_names = association_proxy('tags', 'name')

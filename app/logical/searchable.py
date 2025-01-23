@@ -98,31 +98,25 @@ def sql_excape(value):
     return retvalue
 
 
-def parse_cast(value, type):
-    if type == 'INTEGER':
+def parse_cast(value, parse_type):
+    if parse_type == 'INTEGER':
         return int(value)
-    if type == 'DATETIME':
+    if parse_type == 'DATETIME':
         return process_utc_timestring(value)
-    if type == 'FLOAT':
+    if parse_type == 'REAL':
         return float(value)
     return value
 
 
-def column_type(model, columnname):
+def get_column_type(model, columnname):
     switcher = {
         base.IntEnum: 'ENUM',
         base.BlobMD5: 'STRING',
         base.EpochTimestamp: 'DATETIME',
-        sqltypes.Integer: 'INTEGER',
         sqltypes.INTEGER: 'INTEGER',
-        sqltypes.Float: 'FLOAT',
-        sqltypes.DateTime: 'DATETIME',
-        sqltypes.Boolean: 'BOOLEAN',
-        sqltypes.String: 'STRING',
-        sqltypes.Text: 'TEXT',
+        sqltypes.REAL: 'REAL',
+        sqltypes.BOOLEAN: 'BOOLEAN',
         sqltypes.TEXT: 'TEXT',
-        sqltypes.Unicode: 'STRING',
-        sqltypes.UnicodeText: 'TEXT',
     }
     column_type = type(getattr(model, columnname).property.columns[0].type)
     logger.debug('COLUMN-TYPE %s:%s as %s', model._table_name(), columnname, column_type)
@@ -159,15 +153,15 @@ def basic_attribute_filters(model, columnname, params):
     switcher = {
         'INTEGER': numeric_filters,
         'DATETIME': numeric_filters,
-        'FLOAT': numeric_filters,
+        'REAL': numeric_filters,
         'ENUM': enum_filters,
         'BOOLEAN': boolean_filters,
         'STRING': text_filters,
         'TEXT': text_filters,
     }
-    type = column_type(model, columnname)
-    logger.debug('BASIC-FILTER %s:%s as %s with %s', model._table_name(), columnname, type, params)
-    return switcher[type](model, columnname, params)
+    column_type = get_column_type(model, columnname)
+    logger.debug('BASIC-FILTER %s:%s as %s with %s', model._table_name(), columnname, column_type, params)
+    return switcher[column_type](model, columnname, params)
 
 
 def relationship_attribute_filters(query, model, attribute, params):
@@ -217,24 +211,29 @@ def polymorphic_attribute_filters(query, model, attribute, params):
 # #### Type filter functions
 
 def numeric_filters(model, columnname, params):
-    type = column_type(model, columnname)
+    column_type = get_column_type(model, columnname)
+
+    def parser(value):
+        nonlocal column_type
+        return parse_cast(value, column_type)
+
     filters = ()
     if columnname in params:
         filters += (numeric_matching(model, columnname, params[columnname]),)
     if (columnname + '_not') in params:
         filters += (not_(numeric_matching(model, columnname, params[columnname + '_not'])),)
     if (columnname + '_eq') in params:
-        filters += (getattr(model, columnname) == parse_cast(params[columnname + '_eq'], type),)
+        filters += (getattr(model, columnname) == parser(params[columnname + '_eq']),)
     if (columnname + '_ne') in params:
-        filters += (getattr(model, columnname) != parse_cast(params[columnname + '_ne'], type),)
+        filters += (getattr(model, columnname) != parser(params[columnname + '_ne']),)
     if (columnname + '_gt') in params:
-        filters += (getattr(model, columnname) > parse_cast(params[columnname + '_gt'], type),)
+        filters += (getattr(model, columnname) > parser(params[columnname + '_gt']),)
     if (columnname + '_ge') in params:
-        filters += (getattr(model, columnname) >= parse_cast(params[columnname + '_ge'], type),)
+        filters += (getattr(model, columnname) >= parser(params[columnname + '_ge']),)
     if (columnname + '_lt') in params:
-        filters += (getattr(model, columnname) < parse_cast(params[columnname + '_lt'], type),)
+        filters += (getattr(model, columnname) < parser(params[columnname + '_lt']),)
     if (columnname + '_le') in params:
-        filters += (getattr(model, columnname) <= parse_cast(params[columnname + '_le'], type),)
+        filters += (getattr(model, columnname) <= parser(params[columnname + '_le']),)
     if (columnname + '_exists') in params:
         filters += (existence_matching(model, columnname, params[columnname + '_exists']),)
     return filters
@@ -362,11 +361,11 @@ def relationship_count(model, rightside, value):
 
 
 def numeric_matching(model, columnname, value):
-    type = column_type(model, columnname)
+    column_type = get_column_type(model, columnname)
 
     def parser(value):
-        nonlocal type
-        return parse_cast(value, type)
+        nonlocal column_type
+        return parse_cast(value, column_type)
 
     match = re.match(r'(.+?)\.\.(.+)', value)
     if match:

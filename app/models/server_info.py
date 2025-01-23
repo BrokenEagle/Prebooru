@@ -1,8 +1,7 @@
 # APP/MODELS/SERVER_INFO.PY
 
 # ## LOCAL IMPORTS
-from .. import DB
-from .base import JsonModel
+from .base import JsonModel, text_column
 
 
 # ## CLASSES
@@ -10,8 +9,8 @@ from .base import JsonModel
 class ServerInfo(JsonModel):
     # ## Public
 
-    field = DB.Column(DB.String(), primary_key=True)
-    info = DB.Column(DB.String(), nullable=False)
+    field = text_column(primary_key=True)
+    info = text_column(nullable=False)
 
     @classmethod
     def find(cls, field):

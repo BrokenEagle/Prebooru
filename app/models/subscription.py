@@ -8,7 +8,6 @@ from utility.time import average_timedelta, days_ago, get_current_time
 from utility.data import inc_dict_entry
 
 # ## LOCAL IMPORTS
-from .. import DB
 from .model_enums import SubscriptionStatus, SubscriptionElementStatus, SubscriptionElementKeep
 from .illust import Illust
 from .illust import IllustUrl
@@ -16,31 +15,32 @@ from .post import Post
 from .notation import Notation
 from .error import Error
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, IntEnum, EpochTimestamp, register_enum_column
+from .base import JsonModel, integer_column, real_column, enum_column, timestamp_column, register_enum_column,\
+    relationship, backref
 
 
 # ## CLASSES
 
 class Subscription(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
-    interval = DB.Column(DB.Float, nullable=False)
-    expiration = DB.Column(DB.Float, nullable=True)
-    status_id = DB.Column(IntEnum, DB.ForeignKey('subscription_status.id'), nullable=False)
-    last_id = DB.Column(DB.Integer, nullable=True)
-    requery = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    checked = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    id = integer_column(primary_key=True)
+    artist_id = integer_column(foreign_key='artist.id', nullable=False, index=True)
+    interval = real_column(nullable=False)
+    expiration = real_column(nullable=True)
+    status_id = enum_column(foreign_key='subscription_status.id', nullable=False)
+    last_id = integer_column(nullable=True)
+    requery = timestamp_column(nullable=True)
+    checked = timestamp_column(nullable=True)
+    created = timestamp_column(nullable=False)
+    updated = timestamp_column(nullable=False)
 
     # ## Relationships
-    elements = DB.relationship(SubscriptionElement, lazy=True, uselist=True, cascade="all, delete",
-                               backref=DB.backref('subscription', lazy=True, uselist=False))
-    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
-                             backref=DB.backref('subscription', uselist=False, lazy=True))
-    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
-                                backref=DB.backref('subscription', lazy=True, uselist=False))
+    elements = relationship(SubscriptionElement, uselist=True, cascade="all, delete",
+                            backref=backref('subscription', uselist=False))
+    errors = relationship(Error, uselist=True, cascade='all,delete',
+                          backref=backref('subscription', uselist=False))
+    notations = relationship(Notation, uselist=True, cascade='all,delete',
+                             backref=backref('subscription', uselist=False))
     # (OtO) artist [Artist]
 
     # ## Instance properties

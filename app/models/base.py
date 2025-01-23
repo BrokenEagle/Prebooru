@@ -10,8 +10,9 @@ from collections.abc import Iterable
 
 # ## EXTERNAL IMPORTS
 from flask import url_for, Markup
+from sqlalchemy import Column, ForeignKey, INTEGER, TEXT, BOOLEAN, BLOB, REAL, JSON
 from sqlalchemy.dialects.sqlite import DATETIME
-from sqlalchemy.orm import RelationshipProperty, ColumnProperty
+from sqlalchemy.orm import RelationshipProperty, ColumnProperty, relationship, backref
 from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.ext.associationproxy import _AssociationList
 
@@ -27,6 +28,9 @@ from .. import DB, SESSION, SERVER_INFO
 # ## GLOBAL VARIABLES
 
 ISODATETIME_RG = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
+
+sqlalchemy_relationship = relationship
+sqlalchemy_backref = backref
 
 
 # ## FUNCTIONS
@@ -97,12 +101,16 @@ def relation_property_factory(model_key, table_name, relation_key):
     return _shortlink, _show_url, _show_link
 
 
-def secondarytable(*args):
+def secondarytable(*args, index=False):
     @property
     def _query(self):
         return SESSION.query(self)
 
-    table = DB.Table(*args, sqlite_with_rowid=False)
+    col1_name, col1_fkey = args[1]
+    column_1 = Column(col1_name, INTEGER, ForeignKey(col1_fkey), primary_key=True)
+    col2_name, col2_fkey = args[2]
+    column_2 = Column(col2_name, INTEGER, ForeignKey(col2_fkey), primary_key=True, index=index)
+    table = DB.Table(args[0], column_1, column_2, sqlite_with_rowid=False)
     table.__class__.query = _query
     table._model_name = lambda: args[0]
     table._secondary_table = True
@@ -110,6 +118,8 @@ def secondarytable(*args):
         setattr(table, col, getattr(table.c, col))
     return table
 
+
+# ## Register
 
 def register_enum_column(model, enum_model, relation):
     id_col = getattr(model, relation + '_id')
@@ -141,7 +151,64 @@ def register_enum_column(model, enum_model, relation):
     setattr(model, relation, enum_relation)
 
 
+# #### Columns
+
+def base_column(*args, **kwargs):
+    if 'foreign_key' in kwargs:
+        args = (args[0], ForeignKey(kwargs['foreign_key']), *args[1:])
+        del kwargs['foreign_key']
+    return Column(*args, **kwargs)
+
+
+def integer_column(*args, **kwargs):
+    return base_column(INTEGER, *args, **kwargs)
+
+
+def text_column(*args, **kwargs):
+    return base_column(TEXT, *args, **kwargs)
+
+
+def boolean_column(*args, **kwargs):
+    return base_column(BOOLEAN, *args, **kwargs)
+
+
+def blob_column(*args, **kwargs):
+    return base_column(BLOB, *args, **kwargs)
+
+
+def real_column(*args, **kwargs):
+    return base_column(REAL, *args, **kwargs)
+
+
+def json_column(*args, **kwargs):
+    return base_column(JSON, *args, **kwargs)
+
+
+def enum_column(*args, **kwargs):
+    return base_column(IntEnum, *args, **kwargs)
+
+
+def timestamp_column(*args, **kwargs):
+    return base_column(EpochTimestamp(nullable=kwargs.get('nullable', False)), *args, **kwargs)
+
+
+def md5_column(*args, **kwargs):
+    return base_column(BlobMD5(nullable=kwargs.get('nullable', False)), *args, **kwargs)
+
+
+def compressed_json_column(*args, **kwargs):
+    return base_column(CompressedJSON, *args, **kwargs)
+
+
 # #### Relationships
+
+def relationship(*args, **kwargs):
+    return sqlalchemy_relationship(*args, lazy=True, **kwargs)
+
+
+def backref(*args, **kwargs):
+    return sqlalchemy_backref(*args, lazy=True, **kwargs)
+
 
 def relation_association_proxy(column_name, relation_name, subattr, creator):
     """The association proxy that comes with sqlalchemy does not handle setting the value ID via a creator."""

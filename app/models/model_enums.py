@@ -8,13 +8,19 @@ from utility.data import merge_dicts
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, EnumMap
+from .base import JsonModel, EnumMap, integer_column, text_column
 
 
 # ## CLASSES
 
 class EnumModel(JsonModel):
     __abstract__ = True
+
+    # ## Columns
+    id = integer_column(primary_key=True)
+    name = text_column(nullable=False)
+
+    # ## Class methods
 
     @classmethod
     def load(cls):
@@ -74,10 +80,6 @@ class EnumModel(JsonModel):
 
 
 class SiteDescriptor(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -95,10 +97,6 @@ class SiteDescriptor(EnumModel):
 
 
 class ApiDataType(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -113,10 +111,6 @@ class ApiDataType(EnumModel):
 
 
 class ArchiveType(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -131,10 +125,6 @@ class ArchiveType(EnumModel):
 
 
 class PostType(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -147,10 +137,6 @@ class PostType(EnumModel):
 
 
 class SubscriptionStatus(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -166,10 +152,6 @@ class SubscriptionStatus(EnumModel):
 
 
 class SubscriptionElementStatus(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -186,10 +168,6 @@ class SubscriptionElementStatus(EnumModel):
 
 
 class SubscriptionElementKeep(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -204,10 +182,6 @@ class SubscriptionElementKeep(EnumModel):
 
 
 class DownloadStatus(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -223,10 +197,6 @@ class DownloadStatus(EnumModel):
 
 
 class DownloadElementStatus(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -241,10 +211,6 @@ class DownloadElementStatus(EnumModel):
 
 
 class UploadStatus(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -262,10 +228,6 @@ class UploadStatus(EnumModel):
 # #### Polymorphic enums
 
 class PoolElementType(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {
@@ -280,10 +242,6 @@ class PoolElementType(EnumModel):
 
 
 class TagType(EnumModel):
-    # ## Columns
-    id = DB.Column(DB.INTEGER, primary_key=True)
-    name = DB.Column(DB.TEXT, nullable=False)
-
     # ## Private
 
     __initial_mapping__ = {

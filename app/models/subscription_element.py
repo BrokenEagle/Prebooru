@@ -7,25 +7,26 @@ from utility.obj import classproperty
 from .. import DB
 from .model_enums import SubscriptionElementStatus, SubscriptionElementKeep
 from .error import Error
-from .base import JsonModel, IntEnum, BlobMD5, EpochTimestamp, register_enum_column
+from .base import JsonModel, integer_column, enum_column, md5_column, timestamp_column, register_enum_column,\
+    relationship, backref
 
 
 # ## CLASSES
 
 class SubscriptionElement(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=False, index=True)
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
-    illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
-    md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    keep_id = DB.Column(IntEnum, DB.ForeignKey('subscription_element_keep.id'), nullable=True)
-    expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    status_id = DB.Column(IntEnum, DB.ForeignKey('subscription_element_status.id'), nullable=False)
+    id = integer_column(primary_key=True)
+    subscription_id = integer_column(foreign_key='subscription.id', nullable=False, index=True)
+    post_id = integer_column(foreign_key='post.id', nullable=True)
+    illust_url_id = integer_column(foreign_key='illust_url.id', nullable=False)
+    md5 = md5_column(nullable=True)
+    keep_id = enum_column(foreign_key='subscription_element_keep.id', nullable=True)
+    status_id = enum_column(foreign_key='subscription_element_status.id', nullable=False)
+    expires = timestamp_column(nullable=True)
 
     # ## Relationships
-    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
-                             backref=DB.backref('subscription_element', lazy=True, uselist=False))
+    errors = relationship(Error, uselist=True, cascade='all,delete',
+                          backref=backref('subscription_element', uselist=False))
     # (MtO) subscription [Susbscription]
     # (MtO) post [Post]
     # (OtO) illust_url [IllustUrl]

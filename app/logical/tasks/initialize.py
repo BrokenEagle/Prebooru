@@ -79,7 +79,7 @@ def _get_initial_job_info():
         if id not in ALL_JOB_INFO:
             print("Task Scheduler - Deleting unused task:", id)
             delete_job_item(item)
-    return {item.id: item.next_run_time for item in info.values()}
+    return {item.id: item.next_run_time_datetime for item in info.values()}
 
 
 def _get_initial_job_enabled():

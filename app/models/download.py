@@ -8,31 +8,29 @@ from sqlalchemy.orm import lazyload
 from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
-from .. import DB
 from ..logical.batch_loader import selectinload_batch_primary
 from .model_enums import DownloadStatus
 from .download_url import DownloadUrl
 from .download_element import DownloadElement
 from .error import Error
-from .base import JsonModel, IntEnum, EpochTimestamp, register_enum_column
+from .base import JsonModel, integer_column, text_column, enum_column, timestamp_column, register_enum_column,\
+    relationship, backref
 
 
 # ## CLASSES
 
 class Download(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    request_url = DB.Column(DB.TEXT, nullable=False)
-    status_id = DB.Column(IntEnum, DB.ForeignKey('download_status.id'), nullable=False)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    id = integer_column(primary_key=True)
+    request_url = text_column(nullable=False)
+    status_id = enum_column(foreign_key='download_status.id', nullable=False)
+    created = timestamp_column(nullable=False)
 
     # ## Relationships
-    image_urls = DB.relationship(DownloadUrl, lazy=True, uselist=True, cascade='all,delete',
-                                 backref=DB.backref('download', lazy=True, uselist=False))
-    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
-                             backref=DB.backref('download', lazy=True, uselist=False))
-    elements = DB.relationship(DownloadElement, lazy=True, cascade='all,delete',
-                               backref=DB.backref('download', uselist=False, lazy=True))
+    image_urls = relationship(DownloadUrl, uselist=True, cascade='all,delete',
+                              backref=backref('download', uselist=False))
+    errors = relationship(Error, uselist=True, cascade='all,delete', backref=backref('download', uselist=False))
+    elements = relationship(DownloadElement, cascade='all,delete', backref=backref('download', uselist=False))
 
     # ## Instance properties
 

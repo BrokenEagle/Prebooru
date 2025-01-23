@@ -7,22 +7,21 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from .. import DB
 from .model_enums import DownloadElementStatus
 from .error import Error
-from .base import JsonModel, IntEnum, BlobMD5, register_enum_column
+from .base import JsonModel, integer_column, enum_column, md5_column, register_enum_column, relationship, backref
 
 
 # ## CLASSES
 
 class DownloadElement(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    download_id = DB.Column(DB.Integer, DB.ForeignKey('download.id'), nullable=False, index=True)
-    illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
-    md5 = DB.Column(BlobMD5(nullable=True), nullable=True)
-    status_id = DB.Column(IntEnum, DB.ForeignKey('download_element_status.id'), nullable=False)
+    id = integer_column(primary_key=True)
+    download_id = integer_column(foreign_key='download.id', nullable=False, index=True)
+    illust_url_id = integer_column(foreign_key='illust_url.id', nullable=False)
+    md5 = md5_column(nullable=True)
+    status_id = enum_column(foreign_key='download_element_status.id', nullable=False)
 
     # ## Relationships
-    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
-                             backref=DB.backref('download_element', lazy=True, uselist=False))
+    errors = relationship(Error, uselist=True, cascade='all,delete', backref=backref('download_element', uselist=False))
     # (MtO) download [Download]
     # (MtO) illust_url [IllustUrl]
 

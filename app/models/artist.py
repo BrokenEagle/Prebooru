@@ -20,61 +20,45 @@ from .subscription import Subscription
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, register_enum_column, relation_association_proxy
+from .base import JsonModel, integer_column, enum_column, boolean_column, timestamp_column, secondarytable,\
+    register_enum_column, relationship, backref, relation_association_proxy
 
 
 # ## GLOBAL VARIABLES
 
-ArtistNames = secondarytable(
-    'artist_names',
-    DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
-    DB.Column('label_id', DB.Integer, DB.ForeignKey('label.id'), primary_key=True),
-)
-
-ArtistSiteAccounts = secondarytable(
-    'artist_site_accounts',
-    DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
-    DB.Column('label_id', DB.Integer, DB.ForeignKey('label.id'), primary_key=True),
-)
-
-ArtistProfiles = secondarytable(
-    'artist_profiles',
-    DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
-    DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
-)
+ArtistNames = secondarytable('artist_names', ('artist_id', 'artist.id'), ('label_id', 'label.id'))
+ArtistSiteAccounts = secondarytable('artist_site_accounts', ('artist_id', 'artist.id'), ('label_id', 'label.id'))
+ArtistProfiles = secondarytable('artist_profiles', ('artist_id', 'artist.id'), ('description_id', 'description.id'))
 
 
 # ## CLASSES
 
 class Artist(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(IntEnum, DB.ForeignKey('site_descriptor.id'), nullable=False)
-    site_artist_id = DB.Column(DB.Integer, nullable=False)
-    site_account_id = DB.Column(DB.Integer, DB.ForeignKey('label.id'), nullable=False)
-    name_id = DB.Column(DB.Integer, DB.ForeignKey('label.id'), nullable=True)
-    profile_id = DB.Column(DB.Integer, DB.ForeignKey('description.id'), nullable=True)
-    site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    active = DB.Column(DB.Boolean, nullable=False)
-    primary = DB.Column(DB.Boolean, nullable=False)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    id = integer_column(primary_key=True)
+    site_id = enum_column(foreign_key='site_descriptor.id', nullable=False)
+    site_artist_id = integer_column(nullable=False)
+    site_account_id = integer_column(foreign_key='label.id', nullable=False)
+    name_id = integer_column(foreign_key='label.id', nullable=True)
+    profile_id = integer_column(foreign_key='description.id', nullable=True)
+    site_created = timestamp_column(nullable=True)
+    active = boolean_column(nullable=False)
+    primary = boolean_column(nullable=False)
+    created = timestamp_column(nullable=False)
+    updated = timestamp_column(nullable=False)
 
     # ## Relationships
-    site_account = DB.relationship(Label, lazy=True, uselist=False, foreign_keys=[site_account_id])
-    name = DB.relationship(Label, lazy=True, uselist=False, foreign_keys=[name_id])
-    profile = DB.relationship(Description, lazy=True, uselist=False)
-    site_accounts = DB.relationship(Label, secondary=ArtistSiteAccounts, lazy=True, uselist=True)
-    names = DB.relationship(Label, secondary=ArtistNames, lazy=True, uselist=True)
-    profiles = DB.relationship(Description, secondary=ArtistProfiles, lazy=True, uselist=True)
-    illusts = DB.relationship(Illust, lazy=True, uselist=True, cascade="all, delete",
-                              backref=DB.backref('artist', lazy=True, uselist=False))
-    subscription = DB.relationship(Subscription, lazy=True, uselist=False, cascade="all, delete",
-                                   backref=DB.backref('artist', lazy=True, uselist=False))
-    webpages = DB.relationship(ArtistUrl, lazy=True, uselist=True, cascade="all, delete",
-                               backref=DB.backref('artist', lazy=True, uselist=False))
-    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
-                                backref=DB.backref('artist', lazy=True, uselist=False))
+    site_account = relationship(Label, uselist=False, foreign_keys=[site_account_id])
+    name = relationship(Label, uselist=False, foreign_keys=[name_id])
+    profile = relationship(Description, uselist=False)
+    site_accounts = relationship(Label, secondary=ArtistSiteAccounts, uselist=True)
+    names = relationship(Label, secondary=ArtistNames, uselist=True)
+    profiles = relationship(Description, secondary=ArtistProfiles, uselist=True)
+    illusts = relationship(Illust, uselist=True, cascade="all, delete", backref=backref('artist', uselist=False))
+    subscription = relationship(Subscription, uselist=False, cascade="all, delete",
+                                backref=backref('artist', uselist=False))
+    webpages = relationship(ArtistUrl, uselist=True, cascade="all, delete", backref=backref('artist', uselist=False))
+    notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('artist', uselist=False))
     # (MtM) boorus [Booru]
 
     # ## Association proxies

@@ -4,29 +4,27 @@
 from sqlalchemy.util import memoized_property
 
 # ## LOCAL IMPORTS
-from .. import DB
 from .model_enums import UploadStatus
 from .illust_url import IllustUrl
 from .error import Error
-from .base import JsonModel, IntEnum, EpochTimestamp, register_enum_column
+from .base import JsonModel, integer_column, text_column, enum_column, timestamp_column, register_enum_column,\
+    relationship, backref
 
 
 # ## CLASSES
 
 class Upload(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    status_id = DB.Column(IntEnum, DB.ForeignKey('upload_status.id'), nullable=False)
-    media_filepath = DB.Column(DB.TEXT, nullable=False)
-    sample_filepath = DB.Column(DB.TEXT, nullable=True)
-    illust_url_id = DB.Column(DB.Integer, DB.ForeignKey('illust_url.id'), nullable=False)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    id = integer_column(primary_key=True)
+    status_id = enum_column(foreign_key='upload_status.id', nullable=False)
+    media_filepath = text_column(nullable=False)
+    sample_filepath = text_column(nullable=True)
+    illust_url_id = integer_column(foreign_key='illust_url.id', nullable=False)
+    created = timestamp_column(nullable=False)
 
     # ## Relationships
-    errors = DB.relationship(Error, lazy=True, uselist=True, cascade='all,delete',
-                             backref=DB.backref('upload', lazy=True, uselist=False))
-    illust_url = DB.relationship(IllustUrl, lazy=True, uselist=False, viewonly=True,
-                                 backref=DB.backref('uploads', lazy=True, uselist=True))
+    errors = relationship(Error, uselist=True, cascade='all,delete', backref=backref('upload', uselist=False))
+    illust_url = relationship(IllustUrl, uselist=False, viewonly=True, backref=backref('uploads', uselist=True))
 
     # ## Instance properties
 

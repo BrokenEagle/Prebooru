@@ -4,8 +4,7 @@
 import datetime
 
 # ## LOCAL IMPORTS
-from .. import DB
-from .base import JsonModel
+from .base import JsonModel, text_column, real_column, boolean_column, blob_column, json_column
 
 
 # ## CLASSES
@@ -30,15 +29,15 @@ class JobBase(JsonModel):
 
 class JobInfo(JobBase):
     # ## Columns
-    id = DB.Column(DB.String(255), primary_key=True)
-    _next_run_time = DB.Column('next_run_time', DB.Float(), nullable=True)
-    job_state = DB.Column(DB.BLOB(), nullable=False)
+    id = text_column(primary_key=True)
+    next_run_time = real_column(nullable=True)
+    job_state = blob_column(nullable=False)
 
     # ## Properties
 
     @property
-    def next_run_time(self):
-        return datetime.datetime.fromtimestamp(self._next_run_time)
+    def next_run_time_datetime(self):
+        return datetime.datetime.fromtimestamp(self.next_run_time)
 
     # ## Private
 
@@ -47,29 +46,29 @@ class JobInfo(JobBase):
 
 class JobEnable(JobBase):
     # ## Columns
-    id = DB.Column(DB.String(255), primary_key=True)
-    enabled = DB.Column(DB.Boolean(), nullable=False)
+    id = text_column(primary_key=True)
+    enabled = boolean_column(nullable=False)
 
 
 class JobManual(JobBase):
     # ## Columns
-    id = DB.Column(DB.String(255), primary_key=True)
-    manual = DB.Column(DB.Boolean(), nullable=False)
+    id = text_column(primary_key=True)
+    manual = boolean_column(nullable=False)
 
 
 class JobLock(JobBase):
     # ## Columns
-    id = DB.Column(DB.String(255), primary_key=True)
-    locked = DB.Column(DB.Boolean(), nullable=False)
+    id = text_column(primary_key=True)
+    locked = boolean_column(nullable=False)
 
 
 class JobTime(JobBase):
     # ## Columns
-    id = DB.Column(DB.String(255), primary_key=True)
-    time = DB.Column(DB.Float(), nullable=False)
+    id = text_column(primary_key=True)
+    time = real_column(nullable=False)
 
 
 class JobStatus(JobBase):
     # ## Columns
-    id = DB.Column(DB.String(255), primary_key=True)
-    data = DB.Column(DB.JSON(), nullable=False)
+    id = text_column(primary_key=True)
+    data = json_column(nullable=False)

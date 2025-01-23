@@ -1,18 +1,17 @@
 # APP/MODELS/ARTIST_URL.PY
 
 # ## LOCAL IMPORTS
-from .. import DB
-from .base import JsonModel
+from .base import JsonModel, integer_column, text_column, boolean_column
 
 
 # ## CLASSES
 
 class ArtistUrl(JsonModel):
     # #### Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
-    url = DB.Column(DB.String(255), nullable=False)
-    active = DB.Column(DB.Boolean, nullable=False)
+    id = integer_column(primary_key=True)
+    artist_id = integer_column(foreign_key='artist.id', nullable=False, index=True)
+    url = text_column(nullable=False)
+    active = boolean_column(nullable=False)
 
     # ## Relations
     # (MtO) artist [artist]

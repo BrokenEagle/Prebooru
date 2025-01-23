@@ -4,21 +4,21 @@
 from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
-from .. import DB
 from .model_enums import ApiDataType, SiteDescriptor
-from .base import JsonModel, IntEnum, CompressedJSON, EpochTimestamp, register_enum_column
+from .base import JsonModel, integer_column, enum_column, compressed_json_column, timestamp_column,\
+    register_enum_column
 
 
 # ## CLASSES
 
 class ApiData(JsonModel):
     # #### Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    type_id = DB.Column(IntEnum, DB.ForeignKey('api_data_type.id'), nullable=False)
-    site_id = DB.Column(IntEnum, DB.ForeignKey('site_descriptor.id'), nullable=False)
-    data_id = DB.Column(DB.Integer, nullable=False)
-    data = DB.Column(CompressedJSON(), nullable=False)
-    expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    id = integer_column(primary_key=True)
+    type_id = enum_column(foreign_key='api_data_type.id', nullable=False)
+    site_id = enum_column(foreign_key='site_descriptor.id', nullable=False)
+    data_id = integer_column(nullable=False)
+    data = compressed_json_column(nullable=False)
+    expires = timestamp_column(nullable=False)
 
     # ## Class properties
 

@@ -13,7 +13,8 @@ from utility.obj import classproperty
 # ## LOCAL IMPORTS
 from .. import DB
 from .model_enums import ArchiveType
-from .base import JsonModel, EpochTimestamp, image_server_url, register_enum_column
+from .base import JsonModel, integer_column, enum_column, text_column, json_column, timestamp_column,\
+    image_server_url, register_enum_column
 
 
 # ## FUNCTIONS
@@ -30,11 +31,11 @@ def check_type(func):
 
 class Archive(JsonModel):
     # #### Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    type_id = DB.Column(DB.Integer, DB.ForeignKey('archive_type.id'), nullable=False)
-    key = DB.Column(DB.String(255), nullable=False)
-    data = DB.Column(DB.JSON, nullable=False)
-    expires = DB.Column(EpochTimestamp(nullable=True), nullable=True)
+    id = integer_column(primary_key=True)
+    type_id = enum_column(foreign_key='archive_type.id', nullable=False)
+    key = text_column(nullable=False)
+    data = json_column(nullable=False)
+    expires = timestamp_column(nullable=True)
 
     @property
     def is_post_type(self):

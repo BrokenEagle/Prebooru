@@ -6,27 +6,26 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ## LOCAL IMPORTS
 from .. import DB
 from .pool_element import PoolNotation
-from .base import JsonModel, EpochTimestamp
+from .base import JsonModel, integer_column, text_column, boolean_column, timestamp_column, relationship, backref
 
 
 # ## CLASSES
 
 class Notation(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    body = DB.Column(DB.UnicodeText, nullable=False)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=True)
-    booru_id = DB.Column(DB.Integer, DB.ForeignKey('booru.id'), nullable=True)
-    artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=True)
-    illust_id = DB.Column(DB.Integer, DB.ForeignKey('illust.id'), nullable=True)
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
-    no_pool = DB.Column(DB.Boolean, nullable=False)
+    id = integer_column(primary_key=True)
+    body = text_column(nullable=False)
+    created = timestamp_column(nullable=False)
+    updated = timestamp_column(nullable=False)
+    subscription_id = integer_column(foreign_key='subscription.id', nullable=True)
+    booru_id = integer_column(foreign_key='booru.id', nullable=True)
+    artist_id = integer_column(foreign_key='artist.id', nullable=True)
+    illust_id = integer_column(foreign_key='illust.id', nullable=True)
+    post_id = integer_column(foreign_key='post.id', nullable=True)
+    no_pool = boolean_column(nullable=False)
 
     # ## Relationships
-    _pool = DB.relationship(PoolNotation, lazy=True, uselist=False, cascade='all,delete',
-                            backref=DB.backref('item', lazy=True, uselist=False))
+    _pool = relationship(PoolNotation, uselist=False, cascade='all,delete', backref=backref('item', uselist=False))
     # (MtO) artist [Artist]
     # (MtO) illust [Illust]
     # (MtO) post [Post]

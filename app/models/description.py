@@ -1,8 +1,8 @@
 # APP/MODELS/DESCRIPTION.PY
 
 # ## LOCAL IMPORTS
-from .. import DB, SESSION
-from .base import JsonModel
+from .. import SESSION
+from .base import JsonModel, integer_column, text_column
 
 
 # ## FUNCTIONS
@@ -20,9 +20,5 @@ def description_creator(body):
 
 class Description(JsonModel):
     # #### Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    body = DB.Column(DB.UnicodeText, nullable=False)
-
-    # ## Relations
-    # (MtM) artists [Artist]
-    # (MtM) illusts [Illust]
+    id = integer_column(primary_key=True)
+    body = text_column(nullable=False)

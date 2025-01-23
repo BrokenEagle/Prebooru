@@ -1,23 +1,16 @@
 # APP/MODELS/DOWNLOAD_URL.PY
 
 # ## LOCAL IMPORTS
-from .. import DB
-from .base import JsonModel
+from .base import JsonModel, integer_column, text_column
 
 
 # ## CLASSES
 
 class DownloadUrl(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    url = DB.Column(DB.TEXT, nullable=False)
-    download_id = DB.Column(DB.Integer, DB.ForeignKey('download.id'), nullable=False)
+    id = integer_column(primary_key=True)
+    url = text_column(nullable=False)
+    download_id = integer_column(foreign_key='download.id', nullable=False, index=True)
 
     # ## Relations
     # (MtO) download [Download]
-
-
-# ## INITIALIZATION
-
-def initialize():
-    DB.Index(None, DownloadUrl.download_id, unique=False)

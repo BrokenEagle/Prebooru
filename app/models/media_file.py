@@ -8,8 +8,7 @@ from config import MEDIA_DIRECTORY
 from utility.obj import classproperty
 
 # ## LOCAL IMPORTS
-from .. import DB
-from .base import JsonModel, BlobMD5, EpochTimestamp, image_server_url
+from .base import JsonModel, integer_column, text_column, md5_column, timestamp_column, image_server_url
 
 
 # ## GLOBAL VARIABLES
@@ -21,11 +20,11 @@ CACHE_DATA_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'cache')
 
 class MediaFile(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    md5 = DB.Column(BlobMD5(nullable=False), nullable=False)
-    file_ext = DB.Column(DB.String(255), nullable=False)
-    media_url = DB.Column(DB.String(255), nullable=False)
-    expires = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    id = integer_column(primary_key=True)
+    md5 = md5_column(nullable=False)
+    file_ext = text_column(nullable=False)
+    media_url = text_column(nullable=False)
+    expires = timestamp_column(nullable=False)
 
     # ## Instance properties
 

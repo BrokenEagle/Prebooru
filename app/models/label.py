@@ -1,8 +1,8 @@
 # APP/MODELS/LABEL.PY
 
 # ## LOCAL IMPORTS
-from .. import DB, SESSION
-from .base import JsonModel
+from .. import SESSION
+from .base import JsonModel, integer_column, text_column
 
 
 # ## FUNCTIONS
@@ -20,10 +20,5 @@ def label_creator(name):
 
 class Label(JsonModel):
     # #### Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    name = DB.Column(DB.Unicode(255), nullable=False)
-
-    # ## Relations
-    # (MtM) site_artist_accounts [Artist]
-    # (MtM) name_artists [Artist]
-    # (MtM) boorus [Booru]
+    id = integer_column(primary_key=True)
+    name = text_column(nullable=False)

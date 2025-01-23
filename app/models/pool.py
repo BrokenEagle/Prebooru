@@ -13,12 +13,11 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from config import DEFAULT_PAGINATE_LIMIT, MAXIMUM_PAGINATE_LIMIT
 
 # ## LOCAL IMPORTS
-from .. import DB
 from .post import Post
 from .illust import Illust
 from .notation import Notation
 from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation, pool_element_create, pool_element_delete
-from .base import JsonModel, EpochTimestamp
+from .base import JsonModel, integer_column, text_column, boolean_column, timestamp_column, relationship, backref
 
 
 # ## GLOBAL VARIABLES
@@ -30,18 +29,18 @@ SHOW_PAGINATE_LIMIT = min(100, MAXIMUM_PAGINATE_LIMIT)
 
 class Pool(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    name = DB.Column(DB.String(255), nullable=False)
-    element_count = DB.Column(DB.Integer, nullable=False)
-    series = DB.Column(DB.Boolean, nullable=False)
-    checked = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    id = integer_column(primary_key=True)
+    name = text_column(nullable=False)
+    element_count = integer_column(nullable=False)
+    series = boolean_column(nullable=False)
+    checked = timestamp_column(nullable=True)
+    created = timestamp_column(nullable=False)
+    updated = timestamp_column(nullable=False)
 
     # ## Relationships
-    _elements = DB.relationship(PoolElement, order_by=PoolElement.position, lazy=True, uselist=True,
-                                backref=DB.backref('pool', lazy=True, uselist=False), cascade='all,delete',
-                                collection_class=ordering_list('position'))
+    _elements = relationship(PoolElement, order_by=PoolElement.position, uselist=True,
+                             backref=backref('pool', uselist=False), cascade='all,delete',
+                             collection_class=ordering_list('position'))
 
     # ## Association proxies
     elements = association_proxy('_elements', 'item', creator=lambda item: pool_element_create(item))

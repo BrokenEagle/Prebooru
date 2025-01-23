@@ -1,8 +1,7 @@
 # APP/MODELS/IMAGE_HASH.PY
 
 # ## LOCAL IMPORTS
-from .. import DB
-from .base import JsonModel
+from .base import JsonModel, integer_column, real_column, blob_column
 
 # ## GLOBAL VARIABLES
 
@@ -43,9 +42,9 @@ def hex_chunk(hashstr, index):
 
 class ImageHash(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, index=True)
-    ratio = DB.Column(DB.Float, nullable=False)
+    id = integer_column(primary_key=True)
+    post_id = integer_column(foreign_key='post.id', nullable=False, index=True)
+    ratio = real_column(nullable=False)
 
     # ## Relations
     # (OtO) post [Post]
@@ -159,4 +158,4 @@ def initialize():
     # Initialize chunk attributes, CHUNK00 - CHUNKXX
     for i in range(0, NUM_CHUNKS):
         key = chunk_key(i)
-        setattr(ImageHash, key, DB.Column(DB.BLOB(2), nullable=False))
+        setattr(ImageHash, key, blob_column(nullable=False))

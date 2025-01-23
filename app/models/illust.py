@@ -18,69 +18,56 @@ from .illust_url import IllustUrl
 from .description import Description, description_creator
 from .notation import Notation
 from .pool_element import PoolIllust
-from .base import JsonModel, IntEnum, EpochTimestamp, secondarytable, register_enum_column, relation_association_proxy
+from .base import JsonModel, integer_column, enum_column, boolean_column, timestamp_column, secondarytable,\
+    register_enum_column, relationship, backref, relation_association_proxy
 
 
 # ## GLOBAL VARIABLES
 
 # Many-to-many tables
 
-IllustTags = secondarytable(
-    'illust_tags',
-    DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
-    DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id'), primary_key=True),
-)
-
-IllustTitles = secondarytable(
-    'illust_titles',
-    DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
-    DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
-)
-
-IllustCommentaries = secondarytable(
-    'illust_commentaries',
-    DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
-    DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
-)
-
-AdditionalCommentaries = secondarytable(
-    'additional_commentaries',
-    DB.Column('illust_id', DB.Integer, DB.ForeignKey('illust.id'), primary_key=True),
-    DB.Column('description_id', DB.Integer, DB.ForeignKey('description.id'), primary_key=True),
-)
+IllustTags = secondarytable('illust_tags',
+                            ('illust_id', 'illust.id'),
+                            ('tag_id', 'tag.id'))
+IllustTitles = secondarytable('illust_titles',
+                              ('illust_id', 'illust.id'),
+                              ('description_id', 'description.id'))
+IllustCommentaries = secondarytable('illust_commentaries',
+                                    ('illust_id', 'illust.id'),
+                                    ('description_id', 'description.id'))
+AdditionalCommentaries = secondarytable('additional_commentaries',
+                                        ('illust_id', 'illust.id'),
+                                        ('description_id', 'description.id'))
 
 
 # ## CLASSES
 
 class Illust(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    site_id = DB.Column(IntEnum, DB.ForeignKey('site_descriptor.id'), nullable=False)
-    site_illust_id = DB.Column(DB.Integer, nullable=False)
-    site_created = DB.Column(EpochTimestamp(nullable=True), nullable=True)
-    artist_id = DB.Column(DB.Integer, DB.ForeignKey('artist.id'), nullable=False, index=True)
-    title_id = DB.Column(DB.Integer, DB.ForeignKey('description.id'), nullable=True)
-    commentary_id = DB.Column(DB.Integer, DB.ForeignKey('description.id'), nullable=True)
-    pages = DB.Column(DB.Integer, nullable=False)
-    score = DB.Column(DB.Integer, nullable=False)
-    active = DB.Column(DB.Boolean, nullable=False)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    id = integer_column(primary_key=True)
+    site_id = enum_column(foreign_key='site_descriptor.id', nullable=False)
+    site_illust_id = integer_column(nullable=False)
+    site_created = timestamp_column(nullable=True)
+    artist_id = integer_column(foreign_key='artist.id', nullable=False, index=True)
+    title_id = integer_column(foreign_key='description.id', nullable=True)
+    commentary_id = integer_column(foreign_key='description.id', nullable=True)
+    pages = integer_column(nullable=False)
+    score = integer_column(nullable=False)
+    active = boolean_column(nullable=False)
+    created = timestamp_column(nullable=False)
+    updated = timestamp_column(nullable=False)
 
     # ## Relationships
-    title = DB.relationship(Description, lazy=True, uselist=False, foreign_keys=[title_id])
-    commentary = DB.relationship(Description, lazy=True, uselist=False, foreign_keys=[commentary_id])
-    titles = DB.relationship(Description, secondary=IllustTitles, lazy=True, uselist=True)
-    commentaries = DB.relationship(Description, secondary=IllustCommentaries, lazy=True, uselist=True)
-    additional_commentaries = DB.relationship(Description, secondary=AdditionalCommentaries, lazy=True, uselist=True)
-    tags = DB.relationship(SiteTag, secondary=IllustTags, lazy=True, uselist=True)
-    urls = DB.relationship(IllustUrl, lazy=True, uselist=True, cascade="all, delete",
-                           backref=DB.backref('illust', lazy=True, uselist=False))
-    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
-                                backref=DB.backref('illust', uselist=False, lazy=True))
+    title = relationship(Description, uselist=False, foreign_keys=[title_id])
+    commentary = relationship(Description, uselist=False, foreign_keys=[commentary_id])
+    titles = relationship(Description, secondary=IllustTitles, uselist=True)
+    commentaries = relationship(Description, secondary=IllustCommentaries, uselist=True)
+    additional_commentaries = relationship(Description, secondary=AdditionalCommentaries, uselist=True)
+    tags = relationship(SiteTag, secondary=IllustTags, uselist=True)
+    urls = relationship(IllustUrl, uselist=True, cascade="all, delete", backref=backref('illust', uselist=False))
+    notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('illust', uselist=False))
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
-    _pools = DB.relationship(PoolIllust, lazy=True, uselist=True,
-                             backref=DB.backref('item', lazy=True, uselist=False))
+    _pools = relationship(PoolIllust, uselist=True, backref=backref('item', uselist=False))
     # (OtO) artist [Artist]
 
     # ## Association proxies

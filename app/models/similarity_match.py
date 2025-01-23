@@ -2,16 +2,16 @@
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel
+from .base import JsonModel, integer_column, real_column
 
 
 # ## CLASSES
 
 class SimilarityMatch(JsonModel):
     # ## Columns
-    forward_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, primary_key=True)
-    reverse_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=False, primary_key=True, index=True)
-    score = DB.Column(DB.Float, nullable=False)
+    forward_id = integer_column(foreign_key='post.id', primary_key=True)
+    reverse_id = integer_column(foreign_key='post.id', primary_key=True, index=True)
+    score = real_column(nullable=False)
 
     # ## Relationships
     # forward_post <- Post (OtO)

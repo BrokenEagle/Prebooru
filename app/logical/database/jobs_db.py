@@ -70,7 +70,7 @@ def delete_job_item(item):
 # #### Query
 
 def get_all_job_info():
-    return {item.id: item.next_run_time for item in JobInfo.query.all()}
+    return {item.id: item.next_run_time_datetime for item in JobInfo.query.all()}
 
 
 def get_all_job_items(job_type):

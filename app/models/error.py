@@ -5,23 +5,23 @@ from sqlalchemy.util import memoized_property
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, EpochTimestamp
+from .base import JsonModel, integer_column, text_column, timestamp_column
 
 
 # ## CLASSES
 
 class Error(JsonModel):
     # #### Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    module = DB.Column(DB.Text, nullable=False)
-    message = DB.Column(DB.UnicodeText, nullable=False)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    post_id = DB.Column(DB.Integer, DB.ForeignKey('post.id'), nullable=True)
-    subscription_id = DB.Column(DB.Integer, DB.ForeignKey('subscription.id'), nullable=True)
-    subscription_element_id = DB.Column(DB.Integer, DB.ForeignKey('subscription_element.id'), nullable=True)
-    download_id = DB.Column(DB.Integer, DB.ForeignKey('download.id'), nullable=True)
-    download_element_id = DB.Column(DB.Integer, DB.ForeignKey('download_element.id'), nullable=True)
-    upload_id = DB.Column(DB.Integer, DB.ForeignKey('upload.id'), nullable=True)
+    id = integer_column(primary_key=True)
+    module = text_column(nullable=False)
+    message = text_column(nullable=False)
+    created = timestamp_column(nullable=False)
+    post_id = integer_column(foreign_key='post.id', nullable=True)
+    subscription_id = integer_column(foreign_key='subscription.id', nullable=True)
+    subscription_element_id = integer_column(foreign_key='subscription_element.id', nullable=True)
+    download_id = integer_column(foreign_key='download.id', nullable=True)
+    download_element_id = integer_column(foreign_key='download_element.id', nullable=True)
+    upload_id = integer_column(foreign_key='upload.id', nullable=True)
 
     # ## Relations
     # (OtO) post [Post]

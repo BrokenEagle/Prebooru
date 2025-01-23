@@ -15,43 +15,32 @@ from .illust_url import IllustUrl
 from .post import Post
 from .notation import Notation
 from .label import Label, label_creator
-from .base import JsonModel, EpochTimestamp, secondarytable
+from .base import JsonModel, integer_column, text_column, boolean_column, timestamp_column, secondarytable,\
+    relationship, backref
 
 
 # ## GLOBAL VARIABLES
 
-BooruNames = secondarytable(
-    'booru_names',
-    DB.Column('label_id', DB.Integer, DB.ForeignKey('label.id'), primary_key=True),
-    DB.Column('booru_id', DB.Integer, DB.ForeignKey('booru.id'), primary_key=True),
-)
-
-BooruArtists = secondarytable(
-    'booru_artists',
-    DB.Column('artist_id', DB.Integer, DB.ForeignKey('artist.id'), primary_key=True),
-    DB.Column('booru_id', DB.Integer, DB.ForeignKey('booru.id'), primary_key=True, index=True),
-)
+BooruNames = secondarytable('booru_names', ('label_id', 'label.id'), ('booru_id', 'booru.id'))
+BooruArtists = secondarytable('booru_artists', ('artist_id', 'artist.id'), ('booru_id', 'booru.id'), index=True)
 
 
 # ## CLASSES
 
 class Booru(JsonModel):
     # ## Columns
-    id = DB.Column(DB.Integer, primary_key=True)
-    danbooru_id = DB.Column(DB.Integer, nullable=True)
-    current_name = DB.Column(DB.String(255), nullable=False)
-    banned = DB.Column(DB.Boolean, nullable=False)
-    deleted = DB.Column(DB.Boolean, nullable=False)
-    created = DB.Column(EpochTimestamp(nullable=False), nullable=False)
-    updated = DB.Column(EpochTimestamp(nullable=False), nullable=False)
+    id = integer_column(primary_key=True)
+    danbooru_id = integer_column(nullable=True)
+    current_name = text_column(nullable=False)
+    banned = boolean_column(nullable=False)
+    deleted = boolean_column(nullable=False)
+    created = timestamp_column(nullable=False)
+    updated = timestamp_column(nullable=False)
 
     # ## Relationships
-    _names = DB.relationship(Label, secondary=BooruNames, lazy=True, uselist=True,
-                             backref=DB.backref('boorus', lazy=True, uselist=True))
-    artists = DB.relationship(Artist, secondary=BooruArtists, lazy=True, uselist=True,
-                              backref=DB.backref('boorus', lazy=True))
-    notations = DB.relationship(Notation, lazy=True, uselist=True, cascade='all,delete',
-                                backref=DB.backref('booru', lazy=True, uselist=False))
+    _names = relationship(Label, secondary=BooruNames, uselist=True, backref=backref('boorus', uselist=True))
+    artists = relationship(Artist, secondary=BooruArtists, uselist=True, backref=backref('boorus', uselist=True))
+    notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('booru', uselist=False))
 
     # ## Association proxies
     names = association_proxy('_names', 'name', creator=label_creator)
