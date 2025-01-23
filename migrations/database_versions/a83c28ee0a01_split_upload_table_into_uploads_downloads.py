@@ -54,7 +54,7 @@ DOWNLOAD_TABLE_CONFIG = {
             'nullable': False,
         }, {
             'name': 'request_url',
-            'type': 'INTEGER',
+            'type': 'TEXT',
             'nullable': False,
         }, {
             'name': 'status_id',
