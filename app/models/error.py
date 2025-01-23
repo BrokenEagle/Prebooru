@@ -35,6 +35,10 @@ class Error(JsonModel):
             return 'post'
         if self.upload_id is not None:
             return 'upload'
+        if self.download_id is not None:
+            return 'download'
+        if self.download_element_id is not None:
+            return 'download_element'
         if self.subscription_id is not None:
             return 'subscription'
         if self.subscription_element_id is not None:
