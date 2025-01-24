@@ -31,7 +31,7 @@ def danbooru_page_url(booru):
 
 
 def danbooru_post_search(booru):
-    return DANBOORU_HOSTNAME + '/posts?' + urllib.parse.urlencode({'tags': booru.current_name + ' status:any'})
+    return DANBOORU_HOSTNAME + '/posts?' + urllib.parse.urlencode({'tags': booru.name_value + ' status:any'})
 
 
 # #### Link functions
@@ -60,6 +60,20 @@ def add_notation_link(booru):
     return general_link("Add notation", url_for('notation.new_html', booru_id=booru.id, redirect='true'))
 
 
+def delete_name_link(booru, name):
+    return general_link("remove", url_for('booru.delete_name_html', id=booru.id, label_id=name.id),
+                        method="DELETE", **{'class': 'warning-link'})
+
+
+def swap_name_link(booru, name):
+    url = url_for('booru.swap_name_html', id=booru.id, label_id=name.id)
+    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+
+
+def names_link(booru):
+    return general_link("Names (%d)" % booru.names_count, url_for('booru.names_html', id=booru.id))
+
+
 # ###### GENERAL
 
 def post_search_link(booru):
@@ -67,7 +81,7 @@ def post_search_link(booru):
 
 
 def site_booru_link(booru):
-    return external_link(booru.current_name, danbooru_page_url(booru))
+    return external_link(booru.name_value, danbooru_page_url(booru))
 
 
 def site_search_link(booru):

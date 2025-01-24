@@ -1,0 +1,26 @@
+{% extends "boorus/_base.html" %}
+{% from "layouts/_macros.html" import items_block %}
+
+{% block title %}
+    Old names for {{ booru.header }}
+{% endblock title %}
+
+{% block content %}
+    <div id="booru-heading" class="heading">Old names for {{ booru.header }}</div>
+    <div id="booru-titles-content" class="content">
+        <div id="booru-current-name" class="current-section">
+            <h4>Current name</h4>
+            <div class="booru-name-block current-block">{{ helpers.base.convert_to_html(booru.name_value) }}</div>
+        </div>
+        <div id="booru-old-names" class="old-section">
+            <h4>Old names</h4>
+            {% call(name) items_block(booru.names, 'old names') %}
+                <div class="booru-names-block old-block">
+                    <span class="booru-name-delete old-delete">(&thinsp;{{ helpers.booru.delete_name_link(booru, name) }}&thinsp;)</span>
+                    <span class="booru-name-swap old-swap">(&thinsp;{{ helpers.booru.swap_name_link(booru, name) }}&thinsp;)</span>
+                    {{ helpers.base.convert_to_html(name.name) }}
+                </div>
+            {% endcall %}
+        </div>
+    </div>
+{% endblock content %}

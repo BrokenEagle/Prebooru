@@ -2,21 +2,20 @@
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
+from utility.data import swap_key_value
 
 # ## LOCAL IMPORTS
 from ...models import Booru, Label
-from .base_db import set_column_attributes, set_relationship_collections, set_association_attributes,\
-    will_update_record, add_record, save_record, commit_session
+from .base_db import set_column_attributes, set_version_relations, will_update_record, add_record, save_record,\
+    commit_session
 
 
 # ## GLOBAL VARIABLES
 
-UPDATE_SCALAR_RELATIONSHIPS = [('_names', 'name', Label)]
-APPEND_SCALAR_RELATIONSHIPS = []
-ASSOCIATION_ATTRIBUTES = ['names']
+VERSION_RELATIONSHIPS = [('name', 'names', 'name', Label)]
 
-ANY_WRITABLE_COLUMNS = ['danbooru_id', 'current_name', 'banned', 'deleted']
-NULL_WRITABLE_ATTRIBUTES = []
+ANY_WRITABLE_COLUMNS = ['danbooru_id', 'banned', 'deleted']
+NULL_WRITABLE_ATTRIBUTES = ['name_value']
 
 
 # ## FUNCTIONS
@@ -24,8 +23,10 @@ NULL_WRITABLE_ATTRIBUTES = []
 # #### Create
 
 def create_booru_from_parameters(createparams, commit=True):
-    booru = Booru()
-    return set_booru_from_parameters(booru, createparams, 'created', commit, True)
+    createparams.setdefault('banned', False)
+    createparams.setdefault('deleted', False)
+    swap_key_value(createparams, 'name', 'name_value')
+    return set_booru_from_parameters(Booru(), createparams, 'created', commit, True)
 
 
 def create_booru_from_json(data):
@@ -54,7 +55,6 @@ def will_update_booru(booru, data):
 # #### Set
 
 def set_booru_from_parameters(booru, setparams, action, commit, update):
-    _set_all_names(setparams, booru)
     col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
                                        setparams, update=update, safe=True)
     rel_result = _set_relations(booru, setparams, update)
@@ -95,12 +95,5 @@ def get_all_boorus_page(limit):
 
 # #### Private functions
 
-def _set_all_names(params, booru):
-    if isinstance(params.get('current_name'), str):
-        names = set(params.get('names', list(booru.names)) + [params['current_name']])
-        params['names'] = list(names)
-
-
-def _set_relations(booru, setparams, update):
-    set_association_attributes(setparams, ASSOCIATION_ATTRIBUTES)
-    return set_relationship_collections(booru, UPDATE_SCALAR_RELATIONSHIPS, setparams, update=update)
+def _set_relations(booru, params, update):
+    return set_version_relations(booru, VERSION_RELATIONSHIPS, params, update=update)

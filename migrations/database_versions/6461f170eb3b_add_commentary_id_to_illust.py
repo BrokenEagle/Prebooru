@@ -12,6 +12,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # ## PACKAGE IMPORTS
+from migrations import batch_alter_table
 from migrations.columns import add_column, drop_column
 from migrations.constraints import create_constraint, drop_constraint
 
@@ -58,9 +59,12 @@ def upgrade_():
     print("Creating foreign key constraint")
     create_constraint('illust', 'fk_illust_commentary_id_description', 'foreignkey', ('description', ['commentary_id'], ['id']))
 
+
 def downgrade_():
-    drop_constraint('illust', 'fk_illust_commentary_id_description', 'foreignkey')
-    drop_column('illust', 'commentary_id')
+    print("Dropping commentary_id column and constraint")
+    with batch_alter_table('illust') as batch_op:
+        drop_constraint(None, 'fk_illust_commentary_id_description', 'foreignkey', batch_op=batch_op)
+        drop_column(None, 'commentary_id', batch_op=batch_op)
 
 
 def upgrade_jobs():

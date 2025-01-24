@@ -5,7 +5,8 @@ from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import Booru
+from ...models import Booru, BooruNames, Label
+from ..utility import set_error
 from ..logger import handle_error_message
 from ..sources.base_src import get_artist_id_source
 from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
@@ -39,7 +40,7 @@ def check_boorus(boorus, status):
         return False
     for data in results['artists']:
         booru = next(filter(lambda x: x.danbooru_id == data['id'], boorus))
-        updates = {'current_name': data['name'], 'deleted': data['is_deleted'], 'banned': data['is_banned']}
+        updates = {'name': data['name'], 'deleted': data['is_deleted'], 'banned': data['is_banned']}
         if will_update_booru(booru, updates):
             update_booru_from_parameters(booru, updates)
             status['total'] += 1
@@ -52,8 +53,7 @@ def create_booru_from_source(danbooru_id):
         return data
     createparams = {
         'danbooru_id': danbooru_id,
-        'current_name': data['artist']['name'],
-        'names': [data['artist']['name']],
+        'name': data['artist']['name'],
         'banned': data['artist']['is_banned'],
         'deleted': data['artist']['is_deleted'],
     }
@@ -66,7 +66,7 @@ def update_booru_from_source(booru):
     if booru_data['error']:
         return booru_data
     updateparams = {
-        'current_name': booru_data['artist']['name'],
+        'name': booru_data['artist']['name'],
         'deleted': booru_data['artist']['is_deleted'],
         'banned': booru_data['artist']['is_banned'],
     }
@@ -129,3 +129,40 @@ def delete_booru(booru):
     delete_record(booru)
     commit_session()
     print(msg)
+
+
+def booru_delete_name(booru, label_id):
+    retdata = _relation_params_check(booru, Label, BooruNames, label_id, 'label_id', 'Site account')
+    if retdata['error']:
+        return retdata
+    BooruNames.query.filter_by(booru_id=booru.id, label_id=label_id).delete()
+    commit_session()
+    return retdata
+
+
+def booru_swap_name(booru, label_id):
+    retdata = _relation_params_check(booru, Label, BooruNames, label_id, 'label_id', 'Name')
+    if retdata['error']:
+        return retdata
+    BooruNames.query.filter_by(booru_id=booru.id, label_id=label_id).delete()
+    swap = booru.name
+    booru.name = retdata['attach']
+    if swap is not None:
+        booru.names.append(swap)
+    commit_session()
+    return retdata
+
+
+# ## Private functions
+
+def _relation_params_check(booru, model, m2m_model, model_id, model_field, name):
+    retdata = {'error': False}
+    attach = model.find(model_id)
+    if attach is None:
+        return set_error(retdata, "%s #%d does not exist." % (model.model_name, model_id))
+    retdata['attach'] = attach
+    m2m_row = m2m_model.query.filter_by(**{'booru_id': booru.id, model_field: model_id}).one_or_none()
+    if m2m_row is None:
+        msg = "%s with %s does not exist on %s." % (name, attach.shortlink, booru.shortlink)
+        return set_error(retdata, msg)
+    return retdata

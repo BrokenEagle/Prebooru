@@ -6,6 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
+from utility.data import list_difference
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -15,8 +16,8 @@ from .illust_url import IllustUrl
 from .post import Post
 from .notation import Notation
 from .label import Label, label_creator
-from .base import JsonModel, integer_column, text_column, boolean_column, timestamp_column, secondarytable,\
-    relationship, backref
+from .base import JsonModel, integer_column, boolean_column, timestamp_column, secondarytable, relationship, backref,\
+    relation_association_proxy
 
 
 # ## GLOBAL VARIABLES
@@ -31,26 +32,24 @@ class Booru(JsonModel):
     # ## Columns
     id = integer_column(primary_key=True)
     danbooru_id = integer_column(nullable=True)
-    current_name = text_column(nullable=False)
+    name_id = integer_column(foreign_key='label.id', nullable=False)
     banned = boolean_column(nullable=False)
     deleted = boolean_column(nullable=False)
     created = timestamp_column(nullable=False)
     updated = timestamp_column(nullable=False)
 
     # ## Relationships
-    _names = relationship(Label, secondary=BooruNames, uselist=True, backref=backref('boorus', uselist=True))
+    name = relationship(Label, uselist=False)
+    names = relationship(Label, secondary=BooruNames, uselist=True, backref=backref('boorus', uselist=True))
     artists = relationship(Artist, secondary=BooruArtists, uselist=True, backref=backref('boorus', uselist=True))
     notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('booru', uselist=False))
 
     # ## Association proxies
-    names = association_proxy('_names', 'name', creator=label_creator)
+    name_value = relation_association_proxy('name_id', 'name', 'name', label_creator)
+    name_values = association_proxy('names', 'name', creator=label_creator)
     artist_ids = association_proxy('artists', 'id')
 
     # ## Instance properties
-
-    @property
-    def other_names(self):
-        return [name for name in self.names if name != self.current_name]
 
     @memoized_property
     def recent_posts(self):
@@ -67,6 +66,10 @@ class Booru(JsonModel):
     def post_count(self):
         return self._post_query.distinct_count()
 
+    @property
+    def names_count(self):
+        return BooruNames.query.filter_by(booru_id=self.id).get_count()
+
     @memoized_property
     def _illust_query(self):
         return Illust.query.join(Artist, Illust.artist).join(Booru, Artist.boorus).filter(Booru.id == self.id)
@@ -78,10 +81,10 @@ class Booru(JsonModel):
 
     @property
     def key(self):
-        return '%d' % self.danbooru_id if self.danbooru_id is not None else self.current_name
+        return '%d' % self.danbooru_id if self.danbooru_id is not None else self.name_value
 
     def delete(self):
-        self._names.clear()
+        self.names.clear()
         self.artists.clear()
         DB.session.delete(self)
         DB.session.commit()
@@ -97,14 +100,23 @@ class Booru(JsonModel):
         return cls.query.filter(cls.danbooru_id == danbooru_id)\
                         .one_or_none()
 
-    archive_scalars = [('names', 'other_names', 'names',
-                        lambda x: x.names.append(x.current_name))]
+    @classproperty(cached=True)
+    def load_columns(cls):
+        return super().load_columns + ['name_value']
+
+    archive_excludes = {'name_id'}
+    archive_includes = {('name', 'name_value')}
+    archive_scalars = [('names', 'name_values')]
     archive_attachments = ['notations']
     archive_links = [('artists', 'key')]
 
     @classproperty(cached=True)
+    def repr_attributes(cls):
+        return list_difference(super().json_attributes, ['name_id']) + ['name_value']
+
+    @classproperty(cached=False)
     def json_attributes(cls):
-        return super().json_attributes + ['names']
+        return cls.repr_attributes
 
 
 # ## INITIALIZATION

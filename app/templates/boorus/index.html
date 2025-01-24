@@ -10,8 +10,10 @@
         <thead>
             <tr>
                 <th width="10%">ID</th>
-                <th width="35%">Info</th>
-                <th width="35%">Names</th>
+                <th width="20%">Danbooru ID</th>
+                <th width="25%">Name</th>
+                <th width="10%">Banned</th>
+                <th width="10%">Deleted</th>
                 <th width="20%">Timestamps</th>
             </tr>
         </thead>
@@ -19,12 +21,10 @@
             {% for booru in page.items %}
                 <tr id="booru-{{ booru.id }}">
                     <td class="booru-id">{{ booru.show_link }} {{ helpers.booru.post_search_link(booru) }}</td>
-                    <td class="booru-info">
-                        <span><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</span>
-                        <br>
-                        <span><strong>Current name:</strong> {{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</span>
-                    </td>
-                    <td class="booru-names">{{ simple_list(booru._names, 'name') }}</td>
+                    <td class="booru-info"><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</td>
+                    <td class="booru-name">{{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</td>
+                    <td class="booru-banned">{{ booru.banned | tojson }}</td>
+                    <td class="booru-deleted">{{ booru.deleted | tojson}}</td>
                     <td class="booru-timestamps">
                         <strong>Created:</strong> {{ helpers.base.format_timestamp(booru.created) }}
                         <br>

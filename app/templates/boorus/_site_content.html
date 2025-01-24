@@ -17,14 +17,8 @@
                         <strong>Deleted:</strong> {{ booru.deleted | tojson }}
                     </li>
                 {% else %}
-                    <li><strong>Name:</strong> {{ booru.current_name }} <em>(temporary)</em></li>
+                    <li><strong>Name:</strong> {{ booru.name_value }} <em>(temporary)</em></li>
                 {% endif %}
-            </ul>
-        </section>
-        <section id="booru-names">
-            <h4>Names</h4>
-            <ul>
-                {% for booru_name in booru.names %}<li>{{ booru_name }}</li>{% endfor %}
             </ul>
         </section>
     </div>

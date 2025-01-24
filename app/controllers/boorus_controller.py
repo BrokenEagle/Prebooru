@@ -3,7 +3,7 @@
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from sqlalchemy.orm import selectinload
-from wtforms import TextAreaField, IntegerField, StringField, BooleanField
+from wtforms import IntegerField, StringField, BooleanField
 
 # ## LOCAL IMPORTS
 from ..models import Booru, Artist
@@ -11,11 +11,10 @@ from ..logical.utility import set_error
 from ..logical.database.booru_db import create_booru_from_parameters, update_booru_from_parameters,\
     booru_append_artist, booru_remove_artist
 from ..logical.records.booru_rec import create_booru_from_source, update_booru_from_source,\
-    update_booru_artists_from_source, archive_booru_for_deletion
+    update_booru_artists_from_source, archive_booru_for_deletion, booru_delete_name, booru_swap_name
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, get_data_params,\
-    check_param_requirements, nullify_blanks, get_form, parse_array_parameter, parse_bool_parameter,\
-    set_default, index_html_response
+    check_param_requirements, nullify_blanks, get_form, parse_bool_parameter, set_default, index_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -23,10 +22,9 @@ from .base_controller import show_json_response, index_json_response, search_fil
 bp = Blueprint("booru", __name__)
 
 
-CREATE_REQUIRED_PARAMS = ['current_name', 'deleted', 'banned']
+CREATE_REQUIRED_PARAMS = ['name', 'deleted', 'banned']
 VALUES_MAP = {
-    'names': 'names',
-    'name_string': 'names',
+    'name': 'name',
     **{k: k for k in Booru.__table__.columns.keys()},
 }
 
@@ -34,16 +32,16 @@ VALUES_MAP = {
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(Booru._names),
+    selectinload(Booru.name),
     selectinload(Booru.artists),
 )
 
 INDEX_HTML_OPTIONS = (
-    selectinload(Booru._names),
+    selectinload(Booru.name),
 )
 
 JSON_OPTIONS = (
-    selectinload(Booru._names),
+    selectinload(Booru.name),
     selectinload(Booru.artists),
 )
 
@@ -58,7 +56,7 @@ FORM_CONFIG = {
             'description': "Leave blank for boorus which don't exist on Danbooru.",
         },
     },
-    'current_name': {
+    'name': {
         'field': StringField,
     },
     'banned': {
@@ -66,13 +64,6 @@ FORM_CONFIG = {
     },
     'deleted': {
         'field': BooleanField,
-    },
-    'name_string': {
-        'name': 'Names',
-        'field': TextAreaField,
-        'kwargs': {
-            'description': "Separated by whitespace.",
-        },
     },
 }
 
@@ -93,8 +84,7 @@ def uniqueness_check(dataparams, artist):
 
 def convert_data_params(dataparams):
     params = get_booru_form(**dataparams).data
-    params['names'] = [name.lower() for name in parse_array_parameter(dataparams, 'names', 'name_string', r'\s')]
-    params['current_name'] = params['current_name'].lower()
+    params['name'] = params['name'].lower()
     params['banned'] = parse_bool_parameter(dataparams, 'banned')
     params['deleted'] = parse_bool_parameter(dataparams, 'deleted')
     params = nullify_blanks(params)
@@ -168,6 +158,24 @@ def query_create():
     return retdata
 
 
+def delete_name(booru):
+    label_id = request.values.get('label_id', type=int)
+    retdata = {'error': False, 'params': {'label_id': label_id}}
+    if label_id is None:
+        return set_error(retdata, "Label ID not set or a bad value.")
+    retdata.update(booru_delete_name(booru, label_id))
+    return retdata
+
+
+def swap_name(booru):
+    label_id = request.values.get('label_id', type=int)
+    retdata = {'error': False, 'params': {'label_id': label_id}}
+    if label_id is None:
+        return set_error(retdata, "Description ID not set or a bad value.")
+    retdata.update(booru_swap_name(booru, label_id))
+    return retdata
+
+
 # #### Route functions
 
 # ###### SHOW
@@ -230,7 +238,7 @@ def edit_html(id):
     """HTML access point to update function."""
     booru = get_or_abort(Booru, id)
     editparams = booru.to_json()
-    editparams['name_string'] = '\r\n'.join(booru.names)
+    editparams['name'] = booru.name_value
     form = get_booru_form(**editparams)
     return render_template("boorus/edit.html", form=form, booru=booru)
 
@@ -290,6 +298,28 @@ def query_update_html(id):
     return redirect(url_for('booru.show_html', id=id))
 
 
+@bp.route('/boorus/<int:id>/name', methods=['DELETE'])
+def delete_name_html(id):
+    booru = get_or_abort(Booru, id)
+    results = delete_name(booru)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Profile deleted.')
+    return redirect(request.referrer)
+
+
+@bp.route('/boorus/<int:id>/name', methods=['PUT'])
+def swap_name_html(id):
+    booru = get_or_abort(Booru, id)
+    results = swap_name(booru)
+    if results['error']:
+        flash(results['message'], 'error')
+    else:
+        flash('Profile swapped.')
+    return redirect(request.referrer)
+
+
 @bp.route('/boorus/<int:id>/check_artists', methods=['POST'])
 def check_artists_html(id):
     booru = get_or_abort(Booru, id)
@@ -331,3 +361,9 @@ def remove_artist_html(id):
     else:
         flash(f'artist #{artist_id} not found.')
     return redirect(url_for('booru.show_html', id=id))
+
+
+@bp.route('/boorus/<int:id>/names', methods=['GET'])
+def names_html(id):
+    booru = get_or_abort(Booru, id)
+    return render_template("boorus/names.html", booru=booru)

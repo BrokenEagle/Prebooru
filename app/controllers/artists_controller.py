@@ -250,7 +250,7 @@ def query_booru(artist):
             params = \
                 {
                     'danbooru_id': data['id'],
-                    'current_name': data['name'],
+                    'name': data['name'],
                     'banned': data['is_banned'],
                     'deleted': data['is_deleted'],
                 }
