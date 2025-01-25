@@ -143,15 +143,15 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
         else:
             update_illust_from_parameters(illust, data_params)
         job_status['illusts'] += 1
-    update_job_status(job_id, job_status)
-    update_subscription_from_parameters(subscription,
-                                        {'last_id': artist.last_illust_id, 'checked': get_current_time()},
-                                        update=False)
     job_status['ids'] = None
     update_job_status(job_id, job_status)
     if subscription.status.name == 'automatic':
-        update_subscription_from_parameters(subscription, {'requery': hours_from_now(subscription.interval)},
-                                            update=False)
+        params = {
+            'last_id': artist.last_illust_id,
+            'checked': get_current_time(),
+            'requery': hours_from_now(subscription.interval),
+        }
+        update_subscription_from_parameters(subscription, params, update=False)
     if job_id is None and total == 0:
         create_and_append_error(subscription, 'subscription_rec.sync_missing_subscription_illusts',
                                 "No new illusts found on latest subscription check.")
