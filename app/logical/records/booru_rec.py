@@ -108,7 +108,7 @@ def recreate_archived_booru(archive):
         recreate_attachments(booru, archive.data)
         recreate_links(booru, archive.data)
     except Exception as e:
-        retdata = handle_error_message(str(e))
+        retdata = handle_error_message(e)
         SESSION.rollback()
     else:
         retdata = {'error': False, 'item': booru.to_json()}

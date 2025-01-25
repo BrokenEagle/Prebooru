@@ -377,7 +377,7 @@ def recreate_archived_post(archive):
         recreate_links(post, archive.data)
     except Exception as e:
         SESSION.rollback()
-        return handle_error_message(str(e))
+        return handle_error_message(e)
     else:
         SESSION.commit()
     error = _copy_media_files(post, archive, False, True)

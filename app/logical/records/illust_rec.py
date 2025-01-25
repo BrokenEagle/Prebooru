@@ -71,7 +71,7 @@ def recreate_archived_illust(archive):
         recreate_attachments(illust, archive.data)
         recreate_links(illust, archive.data)
     except Exception as e:
-        retdata = handle_error_message(str(e))
+        retdata = handle_error_message(e)
         SESSION.rollback()
     else:
         retdata = {'error': False, 'item': illust.to_json()}

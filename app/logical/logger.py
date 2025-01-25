@@ -51,10 +51,16 @@ def log_network_error(module, response):
     put_get_json(NETWORK_ERROR_LOG_FILE, 'w', all_errors)
 
 
-def handle_error_message(message, retdata=None):
+def handle_error_message(error, retdata=None):
     retdata = retdata or {}
-    print_error(message)
-    return merge_dicts({'error': True, 'message': message}, retdata)
+    if isinstance(error, Exception):
+        message = str(error)
+        traceback = get_traceback()
+        print_error('\n', '\n'.join(traceback), '\n')
+    else:
+        message = error
+        print_error(message)
+    return merge_dicts(retdata, {'error': True, 'message': message})
 
 
 def get_traceback():

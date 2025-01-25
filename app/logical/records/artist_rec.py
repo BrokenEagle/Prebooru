@@ -114,7 +114,7 @@ def recreate_archived_artist(archive):
         recreate_attachments(artist, archive.data)
         recreate_links(artist, archive.data)
     except Exception as e:
-        retdata = handle_error_message(str(e))
+        retdata = handle_error_message(e)
         SESSION.rollback()
     else:
         retdata = {'error': False, 'item': artist.to_json()}
