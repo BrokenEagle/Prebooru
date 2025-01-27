@@ -474,16 +474,12 @@ class JsonModel(DB.Model):
         }
 
     def archive_dict(self):
-        attributes = self.archive_columns - self.archive_excludes | self.archive_includes
+        attributes = self.archive_columns - self.archive_excludes
         data = {}
-        for m in attributes:
-            if isinstance(m, str):
-                key = attr = m
-            elif isinstance(m, tuple):
-                key, attr, *args = m
-            if not callable(attr) and not hasattr(self, attr):
-                continue
-            data[key] = json_serialize(self, attr)
+        for attr in attributes:
+            data[attr] = json_serialize(self, attr)
+        for key, attr in self.archive_includes:
+            data[key] = getattr(self, attr)
         return _sorted_dict(data)
 
     def archive_scalar_dict(self):
@@ -548,15 +544,6 @@ class JsonModel(DB.Model):
     def relations(cls):
         cls._populate_attributes()
         return getattr(cls, '__relations')
-
-    @classproperty(cached=True)
-    def mandatory_fk_relations(cls):
-        mandatory = []
-        for rel in cls.fk_relations():
-            relcol = next(iter(getattr(cls, rel).property.local_columns))
-            if not relcol.nullable:
-                mandatory.append(rel)
-        return mandatory
 
     @classmethod
     def fk_relations(cls):
@@ -627,6 +614,7 @@ class JsonModel(DB.Model):
     archive_scalars = []
     archive_attachments = []
     archive_links = []
+    mandatory_links = []
 
     @classproperty(cached=True)
     def basic_attributes(cls):

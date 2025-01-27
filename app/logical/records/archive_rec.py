@@ -37,7 +37,7 @@ def recreate_record(model, key, data):
     if record is not None:
         raise Exception(f"Record already exists: {record.shortlink}")
     recreate_data = {}
-    for rel in model.mandatory_fk_relations:
+    for rel in model.mandatory_links:
         if rel not in data['links']:
             raise Exception(f"Mandatory link to {rel} not found in archive data.")
         value = data['links'][rel]
@@ -64,13 +64,11 @@ def recreate_scalars(record, data):
             attr = scalar
         elif isinstance(scalar, tuple):
             key = scalar[0]
-            attr = scalar[2]
+            attr = scalar[1]
         if key not in data['scalars']:
             continue
         for value in data['scalars'][key]:
             getattr(record, attr).append(value)
-        if isinstance(scalar, tuple) and len(scalar) > 3:
-            scalar[3](record)
     flush_session()
 
 
@@ -104,7 +102,7 @@ def recreate_links(record, data):
     for attr, link_key, *args in model.archive_links:
         if attr not in data['links']:
             continue
-        if attr in model.mandatory_fk_relations:
+        if attr in model.mandatory_links:
             continue
         if len(args) == 2:
             link_func = getattr(record, args[1])

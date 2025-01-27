@@ -217,6 +217,7 @@ class Illust(JsonModel):
     archive_attachments = ['urls', 'notations']
     archive_links = [('artist', 'site_artist_id'),
                      ('posts', 'active_urls', 'link_key', 'attach_post_by_link_key')]
+    mandatory_links = ['artist']
 
     @classproperty(cached=True)
     def repr_attributes(cls):
