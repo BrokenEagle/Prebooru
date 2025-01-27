@@ -22,8 +22,8 @@ from .base import JsonModel, integer_column, boolean_column, timestamp_column, s
 
 # ## GLOBAL VARIABLES
 
-BooruNames = secondarytable('booru_names', ('label_id', 'label.id'), ('booru_id', 'booru.id'))
-BooruArtists = secondarytable('booru_artists', ('artist_id', 'artist.id'), ('booru_id', 'booru.id'), index=True)
+BooruNames = secondarytable('booru_names', ('booru_id', 'booru.id'), ('label_id', 'label.id'))
+BooruArtists = secondarytable('booru_artists', ('booru_id', 'booru.id'), ('artist_id', 'artist.id'), index=True)
 
 
 # ## CLASSES
