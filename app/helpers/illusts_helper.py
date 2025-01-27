@@ -60,7 +60,8 @@ def site_date_iterator(illust):
 # #### URL functions
 
 def danbooru_batch_url(illust):
-    query_string = urllib.parse.urlencode({'url': illust.secondary_url})
+    url = illust.secondary_url or illust.primary_url
+    query_string = urllib.parse.urlencode({'url': url})
     return DANBOORU_HOSTNAME + '/uploads/batch?' + query_string
 
 
