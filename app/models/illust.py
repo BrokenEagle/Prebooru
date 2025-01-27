@@ -166,7 +166,7 @@ class Illust(JsonModel):
         return '%s-%d' % (self.site.name, self.site_illust_id)
 
     def get_url_by_key(self, key):
-        return next((illust_url for illust_url in self.urls if illust_url.key == key), None)
+        return next((illust_url for illust_url in self.urls if illust_url.hash_key == key), None)
 
     def attach_post_by_link_key(self, link_key):
         from .post import Post
