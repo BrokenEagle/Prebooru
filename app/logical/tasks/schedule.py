@@ -34,8 +34,8 @@ from ..database.api_data_db import expired_api_data_count, delete_expired_api_da
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_db import expired_archive_count
 from ..database.tag_db import prune_unused_tags
-from ..database.label_db import prune_unused_labels
-from ..database.description_db import prune_unused_descriptions
+from ..database.label_db import prune_unused_labels, remove_duplicate_labels
+from ..database.description_db import prune_unused_descriptions, remove_duplicate_descriptions
 from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id, get_job_status_data,\
     create_or_update_job_status
 from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready
@@ -85,6 +85,23 @@ def expunge_unused_records_task():
         return status
 
     _execute_scheduled_task(_task, 'expunge_unused_records')
+
+
+@SCHEDULER.task("interval", **JOB_CONFIG['expunge_duplicate_records']['config'])
+def expunge_duplicate_records_task():
+    def _task(printer, *args):
+        status = {}
+        label_delete_count = remove_duplicate_labels()
+        printer("Duplicate labels:", label_delete_count)
+        if label_delete_count > 0:
+            status['labels'] = label_delete_count
+        description_delete_count = remove_duplicate_descriptions()
+        printer("Duplicate descriptions:", description_delete_count)
+        if description_delete_count > 0:
+            status['descriptions'] = description_delete_count
+        return status
+
+    _execute_scheduled_task(_task, 'expunge_duplicate_records')
 
 
 @SCHEDULER.task("interval", **JOB_CONFIG['expunge_archive_records']['config'])
