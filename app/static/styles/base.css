@@ -311,6 +311,8 @@ span.delete-control > a {
 div.notation-block {
     border: 1px solid #eee;
     padding: 5px;
+    max-height: 20em;
+    overflow-y: auto;
 }
 
 span.notation-list-item {
