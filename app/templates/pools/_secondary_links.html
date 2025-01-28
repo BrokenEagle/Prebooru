@@ -8,9 +8,9 @@
         |
         {% if helpers.base.is_show() %}
             {% if edit_pool %}
-                {{ subnav_link_to("Show", "pool.show_html", id=pool.id, attrs={'class': 'nav-modify'}) }}
+                {{ subnav_link_to("Show", "pool.show_html", id=pool.id, with_params=True, edit_pool='false', attrs={'class': 'nav-modify'}) }}
             {% else %}
-                {{ subnav_link_to("Modify", "pool.show_html", id=pool.id, edit_pool='true', attrs={'class': 'nav-modify'}) }}
+                {{ subnav_link_to("Modify", "pool.show_html", id=pool.id, with_params=True, edit_pool='true', attrs={'class': 'nav-modify'}) }}
             {% endif %}
         {% else %}
             {{ subnav_link_to("Show", "pool.show_html", id=pool.id) }}
