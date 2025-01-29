@@ -44,6 +44,10 @@ def get_pending_downloads():
     return Download.query.filter(Download.status_value == 'pending').all()
 
 
+def get_download_by_request_url(request_url):
+    return Download.query.filter(Download.request_url == request_url).one_or_none()
+
+
 # #### Private
 
 def _create_image_urls(download, urllist):

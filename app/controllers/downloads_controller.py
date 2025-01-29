@@ -24,7 +24,7 @@ from ..logical.sources import source_by_site_name
 from ..logical.records.download_rec import process_download
 from ..logical.records.media_file_rec import batch_get_or_create_media
 from ..logical.database.download_db import create_download_from_parameters, update_download_from_parameters,\
-    get_pending_downloads
+    get_pending_downloads, get_download_by_request_url
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_form, get_data_params, parse_string_list,\
     nullify_blanks, set_default, get_or_abort, referrer_check, get_limit, get_page, index_html_response
@@ -91,7 +91,7 @@ def get_download_form(**kwargs):
 
 
 def uniqueness_check(createparams):
-    return Download.query.filter(Download.request_url == createparams['request_url']).first()
+    return get_download_by_request_url(createparams['request_url'])
 
 
 def convert_data_params(dataparams):
