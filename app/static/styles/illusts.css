@@ -166,11 +166,15 @@ div#media-posts-navigation a.type-active {
 
 div.media-post {
     margin-top: 1em;
-    width: 25%;
+    width: 31.25em;
 }
 
 div.media-post-info {
-    height: 10em;
+    height: 7.5em;
+}
+
+div.media-post-info li {
+    white-space: nowrap;
 }
 
 div.no-post-preview {

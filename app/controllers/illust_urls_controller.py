@@ -12,8 +12,8 @@ from ..logical.utility import set_error
 from ..logical.sites import site_name_by_url
 from ..logical.sources import source_by_site_name
 from ..logical.sources.base_src import get_media_source
+from ..logical.records.illust_rec import create_download_from_illust_url
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
-from ..logical.records.post_rec import redownload_post
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
     nullify_blanks, check_param_requirements, hide_input, set_default, parse_bool_parameter, index_html_response
@@ -267,13 +267,12 @@ def update_json(id):
 
 # ###### MISC
 
-@bp.route('/illust_urls/<int:id>/redownload', methods=['POST'])
-def redownload_html(id):
+@bp.route('/illust_urls/<int:id>/download', methods=['POST'])
+def download_html(id):
     illust_url = get_or_abort(IllustUrl, id)
-    post = illust_url.post
-    if post is None:
-        flash("Illust URL has no existing post.", 'error')
-        return redirect(request.referrer)
-    if not redownload_post(post, illust_url):
-        flash("Error redownloading post.", 'error')
-    return redirect(post.show_url)
+    result = create_download_from_illust_url(illust_url)
+    if result['error']:
+        flash(result['message'], 'error')
+    else:
+        flash("%s downloaded" % illust_url.shortlink)
+    return redirect(request.referrer)
