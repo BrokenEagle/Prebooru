@@ -178,6 +178,10 @@ def regenerate_image_matches_link(post):
     return general_link("Regenerate image matches", url, **addons)
 
 
+def redownload_post_link(post):
+    return general_link("Redownload post", url_for('post.redownload_html', id=post.id), method='POST')
+
+
 def add_notation_link(post):
     return general_link("Add notation", url_for('notation.new_html', post_id=post.id, redirect='true'))
 
