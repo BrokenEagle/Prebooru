@@ -73,6 +73,9 @@ FORM_CONFIG = {
             'default': True,
         },
     },
+    'post_id': {
+        'field': IntegerField,
+    },
 }
 
 
