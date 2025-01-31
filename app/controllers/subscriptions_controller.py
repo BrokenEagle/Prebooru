@@ -14,7 +14,7 @@ from utility.data import eval_bool_string
 from utility.time import hours_from_now
 
 # ## LOCAL IMPORTS
-from .. import SCHEDULER, MAIN_PROCESS
+from .. import SCHEDULER, MAIN_PROCESS, SESSION
 from ..models import Subscription, Artist
 from ..logical.utility import set_error
 from ..logical.records.subscription_rec import process_subscription_manual
@@ -379,13 +379,15 @@ def _reset_subscription_status():
     subscriptions = get_busy_subscriptions()
     for subscription in subscriptions:
         update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False, commit=False)
-    commit_session()
+    if len(subscriptions):
+        commit_session()
     print("\nSubscriptions check - %d reset\n" % len(subscriptions))
     update_subscriptions_ready()
+    SESSION.remove()
 
 
 def _initialize():
-    timer = threading.Timer(30, _reset_subscription_status)
+    timer = threading.Timer(15, _reset_subscription_status)
     timer.setDaemon(True)
     timer.start()
 
