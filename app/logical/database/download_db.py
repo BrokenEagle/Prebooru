@@ -44,6 +44,14 @@ def get_pending_downloads():
     return Download.query.filter(Download.status_value == 'pending').all()
 
 
+def get_processing_downloads():
+    return Download.query.filter(Download.status_value == 'processing').all()
+
+
+def get_processing_download_count():
+    return Download.query.filter(Download.status_value == 'processing').get_count()
+
+
 def get_download_by_request_url(request_url):
     return Download.query.filter(Download.request_url == request_url).one_or_none()
 

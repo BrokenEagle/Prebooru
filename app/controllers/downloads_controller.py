@@ -11,9 +11,8 @@ from wtforms import StringField, TextAreaField
 
 # ## PACKAGE IMPORTS
 from utility import RepeatTimer
-from utility.time import minutes_ago
 from utility.data import eval_bool_string
-from utility.uprint import print_warning
+from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
 from .. import SCHEDULER, SESSION, MAIN_PROCESS
@@ -24,7 +23,8 @@ from ..logical.sources import source_by_site_name
 from ..logical.records.download_rec import process_download
 from ..logical.records.media_file_rec import batch_get_or_create_media
 from ..logical.database.download_db import create_download_from_parameters, update_download_from_parameters,\
-    get_pending_downloads, get_download_by_request_url
+    get_pending_downloads, get_processing_downloads, get_processing_download_count, get_download_by_request_url
+from ..logical.database.base_db import commit_session
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_form, get_data_params, parse_string_list,\
     nullify_blanks, set_default, get_or_abort, referrer_check, get_limit, get_page, index_html_response
@@ -164,9 +164,10 @@ def create():
     createparams['image_urls'] = [url for url in createparams['image_urls'] if source.is_image_url(url)]
     download = create_download_from_parameters(createparams)
     retdata['item'] = download.to_json()
-    SCHEDULER.add_job("process_download-%d" % download.id, process_download, args=(download.id,))
+    if get_processing_download_count() < 3:
+        SCHEDULER.add_job("process_download-%d" % download.id, process_download, args=(download.id,))
     if RECHECK_DOWNLOADS is None:
-        RECHECK_DOWNLOADS = RepeatTimer(30, _recheck_pending_downloads)
+        RECHECK_DOWNLOADS = RepeatTimer(15, _recheck_pending_downloads)
         RECHECK_DOWNLOADS.setDaemon(True)
         RECHECK_DOWNLOADS.start()
     return retdata
@@ -327,26 +328,47 @@ def resubmit_html(id):
 
 def _recheck_pending_downloads():
     global RECHECK_DOWNLOADS
+    num_processing = get_processing_download_count()
+    if num_processing >= 3:
+        print("\nDownloads recheck - max processing\n")
+        SESSION.remove()
+        return
     pending_downloads = get_pending_downloads()
     if len(pending_downloads) == 0 and RECHECK_DOWNLOADS is not None:
         print("\nDownloads recheck - exiting\n")
         RECHECK_DOWNLOADS.cancel()
         RECHECK_DOWNLOADS = None
     else:
+        sorted_downloads = sorted(pending_downloads, key=lambda x: x.id)
         print("\nDownloads recheck - %d pending\n" % len(pending_downloads))
-        for download in pending_downloads:
-            if download.created < minutes_ago(1):
-                job_id = "process_download-%d" % download.id
-                if SCHEDULER.get_job(job_id) is None:
-                    print_warning(f"Restarting stalled {download.shortlink}")
-                    SCHEDULER.add_job(job_id, process_download, args=(download.id,))
+        for download in sorted_downloads:
+            job_id = "process_download-%d" % download.id
+            if SCHEDULER.get_job(job_id) is None:
+                print_info(f"Starting {download.shortlink}")
+                SCHEDULER.add_job(job_id, process_download, args=(download.id,))
+                num_processing += 1
+            if num_processing >= 3:
+                break
+    SESSION.remove()
+
+
+def _reset_download_status():
+    downloads = get_processing_downloads()
+    for download in downloads:
+        update_download_from_parameters(download, {'status_name': 'error'}, commit=False)
+    if len(downloads) > 0:
+        commit_session()
+    print("\nDownloads check - %d reset\n" % len(downloads))
     SESSION.remove()
 
 
 def _initialize():
-    timer = threading.Timer(30, _recheck_pending_downloads)
-    timer.setDaemon(True)
-    timer.start()
+    reset_timer = threading.Timer(15, _reset_download_status)
+    reset_timer.setDaemon(True)
+    reset_timer.start()
+    recheck_timer = threading.Timer(30, _recheck_pending_downloads)
+    recheck_timer.setDaemon(True)
+    recheck_timer.start()
 
 
 # ## INITIALIZE
