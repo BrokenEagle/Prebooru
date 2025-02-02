@@ -14,19 +14,20 @@ from utility.uprint import buffered_print, print_info
 
 # ### LOCAL IMPORTS
 from ... import SESSION
-from ...models import Post, Artist
+from ...models import Post, Artist, ArchivePost
 from ..utility import set_error, SessionThread
 from ..logger import handle_error_message
 from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
     convert_mp4_to_webm, check_filetype, get_pixel_hash, check_alpha, convert_alpha, create_data, get_video_info
-from ..database.base_db import delete_record, commit_session
-from ..database.post_db import create_post_from_parameters,\
+from ..database.base_db import add_record, delete_record, commit_session
+from ..database.post_db import create_post_from_parameters, create_post_from_json,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, alternate_posts_query,\
     get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
-    get_artist_posts_without_danbooru_ids
-from ..database.illust_url_db import update_illust_url_from_parameters
-from ..database.error_db import create_and_append_error, create_and_extend_errors
+    get_artist_posts_without_danbooru_ids, get_post_by_md5
+from ..database.illust_url_db import update_illust_url_from_parameters, get_illust_url_by_full_url
+from ..database.notation_db import create_notation_from_json
+from ..database.error_db import create_error_from_json, create_and_append_error, create_and_extend_errors
 from ..database.archive_db import set_archive_temporary
 from ..sources.danbooru_src import get_danbooru_posts_by_md5s
 from .base_rec import delete_data
@@ -34,7 +35,7 @@ from .illust_rec import download_illust_url, download_illust_sample
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
 from .pool_rec import delete_pool_element
-from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
+from .archive_rec import archive_record
 
 
 # ## GLOBAL VARIABLES
@@ -331,74 +332,110 @@ def move_post_media_to_alternate(post, reverse=False):
         delete_file(temppost.video_preview_path)
 
 
-def delete_post_and_media(post):
+def delete_post(post, retdata=None):
     """Hard delete. Continue as long as post record gets deleted."""
-    retdata = {'error': False, 'is_deleted': False}
+
+    def _delete(post):
+        msg = "[%s]: deleted\n" % post.shortlink
+        for pool_element in post._pools:
+            delete_pool_element(pool_element)
+        delete_record(post)
+        commit_session()
+        print(msg)
+
+    retdata = retdata or {'error': False, 'is_deleted': False}
     temppost = post.copy()
-    retdata.update(delete_data(post, delete_post))
+    retdata.update(delete_data(post, _delete))
     if retdata['error']:
         return retdata
+    retdata['is_deleted'] = True
     error = _delete_media_files(temppost)
     if error is not None:
         return handle_error_message(error, retdata)
-    retdata['is_deleted'] = True
     return retdata
 
 
-def archive_post_for_deletion(post, expires=30):
+def archive_post_for_deletion(post, expires):
     """Soft delete. Preserve data at all costs."""
-    retdata = {'is_deleted': False}
-    temppost = post.copy()
+    retdata = {'error': False, 'is_deleted': False}
+    retdata.update(save_post_to_archive(post, expires))
+    if retdata['error']:
+        return retdata
+    return delete_post(post, retdata)
+
+
+def save_post_to_archive(post, expires):
+    retdata = {'error': False}
     archive = archive_record(post, expires)
     if archive is None:
         msg = f"Error archiving data [{post.shortlink}]."
         return handle_error_message(msg, retdata)
     retdata['item'] = archive.to_json()
-    error = _copy_media_files(post, archive, True, False)
+    archive_params = {k: v for (k, v) in post.basic_json().items() if k in ArchivePost.basic_attributes}
+    if archive.post_data is None:
+        archive_params['archive_id'] = archive.id
+        archive_post = ArchivePost(**archive_params)
+    else:
+        archive_post = archive.post_data
+        archive_post.update(archive_params)
+    archive_post.tags_json = list(post.tag_names)
+    archive_post.illusts_json = [illust_url.full_url for illust_url in post.illust_urls]
+    archive_post.errors_json = [{'module': error.module,
+                                 'message': error.message,
+                                 'created': error.created.isoformat()}
+                                for error in post.errors]
+    archive_post.notations_json = [{'body': notation.body,
+                                    'created': notation.created.isoformat(),
+                                    'updated': notation.updated.isoformat()}
+                                   for notation in post.notations]
+    add_record(archive_post)
+    commit_session()
+    error = _copy_media_files(post, archive.post_data, True, False)
     if error is not None:
         return handle_error_message(error, retdata)
-    retdata['is_deleted'] = True
-    retdata.update(delete_data(post, delete_post))
-    if retdata['error']:
-        return retdata
-    error = _delete_media_files(temppost)
-    if error is not None:
-        return handle_error_message(error, retdata)
-    retdata['error'] = False
     return retdata
 
 
 def recreate_archived_post(archive):
-    try:
-        recreate_data = merge_dicts(archive.data, {'body': {'alternate': False, 'simcheck': False}})
-        post = recreate_record(Post, archive.key, recreate_data)
-        recreate_scalars(post, archive.data)
-        recreate_attachments(post, archive.data)
-        recreate_links(post, archive.data)
-    except Exception as e:
-        SESSION.rollback()
-        return handle_error_message(e)
-    else:
-        SESSION.commit()
-    error = _copy_media_files(post, archive, False, True)
+    post_data = archive.post_data
+    post = get_post_by_md5(post_data.md5)
+    if post is not None:
+        return handle_error_message(f"Post already exists: {post.shortlink}")
+    createparams = merge_dicts(post_data.recreate_json(), {'alternate': False, 'simcheck': False})
+    post = create_post_from_json(createparams, commit=False)
+    error = _copy_media_files(post, post_data, False, True)
     if error is not None:
-        delete_post(post)
+        SESSION.rollback()
         return handle_error_message(error)
     # Once the file move is successful, keep going even if there are errors.
-    retdata = create_sample_preview_files(post)
-    if post.is_video:
+    _link_post(post, post_data)
+    post.tag_names.extend(post_data.tags_json)
+    for notation in post_data.notations_json:
+        createparams = merge_dicts(notation, {'post_id': post.id, 'no_pool': True})
+        create_notation_from_json(createparams, commit=False)
+    for error in post_data.errors_json:
+        createparams = merge_dicts(error, {'post_id': post.id})
+        create_error_from_json(createparams, commit=False)
+    retdata = {'error': False, 'item': post.to_json()}
+    is_video = post.is_video
+    commit_session()
+    retdata = retdata.update(create_sample_preview_files(post))
+    if is_video:
         create_video_sample_preview_files(post)
     SessionThread(target=process_image_matches, args=([post.id],)).start()
-    retdata['item'] = post.to_json()
     set_archive_temporary(archive, 7)
     return retdata
 
 
 def relink_archived_post(archive):
-    post = Post.find_by_key(archive.key)
+    post_data = archive.post_data
+    post = get_post_by_md5(post_data.md5)
     if post is None:
-        return f"No post found with key {archive.key}"
-    recreate_links(post, archive.data)
+        handle_error_message(f"No post found with md5 {post_data.md5}.")
+    retdata = {'error': False, 'item': post.to_json()}
+    _link_post(post, post_data)
+    commit_session()
+    return retdata
 
 
 def generate_missing_image_hashes(manual):
@@ -499,19 +536,10 @@ def process_image_matches(post_ids):
     printer.print()
 
 
-def delete_post(post):
-    msg = "[%s]: deleted\n" % post.shortlink
-    for pool_element in post._pools:
-        delete_pool_element(pool_element)
-    delete_record(post)
-    commit_session()
-    print(msg)
-
-
 # #### Private functions
 
-def _copy_media_files(post, archive, copy_preview, reverse):
-    from_item, to_item = (post, archive) if not reverse else (archive, post)
+def _copy_media_files(post, archive_post, copy_preview, reverse):
+    from_item, to_item = (post, archive_post) if not reverse else (archive_post, post)
     print(f"Copying file: {from_item.file_path} -> {to_item.file_path}")
     create_directory(to_item.file_path)
     try:
@@ -593,6 +621,13 @@ def _load_image(buffer):
             return image
     except Exception as e:
         return _module_error('load_image', "Error removing alpha transparency: %s" % repr(e))
+
+
+def _link_post(post, post_data):
+    for image_url in post_data.illusts_json:
+        illust_url = get_illust_url_by_full_url(image_url)
+        if illust_url is not None:
+            update_illust_url_from_parameters(illust_url, {'post_id': post.id}, commit=False)
 
 
 def _module_error(function, message):

@@ -18,7 +18,7 @@ from sqlalchemy.ext.associationproxy import _AssociationList
 
 # ## PACKAGE IMPORTS
 from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
-from utility.time import process_utc_timestring, datetime_from_epoch, datetime_to_epoch
+from utility.time import process_utc_timestring, datetime_from_epoch, datetime_to_epoch, datetime_valid
 from utility.obj import classproperty, StaticProperty
 
 # ## LOCAL IMPORTS
@@ -50,6 +50,29 @@ def json_deserialize(value):
         if value is None:
             raise Exception("Unable to decode timestring.")
     return value
+
+
+def validate_attachment_json(values, datatypes):
+    if not isinstance(values, list):
+        raise ValueError("Base value must be an array.")
+    if len(values) == 0:
+        return None
+    save_values = []
+    for item in values:
+        if not isinstance(item, dict):
+            raise ValueError("Items of array must be a dictionary.")
+        save_item = []
+        for k in datatypes.keys():
+            if k not in item:
+                raise ValueError(f"Dictionary missing field: {k}")
+            v = item.get(k)
+            if not datatypes[k](v):
+                raise ValueError(f"Dicionary value invalid type for field: item[{k}] = {v}")
+            if k in ('created', 'updated') and not datetime_valid(v):
+                raise ValueError(f"Dictionary value must be a valid datetime: item[{k}] = {v}")
+            save_item.append(v)
+        save_values.append(save_item)
+    return save_values
 
 
 # #### Network functions
@@ -119,6 +142,31 @@ def secondarytable(*args, index=False):
     return table
 
 
+def json_list_proxy(columnname, datatype):
+
+    @property
+    def _json_proxy(self):
+        value = getattr(self, columnname)
+        return value if value is not None else []
+
+    @_json_proxy.setter
+    def _json_proxy(self, value):
+        if value is None:
+            setattr(self, columnname, value)
+        elif isinstance(value, list):
+            if len(value) > 0:
+                for v in value:
+                    if not isinstance(v, datatype):
+                        raise ValueError(f"Array items must be of type {datatype}")
+                setattr(self, columnname, value)
+            else:
+                setattr(self, columnname, None)
+        else:
+            raise ValueError("Base value must be an array")
+
+    return _json_proxy
+
+
 # ## Register
 
 def register_enum_column(model, enum_model, relation):
@@ -181,7 +229,7 @@ def real_column(*args, **kwargs):
 
 
 def json_column(*args, **kwargs):
-    return base_column(JSON, *args, **kwargs)
+    return base_column(JSON(none_as_null=True), *args, **kwargs)
 
 
 def enum_column(*args, **kwargs):
@@ -528,6 +576,9 @@ class JsonModel(DB.Model):
     def to_json(self):
         return self._json(self.json_attributes)
 
+    def recreate_json(self):
+        return self._json(self.recreate_attributes)
+
     def copy(self):
         """Return an uncommitted copy of the record."""
         return self.__class__(**self.column_dict())
@@ -539,6 +590,11 @@ class JsonModel(DB.Model):
 
     def attach(self, attr, record):
         setattr(self, attr, record)
+
+    def update(self, data):
+        for attr in self.basic_attributes:
+            if attr in data:
+                setattr(self, attr, data[attr])
 
     @classproperty(cached=False)
     def relations(cls):
@@ -641,6 +697,8 @@ class JsonModel(DB.Model):
     def repr_attributes(cls):
         return cls.basic_attributes
 
+    recreate_attributes = []
+
     @StaticProperty
     def rowid():
         return DB.column("rowid")
@@ -660,19 +718,23 @@ class JsonModel(DB.Model):
     def _json(self, attributes):
         data = {}
         for attr in attributes:
+            if isinstance(attr, tuple):
+                key, attr = attr
+            else:
+                key = attr
             value = getattr(self, attr)
             if type(value) is datetime.datetime:
-                data[attr] = value if value is None else datetime.datetime.isoformat(value)
+                data[key] = value if value is None else datetime.datetime.isoformat(value)
             elif type(value) is bytes:
-                data[attr] = value.hex()
+                data[key] = value.hex()
             elif type(value) is _AssociationList:
-                data[attr] = list(value)
+                data[key] = list(value)
             elif type(value) is InstrumentedList:
-                data[attr] = [t.to_json() for t in value]
+                data[key] = [t.to_json() for t in value]
             elif hasattr(value, 'to_json'):
-                data[attr] = value.to_json()
+                data[key] = value.to_json()
             else:
-                data[attr] = value
+                data[key] = value
         return data
 
     @classmethod

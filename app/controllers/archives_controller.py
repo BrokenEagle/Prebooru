@@ -2,6 +2,7 @@
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, url_for, redirect, flash
+from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
 from ..models import Archive
@@ -32,6 +33,12 @@ RELINK_ARCHIVE_FUNCS = {
     'post': relink_archived_post,
 }
 
+# #### Load options
+
+LOAD_OPTIONS = (
+    selectinload(Archive.post_data),
+)
+
 
 # ## FUNCTIONS
 
@@ -52,12 +59,12 @@ def index():
 
 @bp.route('/archives/<int:id>.json', methods=['GET'])
 def show_json(id):
-    return show_json_response(Archive, id)
+    return show_json_response(Archive, id, options=LOAD_OPTIONS)
 
 
 @bp.route('/archives/<int:id>', methods=['GET'])
 def show_html(id):
-    archive = get_or_abort(Archive, id)
+    archive = get_or_abort(Archive, id, options=LOAD_OPTIONS)
     return render_template("archives/show.html", archive=archive)
 
 
@@ -66,12 +73,14 @@ def show_html(id):
 @bp.route('/archives.json', methods=['GET'])
 def index_json():
     q = index()
+    q = q.options(LOAD_OPTIONS)
     return index_json_response(q, request)
 
 
 @bp.route('/archives', methods=['GET'])
 def index_html():
     q = index()
+    q = q.options(LOAD_OPTIONS)
     page = paginate(q, request)
     return index_html_response(page, 'archive', 'archives')
 

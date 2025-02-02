@@ -7,18 +7,18 @@
 {% block content %}
     <div id="archive-heading" class="heading">{{ archive.header }}</div>
     <div id="archive-content">
-        {% if archive.type.name == 'post' %}
+        {% if archive.type_name == 'post' %}
             <section id="media-container" onclick="return Prebooru.resizeImage(this)" class="image fullsize">
-                {% if archive.data['body']['file_ext'] in ['jpg', 'png', 'gif'] %}
+                {% if archive.subdata.is_image %}
                     {{ helpers.archive.post_file_link(archive) }}
-                {% elif archive.data['body']['file_ext'] in ['mp4'] %}
+                {% elif archive.subdata.is_video %}
                     {{ helpers.archive.post_video_link(archive) }}
                 {% endif %}
             </section>
         {% endif %}
         <ul>
             <li>
-                <strong>Type:</strong> {{ archive.type.name | title }}
+                <strong>Type:</strong> {{ archive.type_name | title }}
             </li>
             <li>
                 <strong>Key:</strong> {{ archive.key }}
@@ -27,9 +27,26 @@
                 <strong>Expires:</strong> {{ helpers.base.format_timestamp(archive.expires) }}
             </li>
             <li>
+                <strong>
+                    (
+                        {{ helpers.archive.reinstantiate_item_link(archive) }}
+                        {% if helpers.archive.has_relink(archive) %}
+                            |
+                            {{ helpers.archive.relink_item_link(archive) }}
+                        {% endif %}
+                    )
+                </strong>
+            </li>
+            <li>
                 <strong>Data:</strong>
                 <br>
-                <div class="json-data">{{ archive.data | tojson(indent=4) }}</div>
+                <div class="json-data">
+                    {%- if archive.type_name == 'post' -%}
+                        {{ helpers.base.format_json(archive.subdata.to_json()) }}
+                    {%- else -%}
+                        {{ helpers.base.format_json(archive.data) }}
+                    {%- endif -%}
+                </div>
             </li>
         </ul>
     </div>

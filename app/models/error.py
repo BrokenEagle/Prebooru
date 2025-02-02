@@ -3,9 +3,38 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
+# ## PACKAGE IMPORTS
+from utility.data import is_string
+
 # ## LOCAL IMPORTS
 from .. import DB
-from .base import JsonModel, integer_column, text_column, timestamp_column
+from .base import JsonModel, integer_column, text_column, timestamp_column, validate_attachment_json
+
+
+# ## GLOBAL VARIABLES
+
+ERRORS_JSON_DATATYPES = {
+    'module': is_string,
+    'message': is_string,
+    'created': is_string
+}
+
+
+# ## FUNCTIONS
+
+@property
+def errors_json(self):
+    if self.errors is None:
+        return []
+    return [{'module': error[0], 'message': error[1], 'created': error[2]} for error in self.errors]
+
+
+@errors_json.setter
+def errors_json(self, values):
+    if values is None:
+        self.errors = None
+    else:
+        self.errors = validate_attachment_json(values, ERRORS_JSON_DATATYPES)
 
 
 # ## CLASSES

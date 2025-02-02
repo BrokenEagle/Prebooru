@@ -140,6 +140,14 @@ def get_timer(name):
     return accumulator
 
 
+def datetime_valid(dt_str):
+    try:
+        datetime.datetime.fromisoformat(dt_str)
+    except Exception:
+        return False
+    return True
+
+
 # ## Private
 
 def _normalize_time(timeval):

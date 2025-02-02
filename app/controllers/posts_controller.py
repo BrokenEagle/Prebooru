@@ -12,7 +12,7 @@ from utility.data import eval_bool_string, is_falsey
 # ## LOCAL IMPORTS
 from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust, PostType
 from ..logical.records.post_rec import create_sample_preview_files, create_video_sample_preview_files,\
-    archive_post_for_deletion, redownload_post
+    archive_post_for_deletion, redownload_post, delete_post, save_post_to_archive
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, index_html_response
 
@@ -151,11 +151,24 @@ def bare_index_html():
 
 # ###### DELETE
 
-@bp.route('/posts/<int:id>', methods=['DELETE'])
-def delete_html(id):
+@bp.route('/posts/<int:id>/archive', methods=['DELETE'])
+def soft_delete_html(id):
     post = get_or_abort(Post, id)
     expires = request.values.get('expires', DEFAULT_DELETE_EXPIRES, type=int)
     results = archive_post_for_deletion(post, expires)
+    if results['error']:
+        flash(results['message'], 'error')
+        if not results['is_deleted']:
+            return redirect(request.referrer)
+    if results['is_deleted']:
+        flash("Post deleted.")
+    return redirect(url_for('archive.show_html', id=results['item']['id']))
+
+
+@bp.route('/posts/<int:id>', methods=['DELETE'])
+def hard_delete_html(id):
+    post = get_or_abort(Post, id)
+    results = delete_post(post)
     if results['error']:
         flash(results['message'], 'error')
         if not results['is_deleted']:
@@ -166,6 +179,17 @@ def delete_html(id):
 
 
 # ###### MISC
+
+@bp.route('/posts/<int:id>/archive', methods=['POST'])
+def archive_post_html(id):
+    post = get_or_abort(Post, id)
+    results = save_post_to_archive(post, None)
+    if results['error']:
+        flash(results['message'], 'error')
+        return redirect(request.referrer)
+    flash("Post archived.")
+    return redirect(url_for('archive.show_html', id=results['item']['id']))
+
 
 @bp.route('/posts/<int:id>/regenerate_previews', methods=['POST'])
 def regenerate_previews_html(id):

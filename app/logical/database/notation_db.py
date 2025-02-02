@@ -20,10 +20,10 @@ def create_notation_from_parameters(createparams, commit=True):
     return set_notation_from_parameters(notation, createparams, 'created', commit, True)
 
 
-def create_notation_from_json(data):
+def create_notation_from_json(data, commit=True):
     notation = Notation.loads(data)
     add_record(notation)
-    save_record(notation, 'created')
+    save_record(notation, 'created', commit=commit)
     return notation
 
 

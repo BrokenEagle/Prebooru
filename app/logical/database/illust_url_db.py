@@ -44,3 +44,12 @@ def get_illust_url_by_url(site, partial_url):
     elif isinstance(site, str):
         q = q.filter(IllustUrl.site_value == site)
     return q.filter(IllustUrl.url == partial_url).one_or_none()
+
+
+def get_illust_url_by_full_url(full_url):
+    from ..sites import site_name_by_url
+    from ..sources import source_by_site_name
+    site_name = site_name_by_url(full_url)
+    source = source_by_site_name(site_name)
+    partial = source.partial_media_url(full_url)
+    return IllustUrl.query.filter(IllustUrl.site_value == site_name, IllustUrl.url == partial).one_or_none()

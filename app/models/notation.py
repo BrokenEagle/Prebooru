@@ -3,10 +3,40 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.ext.associationproxy import association_proxy
 
+# ## PACKAGE IMPORTS
+from utility.data import is_string
+
 # ## LOCAL IMPORTS
 from .. import DB
 from .pool_element import PoolNotation
-from .base import JsonModel, integer_column, text_column, boolean_column, timestamp_column, relationship, backref
+from .base import JsonModel, integer_column, text_column, boolean_column, timestamp_column, relationship, backref,\
+    validate_attachment_json
+
+
+# ## GLOBAL VARIABLES
+
+NOTATIONS_JSON_DATATYPES = {
+    'body': is_string,
+    'created': is_string,
+    'updated': is_string
+}
+
+
+# ## FUNCTIONS
+
+@property
+def notations_json(self):
+    if self.notations is None:
+        return []
+    return [{'body': notation[0], 'created': notation[1], 'updated': notation[2]} for notation in self.notations]
+
+
+@notations_json.setter
+def notations_json(self, values):
+    if values is None:
+        self.notations = None
+    else:
+        self.notations = validate_attachment_json(values, NOTATIONS_JSON_DATATYPES)
 
 
 # ## CLASSES
@@ -57,7 +87,8 @@ class Notation(JsonModel):
     @classmethod
     def loads(cls, data, *args):
         record = super().loads(data)
-        record.no_pool = False
+        if 'no_pool' not in data:
+            record.no_pool = False
         return record
 
     archive_excludes = {'no_pool'}

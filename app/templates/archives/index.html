@@ -20,21 +20,27 @@
                 <tr id="archive-{{ item.id }}">
                     <td>
                         <div class="id-link">{{ item.show_link }}</div>
-                        {% if item.type.name == 'post' %}
+                        {% if item.type_name == 'post' %}
                             <article class="archive-preview">
                                 <a href="{{ item.show_url }}">{{ helpers.archive.post_preview_link(item) }}</a>
                             </article>
                         {% endif %}
                     </td>
                     <td>
-                        <strong>Type:</strong> {{ item.type.name | title }}
+                        <strong>Type:</strong> {{ item.type_name | title }}
                         <br>
                         <strong>Key:</strong> {{ item.key }}
                         <br>
                         <strong>Expires:</strong> {{ helpers.base.format_timestamp(item.expires) }}
                     </td>
                     <td>
-                        <div class="json-data">{{ helpers.base.format_json(item.data) }}</div>
+                        <div class="json-data">
+                            {%- if item.type_name == 'post' -%}
+                                {{ helpers.base.format_json(item.subdata.to_json()) }}
+                            {%- else -%}
+                                {{ helpers.base.format_json(item.data) }}
+                            {%- endif -%}
+                        </div>
                     </td>
                     <td class="action-column">
                         {{ helpers.archive.reinstantiate_item_link(item) }}

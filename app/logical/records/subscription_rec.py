@@ -37,7 +37,7 @@ from ..database.subscription_db import add_subscription_error, update_subscripti
     check_processing_subscriptions
 from ..database.base_db import safe_db_execute
 from .post_rec import create_image_post, create_video_post, recreate_archived_post, archive_post_for_deletion,\
-    delete_post_and_media
+    delete_post
 from .illust_rec import download_illust_url
 from .image_hash_rec import generate_post_image_hashes
 
@@ -238,7 +238,7 @@ def delete_expired_subscription_elements(manual):
                 if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
                     continue
                 print(f"Deleting post of {element.shortlink}")
-                delete_post_and_media(element.post)
+                delete_post(element.post)
             update_subscription_element_from_parameters(element, {'status_name': 'deleted', 'expires': None})
             deleted_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:

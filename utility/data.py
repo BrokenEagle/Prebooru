@@ -108,6 +108,32 @@ def bool_or_blank(string):
     return eval_bool_string(string) if isinstance(string, str) else None
 
 
+# #### Validate functions
+
+def is_integer(value):
+    return isinstance(value, int)
+
+
+def is_integer_or_none(value):
+    return isinstance(value, int) or value is None
+
+
+def is_string(value):
+    return isinstance(value, str)
+
+
+def is_string_or_none(value):
+    return isinstance(value, str) or value is None
+
+
+def is_boolean(value):
+    return isinstance(value, bool)
+
+
+def is_boolean_or_none(value):
+    return isinstance(value, bool) or value is None
+
+
 # #### Number functions
 
 def set_precision(number, precision):

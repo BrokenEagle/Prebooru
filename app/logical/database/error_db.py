@@ -20,10 +20,10 @@ def create_error_from_parameters(createparams, commit=True):
     return set_error_from_parameters(error, createparams, 'created', commit)
 
 
-def create_error_from_json(data):
+def create_error_from_json(data, commit=True):
     error = Error.loads(data)
     add_record(error)
-    save_record(error, 'created')
+    save_record(error, 'created', commit=commit)
     return error
 
 

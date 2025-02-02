@@ -14,6 +14,11 @@
     | {{ subnav_link_to("Download", 'download.create_html', attrs={'class': 'nav-control', 'onclick': 'return Posts.createDownload(this)'}) }}
     {% if post.id is not none %}
         {{ subnav_link_to("Show", 'post.show_html', post.id) }}
-        {{ subnav_link_to("Delete", 'post.delete_html', id=post.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+        {{ subnav_link_to("Archive", 'post.archive_post_html', post.id, attrs={'class': 'nav-modify', 'onclick': 'return Prebooru.linkPost(this)'}) }}
+        <strong>Delete</strong> (
+            {{ subnav_link_to("Soft", 'post.soft_delete_html', id=post.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+            |
+            {{ subnav_link_to("Hard", 'post.hard_delete_html', id=post.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+        )
     {% endif %}
 </menu>

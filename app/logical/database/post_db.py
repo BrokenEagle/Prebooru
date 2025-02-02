@@ -34,10 +34,10 @@ def create_post_from_parameters(createparams, commit=True):
     return set_post_from_parameters(post, createparams, 'created', commit)
 
 
-def create_post_from_json(data):
+def create_post_from_json(data, commit=True):
     post = Post.loads(data)
     add_record(post)
-    save_record(post, 'created')
+    save_record(post, 'created', commit=commit)
     return post
 
 
@@ -72,15 +72,11 @@ def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, durati
     return create_post_from_parameters(params)
 
 
-def post_append_illust_url(post, illust_url):
-    illust_url.post_id = post.id
-    commit_session()
-
-
 def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size, post_type, pixel_md5, duration,
                                    has_audio):
     post = create_post(width, height, file_ext, md5, size, post_type, pixel_md5, duration, has_audio)
-    post_append_illust_url(post, illust_url)
+    illust_url.post_id = post.id
+    commit_session()
     return post
 
 

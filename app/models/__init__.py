@@ -30,7 +30,8 @@ def load_all():
         Booru, BooruNames, BooruArtists, Error, Post,\
         PostTags, Upload, Notation, Pool, PoolElement, PoolPost,\
         PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
-        ImageHash, SimilarityMatch, ApiData, Archive,\
+        ImageHash, SimilarityMatch, ApiData,\
+        Archive, ArchivePost,\
         Download, DownloadElement, DownloadUrl,\
         Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,\
         MediaFile,\
@@ -72,6 +73,7 @@ def load_all():
     # #### Cache data
     from .api_data import ApiData
     from .archive import Archive
+    from .archive_post import ArchivePost
     from .media_file import MediaFile
 
     # #### Server data
@@ -103,7 +105,8 @@ def initialize():
             Booru, BooruNames, BooruArtists, Error, Post,
             PostTags, Upload, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionElement,
-            ImageHash, SimilarityMatch, ApiData, Archive,
+            ImageHash, SimilarityMatch, ApiData,
+            Archive, ArchivePost,
             Download, DownloadElement, DownloadUrl,
             Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,
             MediaFile,

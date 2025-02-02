@@ -18,44 +18,41 @@ def archive_preview_link(archive, lazyload):
 
 
 def post_preview_link(archive, lazyload=False):
-    post_data = archive.data['body']
-    width = post_data['width']
-    height = post_data['height']
+    width = archive.subdata.width
+    height = archive.subdata.height
     preview_width, preview_height = get_preview_dimensions(width, height, PREVIEW_DIMENSIONS)
-    file_ext = post_data['file_ext']
-    size = post_data['size']
+    file_ext = archive.subdata.file_ext
+    size = archive.subdata.size
     addons = {
         'width': preview_width,
         'height': preview_height,
         'title': f"( {width} x {height} ) : {file_ext.upper()} @ {readable_bytes(size)}",
         'alt': archive.shortlink,
-        'data-src': archive.preview_url,
+        'data-src': archive.subdata.preview_url,
         'onerror': 'Prebooru.onImageError(this)',
     }
     if not lazyload:
-        addons['src'] = archive.preview_url
+        addons['src'] = archive.subdata.preview_url
     return render_tag('img', None, addons)
 
 
 def post_file_link(archive):
-    post_data = archive.data['body']
     addons = {
-        'width': post_data['width'],
-        'height': post_data['height'],
+        'width': archive.subdata.width,
+        'height': archive.subdata.height,
         'alt': archive.shortlink,
-        'src': archive.file_url,
+        'src': archive.subdata.file_url,
     }
     return render_tag('img', None, addons)
 
 
 def post_video_link(archive):
-    post_data = archive.data['body']
     addons = {
-        'width': post_data['width'],
-        'height': post_data['height'],
+        'width': archive.subdata.width,
+        'height': archive.subdata.height,
         'controls': None,
         'alt': archive.shortlink,
-        'src': archive.file_url,
+        'src': archive.subdata.file_url,
     }
     return render_tag('video', True, addons)
 
@@ -81,7 +78,10 @@ def set_temporary_link(archive):
 
 
 def has_relink(archive):
-    for key in archive.data['links']:
-        if isinstance(archive.data['links'], list) and len(archive.data['links'][key]) > 0:
-            return True
+    if archive.type_name == 'post' and archive.post_data.illusts is not None:
+        return True
+    if 'links' in archive.data:
+        for key in archive.data['links']:
+            if isinstance(archive.data['links'], list) and len(archive.data['links'][key]) > 0:
+                return True
     return False
