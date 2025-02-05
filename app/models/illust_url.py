@@ -111,6 +111,10 @@ class IllustUrl(JsonModel):
         return self.source.get_sample_url(self, False)
 
     @memoized_property
+    def md5(self):
+        return self.post.md5 if self.post_id is not None else None
+
+    @memoized_property
     @check_video
     def sample_extension(self):
         return self.source.get_media_extension(self.full_sample_url)

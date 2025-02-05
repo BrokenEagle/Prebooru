@@ -9,6 +9,11 @@
     {% if illust.id != None %}
         {{ subnav_link_to("Show", 'illust.show_html', illust.id) }}
         {{ subnav_link_to("Edit", 'illust.edit_html', illust.id) }}
-        {{ subnav_link_to("Delete", 'illust.delete_html', id=illust.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+        {{ subnav_link_to("Archive", 'illust.archive_illust_html', illust.id, attrs={'class': 'nav-modify', 'onclick': 'return Prebooru.linkPost(this)'}) }}
+        <strong>Delete</strong> (
+            {{ subnav_link_to("Soft", 'illust.soft_delete_html', id=illust.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+            |
+            {{ subnav_link_to("Hard", 'illust.hard_delete_html', id=illust.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+        )
     {% endif %}
 </menu>

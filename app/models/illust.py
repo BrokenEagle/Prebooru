@@ -7,7 +7,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
-from utility.data import list_difference
+from utility.data import list_difference, swap_key_value
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -188,6 +188,12 @@ class Illust(JsonModel):
             DB.session.commit()
 
     # ## Class properties
+
+    @classmethod
+    def loads(cls, data, *args):
+        swap_key_value(data, 'title', 'title_body')
+        swap_key_value(data, 'commentary', 'commentary_body')
+        return super().loads(data)
 
     @classmethod
     def find_by_key(cls, key):

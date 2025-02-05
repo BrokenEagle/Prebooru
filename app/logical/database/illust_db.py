@@ -36,10 +36,10 @@ def create_illust_from_parameters(createparams, commit=True):
     return set_illust_from_parameters(Illust(), createparams, 'created', commit, True)
 
 
-def create_illust_from_json(data):
+def create_illust_from_json(data, commit=True):
     illust = Illust.loads(data)
     add_record(illust)
-    save_record(illust, 'created')
+    save_record(illust, 'created', commit=commit)
     return illust
 
 

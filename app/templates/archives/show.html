@@ -41,7 +41,7 @@
                 <strong>Data:</strong>
                 <br>
                 <div class="json-data">
-                    {%- if archive.type_name == 'post' -%}
+                    {%- if archive.type_name in ('post', 'illust') -%}
                         {{ helpers.base.format_json(archive.subdata.to_json()) }}
                     {%- else -%}
                         {{ helpers.base.format_json(archive.data) }}

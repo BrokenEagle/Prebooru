@@ -18,7 +18,7 @@ from ..logical.sources import source_by_site_name
 from ..logical.records.artist_rec import get_or_create_artist_from_source
 from ..logical.records.illust_rec import update_illust_from_source, archive_illust_for_deletion,\
     illust_delete_title, illust_swap_title, illust_delete_commentary, illust_swap_commentary,\
-    illust_add_additional_commentary
+    illust_add_additional_commentary, delete_illust, save_illust_to_archive
 from ..logical.sources.base_src import get_post_source
 from ..logical.database.illust_db import create_illust_from_parameters, update_illust_from_parameters,\
     set_illust_artist
@@ -449,18 +449,44 @@ def update_json(id):
 
 # ###### DELETE
 
-@bp.route('/illusts/<int:id>', methods=['DELETE'])
-def delete_html(id):
+@bp.route('/illusts/<int:id>/archive', methods=['DELETE'])
+def soft_delete_html(id):
     illust = get_or_abort(Illust, id)
     results = archive_illust_for_deletion(illust)
     if results['error']:
         flash(results['message'], 'error')
-        return redirect(request.referrer)
-    flash("Illust deleted.")
+        if not results['is_deleted']:
+            return redirect(request.referrer)
+    if results['is_deleted']:
+        flash("Illust deleted.")
+    return redirect(url_for('archive.show_html', id=results['item']['id']))
+
+
+@bp.route('/illusts/<int:id>', methods=['DELETE'])
+def hard_delete_html(id):
+    illust = get_or_abort(Illust, id)
+    results = delete_illust(illust)
+    if results['error']:
+        flash(results['message'], 'error')
+        if not results['is_deleted']:
+            return redirect(request.referrer)
+    if results['is_deleted']:
+        flash("Illust deleted.")
     return redirect(url_for('illust.index_html'))
 
 
 # ###### Misc
+
+@bp.route('/illusts/<int:id>/archive', methods=['POST'])
+def archive_illust_html(id):
+    illust = get_or_abort(Illust, id)
+    results = save_illust_to_archive(illust, None)
+    if results['error']:
+        flash(results['message'], 'error')
+        return redirect(request.referrer)
+    flash("Illust archived.")
+    return redirect(url_for('archive.show_html', id=results['item']['id']))
+
 
 @bp.route('/illusts/query_create', methods=['POST'])
 def query_create_html():

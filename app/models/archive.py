@@ -8,6 +8,7 @@ from utility.data import merge_dicts
 from .. import DB
 from .model_enums import ArchiveType
 from .archive_post import ArchivePost
+from .archive_illust import ArchiveIllust
 from .base import JsonModel, integer_column, enum_column, text_column, json_column, timestamp_column,\
     register_enum_column, relationship
 
@@ -24,17 +25,19 @@ class Archive(JsonModel):
 
     # ## Relationships
     post_data = relationship(ArchivePost, uselist=False, cascade='all,delete')
+    illust_data = relationship(ArchiveIllust, uselist=False, cascade='all,delete')
 
     @property
     def subdata(self):
         switcher = {
             'post': lambda: self.post_data,
+            'illust': lambda: self.illust_data,
             'unknown': lambda: None,
         }
         return switcher[self.type_name]()
 
     def to_json(self):
-        if self.type_name in ['post']:
+        if self.type_name in ['post', 'illust']:
             return merge_dicts(super().to_json(), self.subdata.to_json())
         return super().to_json()
 
