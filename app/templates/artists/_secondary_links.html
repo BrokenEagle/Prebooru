@@ -9,6 +9,11 @@
     {% if artist.id is not none %}
         {{ subnav_link_to("Show", 'artist.show_html', id=artist.id) }}
         {{ subnav_link_to("Edit", 'artist.edit_html', id=artist.id) }}
-        {{ subnav_link_to("Delete", 'artist.delete_html', id=artist.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+        {{ subnav_link_to("Archive", 'artist.archive_artist_html', artist.id, attrs={'class': 'nav-modify', 'onclick': 'return Prebooru.linkPost(this)'}) }}
+        <strong>Delete</strong> (
+            {{ subnav_link_to("Soft", 'artist.soft_delete_html', id=artist.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+            |
+            {{ subnav_link_to("Hard", 'artist.hard_delete_html', id=artist.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+        )
     {% endif %}
 </menu>

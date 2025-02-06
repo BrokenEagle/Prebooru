@@ -4,21 +4,22 @@
 import itertools
 
 # ## PACKAGE IMPORTS
-from utility.data import inc_dict_entry
+from utility.data import inc_dict_entry, merge_dicts, swap_key_value
 from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
-from ... import SESSION
-from ...models import Artist, ArtistSiteAccounts, ArtistNames, ArtistProfiles, Description, Label
+from ...models import ArchiveArtist, ArtistSiteAccounts, ArtistNames, ArtistProfiles, Description, Label
 from ..utility import set_error
 from ..logger import handle_error_message
-from ..database.base_db import delete_record, commit_session
+from ..database.base_db import add_record, delete_record, commit_session
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters_standard,\
-    get_site_artist, get_artists_without_boorus_page
+    get_site_artist, get_artists_without_boorus_page, create_artist_from_json
+from ..database.artist_url_db import create_artist_url_from_json
 from ..database.booru_db import get_boorus, create_booru_from_parameters, booru_append_artist
+from ..database.notation_db import create_notation_from_json
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
-from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
+from .archive_rec import archive_record
 
 
 # ## FUNCTIONS
@@ -96,45 +97,106 @@ def update_artist_from_source(artist):
     update_artist_from_parameters_standard(artist, params)
 
 
+def delete_artist(artist, retdata=None):
+    """Hard delete. Continue as long as artist record gets deleted."""
+
+    def _delete(artist):
+        msg = "[%s]: deleted\n" % artist.shortlink
+        delete_record(artist)
+        commit_session()
+        print(msg)
+
+    retdata = retdata or {'error': False, 'is_deleted': False, 'is_archived': False}
+    if not retdata['is_archived'] and artist.illust_count > 0:
+        return handle_error_message("Cannot delete artist with existing illusts.", retdata)
+    retdata.update(delete_data(artist, _delete))
+    if retdata['error']:
+        return retdata
+    retdata['is_deleted'] = True
+    return retdata
+
+
 def archive_artist_for_deletion(artist, expires=30):
+    """Soft delete. Preserve data at all costs."""
+    retdata = {'error': False, 'is_deleted': False}
     if artist.illust_count > 0:
-        return {'error': True, 'message': "Cannot delete artist with existing illusts"}
+        return handle_error_message("Cannot delete artist with existing illusts.", retdata)
+    retdata.update(save_artist_to_archive(artist, expires))
+    if retdata['error']:
+        return retdata
+    retdata['is_archived'] = True
+    return delete_artist(artist, retdata)
+
+
+def save_artist_to_archive(artist, expires):
+    retdata = {'error': False}
     archive = archive_record(artist, expires)
     if archive is None:
-        return handle_error_message(f"Error archiving data [{artist.shortlink}].")
-    retdata = {'item': archive.to_json()}
-    retdata.update(delete_data(artist, delete_artist))
+        msg = f"Error archiving data [{artist.shortlink}]."
+        return handle_error_message(msg, retdata)
+    retdata['item'] = archive.to_json()
+    archive_params = {k: v for (k, v) in artist.basic_json().items() if k in ArchiveArtist.basic_attributes}
+    archive_params['site_account'] = artist.site_account_value
+    archive_params['name'] = artist.name_value
+    archive_params['profile'] = artist.profile_body
+    if archive.artist_data is None:
+        archive_params['archive_id'] = archive.id
+        archive_artist = ArchiveArtist(**archive_params)
+    else:
+        archive_artist = archive.artist_data
+        archive_artist.update(archive_params)
+    archive_artist.webpages_json = [{'url': webpage.url,
+                                    'active': webpage.active}
+                                    for webpage in artist.webpages]
+    archive_artist.site_accounts_json = list(artist.site_account_values)
+    archive_artist.names_json = list(artist.name_values)
+    archive_artist.profiles_json = list(artist.profile_bodies)
+    archive_artist.notations_json = [{'body': notation.body,
+                                      'created': notation.created.isoformat(),
+                                      'updated': notation.updated.isoformat()}
+                                     for notation in artist.notations]
+    archive_artist.boorus_json = [booru.danbooru_id for booru in artist.boorus if booru.danbooru_id is not None]
+    add_record(archive_artist)
+    commit_session()
     return retdata
 
 
 def recreate_archived_artist(archive):
-    try:
-        artist = recreate_record(Artist, archive.key, archive.data)
-        recreate_scalars(artist, archive.data)
-        recreate_attachments(artist, archive.data)
-        recreate_links(artist, archive.data)
-    except Exception as e:
-        retdata = handle_error_message(e)
-        SESSION.rollback()
-    else:
-        retdata = {'error': False, 'item': artist.to_json()}
-        set_archive_temporary(archive, 7)
-        SESSION.commit()
+    artist_data = archive.artist_data
+    artist = get_site_artist(artist_data.site_artist_id, artist_data.site_id)
+    if artist is not None:
+        return handle_error_message(f"Artist already exists: {artist.shortlink}")
+    createparams = artist_data.recreate_json()
+    swap_key_value(createparams, 'site_account', 'site_account_value')
+    swap_key_value(createparams, 'name', 'name_value')
+    swap_key_value(createparams, 'profile', 'profile_body')
+    artist = create_artist_from_json(createparams, commit=False)
+    for webpage_data in artist_data.webpages_json:
+        webpage_data['artist_id'] = artist.id
+        create_artist_url_from_json(webpage_data, commit=False)
+    artist.site_account_values.extend(artist_data.site_accounts_json)
+    artist.name_values.extend(artist_data.names_json)
+    artist.profile_bodies.extend(artist_data.profiles_json)
+    _link_boorus(artist, artist_data)
+    for notation in artist_data.notations_json:
+        createparams = merge_dicts(notation, {'artist_id': artist.id, 'no_pool': True})
+        create_notation_from_json(createparams, commit=False)
+    retdata = {'error': False, 'item': artist.to_json()}
+    commit_session()
+    set_archive_temporary(archive, 7)
     return retdata
 
 
 def relink_archived_artist(archive):
-    artist = Artist.find_by_key(archive.key)
+    artist_data = archive.artist_data
+    artist = get_site_artist(artist_data.site_artist_id, artist_data.site_id)
     if artist is None:
-        return f"No artist found with key {archive.key}"
-    recreate_links(artist, archive.data)
-
-
-def delete_artist(artist):
-    msg = "[%s]: deleted\n" % artist.shortlink
-    delete_record(artist)
+        msg = f"{artist_data.site_name} #{artist_data.site_artist_id} not found in artists."
+        return handle_error_message(msg)
+    retdata = {'error': False, 'item': artist.to_json()}
+    _link_boorus(artist, artist_data)
     commit_session()
-    print(msg)
+    return retdata
 
 
 def artist_delete_site_account(artist, label_id):
@@ -216,3 +278,10 @@ def _relation_params_check(artist, model, m2m_model, model_id, model_field, name
         msg = "%s with %s does not exist on %s." % (name, attach.shortlink, artist.shortlink)
         return set_error(retdata, msg)
     return retdata
+
+
+def _link_boorus(artist, artist_data):
+    if artist_data.boorus is None:
+        return
+    boorus = get_boorus(artist_data.boorus_json)
+    artist.boorus.extend(boorus)

@@ -18,7 +18,7 @@ from ..logical.sources.base_src import get_artist_required_params
 from ..logical.sources.danbooru_src import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion,\
     artist_delete_site_account, artist_swap_site_account, artist_delete_name, artist_swap_name,\
-    artist_delete_profile, artist_swap_profile
+    artist_delete_profile, artist_swap_profile, delete_artist, save_artist_to_archive
 from ..logical.records.post_rec import check_artist_posts_for_danbooru_id
 from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
     artist_append_booru
@@ -410,18 +410,44 @@ def update_json(id):
 
 # ###### DELETE
 
-@bp.route('/artists/<int:id>', methods=['DELETE'])
-def delete_html(id):
+@bp.route('/artists/<int:id>/archive', methods=['DELETE'])
+def soft_delete_html(id):
     artist = get_or_abort(Artist, id)
     results = archive_artist_for_deletion(artist)
     if results['error']:
         flash(results['message'], 'error')
-        return redirect(request.referrer)
-    flash("Artist deleted.")
+        if not results['is_deleted']:
+            return redirect(request.referrer)
+    if results['is_deleted']:
+        flash("Artist deleted.")
+    return redirect(url_for('archive.show_html', id=results['item']['id']))
+
+
+@bp.route('/artists/<int:id>', methods=['DELETE'])
+def hard_delete_html(id):
+    artist = get_or_abort(Artist, id)
+    results = delete_artist(artist)
+    if results['error']:
+        flash(results['message'], 'error')
+        if not results['is_deleted']:
+            return redirect(request.referrer)
+    if results['is_deleted']:
+        flash("Artist deleted.")
     return redirect(url_for('artist.index_html'))
 
 
 # ###### MISC
+
+@bp.route('/artists/<int:id>/archive', methods=['POST'])
+def archive_artist_html(id):
+    artist = get_or_abort(Artist, id)
+    results = save_artist_to_archive(artist, None)
+    if results['error']:
+        flash(results['message'], 'error')
+        return redirect(request.referrer)
+    flash("Artist archived.")
+    return redirect(url_for('archive.show_html', id=results['item']['id']))
+
 
 @bp.route('/artists/query_create', methods=['POST'])
 def query_create_html():

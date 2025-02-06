@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...models import ArtistUrl
-from .base_db import set_column_attributes, save_record
+from .base_db import set_column_attributes, add_record, save_record
 
 
 # ## GLOBAL VARIABLES
@@ -18,6 +18,13 @@ NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'url']
 def create_artist_url_from_parameters(createparams, commit=True):
     artist_url = ArtistUrl()
     return set_artist_url_from_parameters(artist_url, createparams, 'created', commit)
+
+
+def create_artist_url_from_json(data, commit=True):
+    artist_url = ArtistUrl.loads(data)
+    add_record(artist_url)
+    save_record(artist_url, 'created', commit=commit)
+    return artist_url
 
 
 # #### Update

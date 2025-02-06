@@ -38,6 +38,7 @@ RELINK_ARCHIVE_FUNCS = {
 LOAD_OPTIONS = (
     selectinload(Archive.post_data),
     selectinload(Archive.illust_data),
+    selectinload(Archive.artist_data),
 )
 
 

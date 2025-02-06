@@ -13,12 +13,12 @@ from sqlalchemy.orm import attributes
 # ## FUNCTIONS
 
 def initialize():
-    global SESSION, Archive, print_info, safe_get
+    global SESSION, Archive, print_info, safe_get, swap_key_value
     sys.path.append(os.path.abspath('.'))
     from app import SESSION
     from app.models import Archive
     from utility.uprint import print_info
-    from utility.data import safe_get
+    from utility.data import safe_get, swap_key_value
 
 
 def fix_post_archives():
@@ -98,6 +98,51 @@ def fix_illust_archives():
         page = page.next()
 
 
+def fix_artist_archives():
+    query = Archive.query
+    query = query.filter(Archive.type_value == 'artist')
+    query = query.order_by(Archive.id.asc())
+    page = query.count_paginate(per_page=100)
+    body_keys = ['site', 'site_artist_id', 'site_created', 'site_account', 'name',
+                 'profile', 'active', 'primary', 'updated', 'created']
+    nonnull_keys = ['site', 'site_artist_id', 'site_account', 'active', 'primary', 'updated', 'created']
+    while True:
+        print_info(f"fix_artist_archives: {page.first} - {page.last} / Total({page.count})")
+        for arch in page.items:
+            original_body_params = arch.data['body']
+            updated_body_params = {k: v for (k, v) in original_body_params.items() if k in body_keys}
+            for k in body_keys:
+                updated_body_params.setdefault(k, None)
+            swap_key_value(arch.data['scalars'], 'accounts', 'site_accounts')
+            arch.data['scalars'].setdefault('site_accounts', [])
+            arch.data['scalars'].setdefault('names', [])
+            arch.data['scalars'].setdefault('profiles', [])
+            if updated_body_params['site_account'] is None and len(arch.data['scalars']['site_accounts']) > 0:
+                updated_body_params['site_account'] = arch.data['scalars']['site_accounts'][0]
+                arch.data['scalars']['site_accounts'] = arch.data['scalars']['site_accounts'][1:]
+            if updated_body_params['name'] is None and len(arch.data['scalars']['names']) > 0:
+                updated_body_params['name'] = arch.data['scalars']['names'][0]
+                arch.data['scalars']['names'] = arch.data['scalars']['names'][1:]
+            if updated_body_params['profile'] is None and len(arch.data['scalars']['profiles']) > 0:
+                updated_body_params['profile'] = arch.data['scalars']['profiles'][0]
+                arch.data['scalars']['profiles'] = arch.data['scalars']['profiles'][1:]
+            bad_columns = [k for k in updated_body_params.keys()
+                           if k in nonnull_keys and updated_body_params.get(k) is None]
+            if len(bad_columns):
+                # Leaving this to the user to fix
+                print(arch.shortlink, "Null values for nonnull columns found:", bad_columns)
+                input()
+                print("Skipping...")
+                continue
+            arch.data['body'] = updated_body_params
+            attributes.flag_modified(arch, 'data')
+            SESSION.flush()
+        SESSION.commit()
+        if not page.has_next:
+            break
+        page = page.next()
+
+
 def main(args):
     """
     Fixes the body format of archive records. The attachments, scalaras, and links will just be converted to text,
@@ -108,6 +153,8 @@ def main(args):
         fix_post_archives()
     elif args.type == 'illust':
         fix_illust_archives()
+    elif args.type == 'artist':
+        fix_artist_archives()
 
 
 # ##EXECUTION START
@@ -115,7 +162,7 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser(description="Fix script to ensure unneeded values are"
                                         "removed and nonnull values are present.")
-    parser.add_argument('type', choices=['post', 'illust'], help="Choose item to update.")
+    parser.add_argument('type', choices=['post', 'illust', 'artist'], help="Choose item to update.")
     args = parser.parse_args()
 
     initialize()

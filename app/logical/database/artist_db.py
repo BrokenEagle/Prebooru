@@ -42,10 +42,10 @@ def create_artist_from_parameters(createparams, commit=True):
     return set_artist_from_parameters(Artist(), createparams, 'created', commit, True)
 
 
-def create_artist_from_json(data):
+def create_artist_from_json(data, commit=True):
     artist = Artist.loads(data)
     add_record(artist)
-    save_record(artist, 'created')
+    save_record(artist, 'created', commit=commit)
     return artist
 
 
