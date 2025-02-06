@@ -131,8 +131,8 @@ class Download(JsonModel):
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes +\
-            ['image_urls', 'post_ids', 'complete_post_ids', 'duplicate_post_ids', 'illust_id', 'artist_id', 'errors']
+        return super().json_attributes + ['status_name', 'image_urls', 'post_ids', 'complete_post_ids',
+                                          'duplicate_post_ids', 'illust_id', 'artist_id', 'errors']
 
     # ## Private
 
