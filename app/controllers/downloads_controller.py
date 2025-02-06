@@ -13,6 +13,7 @@ from wtforms import StringField, TextAreaField
 from utility import RepeatTimer
 from utility.data import eval_bool_string
 from utility.uprint import print_info
+from utility.time import seconds_ago
 
 # ## LOCAL IMPORTS
 from .. import SCHEDULER, SESSION, MAIN_PROCESS
@@ -342,6 +343,9 @@ def _recheck_pending_downloads():
         sorted_downloads = sorted(pending_downloads, key=lambda x: x.id)
         print("\nDownloads recheck - %d pending\n" % len(pending_downloads))
         for download in sorted_downloads:
+            if download.created > seconds_ago(15):
+                # Prevents race condition where this thread starts a download before the create route
+                continue
             job_id = "process_download-%d" % download.id
             if SCHEDULER.get_job(job_id) is None:
                 print_info(f"Starting {download.shortlink}")

@@ -69,12 +69,20 @@ def hours_from_now(hours):
     return add_hours(get_current_time(), hours)
 
 
-def minutes_from_now(minutes):  # Unused
+def minutes_from_now(minutes):
     return get_current_time() + datetime.timedelta(minutes=minutes)
 
 
 def minutes_ago(minutes):
     return get_current_time() - datetime.timedelta(minutes=minutes)
+
+
+def seconds_from_now(seconds):
+    return get_current_time() + datetime.timedelta(seconds=seconds)
+
+
+def seconds_ago(seconds):
+    return get_current_time() - datetime.timedelta(seconds=seconds)
 
 
 def seconds_from_now_local(seconds):
