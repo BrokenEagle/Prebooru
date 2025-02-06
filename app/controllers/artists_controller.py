@@ -26,7 +26,7 @@ from ..logical.database.booru_db import create_booru_from_parameters
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
     check_param_requirements, nullify_blanks, set_default, parse_bool_parameter,\
-    hide_input, index_html_response
+    hide_input, index_html_response, parse_array_parameter
 
 
 # ## GLOBAL VARIABLES
@@ -156,6 +156,7 @@ def convert_data_params(dataparams):
     params = get_artist_form(**dataparams).data
     params['active'] = parse_bool_parameter(dataparams, 'active')
     params['primary'] = parse_bool_parameter(dataparams, 'primary')
+    params['webpages'] = parse_array_parameter(dataparams, 'webpages', 'webpage_string', r'\r?\n')
     params = nullify_blanks(params)
     return params
 
