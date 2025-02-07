@@ -1,7 +1,7 @@
 # APP/LOGICAL/DATABASE/ARTIST_DB.PY
 
 # ## EXTERNAL IMPORTS
-from sqlalchemy import not_
+from sqlalchemy import not_, tuple_
 
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
@@ -117,6 +117,15 @@ def get_site_artist(site_artist_id, site):
     elif isinstance(site, str):
         q = q.filter(Artist.site_value == site)
     return q.filter(Artist.site_artist_id == site_artist_id).one_or_none()
+
+
+def get_site_artists(artist_keys):
+    """Expected key format is [site_id, site_artist_id]."""
+    for key in artist_keys:
+        # Convert site_name to site_id
+        if isinstance(key[0], str):
+            key[0] = Artist.site_enum.to_id(key[0])
+    return Artist.query.filter(tuple_(Artist.site_id, Artist.site_artist_id).in_(artist_keys)).all()
 
 
 def get_artists_without_boorus_page(limit):

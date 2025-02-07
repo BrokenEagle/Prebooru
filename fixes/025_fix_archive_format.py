@@ -143,6 +143,43 @@ def fix_artist_archives():
         page = page.next()
 
 
+def fix_booru_archives():
+    query = Archive.query
+    query = query.filter(Archive.type_value == 'booru')
+    query = query.order_by(Archive.id.asc())
+    page = query.count_paginate(per_page=100)
+    body_keys = ['danbooru_id', 'name', 'banned', 'deleted', 'updated', 'created']
+    nonnull_keys = ['name', 'banned', 'deleted', 'updated', 'created']
+    while True:
+        print_info(f"fix_booru_archives: {page.first} - {page.last} / Total({page.count})")
+        for arch in page.items:
+            original_body_params = arch.data['body']
+            updated_body_params = {k: v for (k, v) in original_body_params.items() if k in body_keys}
+            for k in body_keys:
+                updated_body_params.setdefault(k, None)
+            swap_key_value(updated_body_params, 'current_name', 'name')
+            arch.data['scalars'].setdefault('names', [])
+            arch.data['scalars'].setdefault('profiles', [])
+            if updated_body_params['name'] is None and len(arch.data['scalars']['names']) > 0:
+                updated_body_params['name'] = arch.data['scalars']['names'][0]
+                arch.data['scalars']['names'] = arch.data['scalars']['names'][1:]
+            bad_columns = [k for k in updated_body_params.keys()
+                           if k in nonnull_keys and updated_body_params.get(k) is None]
+            if len(bad_columns):
+                # Leaving this to the user to fix
+                print(arch.shortlink, "Null values for nonnull columns found:", bad_columns)
+                input()
+                print("Skipping...")
+                continue
+            arch.data['body'] = updated_body_params
+            attributes.flag_modified(arch, 'data')
+            SESSION.flush()
+        SESSION.commit()
+        if not page.has_next:
+            break
+        page = page.next()
+
+
 def main(args):
     """
     Fixes the body format of archive records. The attachments, scalaras, and links will just be converted to text,
@@ -155,6 +192,8 @@ def main(args):
         fix_illust_archives()
     elif args.type == 'artist':
         fix_artist_archives()
+    elif args.type == 'booru':
+        fix_booru_archives()
 
 
 # ##EXECUTION START
@@ -162,7 +201,7 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser(description="Fix script to ensure unneeded values are"
                                         "removed and nonnull values are present.")
-    parser.add_argument('type', choices=['post', 'illust', 'artist'], help="Choose item to update.")
+    parser.add_argument('type', choices=['post', 'illust', 'artist', 'booru'], help="Choose item to update.")
     args = parser.parse_args()
 
     initialize()

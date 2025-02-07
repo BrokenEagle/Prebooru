@@ -11,7 +11,8 @@ from ..logical.utility import set_error
 from ..logical.database.booru_db import create_booru_from_parameters, update_booru_from_parameters,\
     booru_append_artist, booru_remove_artist
 from ..logical.records.booru_rec import create_booru_from_source, update_booru_from_source,\
-    update_booru_artists_from_source, archive_booru_for_deletion, booru_delete_name, booru_swap_name
+    update_booru_artists_from_source, archive_booru_for_deletion, booru_delete_name, booru_swap_name,\
+    delete_booru, save_booru_to_archive
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, get_or_error, get_data_params,\
     check_param_requirements, nullify_blanks, get_form, parse_bool_parameter, set_default, index_html_response
@@ -263,18 +264,44 @@ def update_json(id):
 
 # ###### DELETE
 
-@bp.route('/boorus/<int:id>', methods=['DELETE'])
-def delete_html(id):
+@bp.route('/boorus/<int:id>/archive', methods=['DELETE'])
+def soft_delete_html(id):
     booru = get_or_abort(Booru, id)
     results = archive_booru_for_deletion(booru)
     if results['error']:
         flash(results['message'], 'error')
-        return redirect(request.referrer)
-    flash("Booru deleted.")
+        if not results['is_deleted']:
+            return redirect(request.referrer)
+    if results['is_deleted']:
+        flash("Booru deleted.")
+    return redirect(url_for('archive.show_html', id=results['item']['id']))
+
+
+@bp.route('/boorus/<int:id>', methods=['DELETE'])
+def hard_delete_html(id):
+    booru = get_or_abort(Booru, id)
+    results = delete_booru(booru)
+    if results['error']:
+        flash(results['message'], 'error')
+        if not results['is_deleted']:
+            return redirect(request.referrer)
+    if results['is_deleted']:
+        flash("Booru deleted.")
     return redirect(url_for('booru.index_html'))
 
 
 # ###### MISC
+
+@bp.route('/boorus/<int:id>/archive', methods=['POST'])
+def archive_booru_html(id):
+    booru = get_or_abort(Booru, id)
+    results = save_booru_to_archive(booru, None)
+    if results['error']:
+        flash(results['message'], 'error')
+        return redirect(request.referrer)
+    flash("Booru archived.")
+    return redirect(url_for('archive.show_html', id=results['item']['id']))
+
 
 @bp.route('/boorus/query_create', methods=['POST'])
 def query_create_html():

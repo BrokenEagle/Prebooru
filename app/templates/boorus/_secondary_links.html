@@ -8,6 +8,11 @@
     {% if booru.id != None %}
         {{ subnav_link_to("Show", 'booru.show_html', id=booru.id) }}
         {{ subnav_link_to("Edit", 'booru.edit_html', id=booru.id) }}
-        {{ subnav_link_to("Delete", 'booru.delete_html', id=booru.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+        {{ subnav_link_to("Archive", 'booru.archive_booru_html', booru.id, attrs={'class': 'nav-modify', 'onclick': 'return Prebooru.linkPost(this)'}) }}
+        <strong>Delete</strong> (
+            {{ subnav_link_to("Soft", 'booru.soft_delete_html', id=booru.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+            |
+            {{ subnav_link_to("Hard", 'booru.hard_delete_html', id=booru.id, attrs={'class': 'warning-link', 'onclick': 'return Prebooru.deleteConfirm(this)'}) }}
+        )
     {% endif %}
 </menu>

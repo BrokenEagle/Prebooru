@@ -39,6 +39,7 @@ LOAD_OPTIONS = (
     selectinload(Archive.post_data),
     selectinload(Archive.illust_data),
     selectinload(Archive.artist_data),
+    selectinload(Archive.booru_data),
 )
 
 

@@ -1,22 +1,23 @@
 # APP/LOGICAL/RECORDS/BOORU_REC.PY
 
 # ## PACKAGE IMPORTS
+from utility.data import merge_dicts, swap_key_value
 from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
-from ... import SESSION
-from ...models import Booru, BooruNames, Label
+from ...models import ArchiveBooru, BooruNames, Label
 from ..utility import set_error
 from ..logger import handle_error_message
 from ..sources.base_src import get_artist_id_source
 from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
-from ..database.base_db import delete_record, commit_session
-from ..database.artist_db import get_site_artist
+from ..database.base_db import add_record, delete_record, commit_session
+from ..database.artist_db import get_site_artist, get_site_artists
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
-    get_all_boorus_page, will_update_booru
+    get_all_boorus_page, will_update_booru, get_booru, create_booru_from_json
+from ..database.notation_db import create_notation_from_json
 from ..database.archive_db import set_archive_temporary
 from .base_rec import delete_data
-from .archive_rec import archive_record, recreate_record, recreate_scalars, recreate_attachments, recreate_links
+from .archive_rec import archive_record
 
 
 # ## FUNCTIONS
@@ -92,43 +93,89 @@ def update_booru_artists_from_source(booru):
     return {'error': False}
 
 
+def delete_booru(booru, retdata=None):
+    """Hard delete. Continue as long as booru record gets deleted."""
+
+    def _delete(booru):
+        msg = "[%s]: deleted\n" % booru.shortlink
+        delete_record(booru)
+        commit_session()
+        print(msg)
+
+    retdata = retdata or {'error': False, 'is_deleted': False}
+    retdata.update(delete_data(booru, _delete))
+    if retdata['error']:
+        return retdata
+    retdata['is_deleted'] = True
+    return retdata
+
+
 def archive_booru_for_deletion(booru, expires=30):
+    """Soft delete. Preserve data at all costs."""
+    retdata = {'error': False, 'is_deleted': False}
+    retdata.update(save_booru_to_archive(booru, expires))
+    if retdata['error']:
+        return retdata
+    return delete_booru(booru, retdata)
+
+
+def save_booru_to_archive(booru, expires):
+    retdata = {'error': False}
     archive = archive_record(booru, expires)
     if archive is None:
-        return handle_error_message(f"Error archiving data [{booru.shortlink}].")
-    retdata = {'item': archive.to_json()}
-    retdata.update(delete_data(booru, delete_booru))
+        msg = f"Error archiving data [{booru.shortlink}]."
+        return handle_error_message(msg, retdata)
+    retdata['item'] = archive.to_json()
+    archive_params = {k: v for (k, v) in booru.basic_json().items() if k in ArchiveBooru.basic_attributes}
+    archive_params['name'] = booru.name_value
+    if archive.booru_data is None:
+        archive_params['archive_id'] = archive.id
+        archive_booru = ArchiveBooru(**archive_params)
+    else:
+        archive_booru = archive.booru_data
+        archive_booru.update(archive_params)
+    archive_booru.names_json = list(booru.name_values)
+    archive_booru.notations_json = [{'body': notation.body,
+                                     'created': notation.created.isoformat(),
+                                     'updated': notation.updated.isoformat()}
+                                    for notation in booru.notations]
+    archive_booru.artists_json = [{'site': artist.site_name,
+                                   'site_artist_id': artist.site_artist_id}
+                                  for artist in booru.artists]
+    add_record(archive_booru)
+    commit_session()
     return retdata
 
 
 def recreate_archived_booru(archive):
-    try:
-        booru = recreate_record(Booru, archive.key, archive.data)
-        recreate_scalars(booru, archive.data)
-        recreate_attachments(booru, archive.data)
-        recreate_links(booru, archive.data)
-    except Exception as e:
-        retdata = handle_error_message(e)
-        SESSION.rollback()
-    else:
-        retdata = {'error': False, 'item': booru.to_json()}
-        set_archive_temporary(archive, 7)
-        SESSION.commit()
+    booru_data = archive.booru_data
+    booru = get_booru(booru_data.danbooru_id)
+    if booru is not None:
+        return handle_error_message(f"Booru already exists: {booru.shortlink}")
+    createparams = booru_data.recreate_json()
+    swap_key_value(createparams, 'name', 'name_value')
+    booru = create_booru_from_json(createparams, commit=False)
+    booru.name_values.extend(booru_data.names_json)
+    _link_artists(booru, booru_data)
+    for notation in booru_data.notations_json:
+        createparams = merge_dicts(notation, {'booru_id': booru.id, 'no_pool': True})
+        create_notation_from_json(createparams, commit=False)
+    retdata = {'error': False, 'item': booru.to_json()}
+    commit_session()
+    set_archive_temporary(archive, 7)
     return retdata
 
 
 def relink_archived_booru(archive):
-    booru = Booru.find_by_key(archive.key)
+    booru_data = archive.booru_data
+    booru = get_booru(booru_data.danbooru_id)
     if booru is None:
-        return f"No booru found with key {archive.key}"
-    recreate_links(booru, archive.data)
-
-
-def delete_booru(booru):
-    msg = "[%s]: deleted\n" % booru.shortlink
-    delete_record(booru)
+        msg = f"danbooru #{booru_data.danbooru_id} not found in boorus."
+        return handle_error_message(msg)
+    retdata = {'error': False, 'item': booru.to_json()}
+    _link_artists(booru, booru_data)
     commit_session()
-    print(msg)
+    return retdata
 
 
 def booru_delete_name(booru, label_id):
@@ -166,3 +213,10 @@ def _relation_params_check(booru, model, m2m_model, model_id, model_field, name)
         msg = "%s with %s does not exist on %s." % (name, attach.shortlink, booru.shortlink)
         return set_error(retdata, msg)
     return retdata
+
+
+def _link_artists(booru, booru_data):
+    if booru_data.artists is None:
+        return
+    artists = get_site_artists(list(booru_data.artists))
+    booru.artists.extend(artists)

@@ -84,6 +84,8 @@ def has_relink(archive):
         return True
     if archive.type_name == 'artist' and archive.artist_data.boorus is not None:
         return True
+    if archive.type_name == 'booru' and archive.booru_data.artists is not None:
+        return True
     if 'links' in archive.data:
         for key in archive.data['links']:
             if isinstance(archive.data['links'], list) and len(archive.data['links'][key]) > 0:

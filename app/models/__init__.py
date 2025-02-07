@@ -31,7 +31,7 @@ def load_all():
         PostTags, Upload, Notation, Pool, PoolElement, PoolPost,\
         PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
         ImageHash, SimilarityMatch, ApiData,\
-        Archive, ArchivePost, ArchiveIllust, ArchiveArtist,\
+        Archive, ArchivePost, ArchiveIllust, ArchiveArtist, ArchiveBooru,\
         Download, DownloadElement, DownloadUrl,\
         Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,\
         MediaFile,\
@@ -76,6 +76,7 @@ def load_all():
     from .archive_post import ArchivePost
     from .archive_illust import ArchiveIllust
     from .archive_artist import ArchiveArtist
+    from .archive_booru import ArchiveBooru
     from .media_file import MediaFile
 
     # #### Server data
@@ -108,7 +109,7 @@ def initialize():
             PostTags, Upload, Notation, Pool, PoolElement, PoolPost,
             PoolIllust, PoolNotation, Subscription, SubscriptionElement,
             ImageHash, SimilarityMatch, ApiData,
-            Archive, ArchivePost, ArchiveIllust, ArchiveArtist,
+            Archive, ArchivePost, ArchiveIllust, ArchiveArtist, ArchiveBooru,
             Download, DownloadElement, DownloadUrl,
             Download, DownloadElement, DownloadUrl, DownloadStatus, DownloadElementStatus,
             MediaFile,

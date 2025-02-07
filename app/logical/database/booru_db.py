@@ -29,11 +29,11 @@ def create_booru_from_parameters(createparams, commit=True):
     return set_booru_from_parameters(Booru(), createparams, 'created', commit, True)
 
 
-def create_booru_from_json(data):
+def create_booru_from_json(data, commit=True):
     booru = Booru.loads(data)
     add_record(booru)
     commit_session()
-    save_record(booru, 'created')
+    save_record(booru, 'created', commit=commit)
     return booru
 
 

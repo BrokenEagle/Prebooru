@@ -35,7 +35,7 @@
                     </td>
                     <td>
                         <div class="json-data">
-                            {%- if item.type_name in ('post', 'illust', 'artist') -%}
+                            {%- if item.type_name in ('post', 'illust', 'artist', 'booru') -%}
                                 {{ helpers.base.format_json(item.subdata.to_json()) }}
                             {%- else -%}
                                 {{ helpers.base.format_json(item.data) }}
