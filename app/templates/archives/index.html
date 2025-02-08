@@ -29,18 +29,10 @@
                     <td>
                         <strong>Type:</strong> {{ item.type_name | title }}
                         <br>
-                        <strong>Key:</strong> {{ item.key }}
-                        <br>
                         <strong>Expires:</strong> {{ helpers.base.format_timestamp(item.expires) }}
                     </td>
                     <td>
-                        <div class="json-data">
-                            {%- if item.type_name in ('post', 'illust', 'artist', 'booru') -%}
-                                {{ helpers.base.format_json(item.subdata.to_json()) }}
-                            {%- else -%}
-                                {{ helpers.base.format_json(item.data) }}
-                            {%- endif -%}
-                        </div>
+                        <div class="json-data">{{ helpers.base.format_json(item.subdata.to_json()) }}</div>
                     </td>
                     <td class="action-column">
                         {{ helpers.archive.reinstantiate_item_link(item) }}

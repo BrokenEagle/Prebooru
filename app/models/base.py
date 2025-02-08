@@ -6,7 +6,6 @@ import json
 import zlib
 import datetime
 from types import SimpleNamespace
-from collections.abc import Iterable
 
 # ## EXTERNAL IMPORTS
 from flask import url_for, Markup
@@ -454,18 +453,6 @@ class JsonModel(DB.Model):
             kwargs = {cls.primary_keys[i]: args[i] for i in range(len(args))}
         return cls.query.filter_by(**kwargs).one_or_none()
 
-    @classmethod
-    def find_by_key(cls, key):
-        return None
-
-    @classmethod
-    def find_rel_by_key(cls, rel, key, value):
-        return None
-
-    @property
-    def key(self):
-        return None
-
     @property
     def model_name(self):
         return self._model_name()
@@ -512,63 +499,6 @@ class JsonModel(DB.Model):
 
     def column_dict(self):
         return {k: getattr(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
-
-    def archive(self):
-        return {
-            'body': self.archive_dict(),
-            'scalars': self.archive_scalar_dict(),
-            'attachments': self.archive_attachment_dict(),
-            'links': self.archive_link_dict(),
-        }
-
-    def archive_dict(self):
-        attributes = self.archive_columns - self.archive_excludes
-        data = {}
-        for attr in attributes:
-            data[attr] = json_serialize(self, attr)
-        for key, attr in self.archive_includes:
-            data[key] = getattr(self, attr)
-        return _sorted_dict(data)
-
-    def archive_scalar_dict(self):
-        data = {}
-        for item in self.archive_scalars:
-            if isinstance(item, str):
-                key, rel = item, item
-            elif isinstance(item, tuple):
-                key, rel, *args = item
-            data[key] = list(getattr(self, rel))
-        return _sorted_dict(data)
-
-    def archive_attachment_dict(self):
-        data = {}
-        for attr in self.archive_attachments:
-            if isinstance(attr, str):
-                key, rel = attr, attr
-            elif isinstance(attr, tuple):
-                key, rel = attr
-            rel_value = getattr(self, rel)
-            if rel_value is None:
-                data[key] = None
-            elif isinstance(rel_value, Iterable):
-                data[key] = [item.archive_dict() for item in rel_value]
-            else:
-                data[key] = rel_value.archive_dict()
-        return _sorted_dict(data)
-
-    def archive_link_dict(self):
-        data = {}
-        for link in self.archive_links:
-            if len(link) >= 3:
-                key, rel, attr, *_ = link
-            elif len(link) == 2:
-                key, rel, attr, *_ = link[0], link[0], link[1]
-            rel_value = getattr(self, rel)
-            if isinstance(rel_value, Iterable):
-                data[key] = [json_serialize(item, attr) for item in getattr(self, rel)]
-            else:
-                data[key] = json_serialize(rel_value, attr)
-        return _sorted_dict(data)
 
     def basic_json(self):
         return self._json(self.basic_attributes)
@@ -664,13 +594,6 @@ class JsonModel(DB.Model):
     @classmethod
     def loads(cls, data, *args):
         return cls(**{k: json_deserialize(v) for (k, v) in data.items() if k in cls.load_columns})
-
-    archive_excludes = set()
-    archive_includes = set()
-    archive_scalars = []
-    archive_attachments = []
-    archive_links = []
-    mandatory_links = []
 
     @classproperty(cached=True)
     def basic_attributes(cls):

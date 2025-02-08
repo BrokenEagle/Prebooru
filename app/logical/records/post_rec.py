@@ -28,14 +28,14 @@ from ..database.post_db import create_post_from_parameters, create_post_from_jso
 from ..database.illust_url_db import update_illust_url_from_parameters, get_illust_url_by_full_url
 from ..database.notation_db import create_notation_from_json
 from ..database.error_db import create_error_from_json, create_and_append_error, create_and_extend_errors
-from ..database.archive_db import set_archive_temporary
+from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
+    get_archive_post_by_md5
 from ..sources.danbooru_src import get_danbooru_posts_by_md5s
 from .base_rec import delete_data
 from .illust_rec import download_illust_url, download_illust_sample
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
 from .pool_rec import delete_pool_element
-from .archive_rec import archive_record
 
 
 # ## GLOBAL VARIABLES
@@ -355,22 +355,23 @@ def delete_post(post, retdata=None):
     return retdata
 
 
-def archive_post_for_deletion(post, expires):
+def archive_post_for_deletion(post, days_to_expire):
     """Soft delete. Preserve data at all costs."""
     retdata = {'error': False, 'is_deleted': False}
-    retdata.update(save_post_to_archive(post, expires))
+    retdata.update(save_post_to_archive(post, days_to_expire))
     if retdata['error']:
         return retdata
     return delete_post(post, retdata)
 
 
-def save_post_to_archive(post, expires):
+def save_post_to_archive(post, days_to_expire):
     retdata = {'error': False}
-    archive = archive_record(post, expires)
+    archive = get_archive_post_by_md5(post.md5)
     if archive is None:
-        msg = f"Error archiving data [{post.shortlink}]."
-        return handle_error_message(msg, retdata)
-    retdata['item'] = archive.to_json()
+        archive = create_archive_from_parameters({'days': days_to_expire, 'type_name': 'post'}, commit=False)
+    else:
+        update_archive_from_parameters(archive, {'days': days_to_expire}, commit=False)
+    retdata['item'] = archive.basic_json()
     archive_params = {k: v for (k, v) in post.basic_json().items() if k in ArchivePost.basic_attributes}
     if archive.post_data is None:
         archive_params['archive_id'] = archive.id
@@ -423,7 +424,7 @@ def recreate_archived_post(archive):
     if is_video:
         create_video_sample_preview_files(post)
     SessionThread(target=process_image_matches, args=([post.id],)).start()
-    set_archive_temporary(archive, 7)
+    update_archive_from_parameters(archive, {'days': 7})
     return retdata
 
 

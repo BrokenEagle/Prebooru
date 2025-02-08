@@ -21,9 +21,6 @@
                 <strong>Type:</strong> {{ archive.type_name | title }}
             </li>
             <li>
-                <strong>Key:</strong> {{ archive.key }}
-            </li>
-            <li>
                 <strong>Expires:</strong> {{ helpers.base.format_timestamp(archive.expires) }}
             </li>
             <li>
@@ -40,13 +37,7 @@
             <li>
                 <strong>Data:</strong>
                 <br>
-                <div class="json-data">
-                    {%- if archive.type_name in ('post', 'illust', 'artist', 'booru') -%}
-                        {{ helpers.base.format_json(archive.subdata.to_json()) }}
-                    {%- else -%}
-                        {{ helpers.base.format_json(archive.data) }}
-                    {%- endif -%}
-                </div>
+                <div class="json-data">{{ helpers.base.format_json(archive.subdata.to_json()) }}</div>
             </li>
         </ul>
     </div>

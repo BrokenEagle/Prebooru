@@ -79,10 +79,6 @@ class Booru(JsonModel):
         return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)\
                    .join(Booru, Artist.boorus).filter(Booru.id == self.id)
 
-    @property
-    def key(self):
-        return '%d' % self.danbooru_id if self.danbooru_id is not None else self.name_value
-
     def delete(self):
         self.names.clear()
         self.artists.clear()
@@ -91,24 +87,9 @@ class Booru(JsonModel):
 
     # ## Class properties
 
-    @classmethod
-    def find_by_key(cls, key):
-        if isinstance(key, str):
-            danbooru_id = int(key)
-        elif isinstance(key, int):
-            danbooru_id = key
-        return cls.query.filter(cls.danbooru_id == danbooru_id)\
-                        .one_or_none()
-
     @classproperty(cached=True)
     def load_columns(cls):
         return super().load_columns + ['name_value']
-
-    archive_excludes = {'name_id'}
-    archive_includes = {('name', 'name_value')}
-    archive_scalars = [('names', 'name_values')]
-    archive_attachments = ['notations']
-    archive_links = [('artists', 'key')]
 
     @classproperty(cached=True)
     def repr_attributes(cls):

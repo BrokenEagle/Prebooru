@@ -5,6 +5,7 @@ from utility.obj import classproperty
 from utility.data import list_difference, is_integer, is_string, is_string_or_none, is_boolean
 
 # ## LOCAL IMPORTS
+from .. import DB
 from .model_enums import SiteDescriptor
 from .notation import notations_json
 from .base import JsonModel, integer_column, enum_column, text_column, boolean_column, json_column, timestamp_column,\
@@ -93,4 +94,5 @@ class ArchiveIllust(JsonModel):
 # ## Initialize
 
 def initialize():
+    DB.Index(None, ArchiveIllust.site_illust_id, ArchiveIllust.site_id, unique=True)
     register_enum_column(ArchiveIllust, SiteDescriptor, 'site')

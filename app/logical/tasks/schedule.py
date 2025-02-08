@@ -24,7 +24,7 @@ from ..records.subscription_rec import sync_missing_subscription_illusts, popula
     download_missing_elements, unlink_expired_subscription_elements, delete_expired_subscription_elements,\
     archive_expired_subscription_elements
 from ..records.pool_rec import update_pool_positions
-from ..records.archive_rec import delete_expired_archive
+from ..records.archive_rec import delete_expired_archives
 from ..database.base_db import safe_db_execute, commit_session
 from ..database.pool_db import get_all_recheck_pools
 from ..database.subscription_db import get_available_subscriptions_query, update_subscription_from_parameters,\
@@ -111,7 +111,7 @@ def expunge_archive_records_task():
         if archive_delete_count > 0:
             printer("Archive records deleted:", archive_delete_count)
             status = {'total': archive_delete_count}
-            status.update(delete_expired_archive())
+            status.update(delete_expired_archives())
             return status
         printer("No archive records to delete.")
 

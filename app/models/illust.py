@@ -161,23 +161,6 @@ class Illust(JsonModel):
     def sitelink(self):
         return "%s #%d" % (self.site.name.lower(), self.site_illust_id)
 
-    @property
-    def key(self):
-        return '%s-%d' % (self.site.name, self.site_illust_id)
-
-    def get_url_by_key(self, key):
-        return next((illust_url for illust_url in self.urls if illust_url.hash_key == key), None)
-
-    def attach_post_by_link_key(self, link_key):
-        from .post import Post
-        post = Post.query.filter_by(md5=link_key['md5']).one_or_none()
-        if post is not None:
-            illust_url = self.get_url_by_key(link_key['key'])
-            if illust_url is not None:
-                illust_url.post = post
-                return True
-        return False
-
     def delete(self):
         pools = [pool for pool in self.pools]
         DB.session.delete(self)
@@ -195,35 +178,9 @@ class Illust(JsonModel):
         swap_key_value(data, 'commentary', 'commentary_body')
         return super().loads(data)
 
-    @classmethod
-    def find_by_key(cls, key):
-        site_name, site_illust_id_str = key.split('-')
-        site_illust_id = int(site_illust_id_str)
-        return cls.query.filter(cls.site_value == site_name, cls.site_illust_id == site_illust_id).one_or_none()
-
-    @classmethod
-    def find_rel_by_key(cls, rel, key, value):
-        from .artist import Artist
-        from .post import Post
-        if rel == 'artist':
-            site_name = key.split('-')[0]
-            return Artist.query.filter(Artist.site_value == site_name, Artist.site_artist_id == value).one_or_none()
-        if rel == 'posts':
-            return Post.query.filter(Post.md5.in_(k['md5'] for k in key)).all()
-
     @classproperty(cached=True)
     def load_columns(cls):
         return super().load_columns + ['site_name', 'title_body', 'commentary_body']
-
-    archive_excludes = {'site', 'site_id', 'title_id', 'commentary_id'}
-    archive_includes = {('site', 'site_name'), ('title', 'title_body'), ('commentary', 'commentary_body')}
-    archive_scalars = [('tags', 'tag_names'), ('titles', 'title_bodies'),
-                       ('commentaries', 'commentary_bodies'),
-                       ('additional_commentaries', 'additional_commentary_bodies')]
-    archive_attachments = ['urls', 'notations']
-    archive_links = [('artist', 'site_artist_id'),
-                     ('posts', 'active_urls', 'link_key', 'attach_post_by_link_key')]
-    mandatory_links = ['artist']
 
     @classproperty(cached=True)
     def repr_attributes(cls):

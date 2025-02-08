@@ -1,72 +1,73 @@
 # APP/LOGICAL/DATABASE/ARCHIVE_DB.PY
 
-# ## PYTHON IMPORTS
-import os
-import re
-
 # ## PACKAGE IMPORTS
-from config import MEDIA_DIRECTORY
 from utility.time import get_current_time, days_from_now
 
 # ## LOCAL IMPORTS
-from ...models import Archive, ArchiveType
-from .base_db import add_record, commit_session, commit_or_flush
+from ...models import Archive, ArchivePost, ArchiveIllust, ArchiveArtist, ArchiveBooru
+from .base_db import set_column_attributes, save_record, set_timesvalue
 
 
-# ## GLOBAL DATA
+# ## GLOBAL VARIABLES
 
-ARCHIVE_DIRECTORY = os.path.join(MEDIA_DIRECTORY, 'archive')
-
-ISODATETIME_RG = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
+ANY_WRITABLE_COLUMNS = ['expires']
+NULL_WRITABLE_ATTRIBUTES = ['type_name']
 
 
 # ## FUNCTIONS
 
-# ###### CREATE
+# #### Create
 
-def create_archive(type_name, key, data, days):
-    data = {
-        'type_id': ArchiveType.to_id(type_name),
-        'key': key,
-        'data': data,
-        'expires': days_from_now(days) if days is not None else None,
-    }
-    archive_item = Archive(**data)
-    add_record(archive_item)
-    commit_session()
-    return archive_item
+def create_archive_from_parameters(createparams, commit=True):
+    return set_archive_from_parameters(Archive(), createparams, 'created', commit)
 
 
-# ###### UPDATE
+# #### Update
 
-def update_archive(archive, data, days):
-    archive.data = data
-    archive.expires = days_from_now(days) if days is not None else None
-    commit_session()
+def update_archive_from_parameters(archive, updateparams, commit=True):
+    return set_archive_from_parameters(archive, updateparams, 'updated', commit)
 
 
-def set_archive_permenant(item):
-    item.expires = None
-    commit_session()
+# #### Set
 
-
-def set_archive_temporary(item, days, commit=False):
-    item.expires = days_from_now(days)
-    commit_or_flush(commit)
+def set_archive_from_parameters(archive, setparams, action, commit):
+    if 'expires' in setparams:
+        set_timesvalue(setparams, 'expires')
+    elif 'days' in setparams:
+        setparams['expires'] = days_from_now(setparams['days']) if setparams['days'] is not None else None
+    if set_column_attributes(archive, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+        save_record(archive, action, commit=commit)
+    return archive
 
 
 # #### Query functions
 
-def get_archive(type_name, key):
-    return Archive.query.filter(Archive.type_value == type_name, Archive.key == key).one_or_none()
+def get_archive_post_by_md5(md5):
+    return Archive.query.join(ArchivePost).filter(ArchivePost.md5 == md5).one_or_none()
 
 
 def get_archive_posts_by_md5s(data_keys):
-    archives = []
+    archive_posts = []
     for i in range(0, len(data_keys), 100):
         sublist = data_keys[i: i + 100]
-        archives += Archive.query.filter(Archive.type_value == 'post', Archive.key.in_(sublist)).all()
-    return archives
+        archive_posts += Archive.query.join(ArchivePost).filter(ArchivePost.md5.in_(sublist)).all()
+    return archive_posts
+
+
+def get_archive_illust_by_site(site_id, site_illust_id):
+    return Archive.query.join(ArchiveIllust).filter(ArchiveIllust.site_id == site_id,
+                                                    ArchiveIllust.site_illust_id == site_illust_id)\
+                                            .one_or_none()
+
+
+def get_archive_artist_by_site(site_id, site_artist_id):
+    return Archive.query.join(ArchiveArtist).filter(ArchiveArtist.site_id == site_id,
+                                                    ArchiveArtist.site_artist_id == site_artist_id)\
+                                            .one_or_none()
+
+
+def get_archive_booru_by_name(name):
+    return Archive.query.join(ArchiveBooru).filter(ArchiveBooru.name == name).one_or_none()
 
 
 def expired_archive_count():

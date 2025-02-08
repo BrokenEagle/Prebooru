@@ -15,9 +15,9 @@ from ..database.artist_db import get_site_artist, get_site_artists
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
     get_all_boorus_page, will_update_booru, get_booru, create_booru_from_json
 from ..database.notation_db import create_notation_from_json
-from ..database.archive_db import set_archive_temporary
+from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
+    get_archive_booru_by_name
 from .base_rec import delete_data
-from .archive_rec import archive_record
 
 
 # ## FUNCTIONS
@@ -110,22 +110,23 @@ def delete_booru(booru, retdata=None):
     return retdata
 
 
-def archive_booru_for_deletion(booru, expires=30):
+def archive_booru_for_deletion(booru, days_to_expire):
     """Soft delete. Preserve data at all costs."""
     retdata = {'error': False, 'is_deleted': False}
-    retdata.update(save_booru_to_archive(booru, expires))
+    retdata.update(save_booru_to_archive(booru, days_to_expire))
     if retdata['error']:
         return retdata
     return delete_booru(booru, retdata)
 
 
-def save_booru_to_archive(booru, expires):
+def save_booru_to_archive(booru, days_to_expire):
     retdata = {'error': False}
-    archive = archive_record(booru, expires)
+    archive = get_archive_booru_by_name(booru.name_value)
     if archive is None:
-        msg = f"Error archiving data [{booru.shortlink}]."
-        return handle_error_message(msg, retdata)
-    retdata['item'] = archive.to_json()
+        archive = create_archive_from_parameters({'days': days_to_expire, 'type_name': 'post'}, commit=False)
+    else:
+        update_archive_from_parameters(archive, {'days': days_to_expire}, commit=False)
+    retdata['item'] = archive.basic_json()
     archive_params = {k: v for (k, v) in booru.basic_json().items() if k in ArchiveBooru.basic_attributes}
     archive_params['name'] = booru.name_value
     if archive.booru_data is None:
@@ -162,7 +163,7 @@ def recreate_archived_booru(archive):
         create_notation_from_json(createparams, commit=False)
     retdata = {'error': False, 'item': booru.to_json()}
     commit_session()
-    set_archive_temporary(archive, 7)
+    update_archive_from_parameters(archive, {'days': 7})
     return retdata
 
 

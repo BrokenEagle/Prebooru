@@ -23,4 +23,4 @@ def get_inspector():
 
 def batch_alter_table(table_name, naming=False, **batch_kwargs):
     naming_convention = NAMING_CONVENTION if naming else None
-    return op.batch_alter_table(table_name, naming_convention=naming_convention, **batch_kwargs)
+    return op.batch_alter_table(table_name, naming_convention=naming_convention, schema=None, **batch_kwargs)

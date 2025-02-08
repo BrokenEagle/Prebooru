@@ -15,7 +15,7 @@ from ..logical.database.base_db import commit_session
 from ..logical.database.subscription_element_db import get_elements_by_id,\
     update_subscription_element_from_parameters
 from ..logical.database.post_db import get_posts_by_md5s, get_post_by_md5
-from ..logical.database.archive_db import get_archive_posts_by_md5s, get_archive
+from ..logical.database.archive_db import get_archive_posts_by_md5s, get_archive_post_by_md5
 from ..logical.records.subscription_rec import redownload_element, reinstantiate_element, relink_element,\
     create_elements_from_source
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -118,7 +118,7 @@ def index_html():
         setattr(item, 'post_match', post_match)
         archive_match = None
         if item.md5 in archive_md5s:
-            archive_match = next((archive for archive in archives if archive.key == item.md5), None)
+            archive_match = next((archive for archive in archives if archive.subdata.md5 == item.md5), None)
         setattr(item, 'archive_match', archive_match)
     return render_template_ws("subscription_elements/index.html",
                               page=elements,
@@ -235,7 +235,7 @@ def relink_json(id):
 def _json_preview(results, element):
     if element.post is None:
         element.post_match = get_post_by_md5(element.md5)
-        element.archive_match = get_archive('post', element.md5) if element.post_match is None else None
+        element.archive_match = get_archive_post_by_md5(element.md5) if element.post_match is None else None
     results['item'] = element.to_json()
     results['html'] = render_template_ws("subscription_elements/_element_preview.html", element=element)
     return results

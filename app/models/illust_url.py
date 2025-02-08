@@ -1,9 +1,5 @@
 # APP/MODELS/ILLUST_URL.PY
 
-# ## PYTHON IMPORTS
-import base64
-import hashlib
-
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
@@ -127,29 +123,7 @@ class IllustUrl(JsonModel):
     def sample_site_domain(self):
         return domain_by_site_name(self.sample_site_name)
 
-    @property
-    def key(self):
-        return self.full_url
-
-    @property
-    def hash_key(self):
-        digest = hashlib.md5(self.full_url.encode('utf')).digest()[:3]
-        return base64.b64encode(digest).decode()
-
-    @property
-    def link_key(self):
-        return {'md5': self.post.md5, 'key': self.hash_key}
-
     # ## Class properties
-
-    @classmethod
-    def find_by_key(cls, full_url):
-        from ..logical.sites import site_name_by_url
-        from ..logical.sources import source_by_site_name
-        site_name = site_name_by_url(full_url)
-        source = source_by_site_name(site_name)
-        partial = source.partial_media_url(full_url)
-        return cls.query.filter(cls.site_value == site_name, cls.url == partial).one_or_none()
 
     @classmethod
     def loads(cls, data, *args):
@@ -166,9 +140,6 @@ class IllustUrl(JsonModel):
             data['sample_site_id'] = SiteDescriptor.to_id(sample_site_name)
             data['sample_url'] = sample_source.partial_media_url(data['sample'])
         return super().loads(data)
-
-    archive_excludes = {'url', 'site', 'site_id', 'sample', 'sample_url', 'sample_site_id'}
-    archive_includes = {('url', 'full_url'), ('sample', 'full_sample_url'), ('key', 'hash_key')}
 
     @classproperty(cached=True)
     def repr_attributes(cls):

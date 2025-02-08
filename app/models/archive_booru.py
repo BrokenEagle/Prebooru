@@ -5,6 +5,7 @@ from utility.obj import classproperty
 from utility.data import list_difference, is_string, is_integer
 
 # ## LOCAL IMPORTS
+from .. import DB
 from .notation import notations_json
 from .base import JsonModel, integer_column, text_column, boolean_column, json_column, timestamp_column,\
     validate_attachment_json, json_list_proxy
@@ -22,7 +23,7 @@ ARTISTS_JSON_DATATYPES = {
 class ArchiveBooru(JsonModel):
     # #### Columns
     archive_id = integer_column(foreign_key='archive.id', primary_key=True)
-    danbooru_id = integer_column(nullable=False)
+    danbooru_id = integer_column(nullable=True)
     name = text_column(nullable=False)
     banned = boolean_column(nullable=False)
     deleted = boolean_column(nullable=False)
@@ -65,3 +66,9 @@ class ArchiveBooru(JsonModel):
     @classproperty(cached=False)
     def recreate_attributes(cls):
         return list_difference(super().basic_attributes, ['archive_id', 'names', 'notations', 'artists'])
+
+
+# ## Initialize
+
+def initialize():
+    DB.Index(None, ArchiveBooru.name, unique=True)

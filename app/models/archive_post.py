@@ -12,6 +12,7 @@ from utility.obj import classproperty
 from utility.data import list_difference
 
 # ## LOCAL IMPORTS
+from .. import DB
 from .model_enums import PostType
 from .error import errors_json
 from .notation import notations_json
@@ -114,4 +115,5 @@ class ArchivePost(JsonModel):
 # ## Initialize
 
 def initialize():
+    DB.Index(None, ArchivePost.md5, unique=True)
     register_enum_column(ArchivePost, PostType, 'type')

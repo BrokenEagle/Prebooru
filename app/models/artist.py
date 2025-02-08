@@ -143,10 +143,6 @@ class Artist(JsonModel):
     def booru_search_url(self):
         return self.source.artist_booru_search_url(self)
 
-    @property
-    def key(self):
-        return '%s-%d' % (self.site.name, self.site_artist_id)
-
     def delete(self):
         self.names.clear()
         self.profiles.clear()
@@ -156,23 +152,9 @@ class Artist(JsonModel):
 
     # ## Class properties
 
-    @classmethod
-    def find_by_key(cls, key):
-        site_name, site_artist_id_str = key.split('-')
-        site_artist_id = int(site_artist_id_str)
-        return cls.query.filter(cls.site_value == site_name, cls.site_artist_id == site_artist_id).one_or_none()
-
     @classproperty(cached=True)
     def load_columns(cls):
         return super().load_columns + ['site_name', 'site_account_value', 'name_value', 'profile_body']
-
-    archive_excludes = {'site', 'site_id', 'site_account_id', 'name_id', 'profile_id'}
-    archive_includes = {('site', 'site_name'), ('site_account', 'site_account_value'),
-                        ('name', 'name_value'), ('profile', 'profile_body')}
-    archive_scalars = [('site_accounts', 'site_account_values'), ('names', 'name_values'),
-                       ('profiles', 'profile_bodies')]
-    archive_attachments = ['webpages', 'notations']
-    archive_links = [('boorus', 'danbooru_id')]
 
     @classproperty(cached=True)
     def repr_attributes(cls):

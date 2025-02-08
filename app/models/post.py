@@ -213,19 +213,8 @@ class Post(JsonModel):
                                SimilarityMatch.reverse_id.desc())
         return query.limit(10).all()
 
-    @property
-    def key(self):
-        return self.md5
-
     def delete_pool(self, pool_id):
         pool_element_delete(pool_id, self)
-
-    def attach_illust_url_by_full_url(self, full_url):
-        illust_url = IllustUrl.find_by_key(full_url)
-        if illust_url is not None:
-            illust_url.post = self
-            return True
-        return False
 
     def delete(self):
         pools = [pool for pool in self.pools]
@@ -238,19 +227,9 @@ class Post(JsonModel):
 
     # ## Class properties
 
-    @classmethod
-    def find_by_key(cls, key):
-        return cls.query.filter(cls.md5 == key)\
-                        .one_or_none()
-
     @classproperty(cached=True)
     def load_columns(cls):
         return super().load_columns + ['type_name']
-
-    archive_excludes = {'type', 'type_id', 'simcheck', 'alternate'}
-    archive_includes = {('type', 'type_name')}
-    archive_attachments = ['notations', 'errors']
-    archive_links = [('illusts', 'illust_urls', 'full_url', 'attach_illust_url_by_full_url')]
 
     @classproperty(cached=True)
     def json_attributes(cls):

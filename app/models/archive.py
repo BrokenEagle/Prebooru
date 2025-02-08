@@ -5,14 +5,12 @@ from utility.obj import classproperty
 from utility.data import merge_dicts
 
 # ## LOCAL IMPORTS
-from .. import DB
 from .model_enums import ArchiveType
 from .archive_post import ArchivePost
 from .archive_illust import ArchiveIllust
 from .archive_artist import ArchiveArtist
 from .archive_booru import ArchiveBooru
-from .base import JsonModel, integer_column, enum_column, text_column, json_column, timestamp_column,\
-    register_enum_column, relationship
+from .base import JsonModel, integer_column, enum_column, timestamp_column, register_enum_column, relationship
 
 
 # ## CLASSES
@@ -21,8 +19,6 @@ class Archive(JsonModel):
     # #### Columns
     id = integer_column(primary_key=True)
     type_id = enum_column(foreign_key='archive_type.id', nullable=False)
-    key = text_column(nullable=False)
-    data = json_column(nullable=False)
     expires = timestamp_column(nullable=True)
 
     # ## Relationships
@@ -43,9 +39,7 @@ class Archive(JsonModel):
         return switcher[self.type_name]()
 
     def to_json(self):
-        if self.type_name in ['post', 'illust', 'artist', 'booru']:
-            return merge_dicts(super().to_json(), self.subdata.to_json())
-        return super().to_json()
+        return merge_dicts(super().to_json(), self.subdata.to_json())
 
     # ## Class properties
 
@@ -59,10 +53,6 @@ class Archive(JsonModel):
             'type_id': ('archive_type', 'type_name'),
         }
         return [mapping.get(k, k) for k in super().json_attributes]
-
-    __table_args__ = (
-        DB.UniqueConstraint('key', 'type_id'),
-    )
 
 
 # ## Initialize

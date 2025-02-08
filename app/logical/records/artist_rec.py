@@ -17,9 +17,9 @@ from ..database.artist_db import create_artist_from_parameters, update_artist_fr
 from ..database.artist_url_db import create_artist_url_from_json
 from ..database.booru_db import get_boorus, create_booru_from_parameters, booru_append_artist
 from ..database.notation_db import create_notation_from_json
-from ..database.archive_db import set_archive_temporary
+from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
+    get_archive_artist_by_site
 from .base_rec import delete_data
-from .archive_rec import archive_record
 
 
 # ## FUNCTIONS
@@ -116,25 +116,26 @@ def delete_artist(artist, retdata=None):
     return retdata
 
 
-def archive_artist_for_deletion(artist, expires=30):
+def archive_artist_for_deletion(artist, days_to_expire):
     """Soft delete. Preserve data at all costs."""
     retdata = {'error': False, 'is_deleted': False}
     if artist.illust_count > 0:
         return handle_error_message("Cannot delete artist with existing illusts.", retdata)
-    retdata.update(save_artist_to_archive(artist, expires))
+    retdata.update(save_artist_to_archive(artist, days_to_expire))
     if retdata['error']:
         return retdata
     retdata['is_archived'] = True
     return delete_artist(artist, retdata)
 
 
-def save_artist_to_archive(artist, expires):
+def save_artist_to_archive(artist, days_to_expire):
     retdata = {'error': False}
-    archive = archive_record(artist, expires)
+    archive = get_archive_artist_by_site(artist.site_id, artist.site_artist_id)
     if archive is None:
-        msg = f"Error archiving data [{artist.shortlink}]."
-        return handle_error_message(msg, retdata)
-    retdata['item'] = archive.to_json()
+        archive = create_archive_from_parameters({'days': days_to_expire, 'type_name': 'artist'}, commit=False)
+    else:
+        update_archive_from_parameters(archive, {'days': days_to_expire}, commit=False)
+    retdata['item'] = archive.basic_json()
     archive_params = {k: v for (k, v) in artist.basic_json().items() if k in ArchiveArtist.basic_attributes}
     archive_params['site_account'] = artist.site_account_value
     archive_params['name'] = artist.name_value
@@ -183,7 +184,7 @@ def recreate_archived_artist(archive):
         create_notation_from_json(createparams, commit=False)
     retdata = {'error': False, 'item': artist.to_json()}
     commit_session()
-    set_archive_temporary(archive, 7)
+    update_archive_from_parameters(archive, {'days': 7})
     return retdata
 
 

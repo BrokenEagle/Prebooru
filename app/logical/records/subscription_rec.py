@@ -30,7 +30,7 @@ from ..database.post_db import get_post_by_md5, get_posts_by_id
 from ..database.illust_url_db import update_illust_url_from_parameters
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
 from ..database.artist_db import get_site_artist, update_artist_from_parameters_standard
-from ..database.archive_db import get_archive
+from ..database.archive_db import get_archive_post_by_md5
 from ..database.error_db import is_error, create_and_append_error, create_and_extend_errors
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
 from ..database.subscription_db import add_subscription_error, update_subscription_from_parameters,\
@@ -369,7 +369,7 @@ def redownload_element(element):
 
 
 def reinstantiate_element(element):
-    archive = get_archive('post', element.md5)
+    archive = get_archive_post_by_md5(element.md5)
     if archive is None:
         if get_post_by_md5(element.md5) is not None:
             update_subscription_element_from_parameters(element, {'status_name': 'unlinked'})
@@ -392,7 +392,7 @@ def reinstantiate_element(element):
 def relink_element(element):
     post = get_post_by_md5(element.md5)
     if post is None:
-        if get_archive('post', element.md5) is not None:
+        if get_archive_post_by_md5(element.md5) is not None:
             update_subscription_element_from_parameters(element, {'status_name': 'archived'})
         else:
             update_subscription_element_from_parameters(element, {'status_name': 'deleted'})

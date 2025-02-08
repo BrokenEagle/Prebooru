@@ -17,7 +17,8 @@ from ..database.illust_db import create_illust_from_parameters, update_illust_fr
 from ..database.illust_url_db import create_illust_url_from_json, update_illust_url_from_parameters
 from ..database.post_db import get_posts_by_md5s
 from ..database.notation_db import create_notation_from_json
-from ..database.archive_db import set_archive_temporary
+from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
+    get_archive_illust_by_site
 from ..database.download_db import create_download_from_parameters, update_download_from_parameters,\
     get_download_by_request_url
 from ..database.download_element_db import create_download_element_from_parameters,\
@@ -25,7 +26,6 @@ from ..database.download_element_db import create_download_element_from_paramete
 from .base_rec import delete_data
 from .artist_rec import get_or_create_artist_from_source
 from .pool_rec import delete_pool_element
-from .archive_rec import archive_record
 
 
 # ## GLOBAL VARIABLES
@@ -83,22 +83,23 @@ def delete_illust(illust, retdata=None):
     return retdata
 
 
-def archive_illust_for_deletion(illust, expires=30):
+def archive_illust_for_deletion(illust, days_to_expire):
     """Soft delete. Preserve data at all costs."""
     retdata = {'error': False, 'is_deleted': False}
-    retdata.update(save_illust_to_archive(illust, expires))
+    retdata.update(save_illust_to_archive(illust, days_to_expire))
     if retdata['error']:
         return retdata
     return delete_illust(illust, retdata)
 
 
-def save_illust_to_archive(illust, expires):
+def save_illust_to_archive(illust, days_to_expire):
     retdata = {'error': False}
-    archive = archive_record(illust, expires)
+    archive = get_archive_illust_by_site(illust.site_id, illust.site_illust_id)
     if archive is None:
-        msg = f"Error archiving data [{illust.shortlink}]."
-        return handle_error_message(msg, retdata)
-    retdata['item'] = archive.to_json()
+        archive = create_archive_from_parameters({'days': days_to_expire, 'type_name': 'illust'}, commit=False)
+    else:
+        update_archive_from_parameters(archive, {'days': days_to_expire}, commit=False)
+    retdata['item'] = archive.basic_json()
     archive_params = {k: v for (k, v) in illust.basic_json().items() if k in ArchiveIllust.basic_attributes}
     archive_params['site_artist_id'] = illust.artist.site_artist_id
     archive_params['title'] = illust.title_body
@@ -159,7 +160,7 @@ def recreate_archived_illust(archive):
         create_notation_from_json(createparams, commit=False)
     retdata = {'error': False, 'item': illust.to_json()}
     commit_session()
-    set_archive_temporary(archive, 7)
+    update_archive_from_parameters(archive, {'days': 7})
     return retdata
 
 
