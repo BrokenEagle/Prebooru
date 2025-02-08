@@ -463,7 +463,12 @@ class JsonModel(DB.Model):
 
     @property
     def shortlink(self):
-        return "%s #%d" % (self.model_name, self.id) if self.id is not None else "new %s" % self.model_name
+        pk_values = self.pk_values
+        if not any(pk_values):
+            return "new %s" % self.model_name
+        else:
+            pk_key = '-'.join(map(str, pk_values))
+            return "%s #%s" % (self.model_name, pk_key)
 
     @property
     def header(self):
@@ -525,6 +530,10 @@ class JsonModel(DB.Model):
         for attr in self.basic_attributes:
             if attr in data:
                 setattr(self, attr, data[attr])
+
+    @property
+    def pk_values(self):
+        return tuple(getattr(self, key) for key in self.primary_keys)
 
     @classproperty(cached=False)
     def relations(cls):
@@ -620,7 +629,11 @@ class JsonModel(DB.Model):
     def repr_attributes(cls):
         return cls.basic_attributes
 
-    recreate_attributes = []
+    @classproperty(cached=True)
+    def recreate_attributes(cls):
+        return [attr for attr in cls.basic_attributes
+                if attr not in cls.primary_keys
+                and not isinstance(getattr(cls, attr).type, JSON)]
 
     @StaticProperty
     def rowid():

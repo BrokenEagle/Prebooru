@@ -8,14 +8,14 @@ from utility.time import days_ago
 
 # ## LOCAL IMPORTS
 from ...models import Post, SubscriptionElement, ImageHash, IllustUrl, Illust, Artist
-from .base_db import set_column_attributes, add_record, save_record, commit_session
+from .base_db import set_column_attributes, save_record, commit_session, set_timesvalue
 
 
 # ## GLOBAL VARIABLES
 
 ANY_WRITABLE_COLUMNS = ['type_name', 'simcheck', 'alternate', 'width', 'height', 'size', 'file_ext', 'md5',
                         'pixel_md5', 'duration', 'audio']
-NULL_WRITABLE_ATTRIBUTES = ['danbooru_id']
+NULL_WRITABLE_ATTRIBUTES = ['danbooru_id', 'created']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
                                                 .with_entities(SubscriptionElement.post_id)
@@ -30,15 +30,10 @@ SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_
 # #### Create
 
 def create_post_from_parameters(createparams, commit=True):
-    post = Post(alternate=False, simcheck=False)
-    return set_post_from_parameters(post, createparams, 'created', commit)
-
-
-def create_post_from_json(data, commit=True):
-    post = Post.loads(data)
-    add_record(post)
-    save_record(post, 'created', commit=commit)
-    return post
+    createparams.setdefault('alternate', False)
+    createparams.setdefault('simcheck', False)
+    set_timesvalue(createparams, 'created')
+    return set_post_from_parameters(Post(), createparams, 'created', commit)
 
 
 # #### Update

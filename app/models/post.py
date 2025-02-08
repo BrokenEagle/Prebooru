@@ -228,10 +228,6 @@ class Post(JsonModel):
     # ## Class properties
 
     @classproperty(cached=True)
-    def load_columns(cls):
-        return super().load_columns + ['type_name']
-
-    @classproperty(cached=True)
     def json_attributes(cls):
         return super().json_attributes + ['preview_url', 'sample_url', 'file_url', 'tags', 'illust_urls', 'errors']
 

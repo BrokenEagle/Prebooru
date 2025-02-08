@@ -2,13 +2,13 @@
 
 # ## LOCAL IMPORTS
 from ...models import Error
-from .base_db import set_column_attributes, add_record, delete_record, save_record, commit_session, commit_or_flush
+from .base_db import set_column_attributes, delete_record, save_record, commit_session, commit_or_flush, set_timesvalue
 
 
 # ## GLOBAL VARIABLES
 
 ANY_WRITABLE_COLUMNS = ['module', 'message']
-NULL_WRITABLE_ATTRIBUTES = []
+NULL_WRITABLE_ATTRIBUTES = ['post_id', 'created']
 
 
 # ## FUNCTIONS
@@ -16,15 +16,8 @@ NULL_WRITABLE_ATTRIBUTES = []
 # #### Create
 
 def create_error_from_parameters(createparams, commit=True):
-    error = Error()
-    return set_error_from_parameters(error, createparams, 'created', commit)
-
-
-def create_error_from_json(data, commit=True):
-    error = Error.loads(data)
-    add_record(error)
-    save_record(error, 'created', commit=commit)
-    return error
+    set_timesvalue(createparams, 'created')
+    return set_error_from_parameters(Error(), createparams, 'created', commit)
 
 
 def create_error(module_name, message, commit=True):

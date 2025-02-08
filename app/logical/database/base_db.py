@@ -85,11 +85,12 @@ def set_column_attributes(item, any_columns, null_columns, dataparams, update=Fa
             setattr(item, attr, dataparams[attr])
             is_dirty = True
     if create:
-        if hasattr(item, 'created'):
+        if 'created' not in dataparams and hasattr(item, 'created'):
             item.created = get_current_time()
         add_record(item)
     if is_dirty or create:
-        _update_record(item, update)
+        if 'updated' not in dataparams:
+            _update_record(item, update)
         flush_session(safe=safe)
         printer.print()
     return is_dirty
@@ -312,6 +313,8 @@ def _normalize_val(val):
         return val[:80] + '...' if len(val) > 80 else val
     if isinstance(val, dict):
         return '<dict>'
+    if isinstance(val, list):
+        return '<list>'
     return val
 
 

@@ -42,11 +42,11 @@ def set_archive_from_parameters(archive, setparams, action, commit):
 
 # #### Query functions
 
-def get_archive_post_by_md5(md5):
+def get_archive_by_post_md5(md5):
     return Archive.query.join(ArchivePost).filter(ArchivePost.md5 == md5).one_or_none()
 
 
-def get_archive_posts_by_md5s(data_keys):
+def get_archives_by_post_md5s(data_keys):
     archive_posts = []
     for i in range(0, len(data_keys), 100):
         sublist = data_keys[i: i + 100]

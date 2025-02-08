@@ -95,7 +95,10 @@ class ArchivePost(JsonModel):
 
     @classproperty(cached=False)
     def recreate_attributes(cls):
-        return list_difference(super().basic_attributes, ['archive_id', 'tags', 'notations', 'errors', 'illusts'])
+        mapping = {
+            'type_id': 'type_name',
+        }
+        return [mapping.get(k, k) for k in super().recreate_attributes]
 
     # ## Private
 

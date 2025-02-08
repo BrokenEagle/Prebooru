@@ -15,7 +15,7 @@ from ..logical.database.base_db import commit_session
 from ..logical.database.subscription_element_db import get_elements_by_id,\
     update_subscription_element_from_parameters
 from ..logical.database.post_db import get_posts_by_md5s, get_post_by_md5
-from ..logical.database.archive_db import get_archive_posts_by_md5s, get_archive_post_by_md5
+from ..logical.database.archive_db import get_archives_by_post_md5s, get_archive_by_post_md5
 from ..logical.records.subscription_rec import redownload_element, reinstantiate_element, relink_element,\
     create_elements_from_source
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -110,7 +110,7 @@ def index_html():
                        if element.post is None and element.status.name in ['unlinked', 'duplicate'])
     missing_posts = get_posts_by_md5s(list(missing_md5s)) if len(missing_md5s) else []
     archive_md5s = set(element.md5 for element in elements.items if element.status.name == 'archived')
-    archives = get_archive_posts_by_md5s(list(archive_md5s)) if len(archive_md5s) else []
+    archives = get_archives_by_post_md5s(list(archive_md5s)) if len(archive_md5s) else []
     for item in elements.items:
         post_match = None
         if item.md5 in missing_md5s:
@@ -235,7 +235,7 @@ def relink_json(id):
 def _json_preview(results, element):
     if element.post is None:
         element.post_match = get_post_by_md5(element.md5)
-        element.archive_match = get_archive_post_by_md5(element.md5) if element.post_match is None else None
+        element.archive_match = get_archive_by_post_md5(element.md5) if element.post_match is None else None
     results['item'] = element.to_json()
     results['html'] = render_template_ws("subscription_elements/_element_preview.html", element=element)
     return results
