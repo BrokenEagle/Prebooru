@@ -60,7 +60,7 @@ def get_archive_by_illust_site(site_id, site_illust_id):
                                             .one_or_none()
 
 
-def get_archive_artist_by_site(site_id, site_artist_id):
+def get_archive_by_artist_site(site_id, site_artist_id):
     return Archive.query.join(ArchiveArtist).filter(ArchiveArtist.site_id == site_id,
                                                     ArchiveArtist.site_artist_id == site_artist_id)\
                                             .one_or_none()

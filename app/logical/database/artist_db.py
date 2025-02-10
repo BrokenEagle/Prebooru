@@ -10,7 +10,7 @@ from utility.data import swap_key_value
 # ## LOCAL IMPORTS
 from ...models import Artist, Booru, Label, Description
 from .base_db import set_column_attributes, set_version_relations, set_timesvalue,\
-    add_record, save_record, commit_session, flush_session
+    save_record, commit_session, flush_session
 from .artist_url_db import create_artist_url_from_parameters, update_artist_url_from_parameters
 
 # ## GLOBAL VARIABLES
@@ -20,7 +20,7 @@ VERSION_RELATIONSHIPS = [('profile', 'profiles', 'body', Description),
                          ('name', 'names', 'name', Label)]
 
 ANY_WRITABLE_COLUMNS = ['site_name', 'site_artist_id', 'site_created', 'active', 'primary']
-NULL_WRITABLE_ATTRIBUTES = ['site_account_value', 'name_value', 'profile_body']
+NULL_WRITABLE_ATTRIBUTES = ['site_account_value', 'name_value', 'profile_body', 'created', 'updated']
 
 BOORU_SUBQUERY = Artist.query\
     .join(Booru, Artist.boorus)\
@@ -39,14 +39,9 @@ def create_artist_from_parameters(createparams, commit=True):
     swap_key_value(createparams, 'site_account', 'site_account_value')
     swap_key_value(createparams, 'name', 'name_value')
     swap_key_value(createparams, 'profile', 'profile_body')
+    set_timesvalue(createparams, 'created')
+    set_timesvalue(createparams, 'updated')
     return set_artist_from_parameters(Artist(), createparams, 'created', commit, True)
-
-
-def create_artist_from_json(data, commit=True):
-    artist = Artist.loads(data)
-    add_record(artist)
-    save_record(artist, 'created', commit=commit)
-    return artist
 
 
 # #### Update

@@ -153,10 +153,6 @@ class Artist(JsonModel):
     # ## Class properties
 
     @classproperty(cached=True)
-    def load_columns(cls):
-        return super().load_columns + ['site_name', 'site_account_value', 'name_value', 'profile_body']
-
-    @classproperty(cached=True)
     def repr_attributes(cls):
         return list_difference(super().json_attributes, ['site_id', 'site_account_id', 'name_id', 'profile_id'])\
             + ['site_name', 'site_account_value', 'name_value']

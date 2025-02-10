@@ -80,8 +80,10 @@ class ArchiveArtist(JsonModel):
 
     @classproperty(cached=False)
     def recreate_attributes(cls):
-        return list_difference(super().basic_attributes, ['archive_id', 'webpages', 'site_accounts', 'names',
-                                                          'profiles', 'notations', 'boorus'])
+        mapping = {
+            'site_id': 'site_name',
+        }
+        return [mapping.get(k, k) for k in super().recreate_attributes]
 
 
 # ## Initialize

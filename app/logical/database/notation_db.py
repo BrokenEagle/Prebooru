@@ -8,7 +8,7 @@ from .base_db import set_column_attributes, add_record, save_record, set_timesva
 # ## GLOBAL VARIABLES
 
 ANY_WRITABLE_COLUMNS = ['body']
-NULL_WRITABLE_ATTRIBUTES = ['no_pool', 'post_id', 'illust_id', 'created', 'updated']
+NULL_WRITABLE_ATTRIBUTES = ['no_pool', 'post_id', 'illust_id', 'artist_id', 'created', 'updated']
 
 
 # ## FUNCTIONS

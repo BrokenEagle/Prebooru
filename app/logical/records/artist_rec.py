@@ -4,21 +4,22 @@
 import itertools
 
 # ## PACKAGE IMPORTS
-from utility.data import inc_dict_entry, merge_dicts, swap_key_value
+from utility.data import inc_dict_entry, merge_dicts
 from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
 from ...models import ArchiveArtist, ArtistSiteAccounts, ArtistNames, ArtistProfiles, Description, Label
 from ..utility import set_error
 from ..logger import handle_error_message
-from ..database.base_db import add_record, delete_record, commit_session
+from ..database.base_db import delete_record, commit_session
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters_standard,\
-    get_site_artist, get_artists_without_boorus_page, create_artist_from_json
-from ..database.artist_url_db import create_artist_url_from_json
+    get_site_artist, get_artists_without_boorus_page
+from ..database.artist_url_db import create_artist_url_from_parameters
 from ..database.booru_db import get_boorus, create_booru_from_parameters, booru_append_artist
-from ..database.notation_db import create_notation_from_json
+from ..database.notation_db import create_notation_from_parameters
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
-    get_archive_artist_by_site
+    get_archive_by_artist_site
+from ..database.archive_artist_db import create_archive_artist_from_parameters, update_archive_artist_from_parameters
 from .base_rec import delete_data
 
 
@@ -130,7 +131,7 @@ def archive_artist_for_deletion(artist, days_to_expire):
 
 def save_artist_to_archive(artist, days_to_expire):
     retdata = {'error': False}
-    archive = get_archive_artist_by_site(artist.site_id, artist.site_artist_id)
+    archive = get_archive_by_artist_site(artist.site_id, artist.site_artist_id)
     if archive is None:
         archive = create_archive_from_parameters({'days': days_to_expire, 'type_name': 'artist'}, commit=False)
     else:
@@ -140,25 +141,22 @@ def save_artist_to_archive(artist, days_to_expire):
     archive_params['site_account'] = artist.site_account_value
     archive_params['name'] = artist.name_value
     archive_params['profile'] = artist.profile_body
+    archive_params['webpages_json'] = [{'url': webpage.url,
+                                        'active': webpage.active}
+                                       for webpage in artist.webpages]
+    archive_params['site_accounts_json'] = list(artist.site_account_values)
+    archive_params['names_json'] = list(artist.name_values)
+    archive_params['profiles_json'] = list(artist.profile_bodies)
+    archive_params['notations_json'] = [{'body': notation.body,
+                                         'created': notation.created.isoformat(),
+                                         'updated': notation.updated.isoformat()}
+                                        for notation in artist.notations]
+    archive_params['boorus_json'] = [booru.danbooru_id for booru in artist.boorus if booru.danbooru_id is not None]
     if archive.artist_data is None:
         archive_params['archive_id'] = archive.id
-        archive_artist = ArchiveArtist(**archive_params)
+        create_archive_artist_from_parameters(archive_params)
     else:
-        archive_artist = archive.artist_data
-        archive_artist.update(archive_params)
-    archive_artist.webpages_json = [{'url': webpage.url,
-                                    'active': webpage.active}
-                                    for webpage in artist.webpages]
-    archive_artist.site_accounts_json = list(artist.site_account_values)
-    archive_artist.names_json = list(artist.name_values)
-    archive_artist.profiles_json = list(artist.profile_bodies)
-    archive_artist.notations_json = [{'body': notation.body,
-                                      'created': notation.created.isoformat(),
-                                      'updated': notation.updated.isoformat()}
-                                     for notation in artist.notations]
-    archive_artist.boorus_json = [booru.danbooru_id for booru in artist.boorus if booru.danbooru_id is not None]
-    add_record(archive_artist)
-    commit_session()
+        update_archive_artist_from_parameters(archive.artist_data, archive_params)
     return retdata
 
 
@@ -167,22 +165,18 @@ def recreate_archived_artist(archive):
     artist = get_site_artist(artist_data.site_artist_id, artist_data.site_id)
     if artist is not None:
         return handle_error_message(f"Artist already exists: {artist.shortlink}")
-    createparams = artist_data.recreate_json()
-    swap_key_value(createparams, 'site_account', 'site_account_value')
-    swap_key_value(createparams, 'name', 'name_value')
-    swap_key_value(createparams, 'profile', 'profile_body')
-    artist = create_artist_from_json(createparams, commit=False)
+    artist = create_artist_from_parameters(artist_data.recreate_json(), commit=False)
     for webpage_data in artist_data.webpages_json:
         webpage_data['artist_id'] = artist.id
-        create_artist_url_from_json(webpage_data, commit=False)
+        create_artist_url_from_parameters(webpage_data, commit=False)
     artist.site_account_values.extend(artist_data.site_accounts_json)
     artist.name_values.extend(artist_data.names_json)
     artist.profile_bodies.extend(artist_data.profiles_json)
     _link_boorus(artist, artist_data)
     for notation in artist_data.notations_json:
-        createparams = merge_dicts(notation, {'artist_id': artist.id, 'no_pool': True})
-        create_notation_from_json(createparams, commit=False)
-    retdata = {'error': False, 'item': artist.to_json()}
+        createparams = merge_dicts(notation, {'artist_id': artist.id})
+        create_notation_from_parameters(createparams, commit=False)
+    retdata = {'error': False, 'item': artist.basic_json()}
     commit_session()
     update_archive_from_parameters(archive, {'days': 7})
     return retdata
@@ -194,7 +188,7 @@ def relink_archived_artist(archive):
     if artist is None:
         msg = f"{artist_data.site_name} #{artist_data.site_artist_id} not found in artists."
         return handle_error_message(msg)
-    retdata = {'error': False, 'item': artist.to_json()}
+    retdata = {'error': False, 'item': artist.basic_json()}
     _link_boorus(artist, artist_data)
     commit_session()
     return retdata
