@@ -54,7 +54,7 @@ def get_archives_by_post_md5s(data_keys):
     return archive_posts
 
 
-def get_archive_illust_by_site(site_id, site_illust_id):
+def get_archive_by_illust_site(site_id, site_illust_id):
     return Archive.query.join(ArchiveIllust).filter(ArchiveIllust.site_id == site_id,
                                                     ArchiveIllust.site_illust_id == site_illust_id)\
                                             .one_or_none()

@@ -125,22 +125,6 @@ class IllustUrl(JsonModel):
 
     # ## Class properties
 
-    @classmethod
-    def loads(cls, data, *args):
-        from ..logical.sites import site_name_by_url
-        from ..logical.sources import source_by_site_name
-        if 'url' in data and data['url'].startswith('http'):
-            site_name = site_name_by_url(data['url'])
-            source = source_by_site_name(site_name)
-            data['site_id'] = SiteDescriptor.to_id(site_name)
-            data['url'] = source.partial_media_url(data['url'])
-        if 'sample' in data and data['sample'] is not None and data['sample'].startswith('http'):
-            sample_site_name = site_name_by_url(data['sample'])
-            sample_source = source_by_site_name(sample_site_name)
-            data['sample_site_id'] = SiteDescriptor.to_id(sample_site_name)
-            data['sample_url'] = sample_source.partial_media_url(data['sample'])
-        return super().loads(data)
-
     @classproperty(cached=True)
     def repr_attributes(cls):
         return list_difference(super().json_attributes, ['site_id', 'sample_site_id'])\

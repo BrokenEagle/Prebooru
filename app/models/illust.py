@@ -172,16 +172,6 @@ class Illust(JsonModel):
 
     # ## Class properties
 
-    @classmethod
-    def loads(cls, data, *args):
-        swap_key_value(data, 'title', 'title_body')
-        swap_key_value(data, 'commentary', 'commentary_body')
-        return super().loads(data)
-
-    @classproperty(cached=True)
-    def load_columns(cls):
-        return super().load_columns + ['site_name', 'title_body', 'commentary_body']
-
     @classproperty(cached=True)
     def repr_attributes(cls):
         return list_difference(super().json_attributes, ['site_id', 'title_id', 'commentary_id']) + ['site_name']

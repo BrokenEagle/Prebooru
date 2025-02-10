@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...models import IllustUrl
-from .base_db import set_column_attributes, add_record, save_record
+from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
@@ -19,13 +19,6 @@ NULL_WRITABLE_ATTRIBUTES = ['illust_id']
 def create_illust_url_from_parameters(createparams, commit=True):
     illust_url = IllustUrl()
     return set_illust_url_from_parameters(illust_url, createparams, 'created', commit)
-
-
-def create_illust_url_from_json(data, commit=True):
-    illust_url = IllustUrl.loads(data)
-    add_record(illust_url)
-    save_record(illust_url, 'created', commit=commit)
-    return illust_url
 
 
 # #### Update

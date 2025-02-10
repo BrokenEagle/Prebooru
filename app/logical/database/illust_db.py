@@ -12,7 +12,7 @@ from ...models import Illust, SiteTag, Description
 from .illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from .tag_db import create_tag_from_parameters, get_tags_by_names
 from .base_db import set_column_attributes, set_relationship_collections, set_version_relations,\
-    set_timesvalue, add_record, save_record, commit_session, flush_session
+    set_timesvalue, save_record, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
@@ -22,7 +22,7 @@ VERSION_RELATIONSHIPS = [('title', 'titles', 'body', Description),
                          ('commentary', 'commentaries', 'body', Description)]
 
 ANY_WRITABLE_COLUMNS = ['site_illust_id', 'site_created', 'pages', 'score', 'active']
-NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_name', 'title_body', 'commentary_body']
+NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_name', 'title_body', 'commentary_body', 'created', 'updated']
 
 
 # ## FUNCTIONS
@@ -33,14 +33,9 @@ def create_illust_from_parameters(createparams, commit=True):
     createparams.setdefault('active', True)
     swap_key_value(createparams, 'title', 'title_body')
     swap_key_value(createparams, 'commentary', 'commentary_body')
+    set_timesvalue(createparams, 'created')
+    set_timesvalue(createparams, 'updated')
     return set_illust_from_parameters(Illust(), createparams, 'created', commit, True)
-
-
-def create_illust_from_json(data, commit=True):
-    illust = Illust.loads(data)
-    add_record(illust)
-    save_record(illust, 'created', commit=commit)
-    return illust
 
 
 # #### Update

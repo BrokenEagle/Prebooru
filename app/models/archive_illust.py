@@ -87,8 +87,10 @@ class ArchiveIllust(JsonModel):
 
     @classproperty(cached=False)
     def recreate_attributes(cls):
-        return list_difference(super().basic_attributes, ['archive_id', 'urls', 'titles', 'commentaries',
-                                                          'additional_commentaries', 'notations', 'tags'])
+        mapping = {
+            'site_id': 'site_name',
+        }
+        return [mapping.get(k, k) for k in list_difference(super().recreate_attributes, ['site_artist_id'])]
 
 
 # ## Initialize

@@ -2,7 +2,7 @@
 
 # ## PACKAGE IMPORTS
 from utility.uprint import print_warning
-from utility.data import merge_dicts, swap_key_value
+from utility.data import merge_dicts
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -10,15 +10,17 @@ from ...models import IllustTitles, IllustCommentaries, AdditionalCommentaries, 
 from ..logger import handle_error_message
 from ..network import get_http_data
 from ..utility import set_error
-from ..database.base_db import add_record, delete_record, commit_session, get_or_create
+from ..sites import site_name_by_url
+from ..database.base_db import delete_record, commit_session, get_or_create
 from ..database.artist_db import get_blank_artist, get_site_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters_standard,\
-    get_site_illust, create_illust_from_json
-from ..database.illust_url_db import create_illust_url_from_json, update_illust_url_from_parameters
+    get_site_illust
+from ..database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from ..database.post_db import get_posts_by_md5s
-from ..database.notation_db import create_notation_from_json
+from ..database.notation_db import create_notation_from_parameters
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
-    get_archive_illust_by_site
+    get_archive_by_illust_site
+from ..database.archive_illust_db import create_archive_illust_from_parameters, update_archive_illust_from_parameters
 from ..database.download_db import create_download_from_parameters, update_download_from_parameters,\
     get_download_by_request_url
 from ..database.download_element_db import create_download_element_from_parameters,\
@@ -94,7 +96,7 @@ def archive_illust_for_deletion(illust, days_to_expire):
 
 def save_illust_to_archive(illust, days_to_expire):
     retdata = {'error': False}
-    archive = get_archive_illust_by_site(illust.site_id, illust.site_illust_id)
+    archive = get_archive_by_illust_site(illust.site_id, illust.site_illust_id)
     if archive is None:
         archive = create_archive_from_parameters({'days': days_to_expire, 'type_name': 'illust'}, commit=False)
     else:
@@ -104,30 +106,27 @@ def save_illust_to_archive(illust, days_to_expire):
     archive_params['site_artist_id'] = illust.artist.site_artist_id
     archive_params['title'] = illust.title_body
     archive_params['commentary'] = illust.commentary_body
+    archive_params['urls_json'] = [{'order': illust_url.order,
+                                    'url': illust_url.full_url,
+                                    'sample': illust_url.full_sample_url,
+                                    'height': illust_url.height,
+                                    'width': illust_url.width,
+                                    'active': illust_url.active,
+                                    'md5': illust_url.md5}
+                                   for illust_url in illust.urls]
+    archive_params['titles_json'] = list(illust.title_bodies)
+    archive_params['commentaries_json'] = list(illust.commentary_bodies)
+    archive_params['additional_commentaries_json'] = list(illust.additional_commentary_bodies)
+    archive_params['tags_json'] = list(illust.tag_names)
+    archive_params['notations_json'] = [{'body': notation.body,
+                                         'created': notation.created.isoformat(),
+                                         'updated': notation.updated.isoformat()}
+                                        for notation in illust.notations]
     if archive.illust_data is None:
         archive_params['archive_id'] = archive.id
-        archive_illust = ArchiveIllust(**archive_params)
+        create_archive_illust_from_parameters(archive_params)
     else:
-        archive_illust = archive.illust_data
-        archive_illust.update(archive_params)
-    archive_illust.urls_json = [{'order': illust_url.order,
-                                 'url': illust_url.full_url,
-                                 'sample': illust_url.full_sample_url,
-                                 'height': illust_url.height,
-                                 'width': illust_url.width,
-                                 'active': illust_url.active,
-                                 'md5': illust_url.md5}
-                                for illust_url in illust.urls]
-    archive_illust.titles_json = list(illust.title_bodies)
-    archive_illust.commentaries_json = list(illust.commentary_bodies)
-    archive_illust.additional_commentaries_json = list(illust.additional_commentary_bodies)
-    archive_illust.tags_json = list(illust.tag_names)
-    archive_illust.notations_json = [{'body': notation.body,
-                                      'created': notation.created.isoformat(),
-                                      'updated': notation.updated.isoformat()}
-                                     for notation in illust.notations]
-    add_record(archive_illust)
-    commit_session()
+        update_archive_illust_from_parameters(archive.illust_data, archive_params)
     return retdata
 
 
@@ -140,15 +139,19 @@ def recreate_archived_illust(archive):
     if artist is None:
         msg = f"Artist for illust does not exist: {illust_data.site_name} #{illust_data.site_artist_id}"
         return handle_error_message(msg)
-    createparams = illust_data.recreate_json()
-    createparams['artist_id'] = artist.id
-    swap_key_value(createparams, 'title', 'title_body')
-    swap_key_value(createparams, 'commentary', 'commentary_body')
-    illust = create_illust_from_json(createparams, commit=False)
+    createparams = merge_dicts(illust_data.recreate_json(), {'artist_id': artist.id})
+    illust = create_illust_from_parameters(createparams, commit=False)
+    source = illust.source
     illust_urls = []
     for url_data in illust_data.urls_json:
         url_data['illust_id'] = illust.id
-        illust_url = create_illust_url_from_json(url_data, commit=False)
+        if 'url' in url_data and url_data['url'].startswith('http'):
+            url_data['site_name'] = site_name_by_url(url_data['url'])
+            url_data['url'] = source.partial_media_url(url_data['url'])
+        if 'sample' in url_data and url_data['sample'] is not None and url_data['sample'].startswith('http'):
+            url_data['sample_site_name'] = site_name_by_url(url_data['sample'])
+            url_data['sample_url'] = source.partial_media_url(url_data['sample'])
+        illust_url = create_illust_url_from_parameters(url_data, commit=False)
         illust_urls.append(illust_url)
     illust.tag_names.extend(illust_data.tags_json)
     illust.title_bodies.extend(illust_data.titles_json)
@@ -156,9 +159,9 @@ def recreate_archived_illust(archive):
     illust.additional_commentary_bodies.extend(illust_data.additional_commentaries_json)
     _link_illust_urls(illust_urls, illust_data)
     for notation in illust_data.notations_json:
-        createparams = merge_dicts(notation, {'illust_id': illust.id, 'no_pool': True})
-        create_notation_from_json(createparams, commit=False)
-    retdata = {'error': False, 'item': illust.to_json()}
+        createparams = merge_dicts(notation, {'illust_id': illust.id})
+        create_notation_from_parameters(createparams, commit=False)
+    retdata = {'error': False, 'item': illust.basic_json()}
     commit_session()
     update_archive_from_parameters(archive, {'days': 7})
     return retdata
@@ -172,7 +175,7 @@ def relink_archived_illust(archive):
     if illust is None:
         msg = f"{illust_data.site_name} #{illust_data.site_artist_id} not found in illusts."
         return handle_error_message(msg)
-    retdata = {'error': False, 'item': illust.to_json()}
+    retdata = {'error': False, 'item': illust.basic_json()}
     _link_illust_urls(illust.urls, illust_data)
     commit_session()
     return retdata
