@@ -66,7 +66,7 @@ def get_archive_by_artist_site(site_id, site_artist_id):
                                             .one_or_none()
 
 
-def get_archive_booru_by_name(name):
+def get_archive_by_booru_name(name):
     return Archive.query.join(ArchiveBooru).filter(ArchiveBooru.name == name).one_or_none()
 
 

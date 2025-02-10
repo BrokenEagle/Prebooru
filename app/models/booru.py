@@ -88,10 +88,6 @@ class Booru(JsonModel):
     # ## Class properties
 
     @classproperty(cached=True)
-    def load_columns(cls):
-        return super().load_columns + ['name_value']
-
-    @classproperty(cached=True)
     def repr_attributes(cls):
         return list_difference(super().json_attributes, ['name_id']) + ['name_value']
 

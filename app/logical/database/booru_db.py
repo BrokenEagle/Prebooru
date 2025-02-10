@@ -6,8 +6,8 @@ from utility.data import swap_key_value
 
 # ## LOCAL IMPORTS
 from ...models import Booru, Label
-from .base_db import set_column_attributes, set_version_relations, will_update_record, add_record, save_record,\
-    commit_session
+from .base_db import set_column_attributes, set_version_relations, will_update_record, save_record,\
+    commit_session, set_timesvalue
 
 
 # ## GLOBAL VARIABLES
@@ -15,7 +15,7 @@ from .base_db import set_column_attributes, set_version_relations, will_update_r
 VERSION_RELATIONSHIPS = [('name', 'names', 'name', Label)]
 
 ANY_WRITABLE_COLUMNS = ['danbooru_id', 'banned', 'deleted']
-NULL_WRITABLE_ATTRIBUTES = ['name_value']
+NULL_WRITABLE_ATTRIBUTES = ['name_value', 'created', 'updated']
 
 
 # ## FUNCTIONS
@@ -26,15 +26,9 @@ def create_booru_from_parameters(createparams, commit=True):
     createparams.setdefault('banned', False)
     createparams.setdefault('deleted', False)
     swap_key_value(createparams, 'name', 'name_value')
+    set_timesvalue(createparams, 'created')
+    set_timesvalue(createparams, 'updated')
     return set_booru_from_parameters(Booru(), createparams, 'created', commit, True)
-
-
-def create_booru_from_json(data, commit=True):
-    booru = Booru.loads(data)
-    add_record(booru)
-    commit_session()
-    save_record(booru, 'created', commit=commit)
-    return booru
 
 
 # #### Update

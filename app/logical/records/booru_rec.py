@@ -1,7 +1,7 @@
 # APP/LOGICAL/RECORDS/BOORU_REC.PY
 
 # ## PACKAGE IMPORTS
-from utility.data import merge_dicts, swap_key_value
+from utility.data import merge_dicts
 from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
@@ -10,13 +10,14 @@ from ..utility import set_error
 from ..logger import handle_error_message
 from ..sources.base_src import get_artist_id_source
 from ..sources.danbooru_src import get_artist_by_id, get_artists_by_ids
-from ..database.base_db import add_record, delete_record, commit_session
+from ..database.base_db import delete_record, commit_session
 from ..database.artist_db import get_site_artist, get_site_artists
 from ..database.booru_db import create_booru_from_parameters, update_booru_from_parameters, booru_append_artist,\
-    get_all_boorus_page, will_update_booru, get_booru, create_booru_from_json
-from ..database.notation_db import create_notation_from_json
+    get_all_boorus_page, will_update_booru, get_booru
+from ..database.notation_db import create_notation_from_parameters
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
-    get_archive_booru_by_name
+    get_archive_by_booru_name
+from ..database.archive_booru_db import create_archive_booru_from_parameters, update_archive_booru_from_parameters
 from .base_rec import delete_data
 
 
@@ -121,7 +122,7 @@ def archive_booru_for_deletion(booru, days_to_expire):
 
 def save_booru_to_archive(booru, days_to_expire):
     retdata = {'error': False}
-    archive = get_archive_booru_by_name(booru.name_value)
+    archive = get_archive_by_booru_name(booru.name_value)
     if archive is None:
         archive = create_archive_from_parameters({'days': days_to_expire, 'type_name': 'post'}, commit=False)
     else:
@@ -129,22 +130,19 @@ def save_booru_to_archive(booru, days_to_expire):
     retdata['item'] = archive.basic_json()
     archive_params = {k: v for (k, v) in booru.basic_json().items() if k in ArchiveBooru.basic_attributes}
     archive_params['name'] = booru.name_value
+    archive_params['names_json'] = list(booru.name_values)
+    archive_params['notations_json'] = [{'body': notation.body,
+                                         'created': notation.created.isoformat(),
+                                         'updated': notation.updated.isoformat()}
+                                        for notation in booru.notations]
+    archive_params['artists_json'] = [{'site': artist.site_name,
+                                       'site_artist_id': artist.site_artist_id}
+                                      for artist in booru.artists]
     if archive.booru_data is None:
         archive_params['archive_id'] = archive.id
-        archive_booru = ArchiveBooru(**archive_params)
+        create_archive_booru_from_parameters(archive_params)
     else:
-        archive_booru = archive.booru_data
-        archive_booru.update(archive_params)
-    archive_booru.names_json = list(booru.name_values)
-    archive_booru.notations_json = [{'body': notation.body,
-                                     'created': notation.created.isoformat(),
-                                     'updated': notation.updated.isoformat()}
-                                    for notation in booru.notations]
-    archive_booru.artists_json = [{'site': artist.site_name,
-                                   'site_artist_id': artist.site_artist_id}
-                                  for artist in booru.artists]
-    add_record(archive_booru)
-    commit_session()
+        update_archive_booru_from_parameters(archive.booru_data, archive_params)
     return retdata
 
 
@@ -153,15 +151,13 @@ def recreate_archived_booru(archive):
     booru = get_booru(booru_data.danbooru_id)
     if booru is not None:
         return handle_error_message(f"Booru already exists: {booru.shortlink}")
-    createparams = booru_data.recreate_json()
-    swap_key_value(createparams, 'name', 'name_value')
-    booru = create_booru_from_json(createparams, commit=False)
+    booru = create_booru_from_parameters(booru_data.recreate_json(), commit=False)
     booru.name_values.extend(booru_data.names_json)
     _link_artists(booru, booru_data)
     for notation in booru_data.notations_json:
-        createparams = merge_dicts(notation, {'booru_id': booru.id, 'no_pool': True})
-        create_notation_from_json(createparams, commit=False)
-    retdata = {'error': False, 'item': booru.to_json()}
+        createparams = merge_dicts(notation, {'booru_id': booru.id})
+        create_notation_from_parameters(createparams, commit=False)
+    retdata = {'error': False, 'item': booru.basic_json()}
     commit_session()
     update_archive_from_parameters(archive, {'days': 7})
     return retdata
@@ -173,7 +169,7 @@ def relink_archived_booru(archive):
     if booru is None:
         msg = f"danbooru #{booru_data.danbooru_id} not found in boorus."
         return handle_error_message(msg)
-    retdata = {'error': False, 'item': booru.to_json()}
+    retdata = {'error': False, 'item': booru.basic_json()}
     _link_artists(booru, booru_data)
     commit_session()
     return retdata

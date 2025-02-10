@@ -271,14 +271,6 @@ def session_query(q):
     return SESSION.query(q)
 
 
-def record_from_json(model, data):
-    record = model.loads(data)
-    add_record(record)
-    flush_session()
-    print(f"[{record.shortlink}]: created")
-    return record
-
-
 def will_update_record(record, data, columns):
     for key in data:
         if key not in columns:

@@ -2,13 +2,13 @@
 
 # ## LOCAL IMPORTS
 from ...models import Notation
-from .base_db import set_column_attributes, add_record, save_record, set_timesvalue
+from .base_db import set_column_attributes, save_record, set_timesvalue
 
 
 # ## GLOBAL VARIABLES
 
 ANY_WRITABLE_COLUMNS = ['body']
-NULL_WRITABLE_ATTRIBUTES = ['no_pool', 'post_id', 'illust_id', 'artist_id', 'created', 'updated']
+NULL_WRITABLE_ATTRIBUTES = ['no_pool', 'post_id', 'illust_id', 'artist_id', 'booru_id', 'created', 'updated']
 
 
 # ## FUNCTIONS
@@ -20,13 +20,6 @@ def create_notation_from_parameters(createparams, commit=True):
     set_timesvalue(createparams, 'created')
     set_timesvalue(createparams, 'updated')
     return set_notation_from_parameters(Notation(), createparams, 'created', commit, True)
-
-
-def create_notation_from_json(data, commit=True):
-    notation = Notation.loads(data)
-    add_record(notation)
-    save_record(notation, 'created', commit=commit)
-    return notation
 
 
 # #### Update

@@ -600,10 +600,6 @@ class JsonModel(DB.Model):
     def load_columns(cls):
         return cls.all_columns
 
-    @classmethod
-    def loads(cls, data, *args):
-        return cls(**{k: json_deserialize(v) for (k, v) in data.items() if k in cls.load_columns})
-
     @classproperty(cached=True)
     def basic_attributes(cls):
         cls._populate_attributes()

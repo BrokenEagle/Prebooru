@@ -82,15 +82,6 @@ class Notation(JsonModel):
             self.no_pool = True
             setattr(self, attr, record)
 
-    # ## Class properties
-
-    @classmethod
-    def loads(cls, data, *args):
-        record = super().loads(data)
-        if 'no_pool' not in data:
-            record.no_pool = False
-        return record
-
     # ## Private
 
     @property
