@@ -2,6 +2,7 @@
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
+from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -43,9 +44,17 @@ class SubscriptionElement(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=False)
+    @classproperty(cached=True)
     def repr_attributes(cls):
-        return ['id', 'subscription_id', 'post_id', 'illust_url_id', 'md5', 'expires', 'keep', 'status']
+        mapping = {
+            'status_id': ('status', 'status_name'),
+            'keep_id': ('keep', 'keep_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=False)
+    def json_attributes(cls):
+        return cls.repr_attributes
 
     # ## Private
 

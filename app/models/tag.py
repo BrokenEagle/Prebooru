@@ -6,6 +6,7 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
+from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
 from .. import SESSION
@@ -59,9 +60,16 @@ class Tag(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=False)
+    @classproperty(cached=True)
     def repr_attributes(cls):
-        return ['id', 'name', 'type']
+        mapping = {
+            'type_id': ('type', 'type_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=False)
+    def json_attributes(cls):
+        return cls.repr_attributes
 
     polymorphic_base = True
 

@@ -3,6 +3,10 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 
+# ## PACKAGE IMPORTS
+from utility.obj import classproperty
+from utility.data import swap_list_values
+
 # ## LOCAL IMPORTS
 from .model_enums import UploadStatus
 from .illust_url import IllustUrl
@@ -60,6 +64,19 @@ class Upload(JsonModel):
     @property
     def artist_id(self):
         return getattr(self.artist, 'id', None)
+
+    # ## Class properties
+
+    @classproperty(cached=True)
+    def repr_attributes(cls):
+        mapping = {
+            'status_id': ('status', 'status_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=False)
+    def json_attributes(cls):
+        return cls.repr_attributes
 
     # ## Private
 

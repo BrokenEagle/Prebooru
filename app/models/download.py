@@ -3,9 +3,11 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 from sqlalchemy.orm import lazyload
+from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
+from utility.data import swap_list_values, dict_filter
 
 # ## LOCAL IMPORTS
 from ..logical.batch_loader import selectinload_batch_primary
@@ -31,6 +33,9 @@ class Download(JsonModel):
                               backref=backref('download', uselist=False))
     errors = relationship(Error, uselist=True, cascade='all,delete', backref=backref('download', uselist=False))
     elements = relationship(DownloadElement, cascade='all,delete', backref=backref('download', uselist=False))
+
+    # ## Association proxies
+    image_url_values = association_proxy('image_urls', 'url')
 
     # ## Instance properties
 
@@ -127,12 +132,23 @@ class Download(JsonModel):
     def artist_id(self):
         return getattr(self.artist, 'id', None)
 
+    @property
+    def errors_json(self):
+        return [dict_filter(error.to_json(), ['module', 'message', 'created']) for error in self.errors]
+
     # ## Class properties
 
     @classproperty(cached=True)
+    def repr_attributes(cls):
+        mapping = {
+            'status_id': ('status', 'status_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['status_name', 'image_urls', 'post_ids', 'complete_post_ids',
-                                          'duplicate_post_ids', 'illust_id', 'artist_id', 'errors']
+        return cls.repr_attributes + [('image_urls', 'image_url_values'), 'post_ids', 'complete_post_ids',
+                                      'duplicate_post_ids', 'illust_id', 'artist_id', ('errors', 'errors_json')]
 
     # ## Private
 

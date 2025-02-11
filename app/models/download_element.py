@@ -3,6 +3,10 @@
 # ## EXTERNAL IMPORTS
 from sqlalchemy.ext.associationproxy import association_proxy
 
+# ## PACKAGE IMPORTS
+from utility.obj import classproperty
+from utility.data import swap_list_values
+
 # ## LOCAL IMPORTS
 from .. import DB
 from .model_enums import DownloadElementStatus
@@ -27,6 +31,19 @@ class DownloadElement(JsonModel):
 
     # ## Association proxies
     post = association_proxy('illust_url', 'post')
+
+    # ## Class properties
+
+    @classproperty(cached=True)
+    def repr_attributes(cls):
+        mapping = {
+            'status_id': ('status', 'status_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=False)
+    def json_attributes(cls):
+        return cls.repr_attributes
 
 
 # ## INITIALIZATION

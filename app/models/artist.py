@@ -6,7 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
-from utility.data import list_difference
+from utility.data import swap_list_values, dict_prune
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -143,6 +143,10 @@ class Artist(JsonModel):
     def booru_search_url(self):
         return self.source.artist_booru_search_url(self)
 
+    @property
+    def webpages_json(self):
+        return [dict_prune(webpage.to_json(), ['id', 'artist_id']) for webpage in self.webpages]
+
     def delete(self):
         self.names.clear()
         self.profiles.clear()
@@ -154,12 +158,19 @@ class Artist(JsonModel):
 
     @classproperty(cached=True)
     def repr_attributes(cls):
-        return list_difference(super().json_attributes, ['site_id', 'site_account_id', 'name_id', 'profile_id'])\
-            + ['site_name', 'site_account_value', 'name_value']
+        mapping = {
+            'site_id': ('site', 'site_name'),
+            'site_account_id': ('site_account', 'site_account_value'),
+            'name_id': ('name', 'name_value'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return cls.repr_attributes + ['site_artist_id_str', 'profile_body', 'webpages']
+        mapping = {
+            'profile_id': ('profile', 'profile_body'),
+        }
+        return swap_list_values(cls.repr_attributes, mapping) + ['site_artist_id_str', ('webpages', 'webpages_json')]
 
     # ## Private
 

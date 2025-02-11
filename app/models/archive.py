@@ -2,7 +2,7 @@
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
-from utility.data import merge_dicts
+from utility.data import merge_dicts, swap_list_values, dict_prune, swap_key_value
 
 # ## LOCAL IMPORTS
 from .model_enums import ArchiveType
@@ -38,21 +38,36 @@ class Archive(JsonModel):
         }
         return switcher[self.type_name]()
 
+    @property
+    def subdata_json(self):
+        if self.subdata is not None:
+            return dict_prune(self.subdata.to_json(), 'archive_id')
+        return None
+
     def to_json(self):
-        return merge_dicts(super().to_json(), self.subdata.to_json())
+        base_json = super().to_json()
+        if self.subdata is not None:
+            subdata_json = self.subdata_json
+            if self.type_name == 'post':
+                swap_key_value(subdata_json, 'type', 'post_type')
+            return merge_dicts(base_json, subdata_json)
+        return base_json
 
     # ## Class properties
 
     @classproperty(cached=True)
-    def searchable_attributes(cls):
-        return [x for x in super().searchable_attributes if x not in ['data']]
+    def repr_attributes(cls):
+        mapping = {
+            'type_id': ('type', 'type_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=False)
+    @classproperty(cached=True)
     def json_attributes(cls):
         mapping = {
             'type_id': ('archive_type', 'type_name'),
         }
-        return [mapping.get(k, k) for k in super().json_attributes]
+        return swap_list_values(super().json_attributes, mapping)
 
 
 # ## Initialize

@@ -639,11 +639,21 @@ class JsonModel(DB.Model):
 
     def __repr__(self):
         data = {}
+        keys = []
         for attr in self.repr_attributes:
-            data[attr] = getattr(self, attr)
-            if isinstance(data[attr], bytes):
-                data[attr] = f'blob({data[attr].hex()})'
-        inner_string = ', '.join(f"{k}={repr(data[k])}" for k in self.repr_attributes)
+            if isinstance(attr, tuple):
+                key, attr = attr
+            else:
+                key = attr
+            value = getattr(self, attr)
+            if type(value) is bytes:
+                data[key] = f'blob({data[key].hex()})'
+            elif type(value) is datetime.datetime:
+                data[key] = value.isoformat()
+            else:
+                data[key] = value
+            keys.append(key)
+        inner_string = ', '.join(f"{k}={repr(data[k])}" for k in keys)
         model_name = self.__class__.__name__
         return f"{model_name}({inner_string})"
 
@@ -656,7 +666,7 @@ class JsonModel(DB.Model):
                 key = attr
             value = getattr(self, attr)
             if type(value) is datetime.datetime:
-                data[key] = value if value is None else datetime.datetime.isoformat(value)
+                data[key] = value.isoformat()
             elif type(value) is bytes:
                 data[key] = value.hex()
             elif type(value) is _AssociationList:

@@ -7,7 +7,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
-from utility.data import list_difference, swap_key_value
+from utility.data import swap_list_values, dict_prune
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -161,6 +161,10 @@ class Illust(JsonModel):
     def sitelink(self):
         return "%s #%d" % (self.site.name.lower(), self.site_illust_id)
 
+    @property
+    def urls_json(self):
+        return [dict_prune(illust_url.to_json(), ['id', 'illust_id']) for illust_url in self.urls]
+
     def delete(self):
         pools = [pool for pool in self.pools]
         DB.session.delete(self)
@@ -174,11 +178,20 @@ class Illust(JsonModel):
 
     @classproperty(cached=True)
     def repr_attributes(cls):
-        return list_difference(super().json_attributes, ['site_id', 'title_id', 'commentary_id']) + ['site_name']
+        mapping = {
+            'site_id': ('site', 'site_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return cls.repr_attributes + ['site_illust_id_str', 'title_body', 'commentary_body', 'tag_names', 'urls']
+        mapping = {
+            'title_id': ('title', 'title_body'),
+            'commentary_id': ('commentary', 'commentary_body'),
+        }
+        return swap_list_values(cls.repr_attributes, mapping) +\
+            ['site_illust_id_str', ('title', 'title_body'), ('commentary', 'commentary_body'),
+             ('tags', 'tag_names'), ('urls', 'urls_json')]
 
     # ## Private
 

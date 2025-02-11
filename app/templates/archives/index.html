@@ -32,7 +32,7 @@
                         <strong>Expires:</strong> {{ helpers.base.format_timestamp(item.expires) }}
                     </td>
                     <td>
-                        <div class="json-data">{{ helpers.base.format_json(item.subdata.to_json()) }}</div>
+                        <div class="json-data">{{ helpers.base.format_json(item.subdata_json) }}</div>
                     </td>
                     <td class="action-column">
                         {{ helpers.archive.reinstantiate_item_link(item) }}

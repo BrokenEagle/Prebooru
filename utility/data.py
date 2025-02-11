@@ -155,6 +155,10 @@ def list_difference(list1, list2):
     return [v for v in list1 if v not in list2]
 
 
+def swap_list_values(list1, mapping):
+    return [mapping.get(k, k) for k in list1]
+
+
 # #### Dict functions
 
 def safe_get(input_dict, *keys):
@@ -193,3 +197,11 @@ def swap_key_value(indict, oldkey, newkey):
     if oldkey in indict:
         indict[newkey] = indict[oldkey]
         del indict[oldkey]
+
+
+def dict_prune(indict, prune_keys):
+    return {k: v for (k, v) in indict.items() if k not in prune_keys}
+
+
+def dict_filter(indict, filter_keys):
+    return {k: v for (k, v) in indict.items() if k in filter_keys}

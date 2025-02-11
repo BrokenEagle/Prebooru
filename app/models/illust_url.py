@@ -5,7 +5,7 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
-from utility.data import list_difference
+from utility.data import list_difference, swap_list_values
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -127,12 +127,20 @@ class IllustUrl(JsonModel):
 
     @classproperty(cached=True)
     def repr_attributes(cls):
-        return list_difference(super().json_attributes, ['site_id', 'sample_site_id'])\
-            + ['site_name', 'sample_site_name']
+        mapping = {
+            'site_id': ('site', 'site_name'),
+            'sample_site_id': ('sample_site', 'sample_site_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
 
     @classproperty(cached=True)
     def json_attributes(cls):
-        return cls.repr_attributes + ['full_url', 'full_sample_url', 'site_domain']
+        mapping = {
+            'url': ('url', 'full_url'),
+            'sample_url': ('sample_url', 'full_sample_url'),
+        }
+        attributes = list_difference(super().json_attributes, ['site_id', 'sample_site_id'])
+        return swap_list_values(attributes, mapping)
 
 
 # ## INITIALIZATION

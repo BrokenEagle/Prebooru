@@ -14,6 +14,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, ALTERNATE_MEDIA_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from utility.obj import classproperty
+from utility.data import swap_list_values, dict_prune, dict_filter
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -225,11 +226,27 @@ class Post(JsonModel):
                 pool._elements.reorder()
             DB.session.commit()
 
+    @property
+    def illust_urls_json(self):
+        return [dict_prune(illust_url.to_json(), ['id', 'post_id']) for illust_url in self.illust_urls]
+
+    @property
+    def errors_json(self):
+        return [dict_filter(error.to_json(), ['module', 'message', 'created']) for error in self.errors]
+
     # ## Class properties
 
     @classproperty(cached=True)
+    def repr_attributes(cls):
+        mapping = {
+            'type_id': ('type', 'type_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=True)
     def json_attributes(cls):
-        return super().json_attributes + ['preview_url', 'sample_url', 'file_url', 'tags', 'illust_urls', 'errors']
+        return cls.repr_attributes + ['preview_url', 'sample_url', 'file_url', ('tags', 'tag_names'),
+                                      ('illust_urls', 'illust_urls_json'), ('errors', 'errors_json')]
 
     # ## Private
 

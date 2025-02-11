@@ -2,6 +2,7 @@
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
+from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
 from .model_enums import ApiDataType, SiteDescriptor
@@ -30,6 +31,17 @@ class ApiData(JsonModel):
     @classproperty(cached=True)
     def searchable_attributes(cls):
         return [x for x in super().searchable_attributes if x not in ['data']]
+
+    @classproperty(cached=True)
+    def repr_attributes(cls):
+        mapping = {
+            'type_id': ('type', 'type_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=False)
+    def json_attributes(cls):
+        return cls.repr_attributes
 
 
 # ## Initialize

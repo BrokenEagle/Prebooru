@@ -2,7 +2,7 @@
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
-from utility.data import list_difference, is_string, is_integer
+from utility.data import swap_list_values, is_string, is_integer
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -54,18 +54,14 @@ class ArchiveBooru(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=False)
+    @classproperty(cached=True)
     def json_attributes(cls):
         mapping = {
             'names': ('names', 'names_json'),
             'notations': ('notations', 'notations_json'),
             'artists': ('artists', 'artists_json'),
         }
-        return [mapping.get(k, k) for k in list_difference(super().json_attributes, ['archive_id'])]
-
-    @classproperty(cached=False)
-    def recreate_attributes(cls):
-        return list_difference(super().basic_attributes, ['archive_id', 'names', 'notations', 'artists'])
+        return swap_list_values(super().json_attributes, mapping)
 
 
 # ## Initialize

@@ -6,7 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
-from utility.data import list_difference
+from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -89,7 +89,10 @@ class Booru(JsonModel):
 
     @classproperty(cached=True)
     def repr_attributes(cls):
-        return list_difference(super().json_attributes, ['name_id']) + ['name_value']
+        mapping = {
+            'name_id': ('name', 'name_value'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
 
     @classproperty(cached=False)
     def json_attributes(cls):

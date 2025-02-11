@@ -9,7 +9,7 @@ from sqlalchemy.util import memoized_property
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS
 from utility.obj import classproperty
-from utility.data import list_difference
+from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -82,23 +82,29 @@ class ArchivePost(JsonModel):
 
     # Class properties
 
-    @classproperty(cached=False)
+    @classproperty(cached=True)
+    def repr_attributes(cls):
+        mapping = {
+            'type_id': ('type', 'type_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=True)
     def json_attributes(cls):
         mapping = {
-            'type_id': ('post_type', 'type_name'),
             'tags': ('tags', 'tags_json'),
             'errors': ('errors', 'errors_json'),
             'notations': ('notations', 'notations_json'),
             'illusts': ('illusts', 'illusts_json'),
         }
-        return [mapping.get(k, k) for k in list_difference(super().json_attributes, ['archive_id'])]
+        return swap_list_values(cls.repr_attributes, mapping)
 
-    @classproperty(cached=False)
+    @classproperty(cached=True)
     def recreate_attributes(cls):
         mapping = {
             'type_id': 'type_name',
         }
-        return [mapping.get(k, k) for k in super().recreate_attributes]
+        return swap_list_values(super().recreate_attributes, mapping)
 
     # ## Private
 

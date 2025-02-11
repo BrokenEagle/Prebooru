@@ -9,6 +9,7 @@ from flask import url_for
 # ## PACKAGE IMPORTS
 from config import DEFAULT_PAGINATE_LIMIT
 from utility.obj import classproperty
+from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION
@@ -70,9 +71,16 @@ class PoolElement(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=False)
+    @classproperty(cached=True)
     def repr_attributes(cls):
-        return ['id', 'pool_id', 'post_id', 'illust_id', 'notation_id', 'type']
+        mapping = {
+            'type_id': ('type', 'type_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=False)
+    def json_attributes(cls):
+        return cls.repr_attributes
 
     polymorphic_base = True
 
@@ -101,7 +109,7 @@ class PoolPost(PoolElement):
 
     @classproperty(cached=False)
     def repr_attributes(cls):
-        return ['id', 'pool_id', 'post_id', 'type']
+        return ['id', 'pool_id', 'post_id', ('type', 'type_name')]
 
     polymorphic_base = False
 
@@ -124,7 +132,7 @@ class PoolIllust(PoolElement):
 
     @classproperty(cached=False)
     def repr_attributes(cls):
-        return ['id', 'pool_id', 'illust_id', 'type']
+        return ['id', 'pool_id', 'illust_id', ('type', 'type_name')]
 
     polymorphic_base = False
 
@@ -146,7 +154,7 @@ class PoolNotation(PoolElement):
 
     @classproperty(cached=False)
     def repr_attributes(cls):
-        return ['id', 'pool_id', 'notation_id', 'type']
+        return ['id', 'pool_id', 'notation_id', ('type', 'type_name')]
 
     polymorphic_base = False
 

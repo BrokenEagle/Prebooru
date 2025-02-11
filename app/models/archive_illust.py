@@ -2,7 +2,7 @@
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty
-from utility.data import list_difference, is_integer, is_string, is_string_or_none, is_boolean
+from utility.data import list_difference, swap_list_values, is_integer, is_string, is_string_or_none, is_boolean
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -72,10 +72,16 @@ class ArchiveIllust(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=False)
-    def json_attributes(cls):
+    @classproperty(cached=True)
+    def repr_attributes(cls):
         mapping = {
             'site_id': ('site', 'site_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=True)
+    def json_attributes(cls):
+        mapping = {
             'urls': ('urls', 'urls_json'),
             'titles': ('titles', 'titles_json'),
             'commentaries': ('commentaries', 'commentaries_json'),
@@ -83,14 +89,15 @@ class ArchiveIllust(JsonModel):
             'tags': ('tags', 'tags_json'),
             'notations': ('notations', 'notations_json'),
         }
-        return [mapping.get(k, k) for k in list_difference(super().json_attributes, ['archive_id'])]
+        return swap_list_values(cls.repr_attributes, mapping)
 
-    @classproperty(cached=False)
+    @classproperty(cached=True)
     def recreate_attributes(cls):
         mapping = {
             'site_id': 'site_name',
         }
-        return [mapping.get(k, k) for k in list_difference(super().recreate_attributes, ['site_artist_id'])]
+        attributes = list_difference(super().recreate_attributes, ['site_artist_id'])
+        return swap_list_values(attributes, mapping)
 
 
 # ## Initialize

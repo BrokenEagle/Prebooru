@@ -4,8 +4,9 @@
 from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
+from utility.obj import classproperty
 from utility.time import average_timedelta, days_ago, get_current_time
-from utility.data import inc_dict_entry
+from utility.data import inc_dict_entry, swap_list_values
 
 # ## LOCAL IMPORTS
 from .model_enums import SubscriptionStatus, SubscriptionElementStatus, SubscriptionElementKeep
@@ -167,6 +168,19 @@ class Subscription(JsonModel):
                                   .filter(SubscriptionElement.keep_value == 'yes')\
                                   .order_by(Illust.site_created.desc())\
                                   .first()
+
+    # ## Class properties
+
+    @classproperty(cached=True)
+    def repr_attributes(cls):
+        mapping = {
+            'status_id': ('status', 'status_name'),
+        }
+        return swap_list_values(super().repr_attributes, mapping)
+
+    @classproperty(cached=False)
+    def json_attributes(cls):
+        return cls.repr_attributes
 
     # ## Private
 
