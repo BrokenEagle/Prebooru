@@ -18,7 +18,7 @@ from sqlalchemy.ext.associationproxy import _AssociationList
 # ## PACKAGE IMPORTS
 from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 from utility.time import process_utc_timestring, datetime_from_epoch, datetime_to_epoch, datetime_valid
-from utility.obj import classproperty, StaticProperty
+from utility.obj import classproperty, memoized_classproperty, staticproperty
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION, SERVER_INFO
@@ -535,7 +535,7 @@ class JsonModel(DB.Model):
     def pk_values(self):
         return tuple(getattr(self, key) for key in self.primary_keys)
 
-    @classproperty(cached=False)
+    @classproperty
     def relations(cls):
         cls._populate_attributes()
         return getattr(cls, '__relations')
@@ -560,15 +560,15 @@ class JsonModel(DB.Model):
             setattr(cls, key + '_show_url', property(_show_url))
             setattr(cls, key + '_show_link', property(_show_link))
 
-    @classproperty(cached=False)
+    @classproperty
     def primary_key(cls):
         return cls.__table__.primary_key
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def pk_cols(cls):
         return [c for c in cls.primary_key.columns]
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def primary_keys(cls):
         return [t.name for t in cls.pk_cols]
 
@@ -576,62 +576,62 @@ class JsonModel(DB.Model):
     def columns(cls):
         return [c for c in cls.__table__.columns]
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def column_map(cls):
         return {c.name: c for c in cls.columns()}
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def all_columns(cls):
         return [c.name for c in cls.columns()]
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def base_columns(cls):
         return [k for k in cls.all_columns if len(cls.column_map[k].foreign_keys) == 0]
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def fk_columns(cls):
         return [k for k in cls.all_columns if len(cls.column_map[k].foreign_keys) > 0]
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def archive_columns(cls):
         return {k for k in cls.base_columns if k != 'id'}
 
-    @classproperty(cached=False)
+    @classproperty
     def load_columns(cls):
         return cls.all_columns
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def basic_attributes(cls):
         cls._populate_attributes()
         return getattr(cls, '__all_columns')
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def relation_attributes(cls):
         return [relation.strip('_') for relation in cls.relations]
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def searchable_attributes(cls):
         return cls.basic_attributes + cls.relation_attributes
 
-    @classproperty(cached=False)
+    @classproperty
     def order_attributes(cls):
         return cls.basic_attributes
 
-    @classproperty(cached=False)
+    @classproperty
     def json_attributes(cls):
         return cls.basic_attributes
 
-    @classproperty(cached=False)
+    @classproperty
     def repr_attributes(cls):
         return cls.basic_attributes
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def recreate_attributes(cls):
         return [attr for attr in cls.basic_attributes
                 if attr not in cls.primary_keys
                 and not isinstance(getattr(cls, attr).type, JSON)]
 
-    @StaticProperty
+    @staticproperty
     def rowid():
         return DB.column("rowid")
 

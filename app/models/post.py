@@ -13,7 +13,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, ALTERNATE_MEDIA_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
-from utility.obj import classproperty
+from utility.obj import memoized_classproperty
 from utility.data import swap_list_values, dict_prune, dict_filter
 
 # ## LOCAL IMPORTS
@@ -236,14 +236,14 @@ class Post(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'type_id': ('type', 'type_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def json_attributes(cls):
         return cls.repr_attributes + ['preview_url', 'sample_url', 'file_url', ('tags', 'tag_names'),
                                       ('illust_urls', 'illust_urls_json'), ('errors', 'errors_json')]

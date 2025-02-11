@@ -1,7 +1,7 @@
 # APP/MODELS/ARCHIVE.PY
 
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.obj import memoized_classproperty
 from utility.data import merge_dicts, swap_list_values, dict_prune, swap_key_value
 
 # ## LOCAL IMPORTS
@@ -55,14 +55,14 @@ class Archive(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'type_id': ('type', 'type_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def json_attributes(cls):
         mapping = {
             'type_id': ('archive_type', 'type_name'),

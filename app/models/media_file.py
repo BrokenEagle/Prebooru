@@ -5,7 +5,7 @@ import os
 
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY
-from utility.obj import classproperty
+from utility.obj import memoized_classproperty
 
 # ## LOCAL IMPORTS
 from .base import JsonModel, integer_column, text_column, md5_column, timestamp_column, image_server_url
@@ -46,6 +46,6 @@ class MediaFile(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def json_attributes(cls):
         return super().json_attributes + ['file_url']

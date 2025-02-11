@@ -6,7 +6,7 @@ from sqlalchemy.orm import lazyload
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.obj import memoized_classproperty
 from utility.data import swap_list_values, dict_prune
 
 # ## LOCAL IMPORTS
@@ -176,14 +176,14 @@ class Illust(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'site_id': ('site', 'site_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def json_attributes(cls):
         mapping = {
             'title_id': ('title', 'title_body'),

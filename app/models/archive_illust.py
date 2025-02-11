@@ -1,7 +1,7 @@
 # APP/MODELS/ARCHIVE_ILLUST.PY
 
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.obj import memoized_classproperty
 from utility.data import list_difference, swap_list_values, is_integer, is_string, is_string_or_none, is_boolean
 
 # ## LOCAL IMPORTS
@@ -72,14 +72,14 @@ class ArchiveIllust(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'site_id': ('site', 'site_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def json_attributes(cls):
         mapping = {
             'urls': ('urls', 'urls_json'),
@@ -91,7 +91,7 @@ class ArchiveIllust(JsonModel):
         }
         return swap_list_values(cls.repr_attributes, mapping)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def recreate_attributes(cls):
         mapping = {
             'site_id': 'site_name',

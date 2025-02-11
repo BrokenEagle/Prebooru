@@ -4,7 +4,7 @@
 from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.obj import classproperty, memoized_classproperty
 from utility.time import average_timedelta, days_ago, get_current_time
 from utility.data import inc_dict_entry, swap_list_values
 
@@ -171,14 +171,14 @@ class Subscription(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'status_id': ('status', 'status_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=False)
+    @classproperty
     def json_attributes(cls):
         return cls.repr_attributes
 

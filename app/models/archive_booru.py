@@ -1,7 +1,7 @@
 # APP/MODELS/ARCHIVE_ILLUST.PY
 
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.obj import memoized_classproperty
 from utility.data import swap_list_values, is_string, is_integer
 
 # ## LOCAL IMPORTS
@@ -54,7 +54,7 @@ class ArchiveBooru(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def json_attributes(cls):
         mapping = {
             'names': ('names', 'names_json'),

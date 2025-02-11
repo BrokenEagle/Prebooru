@@ -8,7 +8,7 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS
-from utility.obj import classproperty
+from utility.obj import memoized_classproperty
 from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
@@ -82,14 +82,14 @@ class ArchivePost(JsonModel):
 
     # Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'type_id': ('type', 'type_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def json_attributes(cls):
         mapping = {
             'tags': ('tags', 'tags_json'),
@@ -99,7 +99,7 @@ class ArchivePost(JsonModel):
         }
         return swap_list_values(cls.repr_attributes, mapping)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def recreate_attributes(cls):
         mapping = {
             'type_id': 'type_name',

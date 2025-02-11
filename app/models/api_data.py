@@ -1,7 +1,7 @@
 # APP/MODELS/API_DATA.PY
 
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.obj import classproperty, memoized_classproperty
 from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
@@ -28,18 +28,18 @@ class ApiData(JsonModel):
         from ..logical.sources import source_by_site_name
         return source_by_site_name(self.site.name)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def searchable_attributes(cls):
         return [x for x in super().searchable_attributes if x not in ['data']]
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'type_id': ('type', 'type_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=False)
+    @classproperty
     def json_attributes(cls):
         return cls.repr_attributes
 

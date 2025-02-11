@@ -5,7 +5,7 @@ from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.obj import memoized_classproperty
 from utility.data import swap_list_values, dict_prune
 
 # ## LOCAL IMPORTS
@@ -156,7 +156,7 @@ class Artist(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'site_id': ('site', 'site_name'),
@@ -165,7 +165,7 @@ class Artist(JsonModel):
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def json_attributes(cls):
         mapping = {
             'profile_id': ('profile', 'profile_body'),

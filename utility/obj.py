@@ -4,36 +4,31 @@
 import enum
 
 
-# ## FUNCTIONS
-
-def classproperty(cached=False):
-    def _decorator(function):
-        return CacheClassProperty(function, cached)
-    return _decorator
-
-
 # ## CLASSES
 
-class CacheClassProperty:
-    """Decorator for a Class property with optional caching.
-       Must be used with classproperty if the cached is used.
-    """
-    def __init__(self, func, cached=False):
+class classproperty:
+    """Decorator for a Class property."""
+    def __init__(self, func):
         self.func = func
-        self.cached = cached
 
     def __get__(self, owner_self, owner_cls):
-        if self.cached:
-            keyname = '_' + owner_cls.__name__ + '_' + self.func.__name__
-            if not hasattr(owner_cls, keyname):
-                val = self.func(owner_cls)
-                setattr(owner_cls, keyname, val)
-            return getattr(owner_cls, keyname)
-        else:
-            return self.func(owner_cls)
+        return self.func(owner_cls)
 
 
-class StaticProperty:
+class memoized_classproperty:
+    """Decorator for a Class property with caching."""
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, owner_self, owner_cls):
+        keyname = '_' + owner_cls.__name__ + '_' + self.func.__name__
+        if not hasattr(owner_cls, keyname):
+            val = self.func(owner_cls)
+            setattr(owner_cls, keyname, val)
+        return getattr(owner_cls, keyname)
+
+
+class staticproperty:
     """Decorator for a static property.
     """
     def __init__(self, fget=None, fset=None, fdel=None):
@@ -64,11 +59,11 @@ class AttrEnum(enum.IntEnum):
     def id(self):
         return self.value
 
-    @classproperty(cached=False)
+    @classproperty
     def names(cls):
         return [e.name for e in cls]
 
-    @classproperty(cached=False)
+    @classproperty
     def values(cls):
         return [e.value for e in cls]
 

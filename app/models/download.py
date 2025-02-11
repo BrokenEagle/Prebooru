@@ -6,7 +6,7 @@ from sqlalchemy.orm import lazyload
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.obj import memoized_classproperty
 from utility.data import swap_list_values, dict_filter
 
 # ## LOCAL IMPORTS
@@ -138,14 +138,14 @@ class Download(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'status_id': ('status', 'status_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def json_attributes(cls):
         return cls.repr_attributes + [('image_urls', 'image_url_values'), 'post_ids', 'complete_post_ids',
                                       'duplicate_post_ids', 'illust_id', 'artist_id', ('errors', 'errors_json')]

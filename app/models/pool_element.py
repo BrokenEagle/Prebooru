@@ -8,7 +8,7 @@ from flask import url_for
 
 # ## PACKAGE IMPORTS
 from config import DEFAULT_PAGINATE_LIMIT
-from utility.obj import classproperty
+from utility.obj import classproperty, memoized_classproperty
 from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
@@ -71,14 +71,14 @@ class PoolElement(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'type_id': ('type', 'type_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=False)
+    @classproperty
     def json_attributes(cls):
         return cls.repr_attributes
 
@@ -107,7 +107,7 @@ class PoolPost(PoolElement):
 
     # ## Class properties
 
-    @classproperty(cached=False)
+    @classproperty
     def repr_attributes(cls):
         return ['id', 'pool_id', 'post_id', ('type', 'type_name')]
 
@@ -130,7 +130,7 @@ class PoolIllust(PoolElement):
 
     # ## Class properties
 
-    @classproperty(cached=False)
+    @classproperty
     def repr_attributes(cls):
         return ['id', 'pool_id', 'illust_id', ('type', 'type_name')]
 
@@ -152,7 +152,7 @@ class PoolNotation(PoolElement):
 
     # ## Class properties
 
-    @classproperty(cached=False)
+    @classproperty
     def repr_attributes(cls):
         return ['id', 'pool_id', 'notation_id', ('type', 'type_name')]
 

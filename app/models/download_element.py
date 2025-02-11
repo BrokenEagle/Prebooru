@@ -4,7 +4,7 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
-from utility.obj import classproperty
+from utility.obj import classproperty, memoized_classproperty
 from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
@@ -34,14 +34,14 @@ class DownloadElement(JsonModel):
 
     # ## Class properties
 
-    @classproperty(cached=True)
+    @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'status_id': ('status', 'status_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 
-    @classproperty(cached=False)
+    @classproperty
     def json_attributes(cls):
         return cls.repr_attributes
 

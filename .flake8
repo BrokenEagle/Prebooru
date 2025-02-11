@@ -2,7 +2,7 @@
 max-line-length = 120
 ignore = W503
 exclude = migrations/database_versions/*,migrations/enum_versions/*,migrations/env.py,config/local.py,node_modules/
-classmethod-decorators = classmethod,classproperty
+classmethod-decorators = classmethod,classproperty,memoized_classproperty
 max-complexity = 10
 per-file-ignores =
     app/enum_imports.py: N813, F401
