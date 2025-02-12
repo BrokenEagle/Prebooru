@@ -72,7 +72,7 @@
                 <strong>{{ "Artist" if item.model_name == "illust" else "Artists" }}:</strong>
                 <br>
                 {% if item.model_name == "post" %}
-                    {{ pool_item_list(item.illusts, "artist_show_link") }}
+                    {{ pool_item_list(item.selectin_illusts, "artist_show_link") }}
                 {% elif item.model_name == "illust" %}
                     {{ pool_item_list([item], "artist_show_link") }}
                 {% endif %}

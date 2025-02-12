@@ -33,7 +33,7 @@
         <h4>
             <u>Commentary</u>
         </h4>
-        {% for illust in post.illusts %}
+        {% for illust in post.selectin_illusts %}
             <div class="post-commentaries-container">
                 <strong>{{ illust.header }}:</strong>
                 {% if illust.title is not none %}

@@ -29,10 +29,10 @@
                 <tr id="illust-{{ illust.id }}">
                     <td>
                         <div class="preview-header">{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</div>
-                        {% if illust.posts | length > 1 %}
+                        {% if illust.selectin_posts | length > 1 %}
                             {{ multi_post_preview(illust, 'illust', True) }}
-                        {% elif illust.posts | length == 1 %}
-                            {{ post_preview(illust.posts[0], True) }}
+                        {% elif illust.selectin_posts | length == 1 %}
+                            {{ post_preview(illust.selectin_posts[0], True) }}
                         {% else %}
                             {{ illust_urls_preview(illust.urls) }}
                         {% endif %}

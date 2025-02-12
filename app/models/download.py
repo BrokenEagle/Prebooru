@@ -81,6 +81,14 @@ class Download(JsonModel):
     def other_count(self):
         return self._elements_query.filter(DownloadElement.status_value.not_in(['complete', 'error'])).get_count()
 
+    @memoized_property
+    def selectin_illust_urls(self):
+        return [element.illust_url for element in self.elements]
+
+    @memoized_property
+    def selectin_posts(self):
+        return [illust_url.post for illust_url in self.selectin_illust_urls if illust_url.post is not None]
+
     @property
     @populate_illust_urls
     def illust_urls(self):

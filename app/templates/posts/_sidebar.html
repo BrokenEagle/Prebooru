@@ -8,9 +8,9 @@
 {% from "errors/_macros.html" import errors_section %}
 
 <aside id="post-sidebar">
-    {{ boorus_section(post.boorus, 'booru-info') }}
-    {{ artists_section(post.artists, 'artist-info') }}
-    {{ illusts_section(post.illusts, 'illust-info') }}
+    {{ boorus_section(post.selectin_boorus, 'booru-info') }}
+    {{ artists_section(post.selectin_artists, 'artist-info') }}
+    {{ illusts_section(post.selectin_illusts, 'illust-info') }}
     {{ pools_section(post.pool_elements, 'pool-list') }}
     {{ subscription_element_section(post.subscription_element, 'subscription-info') }}
     {{ tags_section(post.tags, 'tag-list', 'post', post.id) }}

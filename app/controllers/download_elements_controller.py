@@ -21,10 +21,12 @@ SHOW_HTML_OPTIONS = (
         selectinload(IllustUrl.illust).selectinload(Illust.artist).lazyload('*'),
         selectinload(IllustUrl.post).lazyload('*'),
     ),
+    selectinload(DownloadElement.errors),
 )
 
 INDEX_HTML_OPTIONS = (
     selectinload(DownloadElement.illust_url).selectinload(IllustUrl.post).lazyload('*'),
+    selectinload(DownloadElement.errors),
 )
 
 

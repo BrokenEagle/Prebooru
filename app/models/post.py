@@ -2,6 +2,7 @@
 
 # ## PYTHON IMPORTS
 import os
+import itertools
 
 # ## EXTERNAL IMPORTS
 from flask import has_app_context
@@ -16,6 +17,7 @@ from utility.obj import memoized_classproperty
 from utility.data import swap_list_values, dict_prune, dict_filter
 
 # ## LOCAL IMPORTS
+from ..logical.utility import unique_objects
 from .model_enums import PostType
 from .error import Error
 from .illust_url import IllustUrl
@@ -180,6 +182,18 @@ class Post(JsonModel):
         query = query.group_by(Post.id)
         query = query.order_by(IllustUrl.illust_id.asc(), IllustUrl.order.asc())
         return query.limit(10).all()
+
+    @memoized_property
+    def selectin_illusts(self):
+        return unique_objects([illust_url.illust for illust_url in self.illust_urls])
+
+    @memoized_property
+    def selectin_artists(self):
+        return unique_objects([illust.artist for illust in self.illusts])
+
+    @memoized_property
+    def selectin_boorus(self):
+        return unique_objects(list(itertools.chain(*[artist.boorus for artist in self.artists])))
 
     @memoized_property
     def illusts(self):

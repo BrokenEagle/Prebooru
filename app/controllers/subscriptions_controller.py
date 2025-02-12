@@ -40,6 +40,11 @@ VALUES_MAP = {
     **{k: k for k in Subscription.__table__.columns.keys()},
 }
 
+# ## Load options
+
+INDEX_HTML_OPTIONS = (
+    selectinload(Subscription.artist).selectinload(Artist.site_account),
+)
 
 # #### Form
 
@@ -191,7 +196,7 @@ def index_json():
 @bp.route('/subscriptions', methods=['GET'])
 def index_html():
     q = index()
-    q = q.options(selectinload(Subscription.artist))
+    q = q.options(INDEX_HTML_OPTIONS)
     page = paginate(q, request)
     average_intervals =\
         get_average_interval_for_subscriptions(page.items, 365)\

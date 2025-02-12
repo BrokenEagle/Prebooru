@@ -9,7 +9,7 @@ from utility.data import eval_bool_string
 from utility.time import days_from_now
 
 # ## LOCAL IMPORTS
-from ..models import SubscriptionElement, IllustUrl, Illust
+from ..models import SubscriptionElement, IllustUrl, Illust, Artist
 from ..logical.utility import search_url_for, set_error
 from ..logical.database.base_db import commit_session
 from ..logical.database.subscription_element_db import get_elements_by_id,\
@@ -31,7 +31,7 @@ bp = Blueprint("subscription_element", __name__)
 
 INDEX_HTML_OPTIONS = (
     selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).options(
-        selectinload(Illust.artist).lazyload('*'),
+        selectinload(Illust.artist).selectinload(Artist.site_account),
         selectinload(Illust.urls).lazyload('*'),
     ),
     selectinload(SubscriptionElement.post).lazyload('*'),

@@ -17,10 +17,10 @@
 
 {% macro multi_post_preview(item, type, lazyload=False) -%}
     <div class="{{ type }}-preview">
-        {% for post in item.posts %}
-            {% if (loop.index == 4) and ((item.posts | length) > 4) %}
+        {% for post in item.selectin_posts %}
+            {% if (loop.index == 4) and ((item.selectin_posts | length) > 4) %}
                 <article class="overflow">
-                    <span>{{ item.posts | length - 3 }} more posts available</span>
+                    <span>{{ item.selectin_posts | length - 3 }} more posts available</span>
                 </article>
                 {% break %}
             {% endif %}

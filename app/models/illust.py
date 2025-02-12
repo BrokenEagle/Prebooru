@@ -12,6 +12,7 @@ from utility.data import swap_list_values, dict_prune
 # ## LOCAL IMPORTS
 from .. import DB
 from ..logical.sites import domain_by_site_name
+from ..logical.utility import unique_objects
 from .model_enums import SiteDescriptor
 from .tag import SiteTag, site_tag_creator
 from .illust_url import IllustUrl
@@ -114,6 +115,10 @@ class Illust(JsonModel):
         query = query.options(*_get_options(options))
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)
+
+    @memoized_property
+    def selectin_posts(self):
+        return unique_objects([illust_url.post for illust_url in self.urls if illust_url.post is not None])
 
     @memoized_property
     def posts(self):
