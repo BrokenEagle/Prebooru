@@ -10,7 +10,7 @@ from .base_db import set_column_attributes, save_record
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['name', 'series', 'element_count']
+ANY_WRITABLE_ATTRIBUTES = ['name', 'series', 'element_count']
 NULL_WRITABLE_ATTRIBUTES = []
 
 
@@ -32,7 +32,7 @@ def update_pool_from_parameters(pool, updateparams, commit=True, update=True):
 # #### Set
 
 def set_pool_from_parameters(pool, setparams, action, commit, update):
-    if set_column_attributes(pool, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update=update):
+    if set_column_attributes(pool, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams, update=update):
         save_record(pool, action, commit=commit)
     return pool
 

@@ -7,7 +7,7 @@ from .base_db import set_column_attributes, add_record, save_record, commit_sess
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['status_name']
+ANY_WRITABLE_ATTRIBUTES = ['status_name']
 NULL_WRITABLE_ATTRIBUTES = ['request_url']
 
 
@@ -33,7 +33,7 @@ def update_download_from_parameters(download, updateparams, commit=True):
 # #### Set
 
 def set_download_from_parameters(download, setparams, action, commit):
-    if set_column_attributes(download, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(download, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(download, action, commit=commit)
     return download
 

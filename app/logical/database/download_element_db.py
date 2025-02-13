@@ -7,7 +7,7 @@ from .base_db import set_column_attributes, save_record
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['status_name']
+ANY_WRITABLE_ATTRIBUTES = ['status_name']
 NULL_WRITABLE_ATTRIBUTES = ['download_id', 'illust_url_id', 'md5']
 
 
@@ -37,6 +37,6 @@ def get_download_element(download_id, illust_url_id):
 # #### Set
 
 def set_download_element_from_parameters(download_element, setparams, action, commit):
-    if set_column_attributes(download_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(download_element, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(download_element, action, commit=commit)
     return download_element

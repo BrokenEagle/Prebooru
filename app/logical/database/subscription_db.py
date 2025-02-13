@@ -13,7 +13,7 @@ from .base_db import set_column_attributes, delete_record, save_record, commit_s
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['interval', 'expiration', 'status_name', 'requery', 'last_id', 'checked']
+ANY_WRITABLE_ATTRIBUTES = ['interval', 'expiration', 'status_name', 'requery', 'last_id', 'checked']
 NULL_WRITABLE_ATTRIBUTES = ['artist_id']
 
 DISTINCT_ILLUST_COUNT = func.count(Illust.id.distinct())
@@ -40,7 +40,7 @@ def update_subscription_from_parameters(subscription, updateparams, commit=True,
 # #### Set
 
 def set_subscription_from_parameters(subscription, setparams, action, commit, update):
-    if set_column_attributes(subscription, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update=update):
+    if set_column_attributes(subscription, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams, update=update):
         save_record(subscription, action, commit=commit)
     return subscription
 

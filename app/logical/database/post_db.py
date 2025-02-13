@@ -13,8 +13,8 @@ from .base_db import set_column_attributes, save_record, commit_session, set_tim
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['type_name', 'simcheck', 'alternate', 'width', 'height', 'size', 'file_ext', 'md5',
-                        'pixel_md5', 'duration', 'audio']
+ANY_WRITABLE_ATTRIBUTES = ['type_name', 'simcheck', 'alternate', 'width', 'height', 'size', 'file_ext', 'md5',
+                           'pixel_md5', 'duration', 'audio']
 NULL_WRITABLE_ATTRIBUTES = ['danbooru_id', 'created']
 
 SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
@@ -45,7 +45,7 @@ def update_post_from_parameters(post, updateparams, commit=True):
 # #### Set
 
 def set_post_from_parameters(post, setparams, action, commit):
-    if set_column_attributes(post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(post, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(post, action, commit=commit)
     return post
 

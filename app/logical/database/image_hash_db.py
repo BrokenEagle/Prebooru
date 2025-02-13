@@ -7,7 +7,7 @@ from .base_db import set_column_attributes, save_record, flush_session
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = []
+ANY_WRITABLE_ATTRIBUTES = []
 NULL_WRITABLE_ATTRIBUTES = ['post_id', 'ratio', 'hash']
 
 
@@ -23,7 +23,7 @@ def create_image_hash_from_parameters(createparams, commit=True):
 # #### Set
 
 def set_image_hash_from_parameters(image_hash, setparams, action, commit):
-    if set_column_attributes(image_hash, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(image_hash, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(image_hash, action, commit=commit)
     return image_hash
 

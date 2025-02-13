@@ -10,7 +10,7 @@ from .base_db import set_column_attributes, save_record, set_timesvalue
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['expires']
+ANY_WRITABLE_ATTRIBUTES = ['expires']
 NULL_WRITABLE_ATTRIBUTES = ['type_name']
 
 
@@ -35,7 +35,7 @@ def set_archive_from_parameters(archive, setparams, action, commit):
         set_timesvalue(setparams, 'expires')
     elif 'days' in setparams:
         setparams['expires'] = days_from_now(setparams['days']) if setparams['days'] is not None else None
-    if set_column_attributes(archive, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(archive, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(archive, action, commit=commit)
     return archive
 

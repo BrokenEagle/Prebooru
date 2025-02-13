@@ -7,8 +7,9 @@ from .base_db import set_column_attributes, save_record, set_timesvalue
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['md5', 'width', 'height', 'file_ext', 'size', 'danbooru_id', 'created', 'type_id', 'pixel_md5',
-                        'duration', 'audio', 'tags_json', 'notations_json', 'errors_json', 'illusts_json']
+ANY_WRITABLE_ATTRIBUTES = ['md5', 'width', 'height', 'file_ext', 'size', 'danbooru_id', 'created', 'type_id',
+                           'pixel_md5', 'duration', 'audio', 'tags_json', 'notations_json', 'errors_json',
+                           'illusts_json']
 NULL_WRITABLE_ATTRIBUTES = ['archive_id']
 
 
@@ -30,6 +31,6 @@ def update_archive_post_from_parameters(archive_post, updateparams, commit=True)
 
 def set_archive_post_from_parameters(archive_post, setparams, action, commit):
     set_timesvalue(setparams, 'created')
-    if set_column_attributes(archive_post, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(archive_post, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(archive_post, action, commit=commit)
     return archive_post

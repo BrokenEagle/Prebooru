@@ -7,7 +7,7 @@ from .base_db import set_column_attributes, save_record
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['status_name']
+ANY_WRITABLE_ATTRIBUTES = ['status_name']
 NULL_WRITABLE_ATTRIBUTES = ['request_url', 'media_filepath', 'sample_filepath', 'illust_url_id']
 
 
@@ -29,6 +29,6 @@ def update_upload_from_parameters(upload, updateparams, commit=True):
 # #### Set
 
 def set_upload_from_parameters(upload, setparams, action, commit):
-    if set_column_attributes(upload, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(upload, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(upload, action, commit=commit)
     return upload

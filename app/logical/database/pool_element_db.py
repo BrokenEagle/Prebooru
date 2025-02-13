@@ -7,7 +7,7 @@ from .base_db import set_column_attributes, save_record
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['position']
+ANY_WRITABLE_ATTRIBUTES = ['position']
 NULL_WRITABLE_ATTRIBUTES = ['pool_id', 'type_name', 'post_id', 'illust_id', 'notation_id']
 
 ELEMENT_TYPE_DICT = {
@@ -29,7 +29,7 @@ def create_pool_element_from_parameters(createparams, commit=True):
 # #### Set
 
 def set_pool_element_from_parameters(pool_element, setparams, action, commit):
-    if set_column_attributes(pool_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(pool_element, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(pool_element, action, commit=commit)
     return pool_element
 

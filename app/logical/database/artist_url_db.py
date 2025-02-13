@@ -7,7 +7,7 @@ from .base_db import set_column_attributes, save_record
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['active']
+ANY_WRITABLE_ATTRIBUTES = ['active']
 NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'url']
 
 
@@ -29,6 +29,6 @@ def update_artist_url_from_parameters(artist_url, updateparams, commit=True):
 # #### Set
 
 def set_artist_url_from_parameters(artist_url, setparams, action, commit):
-    if set_column_attributes(artist_url, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(artist_url, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(artist_url, action, commit=commit)
     return artist_url

@@ -18,7 +18,7 @@ from .artist_url_db import create_artist_url_from_parameters, update_artist_url_
 VERSION_RELATIONSHIPS = [('site_account_value', 'site_account_values'), ('name_value', 'name_values'),
                          ('profile_body', 'profile_bodies')]
 
-ANY_WRITABLE_COLUMNS = ['site_name', 'site_artist_id', 'site_created', 'active', 'primary']
+ANY_WRITABLE_ATTRIBUTES = ['site_name', 'site_artist_id', 'site_created', 'active', 'primary']
 NULL_WRITABLE_ATTRIBUTES = ['site_account_value', 'name_value', 'profile_body', 'created', 'updated']
 
 BOORU_SUBQUERY = Artist.query\
@@ -65,7 +65,7 @@ def set_artist_from_parameters(artist, setparams, action, commit, update):
     swap_key_value(setparams, 'name', 'name_value')
     swap_key_value(setparams, 'profile', 'profile_body')
     set_timesvalue(setparams, 'site_created')
-    col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
+    col_result = set_column_attributes(artist, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES,
                                        setparams, update=update, safe=True)
     ver_result = set_version_relations(artist, VERSION_RELATIONSHIPS, setparams, update=update)\
         if action == 'updated' else False

@@ -15,7 +15,7 @@ TAG_UNION_CLAUSE = union_all(
     PostTags.query.with_entities(PostTags.tag_id),
 )
 
-ANY_WRITABLE_COLUMNS = ['name']
+ANY_WRITABLE_ATTRIBUTES = ['name']
 NULL_WRITABLE_ATTRIBUTES = []
 
 TAG_MODEL_DICT = {
@@ -36,7 +36,7 @@ def create_tag_from_parameters(createparams, commit=True):
 # #### Set
 
 def set_tag_from_parameters(tag, setparams, action, commit):
-    if set_column_attributes(tag, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(tag, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(tag, action, commit=commit)
     return tag
 

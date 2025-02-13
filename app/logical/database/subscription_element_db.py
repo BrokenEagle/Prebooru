@@ -14,7 +14,7 @@ from .base_db import set_column_attributes, save_record, session_query
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['status_name', 'keep_name', 'post_id', 'expires']
+ANY_WRITABLE_ATTRIBUTES = ['status_name', 'keep_name', 'post_id', 'expires']
 NULL_WRITABLE_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'md5']
 
 if EXPIRED_SUBSCRIPTION is True:
@@ -45,7 +45,7 @@ def update_subscription_element_from_parameters(subscription_element, updatepara
 # #### Set
 
 def set_subscription_element_from_parameters(subscription_element, setparams, action, commit):
-    if set_column_attributes(subscription_element, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(subscription_element, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(subscription_element, action, commit=commit)
     return subscription_element
 

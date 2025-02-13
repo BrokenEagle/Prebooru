@@ -7,7 +7,7 @@ from .base_db import set_column_attributes, delete_record, save_record, commit_s
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['module', 'message']
+ANY_WRITABLE_ATTRIBUTES = ['module', 'message']
 NULL_WRITABLE_ATTRIBUTES = ['post_id', 'created']
 
 
@@ -39,7 +39,7 @@ def create_and_extend_errors(instance, error_list, commit=True):
 # #### Set
 
 def set_error_from_parameters(error, setparams, action, commit):
-    if set_column_attributes(error, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams):
+    if set_column_attributes(error, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(error, action, commit=commit)
     return error
 

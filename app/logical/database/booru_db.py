@@ -14,7 +14,7 @@ from .base_db import set_column_attributes, set_version_relations, will_update_r
 
 VERSION_RELATIONSHIPS = [('name_value', 'name_values')]
 
-ANY_WRITABLE_COLUMNS = ['danbooru_id', 'banned', 'deleted']
+ANY_WRITABLE_ATTRIBUTES = ['danbooru_id', 'banned', 'deleted']
 NULL_WRITABLE_ATTRIBUTES = ['name_value', 'created', 'updated']
 
 
@@ -37,14 +37,14 @@ def update_booru_from_parameters(booru, updateparams, commit=True, update=True):
 
 
 def will_update_booru(booru, data):
-    return will_update_record(booru, data, ANY_WRITABLE_COLUMNS)
+    return will_update_record(booru, data, ANY_WRITABLE_ATTRIBUTES)
 
 
 # #### Set
 
 def set_booru_from_parameters(booru, setparams, action, commit, update):
     swap_key_value(setparams, 'name', 'name_value')
-    col_result = set_column_attributes(booru, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
+    col_result = set_column_attributes(booru, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES,
                                        setparams, update=update, safe=True)
     ver_result = set_version_relations(booru, VERSION_RELATIONSHIPS, setparams, update=update)\
         if action == 'updated' else False

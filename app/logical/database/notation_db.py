@@ -7,7 +7,7 @@ from .base_db import set_column_attributes, save_record, set_timesvalue
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_COLUMNS = ['body']
+ANY_WRITABLE_ATTRIBUTES = ['body']
 NULL_WRITABLE_ATTRIBUTES = ['no_pool', 'post_id', 'illust_id', 'artist_id', 'booru_id', 'created', 'updated']
 
 
@@ -31,6 +31,6 @@ def update_notation_from_parameters(notation, updateparams, commit=True, update=
 # #### Set
 
 def set_notation_from_parameters(notation, setparams, action, commit, update):
-    if set_column_attributes(notation, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES, setparams, update=update):
+    if set_column_attributes(notation, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams, update=update):
         save_record(notation, action, commit=commit)
     return notation
