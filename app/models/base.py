@@ -454,6 +454,10 @@ class JsonModel(DB.Model):
         return cls.query.filter_by(**kwargs).one_or_none()
 
     @property
+    def model(self):
+        return self.__class__
+
+    @property
     def model_name(self):
         return self._model_name()
 

@@ -77,11 +77,10 @@ def set_column_attributes(item, any_columns, null_columns, dataparams, update=Fa
         if getattr(item, attr) != dataparams[attr]:
             to_val = _normalize_val(dataparams[attr])
             if create:
-                printer("[%s]:" % _get_attr(item, attr), _get_val(item, attr, to_val))
+                printer("[%s]:" % _get_attr(attr), to_val)
             else:
                 from_val = _normalize_val(getattr(item, attr))
-                printer("[%s]:" % _get_attr(item, attr),
-                        _get_val(item, attr, from_val), '->', _get_val(item, attr, to_val))
+                printer("[%s]:" % _get_attr(attr), from_val, '->', to_val)
             setattr(item, attr, dataparams[attr])
             is_dirty = True
     if create:
@@ -105,16 +104,17 @@ def set_relationship_collections(item, relationships, dataparams, update=False, 
         if dataparams.get(collectionname) is None:
             continue
         collection = getattr(item, collectionname)
+        relationship = getattr(item.model, collectionname).target_collection
         current_values = set(collection)
         update_values = set(dataparams[collectionname])
         add_values = update_values - current_values
         for value in add_values:
-            printer("+[%s]:" % collectionname, _normalize_val(value))
+            printer("+[%s]:" % relationship, _normalize_val(value))
             collection.append(value)
             is_dirty = True
         remove_values = current_values - update_values
         for value in remove_values:
-            printer("-[%s]:" % collectionname, _normalize_val(value))
+            printer("-[%s]:" % relationship, _normalize_val(value))
             collection.remove(value)
             is_dirty = True
     if is_dirty:
@@ -170,9 +170,9 @@ def set_version_relations(item, relationships, dataparams, update=False, safe=Fa
         if old_value is not None and old_value not in collection:
             collection.append(old_value)
         if old_value is None:
-            printer("[%s]:" % relname, _normalize_val(new_value))
+            printer("[%s]:" % _get_attr(relname), _normalize_val(new_value))
         else:
-            printer("[%s]:" % relname, _normalize_val(old_value), '->', _normalize_val(new_value))
+            printer("[%s]:" % _get_attr(relname), _normalize_val(old_value), '->', _normalize_val(new_value))
         is_dirty = True
     if is_dirty:
         _update_record(item, update)
@@ -296,7 +296,7 @@ def _update_record(item, update):
 
 def _normalize_val(val):
     if isinstance(val, str):
-        return val[:80] + '...' if len(val) > 80 else val
+        return repr(val[:60] + '...') if len(val) > 60 else repr(val)
     if isinstance(val, dict):
         return '<dict>'
     if isinstance(val, list):
@@ -304,19 +304,9 @@ def _normalize_val(val):
     return val
 
 
-def _get_attr(item, attr):
-    if attr.endswith('_id'):
-        key = attr[:-3]
-        enum = getattr(item, key + '_enum', None)
-        if enum is not None:
-            return key
+def _get_attr(attr):
+    if attr.endswith('_name') or attr.endswith('_body'):
+        return attr[:-5]
+    if attr.endswith('_value'):
+        return attr[:-6]
     return attr
-
-
-def _get_val(item, attr, val):
-    if isinstance(val, int) and attr.endswith('_id'):
-        key = attr[:-3]
-        enum = getattr(item, key + '_enum', None)
-        if enum is not None:
-            return enum.by_id(val).name
-    return val
