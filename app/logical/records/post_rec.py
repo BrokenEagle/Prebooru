@@ -397,7 +397,7 @@ def recreate_archived_post(archive):
     retdata = {'error': False, 'item': post.basic_json()}
     temppost = post.copy()
     commit_session()
-    retdata = retdata.update(create_sample_preview_files(temppost))
+    retdata.update(create_sample_preview_files(temppost))
     if temppost.is_video:
         create_video_sample_preview_files(temppost)
     SessionThread(target=process_image_matches, args=([temppost.id],)).start()
