@@ -57,13 +57,6 @@ def set_timesvalue(params, key):
             params[key] = None
 
 
-def set_association_attributes(params, associations):
-    for key in associations:
-        if key in params and params[key]:
-            association_key = '_' + key
-            params[association_key] = params[key]
-
-
 def set_column_attributes(item, any_columns, null_columns, dataparams,
                           create_attributes=None, update=False, safe=False):
     """For updating column attributes with scalar values"""
@@ -127,33 +120,6 @@ def set_relationship_collections(item, relationships, dataparams, update=False, 
     return is_dirty
 
 
-def append_relationship_collections(item, relationships, dataparams, update=False, safe=False):
-    """For appending a single value to collection relationships with scalar values"""
-    printer = buffered_print('append_relationship_collections', safe=True, header=False)
-    printer("(%s)" % item.shortlink)
-    is_dirty = False
-    for attr, subattr, model in relationships:
-        append_attr = attr + '_append'
-        if dataparams.get(append_attr) is None:
-            continue
-        collection = getattr(item, attr)
-        current_values = [getattr(subitem, subattr) for subitem in collection]
-        if dataparams[append_attr] not in current_values:
-            value = dataparams[append_attr]
-            printer("[%s]:" % attr, _normalize_val(value))
-            add_item = model.query.filter_by(**{subattr: value}).first()
-            if add_item is None:
-                add_item = model(**{subattr: value})
-                add_record(add_item)
-            collection.append(add_item)
-            is_dirty = True
-    if is_dirty:
-        _update_record(item, update)
-        flush_session(safe=safe)
-        printer.print()
-    return is_dirty
-
-
 def set_version_relations(item, relationships, dataparams, update=False, safe=False):
     """For assigning a value to a relation and the current value if it exists to a version collection"""
     printer = buffered_print('set_version_relations', safe=True, header=False)
@@ -182,15 +148,6 @@ def set_version_relations(item, relationships, dataparams, update=False, safe=Fa
         flush_session(safe=safe)
         printer.print()
     return is_dirty
-
-
-def get_or_create(model, attr, text):
-    item = model.query.filter_by(**{attr: text}).one_or_none()
-    if item is None:
-        item = model(**{attr: text})
-        SESSION.add(item)
-        SESSION.flush()
-    return item
 
 
 def save_record(record, action, commit=True, safe=False):

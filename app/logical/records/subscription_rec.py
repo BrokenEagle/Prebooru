@@ -33,8 +33,7 @@ from ..database.artist_db import get_site_artist, update_artist_from_parameters_
 from ..database.archive_db import get_archive_by_post_md5
 from ..database.error_db import is_error, create_and_append_error, create_and_extend_errors
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
-from ..database.subscription_db import add_subscription_error, update_subscription_from_parameters,\
-    check_processing_subscriptions
+from ..database.subscription_db import update_subscription_from_parameters, check_processing_subscriptions
 from ..database.base_db import safe_db_execute
 from .post_rec import create_image_post, create_video_post, recreate_archived_post, archive_post_for_deletion,\
     delete_post
@@ -117,7 +116,13 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
     source = artist.source
     site_illust_ids = source.populate_all_artist_illusts(artist, job_id, params)
     if is_error(site_illust_ids):
-        add_subscription_error(subscription, site_illust_ids)
+        subscription.errors.append(site_illust_ids)
+        params = {
+            'status_name': 'error',
+            'checked': get_current_time,
+            'requery': None,
+        }
+        update_subscription_from_parameters(subscription, params)
         return
     if artist.updated < days_ago(1):
         params = source.get_artist_data(artist.site_artist_id)

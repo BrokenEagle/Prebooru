@@ -5,11 +5,11 @@ from sqlalchemy import and_, or_
 
 # ## PACKAGE IMPORTS
 from config import EXPIRED_SUBSCRIPTION
-from utility.time import days_from_now, get_current_time
+from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import Subscription, SubscriptionElement, Post
-from .base_db import set_column_attributes, save_record, session_query
+from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
@@ -62,13 +62,6 @@ def get_subscription_elements_by_md5(md5):
                               .all()
 
 
-def check_deleted_subscription_post(md5):
-    q = SubscriptionElement.query.filter(SubscriptionElement.md5 == md5,
-                                         SubscriptionElement.status_value.in_(['deleted', 'archived']))\
-                                 .exists()
-    return session_query(q).scalar()
-
-
 def expired_subscription_elements(expire_type):
     switcher = {
         'unlink': lambda q: q.join(Post, SubscriptionElement.post)
@@ -93,18 +86,6 @@ def total_missing_downloads():
 
 
 # #### Private
-
-def _update_subscription_element_keep(element, value):
-    element.keep_name = value
-    if value == 'yes' or value == 'archive':
-        element.expires = days_from_now(1)  # Posts will be unlinked/archived after this period
-    elif value == 'no':
-        element.expires = days_from_now(7)  # Posts will be deleted after this period
-    elif value == 'maybe' or value == 'unknown':
-        element.expires = None  # Keep the element around until/unless a decision is made on it
-    elif value is None:
-        element.expires = days_from_now(element.subscription.expiration)  # Reset the expiration
-
 
 def _expired_clause(keep, action):
     if (action == EXPIRED_SUBSCRIPTION_ACTION):

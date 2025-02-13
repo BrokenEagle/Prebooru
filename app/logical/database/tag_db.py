@@ -49,10 +49,3 @@ def prune_unused_tags():
                                 .delete(synchronize_session=False)
     commit_session()
     return delete_count
-
-
-# #### Query
-
-def get_tags_by_names(names, tag_type):
-    model = TAG_MODEL_DICT[tag_type]
-    return model.query.filter(model.name.in_(names)).all()

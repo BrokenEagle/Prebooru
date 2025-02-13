@@ -53,12 +53,6 @@ def delete_error(error):
 
 # #### Add relationship
 
-def extend_errors(instance, errors, commit=True):
-    for error in errors:
-        append_error(instance, error, commit=False)
-    commit_or_flush(commit)
-
-
 def append_error(instance, error, commit=True):
     table_name = instance.table_name
     append_key = table_name + '_id'

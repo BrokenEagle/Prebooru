@@ -33,9 +33,3 @@ def set_image_hash_from_parameters(image_hash, setparams, action, commit):
 def delete_image_hash_by_post_id(post_id):
     ImageHash.query.filter(ImageHash.post_id == post_id).delete()
     flush_session()
-
-
-# #### Query
-
-def get_image_hash_by_post_id(post_id):
-    return ImageHash.query.filter(ImageHash.post_id == post_id).all()

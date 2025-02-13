@@ -37,15 +37,6 @@ def set_illust_url_from_parameters(illust_url, setparams, action, commit):
 
 # #### Query
 
-def get_illust_url_by_url(site, partial_url):
-    q = IllustUrl.query
-    if isinstance(site, int):
-        q = q.filter(IllustUrl.site_id == site)
-    elif isinstance(site, str):
-        q = q.filter(IllustUrl.site_value == site)
-    return q.filter(IllustUrl.url == partial_url).one_or_none()
-
-
 def get_illust_url_by_full_url(full_url):
     from ..sites import site_name_by_url
     from ..sources import source_by_site_name

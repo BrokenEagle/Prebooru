@@ -52,17 +52,7 @@ def batch_delete_similarity_matches(similarity_matches, commit=False):
 
 
 def delete_similarity_matches_by_post_id(post_id, commit=False):
-    SimilarityMatch.query.filter(_post_id_clause(post_id)).delete()
+    SimilarityMatch.query.filter(or_(SimilarityMatch.forward_id == post_id,
+                                     SimilarityMatch.reverse_id == post_id))\
+                         .delete()
     commit_or_flush(commit)
-
-
-# ###### Query
-
-def get_similarity_matches_by_post_id(post_id):
-    return SimilarityMatch.query.filter(_post_id_clause(post_id)).all()
-
-
-# #### Private
-
-def _post_id_clause(post_id):
-    return or_(SimilarityMatch.forward_id == post_id, SimilarityMatch.reverse_id == post_id)

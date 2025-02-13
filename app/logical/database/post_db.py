@@ -8,7 +8,7 @@ from utility.time import days_ago
 
 # ## LOCAL IMPORTS
 from ...models import Post, SubscriptionElement, ImageHash, IllustUrl, Illust, Artist
-from .base_db import set_column_attributes, save_record, commit_session, set_timesvalue
+from .base_db import set_column_attributes, save_record, set_timesvalue
 
 
 # ## GLOBAL VARIABLES
@@ -48,36 +48,6 @@ def set_post_from_parameters(post, setparams, action, commit):
     if set_column_attributes(post, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(post, action, commit=commit)
     return post
-
-
-# #### Misc
-
-def create_post(width, height, file_ext, md5, size, post_type, pixel_md5, duration, has_audio):
-    params = {
-        'width': width,
-        'height': height,
-        'file_ext': file_ext,
-        'md5': md5,
-        'size': size,
-        'type_name': post_type,
-        'pixel_md5': pixel_md5,
-        'duration': duration,
-        'audio': has_audio,
-    }
-    return create_post_from_parameters(params)
-
-
-def create_post_and_add_illust_url(illust_url, width, height, file_ext, md5, size, post_type, pixel_md5, duration,
-                                   has_audio):
-    post = create_post(width, height, file_ext, md5, size, post_type, pixel_md5, duration, has_audio)
-    illust_url.post_id = post.id
-    commit_session()
-    return post
-
-
-def copy_post(post):
-    """Return an uncommitted copy of the post."""
-    return Post(**post.column_dict())
 
 
 # #### Query functions

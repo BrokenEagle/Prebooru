@@ -86,14 +86,6 @@ def ordered_subscriptions_by_pending_elements(limit):
 
 # #### Misc
 
-def add_subscription_error(subscription, error):
-    subscription.errors.append(error)
-    subscription.status_name = 'error'
-    subscription.checked = get_current_time()
-    subscription.requery = None
-    commit_session()
-
-
 def delay_subscription_elements(subscription, delay_days):
     current_time = get_current_time()
     for element in subscription.undecided_elements:

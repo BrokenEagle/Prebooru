@@ -6,12 +6,13 @@ from utility.data import merge_dicts
 
 # ## LOCAL IMPORTS
 from ... import SESSION
-from ...models import IllustTitles, IllustCommentaries, AdditionalCommentaries, Description, ArchiveIllust
+from ...models import IllustTitles, IllustCommentaries, AdditionalCommentaries, ArchiveIllust
+from ...models.description import Description, description_creator
 from ..logger import handle_error_message
 from ..network import get_http_data
 from ..utility import set_error
 from ..sites import site_name_by_url
-from ..database.base_db import delete_record, commit_session, get_or_create
+from ..database.base_db import delete_record, commit_session
 from ..database.artist_db import get_blank_artist, get_site_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters_standard,\
     get_site_illust
@@ -228,7 +229,7 @@ def illust_swap_commentary(illust, description_id):
 
 def illust_add_additional_commentary(illust, commentary):
     retdata = {'error': False}
-    descr = get_or_create(Description, 'body', commentary)
+    descr = description_creator(commentary)
     m2m_row = AdditionalCommentaries.query.filter_by(illust_id=illust.id, description_id=descr.id).one_or_none()
     if m2m_row is not None:
         return set_error(retdata, "Commentary already included on %s." % illust.shortlink)
