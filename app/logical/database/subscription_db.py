@@ -48,6 +48,7 @@ def set_subscription_from_parameters(subscription, setparams, action, commit, up
 # #### Delete
 
 def delete_subscription(subscription):
+    print("[%s]: deleted\n" % subscription.shortlink)
     delete_record(subscription)
     commit_session()
 

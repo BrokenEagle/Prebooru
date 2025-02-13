@@ -54,6 +54,7 @@ def update_illust_from_parameters_standard(illust, updateparams):
 
 
 def set_illust_artist(illust, artist):
+    print("[%s]: Changing to %s" % (illust.shortlink, artist.shortlink))
     illust.artist = artist
     commit_session()
 

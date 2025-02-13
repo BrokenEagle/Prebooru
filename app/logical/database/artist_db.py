@@ -92,6 +92,7 @@ def get_blank_artist():
 
 
 def artist_append_booru(artist, booru):
+    print("[%s]: Adding %s" % (artist.shortlink, booru.shortlink))
     artist.boorus.append(booru)
     artist.updated = get_current_time()
     commit_session()

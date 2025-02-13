@@ -47,6 +47,7 @@ def set_error_from_parameters(error, setparams, action, commit):
 # #### Delete
 
 def delete_error(error):
+    print("[%s]: deleted\n" % error.shortlink)
     delete_record(error)
     commit_session()
 
