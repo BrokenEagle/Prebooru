@@ -12,7 +12,7 @@ from utility.obj import classproperty, memoized_classproperty
 from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
-from .. import DB, SESSION
+from .. import DB
 from .model_enums import PoolElementType
 from .base import JsonModel, integer_column, enum_column, register_enum_column
 

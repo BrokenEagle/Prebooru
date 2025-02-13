@@ -62,7 +62,7 @@ def process_download(download_id):
         printer("Total:", len(download.posts))
         printer("Complete:", len(download.complete_posts))
         printer("Duplicate:", len(download.duplicate_posts))
-        if download.status.name == 'complete' and len(download.complete_posts) > 0:
+        if download.status_name == 'complete' and len(download.complete_posts) > 0:
             printer("Starting secondary threads.")
             post_ids = download.complete_post_ids
             SessionThread(target=process_image_matches, args=(post_ids, download.artist.primary)).start()

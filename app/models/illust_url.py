@@ -50,11 +50,11 @@ class IllustUrl(JsonModel):
                                         backref=backref('illust_url', uselist=False))
     # (MtO) illust [Illust]
     # (MtO) post [Post]
-    # (OtO) upload [Upload]
+    # (OtO) uploads [Upload]
 
     # ## Instance properties
 
-    @property
+    @memoized_property
     def source(self):
         from ..logical.sources import source_by_site_name
         return source_by_site_name(self.site.name)
@@ -74,46 +74,46 @@ class IllustUrl(JsonModel):
             return self.source.get_preview_url(self)
         elif self.type == 'video':
             return self.full_sample_url
+        return None
 
     @memoized_property
+    def has_alternate(self):
+        return self.source.has_alternate(self)
+
+    @property
     def full_url(self):
         return self.source.get_media_url(self)
 
-    @memoized_property
+    @property
     def original_url(self):
         return self.source.get_full_url(self)
 
-    @memoized_property
+    @property
     def alternate_url(self):
         return self.source.get_alternate_url(self)
 
-    @memoized_property
+    @property
     def url_extension(self):
         return self.source.get_media_extension(self.full_url)
 
-    @memoized_property
+    @property
     @check_video
     def full_sample_url(self):
         return self.source.get_sample_url(self)
 
-    @memoized_property
+    @property
     @check_video
     def original_sample_url(self):
         return self.source.get_sample_url(self, True)
 
-    @memoized_property
+    @property
     @check_video
     def alternate_sample_url(self):
         return self.source.get_sample_url(self, False)
 
-    @memoized_property
+    @property
     def md5(self):
         return self.post.md5 if self.post_id is not None else None
-
-    @memoized_property
-    @check_video
-    def sample_extension(self):
-        return self.source.get_media_extension(self.full_sample_url)
 
     @property
     def site_domain(self):

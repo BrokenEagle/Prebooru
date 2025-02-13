@@ -13,7 +13,7 @@
         <li>
             {{ tag.name_link }}&ensp;
             {{ helpers.tag.post_search_link(tag, item_type) }}&ensp;
-            {% if (tag.type.name == 'user_tag') and (item_type is not none) and (item_id is not none) %}
+            {% if (tag.type_name == 'user_tag') and (item_type is not none) and (item_id is not none) %}
                 <span class="delete-control small-2">( {{ helpers.tag.remove_tag_link(tag, item_type, item_id) }} )</span>
             {% endif %}
         </li>

@@ -2,7 +2,7 @@
 
 <div id="post-site-content">
     {% set info_class = 'danbooru-uploaded' if post.danbooru_id is not none else "" %}
-    {% set type_class = post.type.name + '-post' %}
+    {% set type_class = post.type_name + '-post' %}
     <section id="post-info" class="{{ info_class }} {{ type_class }}">
         <h4>Info</h4>
         <ul>

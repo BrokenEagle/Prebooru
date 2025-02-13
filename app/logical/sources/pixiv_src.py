@@ -169,6 +169,10 @@ def get_full_url(illust_url):
     return get_media_url(illust_url)
 
 
+def has_alternate(illust_url):
+    return False
+
+
 def get_alternate_url(illust_url):
     pass
 

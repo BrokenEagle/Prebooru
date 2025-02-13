@@ -74,9 +74,9 @@ class Pool(JsonModel):
         q = q.order_by(PoolElement.position)
         per_page = min(per_page, SHOW_PAGINATE_LIMIT) if per_page is not None else DEFAULT_PAGINATE_LIMIT
         page = q.count_paginate(per_page=per_page, page=page)
-        post_ids = [element.post_id for element in page.items if element.type.name == 'pool_post']
-        illust_ids = [element.illust_id for element in page.items if element.type.name == 'pool_illust']
-        notation_ids = [element.notation_id for element in page.items if element.type.name == 'pool_notation']
+        post_ids = [element.post_id for element in page.items if element.type_name == 'pool_post']
+        illust_ids = [element.illust_id for element in page.items if element.type_name == 'pool_illust']
+        notation_ids = [element.notation_id for element in page.items if element.type_name == 'pool_notation']
         posts = Post.query.options(*_get_options(post_options)).filter(Post.id.in_(post_ids))\
                     .all() if len(post_ids) else []
         illusts = Illust.query.options(*_get_options(illust_options)).filter(Illust.id.in_(illust_ids))\
@@ -88,11 +88,11 @@ class Pool(JsonModel):
         for i in range(0, len(page.elements)):
             page_element = page.elements[i]
             page_item = None
-            if page_element.type.name == 'pool_post':
+            if page_element.type_name == 'pool_post':
                 page_item = next(filter(lambda x: x.id == page_element.post_id, posts), None)
-            elif page_element.type.name == 'pool_illust':
+            elif page_element.type_name == 'pool_illust':
                 page_item = next(filter(lambda x: x.id == page_element.illust_id, illusts), None)
-            elif page_element.type.name == 'pool_notation':
+            elif page_element.type_name == 'pool_notation':
                 page_item = next(filter(lambda x: x.id == page_element.notation_id, notations), None)
             if page_item is None:
                 raise Exception("Missing pool element item: %s" % repr(page_element))
@@ -111,9 +111,3 @@ class Pool(JsonModel):
 
     def _get_element_count(self):
         return self._element_query.get_count()
-
-    def _get_mark_element(self, mark_item):
-        pool_element = next(filter(lambda x: x.pool_id == self.id, mark_item._pools), None)
-        if pool_element is None:
-            raise Exception("Could not find mark item %s #%d in pool #%d")
-        return pool_element

@@ -5,7 +5,6 @@ from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty, memoized_classproperty
-from utility.time import average_timedelta, days_ago, get_current_time
 from utility.data import inc_dict_entry, swap_list_values
 
 # ## LOCAL IMPORTS
@@ -18,6 +17,32 @@ from .error import Error
 from .subscription_element import SubscriptionElement
 from .base import JsonModel, integer_column, real_column, enum_column, timestamp_column, register_enum_column,\
     relationship, backref
+
+
+# ## FUNCTIONS
+
+def populate_storage(func):
+    def wrapper(*args):
+        if not hasattr(args[0], '_total_bytes'):
+            args[0]._populate_storage_sizes()
+        return func(*args)
+    return wrapper
+
+
+def populate_keep(func):
+    def wrapper(*args):
+        if not hasattr(args[0], '_keep_counts'):
+            args[0]._populate_keep_counts()
+        return func(*args)
+    return wrapper
+
+
+def populate_status(func):
+    def wrapper(*args):
+        if not hasattr(args[0], '_status_counts'):
+            args[0]._populate_status_counts()
+        return func(*args)
+    return wrapper
 
 
 # ## CLASSES
@@ -47,12 +72,6 @@ class Subscription(JsonModel):
     # ## Instance properties
 
     @memoized_property
-    def posts(self):
-        q = self._post_query
-        q = q.order_by(Post.id.desc())
-        return q.all()
-
-    @memoized_property
     def recent_posts(self):
         q = self._post_query
         q = q.order_by(Post.id.desc())
@@ -65,34 +84,19 @@ class Subscription(JsonModel):
                                           SubscriptionElement.keep_value.is_(None))\
                                   .all()
 
-    @memoized_property
-    def average_interval(self):
-        datetimes = self._illust_query.filter(Illust.site_created > days_ago(365),
-                                              SubscriptionElement.keep_value == 'yes')\
-                                      .order_by(Illust.site_illust_id.desc())\
-                                      .with_entities(Illust.site_created)\
-                                      .all()
-        if len(datetimes) == 0:
-            return
-        datetimes = [x[0] for x in datetimes]
-        if self.undecided_count == 0:
-            datetimes = [get_current_time()] + datetimes
-        timedeltas = [datetimes[i - 1] - datetimes[i] for i in range(1, len(datetimes))]
-        return average_timedelta(timedeltas)
-
     @property
+    @populate_storage
     def total_bytes(self):
-        self._populate_storage_sizes()
         return self._total_bytes
 
     @property
+    @populate_storage
     def main_bytes(self):
-        self._populate_storage_sizes()
         return self._main_bytes
 
     @property
+    @populate_storage
     def alternate_bytes(self):
-        self._populate_storage_sizes()
         return self._alternate_bytes
 
     @memoized_property
@@ -108,58 +112,58 @@ class Subscription(JsonModel):
         return self._post_query.distinct_count()
 
     @memoized_property
+    @populate_keep
     def undecided_count(self):
-        self._populate_keep_counts()
         return self._keep_counts.get('undecided', 0)
 
     @memoized_property
+    @populate_keep
     def yes_count(self):
-        self._populate_keep_counts()
         return self._keep_counts.get('yes', 0)
 
     @memoized_property
+    @populate_keep
     def no_count(self):
-        self._populate_keep_counts()
         return self._keep_counts.get('no', 0)
 
     @memoized_property
+    @populate_keep
     def maybe_count(self):
-        self._populate_keep_counts()
         return self._keep_counts.get('maybe', 0)
 
     @memoized_property
+    @populate_keep
     def archive_count(self):
-        self._populate_keep_counts()
         return self._keep_counts.get('undecided', 0)
 
     @memoized_property
+    @populate_status
     def active_count(self):
-        self._populate_status_counts()
         return self._status_counts.get('active', 0)
 
     @memoized_property
+    @populate_status
     def unlinked_count(self):
-        self._populate_status_counts()
         return self._status_counts.get('unlinked', 0)
 
     @memoized_property
+    @populate_status
     def deleted_count(self):
-        self._populate_status_counts()
         return self._status_counts.get('deleted', 0)
 
     @memoized_property
+    @populate_status
     def archived_count(self):
-        self._populate_status_counts()
         return self._status_counts.get('archived', 0)
 
     @memoized_property
+    @populate_status
     def duplicate_count(self):
-        self._populate_status_counts()
         return self._status_counts.get('deleted', 0)
 
     @memoized_property
+    @populate_status
     def error_count(self):
-        self._populate_status_counts()
         return self._status_counts.get('error', 0)
 
     @memoized_property
@@ -213,8 +217,6 @@ class Subscription(JsonModel):
             self._alternate_bytes = sum([x[0] for x in filesizes if x[1] is True])
 
     def _populate_keep_counts(self):
-        if hasattr(self, '_keep_counts'):
-            return
         keep_counts = self._element_query.with_entities(SubscriptionElement.keep_id).all()
         counts = {}
         for keep in keep_counts:

@@ -56,6 +56,8 @@ class Notation(JsonModel):
 
     # ## Relationships
     _pool = relationship(PoolNotation, uselist=False, cascade='all,delete', backref=backref('item', uselist=False))
+    # (MtO) subscription [Subscription]
+    # (MtO) booru [Booru]
     # (MtO) artist [Artist]
     # (MtO) illust [Illust]
     # (MtO) post [Post]
@@ -74,18 +76,11 @@ class Notation(JsonModel):
     def append_type(self):
         return self.append_item.table_name if self.append_item is not None else None
 
-    def attach(self, attr, record):
-        if record.table_name == 'pool':
-            self.no_pool = False
-            record._elements.append(self)
-        else:
-            self.no_pool = True
-            setattr(self, attr, record)
-
     # ## Private
 
     @property
-    def _pools(self):           # All other pool elements are MtM, so there needs to be a plural property
+    def _pools(self):
+        # All other pool elements are MtM, so there needs to be a plural property
         return [self._pool]
 
     __table_args__ = (

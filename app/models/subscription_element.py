@@ -38,10 +38,6 @@ class SubscriptionElement(JsonModel):
     def duplicate_elements(self):
         return self._duplicate_element_query.all()
 
-    @property
-    def duplicate_element_count(self):
-        return self._duplicate_element_query.get_count()
-
     # ## Class properties
 
     @memoized_classproperty

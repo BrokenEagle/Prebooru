@@ -71,7 +71,7 @@ class Artist(JsonModel):
 
     # ## Instance properties
 
-    @property
+    @memoized_property
     def source(self):
         from ..logical.sources import source_by_site_name
         return source_by_site_name(self.site.name)
@@ -128,10 +128,6 @@ class Artist(JsonModel):
         return self.last_illust.site_illust_id if self.last_illust is not None else None
 
     @property
-    def first_illust_id(self):
-        return self.first_illust.site_illust_id if self.first_illust is not None else None
-
-    @property
     def sitelink(self):
         return self.source.ARTIST_SHORTLINK % self.site_artist_id
 
@@ -146,13 +142,6 @@ class Artist(JsonModel):
     @property
     def webpages_json(self):
         return [dict_prune(webpage.to_json(), ['id', 'artist_id']) for webpage in self.webpages]
-
-    def delete(self):
-        self.names.clear()
-        self.profiles.clear()
-        self.site_accounts.clear()
-        DB.session.delete(self)
-        DB.session.commit()
 
     # ## Class properties
 

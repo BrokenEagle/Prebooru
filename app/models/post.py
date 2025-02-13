@@ -2,7 +2,6 @@
 
 # ## PYTHON IMPORTS
 import os
-import itertools
 
 # ## EXTERNAL IMPORTS
 from flask import has_app_context
@@ -17,8 +16,6 @@ from utility.obj import memoized_classproperty
 from utility.data import swap_list_values, dict_prune, dict_filter
 
 # ## LOCAL IMPORTS
-from .. import DB
-from ..logical.utility import unique_objects
 from .model_enums import PostType
 from .error import Error
 from .illust_url import IllustUrl
@@ -37,6 +34,16 @@ from .base import JsonModel, integer_column, enum_column, text_column, boolean_c
 # Many-to-many tables
 
 PostTags = secondarytable('post_tags', ('post_id', 'post.id'), ('tag_id', 'tag.id'))
+
+
+# ## FUNCTIONS
+
+def check_app_context(func):
+    def wrapper(*args):
+        if not has_app_context():
+            return None
+        return func(*args)
+    return wrapper
 
 
 # ## CLASSES
@@ -82,17 +89,17 @@ class Post(JsonModel):
 
     @property
     def is_video(self):
-        return self.file_ext not in ['jpg', 'png', 'gif']
+        return self.file_ext in ['mp4']
 
-    @memoized_property
+    @property
     def has_sample(self):
         return self.width > SAMPLE_DIMENSIONS[0] or self.height > SAMPLE_DIMENSIONS[1] or self.is_video
 
-    @memoized_property
+    @property
     def has_preview(self):
         return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1] or self.is_video
 
-    @memoized_property
+    @property
     def video_sample_exists(self):
         return os.path.exists(self.video_sample_path)
 
@@ -105,40 +112,33 @@ class Post(JsonModel):
         return 'main' if not self.is_alternate else 'alternate'
 
     @property
+    @check_app_context
     def file_url(self):
-        if not has_app_context():
-            return None
         return image_server_url('data' + self._partial_network_path + self.file_ext, subtype=self.suburl_path)
 
     @property
+    @check_app_context
     def sample_url(self):
-        if not has_app_context():
-            return None
-        if self.has_sample:
-            return image_server_url('sample' + self._partial_network_path + 'jpg', subtype=self.suburl_path)
-        return self.file_url
+        return image_server_url('sample' + self._partial_network_path + 'jpg', subtype=self.suburl_path)\
+            if self.has_sample else self.file_url
 
     @property
+    @check_app_context
     def preview_url(self):
-        if not has_app_context():
-            return None
-        if self.has_preview:
-            return image_server_url('preview' + self._partial_network_path + 'jpg', subtype=self.suburl_path)
-        return self.file_url
+        return image_server_url('preview' + self._partial_network_path + 'jpg', subtype=self.suburl_path)\
+            if self.has_preview else self.file_url
 
     @property
+    @check_app_context
     def video_sample_url(self):
-        if not has_app_context():
-            return None
-        if self.is_video:
-            return image_server_url('video_sample' + self._partial_network_path + 'webm', subtype=self.suburl_path)
+        return image_server_url('video_sample' + self._partial_network_path + 'webm', subtype=self.suburl_path)\
+            if self.is_video else None
 
     @property
+    @check_app_context
     def video_preview_url(self):
-        if not has_app_context():
-            return None
-        if self.is_video:
-            return image_server_url('video_preview' + self._partial_network_path + 'webp', subtype=self.suburl_path)
+        return image_server_url('video_preview' + self._partial_network_path + 'webp', subtype=self.suburl_path)\
+            if self.is_video else None
 
     @property
     def subdirectory_path(self):
@@ -150,23 +150,23 @@ class Post(JsonModel):
 
     @property
     def sample_path(self):
-        if self.has_sample:
-            return os.path.join(self.subdirectory_path, 'sample', self._partial_file_path + 'jpg')
+        return os.path.join(self.subdirectory_path, 'sample', self._partial_file_path + 'jpg')\
+            if self.has_sample else None
 
     @property
     def preview_path(self):
-        if self.has_preview:
-            return os.path.join(self.subdirectory_path, 'preview', self._partial_file_path + 'jpg')
+        return os.path.join(self.subdirectory_path, 'preview', self._partial_file_path + 'jpg')\
+            if self.has_preview else None
 
     @property
     def video_sample_path(self):
-        if self.is_video:
-            return os.path.join(self.subdirectory_path, 'video_sample', self._partial_file_path + 'webm')
+        return os.path.join(self.subdirectory_path, 'video_sample', self._partial_file_path + 'webm')\
+            if self.is_video else None
 
     @property
     def video_preview_path(self):
-        if self.is_video:
-            return os.path.join(self.subdirectory_path, 'video_preview', self._partial_file_path + 'webp')
+        return os.path.join(self.subdirectory_path, 'video_preview', self._partial_file_path + 'webp')\
+            if self.is_video else None
 
     @property
     def similarity_matches(self):
@@ -174,31 +174,24 @@ class Post(JsonModel):
 
     @memoized_property
     def related_posts(self):
+        from .illust import Illust
         query = Post.query.join(IllustUrl, Post.illust_urls)
-        query = query.filter(IllustUrl.illust_id.in_(self.illust_ids), Post.id != self.id)
-        query = query.distinct(Post.id)
+        query = query.filter(IllustUrl.illust_id.in_(self._illust_query.with_entities(Illust.id)))
+        query = query.group_by(Post.id)
         query = query.order_by(IllustUrl.illust_id.asc(), IllustUrl.order.asc())
         return query.limit(10).all()
 
     @memoized_property
     def illusts(self):
-        return unique_objects([illust_url.illust for illust_url in self.illust_urls])
+        return self._illust_query.all()
 
     @memoized_property
     def artists(self):
-        return unique_objects([illust.artist for illust in self.illusts])
+        return self._artist_query.all()
 
     @memoized_property
     def boorus(self):
-        return unique_objects(list(itertools.chain(*[artist.boorus for artist in self.artists])))
-
-    @property
-    def illust_ids(self):
-        return list(set(illust_url.illust_id for illust_url in self.illust_urls))
-
-    @property
-    def artist_ids(self):
-        return list(set(illust.artist_id for illust in self.illusts))
+        return self._booru_query.all()
 
     @memoized_property
     def similar_post_count(self):
@@ -213,18 +206,6 @@ class Post(JsonModel):
                                SimilarityMatch.forward_id.desc(),
                                SimilarityMatch.reverse_id.desc())
         return query.limit(10).all()
-
-    def delete_pool(self, pool_id):
-        pool_element_delete(pool_id, self)
-
-    def delete(self):
-        pools = [pool for pool in self.pools]
-        DB.session.delete(self)
-        DB.session.commit()
-        if len(pools) > 0:
-            for pool in pools:
-                pool._elements.reorder()
-            DB.session.commit()
 
     @property
     def illust_urls_json(self):
@@ -266,6 +247,26 @@ class Post(JsonModel):
     def _similar_match_query(self):
         clause = or_(SimilarityMatch.forward_id == self.id, SimilarityMatch.reverse_id == self.id)
         return SimilarityMatch.query.filter(clause)
+
+    @property
+    def _illust_query(self):
+        from .illust import Illust
+        return Illust.query.join(IllustUrl, Illust.urls).filter(IllustUrl.post_id == self.id).group_by(Illust.id)
+
+    @property
+    def _artist_query(self):
+        from .illust import Illust
+        from .artist import Artist
+        return Artist.query.join(Illust, Artist.illusts).join(IllustUrl, Illust.urls)\
+                           .filter(IllustUrl.post_id == self.id).group_by(Artist.id)
+
+    @property
+    def _booru_query(self):
+        from .illust import Illust
+        from .artist import Artist
+        from .booru import Booru
+        return Booru.query.join(Artist, Booru.artists).join(Illust, Artist.illusts).join(IllustUrl, Illust.urls)\
+                          .filter(IllustUrl.post_id == self.id).group_by(Booru.id)
 
 
 # ## INITIALIZATION

@@ -201,7 +201,7 @@ def check_pending_subscriptions_task():
                     print_warning("Token has expired... disabling check pending subscriptions task.")
                     update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False)
                     update_subscriptions = [subscription for subscription in subscriptions
-                                            if subscription.status.name == 'automatic']
+                                            if subscription.status_name == 'automatic']
                     _update_subscriptions_status(update_subscriptions, 'idle')
                     update_job_by_id('job_enable', 'check_pending_subscriptions', {'enabled': False})
                     break
@@ -453,7 +453,7 @@ def _process_pending_subscription(subscription, printer):
 
     def finally_func(scope_vars, error, data):
         nonlocal subscription
-        if error is None and subscription.status.name != 'error':
+        if error is None and subscription.status_name != 'error':
             update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False)
         elif str(error) == "Should not authenticate with user auth.":
             return False
@@ -468,7 +468,7 @@ def _pending_subscription_callback(subscription_ids):
     print_info('pending_subscription_callback', subscription_ids)
     subscriptions = get_subscription_by_ids(subscription_ids)
     for subscription in subscriptions:
-        if subscription.status.name == 'automatic':
+        if subscription.status_name == 'automatic':
             update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False)
     SESSION.remove()
 

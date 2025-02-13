@@ -16,17 +16,17 @@
             <li>
                 <strong>Type:</strong>&emsp;{{ tag.display_type }}
             </li>
-            {% if tag.type.name == 'site_tag' %}
+            {% if tag.type_name == 'site_tag' %}
                 <li>
                     <strong>Links:</strong>&emsp;{{ helpers.tag.tag_search_links(tag) }}
                 </li>
             {% endif %}
         </ul>
     </div>
-    {% if tag.type.name == 'site_tag' %}
+    {% if tag.type_name == 'site_tag' %}
         {{ illusts_display(helpers.tag.illust_search(tag, 'illust'), tag.illust_count, 'tag-illusts', False) }}
         <div id="tag-posts">{{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag, 'illust')) }}</div>
-    {% elif tag.type.name == 'user_tag' %}
+    {% elif tag.type_name == 'user_tag' %}
         {{ illusts_display(helpers.tag.illust_search(tag, 'post'), tag.illust_count, 'tag-illusts', False) }}
         <div id="tag-posts">{{ recent_posts(tag.recent_posts, post_count=tag.post_count, post_search=helpers.tag.post_search(tag, 'post')) }}</div>
     {% endif %}

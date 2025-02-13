@@ -37,6 +37,14 @@ def errors_json(self, values):
         self.errors = validate_attachment_json(values, ERRORS_JSON_DATATYPES)
 
 
+def check_append(func):
+    def wrapper(*args):
+        if args[0].append_type is None:
+            return None
+        return func(*args)
+    return wrapper
+
+
 # ## CLASSES
 
 class Error(JsonModel):
@@ -53,10 +61,12 @@ class Error(JsonModel):
     upload_id = integer_column(foreign_key='upload.id', nullable=True)
 
     # ## Relations
-    # (OtO) post [Post]
-    # (OtO) subscription [Subscription]
-    # (OtO) subscription_element [SubscriptionElement]
-    # (OtO) upload [Upload]
+    # (MtO) post [Post]
+    # (MtO) subscription [Subscription]
+    # (MtO) subscription_element [SubscriptionElement]
+    # (MtO) upload [Upload]
+    # (MtO) download [Download]
+    # (MtO) download_element [DownloadElement]
 
     @memoized_property
     def append_type(self):
@@ -74,24 +84,24 @@ class Error(JsonModel):
             return 'subscription_element'
 
     @memoized_property
+    @check_append
     def append_item(self):
-        if self.append_type is not None:
-            return getattr(self, self.append_type)
+        return getattr(self, self.append_type)
 
     @property
+    @check_append
     def append_shortlink(self):
-        if self.append_type is not None:
-            return getattr(self, self.append_type + '_shortlink')
+        return getattr(self, self.append_type + '_shortlink')
 
     @property
+    @check_append
     def append_show_url(self):
-        if self.append_type is not None:
-            return getattr(self, self.append_type + '_show_url')
+        return getattr(self, self.append_type + '_show_url')
 
     @property
+    @check_append
     def append_show_link(self):
-        if self.append_type is not None:
-            return getattr(self, self.append_type + '_show_link')
+        return getattr(self, self.append_type + '_show_link')
 
     __table_args__ = (
         DB.CheckConstraint(

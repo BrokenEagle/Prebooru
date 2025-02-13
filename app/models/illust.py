@@ -82,7 +82,7 @@ class Illust(JsonModel):
 
     # ## Instance properties
 
-    @property
+    @memoized_property
     def source(self):
         from ..logical.sources import source_by_site_name
         return source_by_site_name(self.site.name)
@@ -115,27 +115,23 @@ class Illust(JsonModel):
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)
 
-    @property
-    def active_urls(self):
-        return [url for url in self.urls if url.post_id is not None]
-
     @memoized_property
     def posts(self):
         return self._post_query.all()
 
-    @property
+    @memoized_property
     def post_count(self):
         return self._post_query.get_count()
 
-    @property
+    @memoized_property
     def titles_count(self):
         return IllustTitles.query.filter_by(illust_id=self.id).get_count()
 
-    @property
+    @memoized_property
     def commentaries_count(self):
         return IllustCommentaries.query.filter_by(illust_id=self.id).get_count()
 
-    @property
+    @memoized_property
     def type(self):
         if self.has_images and self.has_videos:
             return 'mixed'
@@ -159,20 +155,11 @@ class Illust(JsonModel):
 
     @property
     def sitelink(self):
-        return "%s #%d" % (self.site.name.lower(), self.site_illust_id)
+        return "%s #%d" % (self.site_name.lower(), self.site_illust_id)
 
     @property
     def urls_json(self):
         return [dict_prune(illust_url.to_json(), ['id', 'illust_id']) for illust_url in self.urls]
-
-    def delete(self):
-        pools = [pool for pool in self.pools]
-        DB.session.delete(self)
-        DB.session.commit()
-        if len(pools) > 0:
-            for pool in pools:
-                pool._elements.reorder()
-            DB.session.commit()
 
     # ## Class properties
 

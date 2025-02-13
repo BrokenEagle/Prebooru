@@ -244,7 +244,7 @@ def download_illust_url(illust_url):
     buffer = _download_media(illust_url.original_url, illust_url.source.IMAGE_HEADERS)
     if isinstance(buffer, tuple):
         retdata['errors'].append(buffer)
-        if illust_url.alternate_url:
+        if illust_url.has_alternate:
             buffer = _download_media(illust_url.alternate_url, illust_url.source.IMAGE_HEADERS)
             if isinstance(buffer, tuple):
                 retdata['errors'].append(buffer)
@@ -260,7 +260,7 @@ def download_illust_sample(illust_url):
     buffer = _download_media(illust_url.original_sample_url, illust_url.source.IMAGE_HEADERS)
     if isinstance(buffer, tuple):
         retdata['errors'].append(buffer)
-        if illust_url.alternate_url:
+        if illust_url.has_alternate:
             buffer = _download_media(illust_url.alternate_sample_url, illust_url.source.IMAGE_HEADERS)
             if isinstance(buffer, tuple):
                 retdata['errors'].append(buffer)

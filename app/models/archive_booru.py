@@ -10,6 +10,7 @@ from .notation import notations_json
 from .base import JsonModel, integer_column, text_column, boolean_column, json_column, timestamp_column,\
     validate_attachment_json, json_list_proxy
 
+
 # ## GLOBAL_VARIABLES
 
 ARTISTS_JSON_DATATYPES = {

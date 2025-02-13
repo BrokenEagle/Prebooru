@@ -61,9 +61,8 @@ class ArchivePost(JsonModel):
 
     @property
     def preview_url(self):
-        if not self.has_preview:
-            return self.file_url
-        return image_server_url('archive_preview' + self._partial_network_path + 'jpg', 'main')
+        return image_server_url('archive_preview' + self._partial_network_path + 'jpg', 'main')\
+            if self.has_preview else self.file_url
 
     @property
     def file_path(self):
@@ -71,9 +70,8 @@ class ArchivePost(JsonModel):
 
     @property
     def preview_path(self):
-        if self.has_preview:
-            return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')
-        return None
+        return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')\
+            if self.has_preview else None
 
     tags_json = json_list_proxy('tags', str)
     errors_json = errors_json

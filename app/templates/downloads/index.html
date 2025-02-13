@@ -39,7 +39,7 @@
                         {% endfor %}
                     </td>
                     <td>{{ errors_block(download.errors) }}</td>
-                    <td>{{ download.status.name }}</td>
+                    <td>{{ download.status_name }}</td>
                     <td>{{ helpers.base.format_timestamp(download.created) }}</td>
                 </tr>
             {% endfor %}

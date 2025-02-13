@@ -39,7 +39,7 @@
                         {% endif %}
                     </td>
                     <td>{{ errors_block(upload.errors) }}</td>
-                    <td>{{ upload.status.name }}</td>
+                    <td>{{ upload.status_name }}</td>
                     <td>{{ helpers.base.format_timestamp(upload.created) }}</td>
                 </tr>
             {% endfor %}

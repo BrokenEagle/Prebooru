@@ -40,9 +40,7 @@ class Archive(JsonModel):
 
     @property
     def subdata_json(self):
-        if self.subdata is not None:
-            return dict_prune(self.subdata.to_json(), 'archive_id')
-        return None
+        return dict_prune(self.subdata.to_json(), 'archive_id') if self.subdata is not None else None
 
     def to_json(self):
         base_json = super().to_json()

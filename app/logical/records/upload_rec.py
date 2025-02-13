@@ -59,7 +59,7 @@ def process_upload(upload_id):
         printer("Upload:", upload.status)
         if upload.status_name == 'complete':
             printer("Starting secondary threads.")
-            post_ids = [upload.post_id]
+            post_ids = [upload.illust_url.post_id]
             SessionThread(target=process_image_matches, args=(post_ids,)).start()
             if upload.artist.primary:
                 SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()

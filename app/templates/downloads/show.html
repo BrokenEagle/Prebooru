@@ -21,7 +21,7 @@
 
 {% block pagescript %}
     (function () {
-    const download_status = "{{ download.status.name }}";
+    const download_status = "{{ download.status_name }}";
     Downloads.initializeReloadInterval(download_status);
     })();
     Prebooru.initializeLazyLoad('.download-element-preview');

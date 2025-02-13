@@ -107,9 +107,9 @@ def index_html():
         return redirect(url_for('subscription_element.index_html', page=elements.pages,
                                 **{k: v for (k, v) in request.args.items() if k != 'page'}))
     missing_md5s = set(element.md5 for element in elements.items
-                       if element.post is None and element.status.name in ['unlinked', 'duplicate'])
+                       if element.post is None and element.status_name in ['unlinked', 'duplicate'])
     missing_posts = get_posts_by_md5s(list(missing_md5s)) if len(missing_md5s) else []
-    archive_md5s = set(element.md5 for element in elements.items if element.status.name == 'archived')
+    archive_md5s = set(element.md5 for element in elements.items if element.status_name == 'archived')
     archives = get_archives_by_post_md5s(list(archive_md5s)) if len(archive_md5s) else []
     for item in elements.items:
         post_match = None
@@ -213,7 +213,7 @@ def reinstantiate_json(id):
     element = get_or_error(SubscriptionElement, id)
     if isinstance(element, dict):
         return element
-    if element.status.name != 'archived':
+    if element.status_name != 'archived':
         return {'error': True, 'message': 'Can only reinstantiate archived elements.'}
     results = reinstantiate_element(element)
     return _json_preview(results, element)
@@ -224,7 +224,7 @@ def relink_json(id):
     element = get_or_error(SubscriptionElement, id)
     if isinstance(element, dict):
         return element
-    if element.status.name != 'unlinked':
+    if element.status_name != 'unlinked':
         return {'error': True, 'message': "Can only relink unlinked elements."}
     results = relink_element(element)
     return _json_preview(results, element)

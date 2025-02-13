@@ -29,7 +29,7 @@
                         <strong>Domain:</strong> {{ subscription.artist.site_domain }}
                     </td>
                     <td>
-                        <strong>Status:</strong> {{ subscription.status.name }}
+                        <strong>Status:</strong> {{ subscription.status_name }}
                         {% if average_intervals is not none %}
                             <br>
                             <strong>Average Interval:</strong> {{ helpers.subscription.average_interval_lookup(subscription, average_intervals) }}

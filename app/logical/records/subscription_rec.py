@@ -63,15 +63,13 @@ def process_subscription_manual(subscription_id, job_id, params):
     start_illusts = 0
     start_posts = 0
     start_elements = 0
-    starting_post_ids = []
 
     def try_func(scope_vars):
-        nonlocal subscription, start_illusts, start_posts, start_elements, starting_post_ids
+        nonlocal subscription, start_illusts, start_posts, start_elements
         subscription = Subscription.find(subscription_id)
         start_illusts = subscription.artist.illust_count
         start_posts = subscription.artist.post_count
         start_elements = subscription.element_count
-        starting_post_ids = [post.id for post in subscription.posts]
         update_job_by_id('job_lock', job_id, {'locked': True})
         SESSION.commit()
         sync_missing_subscription_illusts(subscription, job_id, params)
@@ -93,7 +91,7 @@ def process_subscription_manual(subscription_id, job_id, params):
     def finally_func(scope_vars, error, data):
         nonlocal subscription
         subscription = subscription or Subscription.find(subscription_id)
-        if error is None and subscription.status.name != 'error':
+        if error is None and subscription.status_name != 'error':
             update_subscription_from_parameters(subscription, {'status_name': 'idle'}, update=False)
         SessionTimer(15, _query_unlock).start()  # Check later to give the DB time to catch up
 
@@ -113,7 +111,7 @@ def process_subscription_manual(subscription_id, job_id, params):
 
 
 def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
-    if subscription.status.name == 'automatic':
+    if subscription.status_name == 'automatic':
         update_subscription_from_parameters(subscription, {'requery': hours_from_now(4)}, update=False)
     artist = subscription.artist
     source = artist.source
@@ -145,7 +143,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
         job_status['illusts'] += 1
     job_status['ids'] = None
     update_job_status(job_id, job_status)
-    if subscription.status.name == 'automatic':
+    if subscription.status_name == 'automatic':
         params = {
             'last_id': artist.last_illust_id,
             'checked': get_current_time(),
@@ -173,7 +171,7 @@ def download_subscription_elements(subscription, job_id=None):
         for element in page.items:
             if create_post_from_subscription_element(element):
                 job_status['downloads'] += 1
-        active_elements = [element for element in page.items if element.status.name == 'active']
+        active_elements = [element for element in page.items if element.status_name == 'active']
         _process_image_matches(active_elements)
         _process_videos(active_elements)
         if not page.has_prev:
@@ -346,7 +344,7 @@ def redownload_element(element):
                 SessionThread(target=convert_mp4_to_webp,
                               args=(element.post.file_path, element.post.video_preview_path)).start()
             return {'error': False}
-        elif element.status.name == 'duplicate':
+        elif element.status_name == 'duplicate':
             post = element.illust_url.post
             if post is None:
                 duplicate_string = '; '.join([dupelement.shortlink for dupelement in element.duplicate_elements])

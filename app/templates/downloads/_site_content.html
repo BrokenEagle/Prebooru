@@ -7,12 +7,12 @@
         <ul>
             <li>
                 <strong>Status:</strong>
-                {% if download.status.name == 'pending' %}
+                {% if download.status_name == 'pending' %}
                     {{ helpers.download.check_pending_link(download) }}
-                {% elif download.status.name == 'error' %}
+                {% elif download.status_name == 'error' %}
                     {{ helpers.download.resubmit_link(download) }}
                 {% else %}
-                    {{ download.status.name }}
+                    {{ download.status_name }}
                 {% endif %}
             </li>
             <li>

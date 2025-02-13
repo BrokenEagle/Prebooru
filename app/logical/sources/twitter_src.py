@@ -592,6 +592,11 @@ def get_full_url(illust_url):
     return media_url
 
 
+def has_alternate(illust_url):
+    media_url = get_media_url(illust_url)
+    return bool(IMAGE1_RG.match(media_url) or IMAGE2_RG.match(media_url))
+
+
 def get_alternate_url(illust_url):
     media_url = get_media_url(illust_url)
     match = IMAGE1_RG.match(media_url)

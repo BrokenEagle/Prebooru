@@ -2,7 +2,7 @@
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty, memoized_classproperty
-from utility.data import swap_list_values
+from utility.data import swap_list_values, list_difference
 
 # ## LOCAL IMPORTS
 from .model_enums import ApiDataType, SiteDescriptor
@@ -23,19 +23,15 @@ class ApiData(JsonModel):
 
     # ## Class properties
 
-    @property
-    def source(self):
-        from ..logical.sources import source_by_site_name
-        return source_by_site_name(self.site.name)
-
     @memoized_classproperty
     def searchable_attributes(cls):
-        return [x for x in super().searchable_attributes if x not in ['data']]
+        return list_difference(super().searchable_attributes, ['data'])
 
     @memoized_classproperty
     def repr_attributes(cls):
         mapping = {
             'type_id': ('type', 'type_name'),
+            'site_id': ('site', 'site_name'),
         }
         return swap_list_values(super().repr_attributes, mapping)
 

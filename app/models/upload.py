@@ -2,6 +2,7 @@
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
+from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty, memoized_classproperty
@@ -30,40 +31,15 @@ class Upload(JsonModel):
     errors = relationship(Error, uselist=True, cascade='all,delete', backref=backref('upload', uselist=False))
     illust_url = relationship(IllustUrl, uselist=False, viewonly=True, backref=backref('uploads', uselist=True))
 
+    # ## Association proxies
+    post = association_proxy('illust_url', 'post')
+    illust = association_proxy('illust_url', 'illust')
+
     # ## Instance properties
 
     @property
-    def post(self):
-        return getattr(self.illust_url, 'post', None)
-
-    @property
-    def post_id(self):
-        return getattr(self.illust_url, 'post_id', None)
-
-    @property
-    def site_id(self):
-        return self._source.SITE_ID
-
-    @memoized_property
-    def site_illust_id(self):
-        if self.illust is not None:
-            return self.illust.site_illust_id
-
-    @memoized_property
-    def illust(self):
-        return self.illust_url.illust if self.illust_url_id is not None else None
-
-    @property
-    def illust_id(self):
-        return getattr(self.illust, 'id', None)
-
-    @memoized_property
     def artist(self):
         return getattr(self.illust, 'artist', None)
-
-    @property
-    def artist_id(self):
-        return getattr(self.artist, 'id', None)
 
     # ## Class properties
 

@@ -48,7 +48,7 @@ class Tag(JsonModel):
 
     @property
     def display_type(self):
-        return self.type.name.replace('_', ' ').capitalize()
+        return self.type_name.replace('_', ' ').capitalize()
 
     @memoized_property
     def recent_posts(self):
@@ -101,15 +101,15 @@ class SiteTag(Tag):
     @property
     def _illust_query(self):
         from .illust import Illust
-        return Illust.query.join(Tag, Illust.tags).filter(Tag.id == self.id)
+        return Illust.query.join(SiteTag, Illust.tags).filter(SiteTag.id == self.id)
 
     @property
     def _post_query(self):
         from .post import Post
         from .illust_url import IllustUrl
         from .illust import Illust
-        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(Tag, Illust.tags)\
-                         .filter(Tag.id == self.id)
+        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust).join(SiteTag, Illust.tags)\
+                         .filter(SiteTag.id == self.id)
 
     __mapper_args__ = {
         'polymorphic_identity': TagType.site_tag.id,

@@ -100,7 +100,7 @@ def reinstantiate_item_html(id):
         flash(archive.type.name.title() + " recreated.")
     if 'item' not in retdata:
         return redirect(request.referrer)
-    return redirect(url_for(archive.type.name + '.show_html', id=retdata['item']['id']))
+    return redirect(url_for(archive.type_name + '.show_html', id=retdata['item']['id']))
 
 
 @bp.route('/archives/<int:id>/relink', methods=['POST'])
@@ -113,7 +113,7 @@ def relink_item_html(id):
         flash(archive.type.name.title() + " relinked.")
     if 'item' not in retdata:
         return redirect(request.referrer)
-    return redirect(url_for(archive.type.name + '.show_html', id=retdata['item']['id']))
+    return redirect(url_for(archive.type_name + '.show_html', id=retdata['item']['id']))
 
 
 @bp.route('/archives/<int:id>/set_permenant', methods=['POST'])

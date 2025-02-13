@@ -58,32 +58,17 @@ class Booru(JsonModel):
         page = q.count_paginate(per_page=10, distinct=True, count=False)
         return page.items
 
-    @memoized_property
+    @property
     def illust_count(self):
         return self._illust_query.get_count()
 
-    @memoized_property
+    @property
     def post_count(self):
         return self._post_query.distinct_count()
 
     @property
     def names_count(self):
         return BooruNames.query.filter_by(booru_id=self.id).get_count()
-
-    @memoized_property
-    def _illust_query(self):
-        return Illust.query.join(Artist, Illust.artist).join(Booru, Artist.boorus).filter(Booru.id == self.id)
-
-    @memoized_property
-    def _post_query(self):
-        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)\
-                   .join(Booru, Artist.boorus).filter(Booru.id == self.id)
-
-    def delete(self):
-        self.names.clear()
-        self.artists.clear()
-        DB.session.delete(self)
-        DB.session.commit()
 
     # ## Class properties
 
@@ -97,6 +82,16 @@ class Booru(JsonModel):
     @classproperty
     def json_attributes(cls):
         return cls.repr_attributes
+
+    # ## Private
+    @property
+    def _illust_query(self):
+        return Illust.query.join(Artist, Illust.artist).join(Booru, Artist.boorus).filter(Booru.id == self.id)
+
+    @property
+    def _post_query(self):
+        return Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)\
+                   .join(Booru, Artist.boorus).filter(Booru.id == self.id)
 
 
 # ## INITIALIZATION

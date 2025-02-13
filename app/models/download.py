@@ -19,6 +19,24 @@ from .base import JsonModel, integer_column, text_column, enum_column, timestamp
     relationship, backref
 
 
+# ## FUNCTIONS
+
+def populate_illust_urls(func):
+    def wrapper(*args):
+        if not hasattr(args[0], '_illust_urls'):
+            args[0]._populate_illust_urls()
+        return func(*args)
+    return wrapper
+
+
+def populate_posts(func):
+    def wrapper(*args):
+        if not hasattr(args[0], '_posts'):
+            args[0]._populate_posts()
+        return func(*args)
+    return wrapper
+
+
 # ## CLASSES
 
 class Download(JsonModel):
@@ -63,34 +81,35 @@ class Download(JsonModel):
     def other_count(self):
         return self._elements_query.filter(DownloadElement.status_value.not_in(['complete', 'error'])).get_count()
 
-    @memoized_property
+    @property
+    @populate_illust_urls
     def illust_urls(self):
-        self._populate_illust_urls()
         return self._illust_urls
 
-    @memoized_property
+    @property
+    @populate_illust_urls
     def complete_illust_urls(self):
-        self._populate_illust_urls()
         return self._complete_illust_urls
 
-    @memoized_property
+    @property
+    @populate_illust_urls
     def duplicate_illust_urls(self):
-        self._populate_illust_urls()
         return self._duplicate_illust_urls
 
     @property
+    @populate_posts
     def posts(self):
-        self._populate_posts()
-        return [illust_url.post for illust_url in self.illust_urls if illust_url.post is not None]
+        return self._posts
 
     @property
+    @populate_posts
     def complete_posts(self):
-        self._populate_posts()
-        return [illust_url.post for illust_url in self.complete_illust_urls if illust_url.post is not None]
+        return self._complete_posts
 
     @property
+    @populate_posts
     def duplicate_posts(self):
-        return [illust_url.post for illust_url in self.duplicate_illust_urls if illust_url.post is not None]
+        return self._duplicate_posts
 
     @property
     def post_ids(self):
@@ -104,21 +123,9 @@ class Download(JsonModel):
     def duplicate_post_ids(self):
         return [post.id for post in self.duplicate_posts]
 
-    @property
-    def site_id(self):
-        return self._source.SITE_ID
-
-    @memoized_property
-    def site_illust_id(self):
-        if self.request_url:
-            return self._source.get_illust_id(self.request_url)
-        elif self.illust is not None:
-            return self.illust_url.illust.site_illust_id
-
     @memoized_property
     def illust(self):
-        if len(self.illust_urls):
-            return self.illust_urls[0].illust
+        return next((illust_url.illust for illust_url in self.illust_urls), None)
 
     @property
     def illust_id(self):
@@ -156,25 +163,24 @@ class Download(JsonModel):
     def _elements_query(self):
         return DownloadElement.query.filter_by(download_id=self.id)
 
-    @memoized_property
-    def _source(self):
-        from ..logical.sources.base_src import get_post_source
-        return get_post_source(self.request_url)
-
     def _populate_illust_urls(self):
         if len(self.elements):
             selectinload_batch_primary(self.elements, 'illust_url')
         self._illust_urls = [element.illust_url for element in self.elements]
         self._complete_illust_urls = [element.illust_url for element in self.elements
-                                      if element.status.name == 'complete']
+                                      if element.status_name == 'complete']
         self._duplicate_illust_urls = [element.illust_url for element in self.elements
-                                       if element.status.name == 'duplicate']
-        self._populate_illust_urls = lambda: None
+                                       if element.status_name == 'duplicate']
 
     def _populate_posts(self):
         if len(self.illust_urls):
             selectinload_batch_primary(self.illust_urls, 'post')
-        self._populate_posts = lambda: None
+        self._posts = [illust_url.post for illust_url in self.illust_urls
+                       if illust_url.post is not None]
+        self._complete_posts = [illust_url.post for illust_url in self.complete_illust_urls
+                                if illust_url.post is not None]
+        self._duplicate_posts = [illust_url.post for illust_url in self.duplicate_illust_urls
+                                 if illust_url.post is not None]
 
 
 # ## Initialize

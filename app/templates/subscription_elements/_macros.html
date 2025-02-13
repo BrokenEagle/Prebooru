@@ -27,7 +27,7 @@
 
 {% macro subscription_element_display(element) -%}
     {% set element_post = 'post' if element.post is not none else 'no-post' %}
-    {% set element_keep = element.keep.name if element.keep is not none else 'undecided' %}
+    {% set element_keep = element.keep_name if element.keep is not none else 'undecided' %}
     <article id="subscription-element-{{ element.id }}"
              class="subscription-element subscription-{{ element.illust_url.type }} subscription-{{ element_post }} subscription-{{ element_keep }}">
         <div class="subscription-element-archive">{{ helpers.subscription.keep_element_link(element, 'archive', False) }}</div>
@@ -37,7 +37,7 @@
 
 {% macro subscription_element_preview(element, lazyload) -%}
     {% set element_post = 'post' if element.post is not none else 'no-post' %}
-    {% set element_keep = element.keep.name if element.keep is not none else 'undecided' %}
+    {% set element_keep = element.keep_name if element.keep is not none else 'undecided' %}
     <article id="subscription-element-{{ element.id }}"
              class="subscription-element subscription-{{ element.illust_url.type }} subscription-{{ element_post }} subscription-{{ element_keep }}">
         {% if element.post is not none %}
@@ -61,7 +61,7 @@
         {% else %}
             <div class="subscription-element-display">
                 <div class="heading">
-                    <h3>{{ element.status.name | title }} post</h3>
+                    <h3>{{ element.status_name | title }} post</h3>
                 </div>
                 <div class="element-illust-type">{{ element.illust_url.type | title }}</div>
             </div>
@@ -106,7 +106,7 @@
 {%- endmacro %}
 
 {% macro subscription_element_info(element, show_illust, has_preview) -%}
-    {% set info_class = element.keep.name + '-info' if element.keep is not none else 'undecided-info' %}
+    {% set info_class = element.keep_name + '-info' if element.keep is not none else 'undecided-info' %}
     <div class="subscription-element-info {{ info_class }}">
         <ul>
             <li>
