@@ -20,7 +20,8 @@ SCALAR_RELATIONSHIPS = ['tag_names']
 VERSION_RELATIONSHIPS = [('title_body', 'title_bodies'), ('commentary_body', 'commentary_bodies')]
 
 ANY_WRITABLE_ATTRIBUTES = ['site_illust_id', 'site_created', 'pages', 'score', 'active']
-NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_name', 'title_body', 'commentary_body', 'created', 'updated']
+NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_name', 'created', 'updated']
+CREATE_ONLY_ATTRIBUTES = ['title_body', 'commentary_body']
 
 
 # ## FUNCTIONS
@@ -64,8 +65,8 @@ def set_illust_from_parameters(illust, setparams, action, commit, update):
     swap_key_value(setparams, 'title', 'title_body')
     swap_key_value(setparams, 'commentary', 'commentary_body')
     set_timesvalue(setparams, 'site_created')
-    col_result = set_column_attributes(illust, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES,
-                                       setparams, update=update, safe=True)
+    col_result = set_column_attributes(illust, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams,
+                                       create_attributes=CREATE_ONLY_ATTRIBUTES, update=update, safe=True)
     ver_result = set_version_relations(illust, VERSION_RELATIONSHIPS, setparams, update=update)\
         if action == 'updated' else False
     rel_result = set_relationship_collections(illust, SCALAR_RELATIONSHIPS, setparams, update=update)

@@ -19,7 +19,8 @@ VERSION_RELATIONSHIPS = [('site_account_value', 'site_account_values'), ('name_v
                          ('profile_body', 'profile_bodies')]
 
 ANY_WRITABLE_ATTRIBUTES = ['site_name', 'site_artist_id', 'site_created', 'active', 'primary']
-NULL_WRITABLE_ATTRIBUTES = ['site_account_value', 'name_value', 'profile_body', 'created', 'updated']
+NULL_WRITABLE_ATTRIBUTES = ['created', 'updated']
+CREATE_ONLY_ATTRIBUTES = ['site_account_value', 'name_value', 'profile_body']
 
 BOORU_SUBQUERY = Artist.query\
     .join(Booru, Artist.boorus)\
@@ -65,8 +66,8 @@ def set_artist_from_parameters(artist, setparams, action, commit, update):
     swap_key_value(setparams, 'name', 'name_value')
     swap_key_value(setparams, 'profile', 'profile_body')
     set_timesvalue(setparams, 'site_created')
-    col_result = set_column_attributes(artist, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES,
-                                       setparams, update=update, safe=True)
+    col_result = set_column_attributes(artist, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams,
+                                       create_attributes=CREATE_ONLY_ATTRIBUTES, update=update, safe=True)
     ver_result = set_version_relations(artist, VERSION_RELATIONSHIPS, setparams, update=update)\
         if action == 'updated' else False
     web_result = _set_artist_webpages(artist, setparams, update)

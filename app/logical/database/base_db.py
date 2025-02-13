@@ -64,13 +64,16 @@ def set_association_attributes(params, associations):
             params[association_key] = params[key]
 
 
-def set_column_attributes(item, any_columns, null_columns, dataparams, update=False, safe=False):
+def set_column_attributes(item, any_columns, null_columns, dataparams,
+                          create_attributes=None, update=False, safe=False):
     """For updating column attributes with scalar values"""
     printer = buffered_print('set_column_attributes', safe=True, header=False)
     printer("(%s)" % item.shortlink)
     is_dirty = False
     allowed_attrs = any_columns + null_columns
     create = item not in SESSION
+    if create:
+        allowed_attrs += create_attributes if create_attributes is not None else []
     for attr in allowed_attrs:
         if attr not in dataparams or (attr in null_columns and getattr(item, attr) is not None):
             continue
