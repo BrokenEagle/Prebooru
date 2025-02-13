@@ -20,7 +20,7 @@ from ..database.notation_db import create_notation_from_parameters
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
     get_archive_by_artist_site
 from ..database.archive_artist_db import create_archive_artist_from_parameters, update_archive_artist_from_parameters
-from .base_rec import delete_data
+from .base_rec import delete_data, delete_version_relation, swap_version_relation
 
 
 # ## FUNCTIONS
@@ -195,69 +195,33 @@ def relink_archived_artist(archive):
 
 
 def artist_delete_site_account(artist, label_id):
-    retdata = _relation_params_check(artist, Label, ArtistSiteAccounts, label_id, 'label_id', 'Site account')
-    if retdata['error']:
-        return retdata
-    ArtistSiteAccounts.query.filter_by(artist_id=artist.id, label_id=label_id).delete()
-    commit_session()
-    return retdata
+    return delete_version_relation(artist, Label, ArtistSiteAccounts, label_id,
+                                   'artist_id', 'label_id', 'Site account')
 
 
 def artist_swap_site_account(artist, label_id):
-    retdata = _relation_params_check(artist, Label, ArtistSiteAccounts, label_id, 'label_id', 'Site account')
-    if retdata['error']:
-        return retdata
-    ArtistSiteAccounts.query.filter_by(artist_id=artist.id, label_id=label_id).delete()
-    swap = artist.site_account
-    artist.site_account = retdata['attach']
-    if swap is not None:
-        artist.site_accounts.append(swap)
-    commit_session()
-    return retdata
+    return swap_version_relation(artist, Label, ArtistSiteAccounts, label_id, 'artist_id', 'label_id',
+                                 'site_account', 'site_accounts', 'Site account')
 
 
 def artist_delete_name(artist, label_id):
-    retdata = _relation_params_check(artist, Label, ArtistNames, label_id, 'label_id', 'Site account')
-    if retdata['error']:
-        return retdata
-    ArtistNames.query.filter_by(artist_id=artist.id, label_id=label_id).delete()
-    commit_session()
-    return retdata
+    return delete_version_relation(artist, Label, ArtistNames, label_id,
+                                   'artist_id', 'label_id', 'Name')
 
 
 def artist_swap_name(artist, label_id):
-    retdata = _relation_params_check(artist, Label, ArtistNames, label_id, 'label_id', 'Name')
-    if retdata['error']:
-        return retdata
-    ArtistNames.query.filter_by(artist_id=artist.id, label_id=label_id).delete()
-    swap = artist.name
-    artist.name = retdata['attach']
-    if swap is not None:
-        artist.names.append(swap)
-    commit_session()
-    return retdata
+    return swap_version_relation(artist, Label, ArtistNames, label_id, 'artist_id', 'label_id',
+                                 'name', 'names', 'Name')
 
 
 def artist_delete_profile(artist, description_id):
-    retdata = _relation_params_check(artist, Description, ArtistProfiles, description_id, 'description_id', 'Profile')
-    if retdata['error']:
-        return retdata
-    ArtistProfiles.query.filter_by(artist_id=artist.id, description_id=description_id).delete()
-    commit_session()
-    return retdata
+    return delete_version_relation(artist, Description, ArtistProfiles, description_id,
+                                   'artist_id', 'description_id', 'Profile')
 
 
 def artist_swap_profile(artist, description_id):
-    retdata = _relation_params_check(artist, Description, ArtistProfiles, description_id, 'description_id', 'Profile')
-    if retdata['error']:
-        return retdata
-    ArtistProfiles.query.filter_by(artist_id=artist.id, description_id=description_id).delete()
-    swap = artist.profile
-    artist.profile = retdata['attach']
-    if swap is not None:
-        artist.profiles.append(swap)
-    commit_session()
-    return retdata
+    return swap_version_relation(artist, Description, ArtistProfiles, description_id, 'artist_id', 'description_id',
+                                 'profile', 'profiles', 'Profile')
 
 
 # ## Private functions

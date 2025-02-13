@@ -18,7 +18,7 @@ from ..database.notation_db import create_notation_from_parameters
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
     get_archive_by_booru_name
 from ..database.archive_booru_db import create_archive_booru_from_parameters, update_archive_booru_from_parameters
-from .base_rec import delete_data
+from .base_rec import delete_data, delete_version_relation, swap_version_relation
 
 
 # ## FUNCTIONS
@@ -176,25 +176,11 @@ def relink_archived_booru(archive):
 
 
 def booru_delete_name(booru, label_id):
-    retdata = _relation_params_check(booru, Label, BooruNames, label_id, 'label_id', 'Site account')
-    if retdata['error']:
-        return retdata
-    BooruNames.query.filter_by(booru_id=booru.id, label_id=label_id).delete()
-    commit_session()
-    return retdata
+    return delete_version_relation(booru, Label, BooruNames, label_id, 'booru_id', 'label_id', 'Names')
 
 
 def booru_swap_name(booru, label_id):
-    retdata = _relation_params_check(booru, Label, BooruNames, label_id, 'label_id', 'Name')
-    if retdata['error']:
-        return retdata
-    BooruNames.query.filter_by(booru_id=booru.id, label_id=label_id).delete()
-    swap = booru.name
-    booru.name = retdata['attach']
-    if swap is not None:
-        booru.names.append(swap)
-    commit_session()
-    return retdata
+    return swap_version_relation(booru, Label, BooruNames, label_id, 'booru_id', 'label_id', 'name', 'names', 'Names')
 
 
 # ## Private functions

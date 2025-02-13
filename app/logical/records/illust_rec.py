@@ -26,7 +26,7 @@ from ..database.download_db import create_download_from_parameters, update_downl
     get_download_by_request_url
 from ..database.download_element_db import create_download_element_from_parameters,\
     update_download_element_from_parameters, get_download_element
-from .base_rec import delete_data
+from .base_rec import delete_data, delete_version_relation, swap_version_relation
 from .artist_rec import get_or_create_artist_from_source
 from .pool_rec import delete_pool_element
 
@@ -183,48 +183,24 @@ def relink_archived_illust(archive):
 
 
 def illust_delete_title(illust, description_id):
-    retdata = _relation_params_check(illust, Description, IllustTitles, description_id, 'description_id', 'Title')
-    if retdata['error']:
-        return retdata
-    IllustTitles.query.filter_by(illust_id=illust.id, description_id=description_id).delete()
-    commit_session()
-    return retdata
+    return delete_version_relation(illust, Description, IllustTitles, description_id,
+                                   'illust_id', 'description_id', 'Title')
 
 
 def illust_swap_title(illust, description_id):
-    retdata = _relation_params_check(illust, Description, IllustTitles, description_id, 'description_id', 'Title')
-    if retdata['error']:
-        return retdata
-    IllustTitles.query.filter_by(illust_id=illust.id, description_id=description_id).delete()
-    swap = illust.title
-    illust.title = retdata['attach']
-    if swap is not None:
-        illust.titles.append(swap)
-    commit_session()
-    return retdata
+    return swap_version_relation(illust, Description, IllustTitles, description_id, 'illust_id', 'description_id',
+                                 'title', 'titles', 'Title')
 
 
 def illust_delete_commentary(rel_type, illust, description_id):
     secondary_table = COMMENTARY_MODELS[rel_type]
-    retdata = _relation_params_check(illust, Description, secondary_table, description_id, 'description_id', 'Title')
-    if retdata['error']:
-        return retdata
-    secondary_table.query.filter_by(illust_id=illust.id, description_id=description_id).delete()
-    commit_session()
-    return retdata
+    return delete_version_relation(illust, Description, secondary_table, description_id,
+                                   'illust_id', 'description_id', 'Commentary')
 
 
 def illust_swap_commentary(illust, description_id):
-    retdata = _relation_params_check(illust, Description, IllustCommentaries, description_id, 'description_id', 'Title')
-    if retdata['error']:
-        return retdata
-    IllustCommentaries.query.filter_by(illust_id=illust.id, description_id=description_id).delete()
-    swap = illust.commentary
-    illust.commentary = retdata['attach']
-    if swap is not None:
-        illust.commentaries.append(swap)
-    commit_session()
-    return retdata
+    return swap_version_relation(illust, Description, IllustCommentaries, description_id, 'illust_id', 'description_id',
+                                 'commentary', 'commentaries', 'Commentary')
 
 
 def illust_add_additional_commentary(illust, commentary):
