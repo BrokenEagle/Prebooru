@@ -287,9 +287,9 @@ def _handle_db_exception(error):
 
 def _commit_or_flush(commit):
     if commit:
-        commit_session()
+        SESSION.commit()
     else:
-        flush_session()
+        SESSION.flush()
 
 
 def _update_record(item, update):
