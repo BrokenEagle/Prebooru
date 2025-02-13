@@ -1,8 +1,5 @@
 # APP/LOGICAL/DATABASE/ILLUST_DB.PY
 
-# ## EXTERNAL IMPORTS
-from sqlalchemy.orm import selectinload
-
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 from utility.data import swap_key_value
@@ -86,17 +83,6 @@ def get_site_illust(site_illust_id, site):
     elif isinstance(site, str):
         q = q.filter(Illust.site_value == site)
     return q.filter(Illust.site_illust_id == site_illust_id).one_or_none()
-
-
-def get_site_illusts(site, site_illust_ids, load_urls=False):
-    q = Illust.query
-    if load_urls:
-        q = q.options(selectinload(Illust.urls))
-    if isinstance(site, int):
-        q = q.filter(Illust.site_id == site)
-    elif isinstance(site, str):
-        q = q.filter(Illust.site_value == site)
-    return q.filter(Illust.site_illust_id.in_(site_illust_ids)).all()
 
 
 # #### Private functions

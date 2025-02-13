@@ -19,10 +19,6 @@ from .media_file_rec import batch_get_or_create_media
 
 # #### Helper functions
 
-def hex_to_binary(inhex):
-    return bin(int(inhex, 16))[2:].zfill(len(inhex * 4))
-
-
 def img_hash_to_bytes(img_hash):
     bin_str = ''.join('1' if i else '0' for i in img_hash.hash.flatten())
     return bytes(int(bin_str[i: i + 8], 2) for i in range(0, len(bin_str), 8))

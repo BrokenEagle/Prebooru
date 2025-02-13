@@ -23,7 +23,7 @@ from ..media import load_image, create_sample, create_preview, create_video_scre
 from ..database.base_db import delete_record, commit_session
 from ..database.post_db import create_post_from_parameters,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, alternate_posts_query,\
-    get_all_posts_page, missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
+    missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
     get_artist_posts_without_danbooru_ids, get_post_by_md5
 from ..database.illust_url_db import update_illust_url_from_parameters, get_illust_url_by_full_url
 from ..database.notation_db import create_notation_from_parameters
@@ -285,26 +285,6 @@ def check_posts_for_danbooru_id(posts, status=None):
                 update_post_from_parameters(post, {'danbooru_id': danbooru_post['id']})
                 inc_dict_entry(status, 'total')
     return True
-
-
-def check_posts_for_valid_md5():
-    page = get_all_posts_page(100)
-    while True:
-        print_info(f"\ncheck_posts_for_valid_md5: {page.first} - {page.last} / Total({page.count})\n")
-        for post in page.items:
-            buffer = put_get_raw(post.file_path, 'rb')
-            checksum = get_buffer_checksum(buffer)
-            if post.md5 != checksum:
-                print("\nMISMATCHING CHECKSUM: post #", post.id)
-                for illust_url in post.illust_urls:
-                    if redownload_post(post, illust_url):
-                        break
-                else:
-                    print("Unable to download!", 'post #', post.id)
-            print(".", end="", flush=True)
-        if not page.has_next:
-            break
-        page = page.next()
 
 
 def move_post_media_to_alternate(post, reverse=False):

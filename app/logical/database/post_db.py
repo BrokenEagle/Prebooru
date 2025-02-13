@@ -85,10 +85,6 @@ def missing_similarity_matches_query():
                              or_(Post.type_value == 'user', Post.id.not_in(SUBELEMENT_SUBQUERY)))
 
 
-def get_all_posts_page(limit):
-    return Post.query.count_paginate(per_page=limit)
-
-
 def get_posts_to_query_danbooru_id_page(limit):
     query = Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)
     query = query.filter(Post.danbooru_id.is_(None), Artist.primary.is_(True), NO_SUBELEMENT_CLAUSE)

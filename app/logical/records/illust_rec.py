@@ -314,8 +314,6 @@ def _module_error(function, message):
     return (f'illust_rec.{function}', message)
 
 
-# ## Private functions
-
 def _relation_params_check(illust, model, m2m_model, model_id, model_field, name):
     retdata = {'error': False}
     attach = model.find(model_id)
