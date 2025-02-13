@@ -8,16 +8,15 @@ from utility.time import get_current_time
 from utility.data import swap_key_value
 
 # ## LOCAL IMPORTS
-from ...models import Artist, Booru, Label, Description
+from ...models import Artist, Booru
 from .base_db import set_column_attributes, set_version_relations, set_timesvalue,\
     save_record, commit_session, flush_session
 from .artist_url_db import create_artist_url_from_parameters, update_artist_url_from_parameters
 
 # ## GLOBAL VARIABLES
 
-VERSION_RELATIONSHIPS = [('profile', 'profiles', 'body', Description),
-                         ('site_account', 'site_accounts', 'name', Label),
-                         ('name', 'names', 'name', Label)]
+VERSION_RELATIONSHIPS = [('site_account_value', 'site_account_values'), ('name_value', 'name_values'),
+                         ('profile_body', 'profile_bodies')]
 
 ANY_WRITABLE_COLUMNS = ['site_name', 'site_artist_id', 'site_created', 'active', 'primary']
 NULL_WRITABLE_ATTRIBUTES = ['site_account_value', 'name_value', 'profile_body', 'created', 'updated']
@@ -36,9 +35,6 @@ BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 def create_artist_from_parameters(createparams, commit=True):
     createparams.setdefault('active', True)
     createparams.setdefault('primary', True)
-    swap_key_value(createparams, 'site_account', 'site_account_value')
-    swap_key_value(createparams, 'name', 'name_value')
-    swap_key_value(createparams, 'profile', 'profile_body')
     set_timesvalue(createparams, 'created')
     set_timesvalue(createparams, 'updated')
     return set_artist_from_parameters(Artist(), createparams, 'created', commit, True)
@@ -62,22 +58,19 @@ def update_artist_from_parameters_standard(artist, updateparams):
     update_artist_from_parameters(artist, updateparams, commit=True, update=False)
 
 
-def recreate_artist_relations(artist, updateparams):
-    rel_result = _set_relations(artist, updateparams, False)
-    web_result = _set_artist_webpages(artist, updateparams, False)
-    if rel_result or web_result:
-        commit_session()
-
-
 # #### Set
 
 def set_artist_from_parameters(artist, setparams, action, commit, update):
+    swap_key_value(setparams, 'site_account', 'site_account_value')
+    swap_key_value(setparams, 'name', 'name_value')
+    swap_key_value(setparams, 'profile', 'profile_body')
     set_timesvalue(setparams, 'site_created')
     col_result = set_column_attributes(artist, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
                                        setparams, update=update, safe=True)
-    rel_result = _set_relations(artist, setparams, update)
+    ver_result = set_version_relations(artist, VERSION_RELATIONSHIPS, setparams, update=update)\
+        if action == 'updated' else False
     web_result = _set_artist_webpages(artist, setparams, update)
-    if col_result or rel_result or web_result:
+    if col_result or ver_result or web_result:
         save_record(artist, action, commit=commit, safe=True)
     return artist
 
@@ -128,10 +121,6 @@ def get_artists_without_boorus_page(limit):
 
 
 # #### Private functions
-
-def _set_relations(artist, params, update):
-    return set_version_relations(artist, VERSION_RELATIONSHIPS, params, update=update)
-
 
 def _set_artist_webpages(artist, params, update):
     if 'webpages' not in params:

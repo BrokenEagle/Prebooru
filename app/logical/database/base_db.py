@@ -101,25 +101,21 @@ def set_relationship_collections(item, relationships, dataparams, update=False, 
     printer = buffered_print('set_relationship_collections', safe=True, header=False)
     printer("(%s)" % item.shortlink)
     is_dirty = False
-    for collectionname, subattr, model in relationships:
+    for collectionname in relationships:
         if dataparams.get(collectionname) is None:
             continue
         collection = getattr(item, collectionname)
-        current_values = [getattr(subitem, subattr) for subitem in collection]
-        add_values = set(dataparams[collectionname]).difference(current_values)
+        current_values = set(collection)
+        update_values = set(dataparams[collectionname])
+        add_values = update_values - current_values
         for value in add_values:
             printer("+[%s]:" % collectionname, _normalize_val(value))
-            add_item = model.query.filter_by(**{subattr: value}).first()
-            if add_item is None:
-                add_item = model(**{subattr: value})
-                add_record(add_item)
-            collection.append(add_item)
+            collection.append(value)
             is_dirty = True
-        remove_values = set(current_values).difference(dataparams[collectionname])
+        remove_values = current_values - update_values
         for value in remove_values:
             printer("-[%s]:" % collectionname, _normalize_val(value))
-            remove_item = next(filter(lambda x: getattr(x, subattr) == value, collection))
-            collection.remove(remove_item)
+            collection.remove(value)
             is_dirty = True
     if is_dirty:
         _update_record(item, update)
@@ -160,22 +156,20 @@ def set_version_relations(item, relationships, dataparams, update=False, safe=Fa
     printer = buffered_print('set_version_relations', safe=True, header=False)
     printer("(%s)" % item.shortlink)
     is_dirty = False
-    for relname, collname, subattr, model in relationships:
+    for relname, collname in relationships:
         if relname not in dataparams:
             continue
         new_value = dataparams.get(relname)
-        swap = getattr(item, relname)
-        old_value = getattr(swap, subattr) if swap is not None else None
+        old_value = getattr(item, relname)
         if new_value == old_value:
             continue
-        descr = get_or_create(model, subattr, new_value) if new_value is not None else None
-        setattr(item, relname, descr)
+        setattr(item, relname, new_value)
         collection = getattr(item, collname)
-        if descr is not None and descr in collection:
-            collection.remove(descr)
-        if swap is not None and swap not in collection:
-            collection.append(swap)
-        if swap is None:
+        if new_value is not None and new_value in collection:
+            collection.remove(new_value)
+        if old_value is not None and old_value not in collection:
+            collection.append(old_value)
+        if old_value is None:
             printer("[%s]:" % relname, _normalize_val(new_value))
         else:
             printer("[%s]:" % relname, _normalize_val(old_value), '->', _normalize_val(new_value))

@@ -8,18 +8,16 @@ from utility.time import get_current_time
 from utility.data import swap_key_value
 
 # ## LOCAL IMPORTS
-from ...models import Illust, SiteTag, Description
+from ...models import Illust
 from .illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
-from .tag_db import create_tag_from_parameters, get_tags_by_names
 from .base_db import set_column_attributes, set_relationship_collections, set_version_relations,\
     set_timesvalue, save_record, commit_session, flush_session
 
 
 # ## GLOBAL VARIABLES
 
-SCALAR_RELATIONSHIPS = [('tags', 'name', SiteTag)]
-VERSION_RELATIONSHIPS = [('title', 'titles', 'body', Description),
-                         ('commentary', 'commentaries', 'body', Description)]
+SCALAR_RELATIONSHIPS = ['tag_names']
+VERSION_RELATIONSHIPS = [('title_body', 'title_bodies'), ('commentary_body', 'commentary_bodies')]
 
 ANY_WRITABLE_COLUMNS = ['site_illust_id', 'site_created', 'pages', 'score', 'active']
 NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_name', 'title_body', 'commentary_body', 'created', 'updated']
@@ -31,8 +29,6 @@ NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_name', 'title_body', 'commentary_
 
 def create_illust_from_parameters(createparams, commit=True):
     createparams.setdefault('active', True)
-    swap_key_value(createparams, 'title', 'title_body')
-    swap_key_value(createparams, 'commentary', 'commentary_body')
     set_timesvalue(createparams, 'created')
     set_timesvalue(createparams, 'updated')
     return set_illust_from_parameters(Illust(), createparams, 'created', commit, True)
@@ -56,11 +52,6 @@ def update_illust_from_parameters_standard(illust, updateparams):
     update_illust_from_parameters(illust, updateparams, commit=True, update=False)
 
 
-def recreate_illust_relations(illust, updateparams):
-    if _set_relations(illust, updateparams, False):
-        commit_session()
-
-
 def set_illust_artist(illust, artist):
     illust.artist = artist
     commit_session()
@@ -69,13 +60,17 @@ def set_illust_artist(illust, artist):
 # #### Set
 
 def set_illust_from_parameters(illust, setparams, action, commit, update):
+    swap_key_value(setparams, 'tags', 'tag_names')
+    swap_key_value(setparams, 'title', 'title_body')
+    swap_key_value(setparams, 'commentary', 'commentary_body')
     set_timesvalue(setparams, 'site_created')
-    _create_tags(setparams)
     col_result = set_column_attributes(illust, ANY_WRITABLE_COLUMNS, NULL_WRITABLE_ATTRIBUTES,
                                        setparams, update=update, safe=True)
-    rel_result = _set_relations(illust, setparams, update)
+    ver_result = set_version_relations(illust, VERSION_RELATIONSHIPS, setparams, update=update)\
+        if action == 'updated' else False
+    rel_result = set_relationship_collections(illust, SCALAR_RELATIONSHIPS, setparams, update=update)
     url_result = _set_illust_urls(illust, setparams, update)
-    if col_result or rel_result or url_result:
+    if col_result or ver_result or rel_result or url_result:
         save_record(illust, action, commit=commit)
     return illust
 
@@ -103,22 +98,6 @@ def get_site_illusts(site, site_illust_ids, load_urls=False):
 
 
 # #### Private functions
-
-def _create_tags(params):
-    if 'tags' not in params or len(params['tags']) == 0:
-        return
-    tags = get_tags_by_names(params['tags'], 'site_tag')
-    tags_found = [tag.name for tag in tags]
-    for name in params['tags']:
-        if name not in tags_found:
-            create_tag_from_parameters({'name': name, 'type': 'site_tag'}, commit=False)
-
-
-def _set_relations(illust, params, update):
-    ver_result = set_version_relations(illust, VERSION_RELATIONSHIPS, params, update=update)
-    rel_result = set_relationship_collections(illust, SCALAR_RELATIONSHIPS, params, update=update)
-    return ver_result or rel_result
-
 
 def _set_illust_urls(illust, params, update):
     if 'illust_urls' not in params:
