@@ -62,7 +62,8 @@ class Artist(JsonModel):
     # (MtM) boorus [Booru]
 
     # ## Association proxies
-    site_account_value = relation_association_proxy('site_account_id', 'site_account', 'name', label_creator)
+    site_account_value = relation_association_proxy('site_account_id', 'site_account', 'name',
+                                                    label_creator, nullable=False)
     name_value = relation_association_proxy('name_id', 'name', 'name', label_creator)
     profile_body = relation_association_proxy('profile_id', 'profile', 'body', description_creator)
     site_account_values = association_proxy('site_accounts', 'name', creator=label_creator)

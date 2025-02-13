@@ -257,12 +257,12 @@ def backref(*args, **kwargs):
     return sqlalchemy_backref(*args, lazy=True, **kwargs)
 
 
-def relation_association_proxy(column_name, relation_name, subattr, creator):
+def relation_association_proxy(column_name, relation_name, subattr, creator, nullable=True):
     """The association proxy that comes with sqlalchemy does not handle setting the value ID via a creator."""
 
     @property
     def value(self):
-        relation = getattr(self, relation_name) if getattr(self, column_name) is not None else None
+        relation = getattr(self, relation_name)
         return getattr(relation, subattr) if relation is not None else None
 
     @value.setter
@@ -270,8 +270,10 @@ def relation_association_proxy(column_name, relation_name, subattr, creator):
         if value is not None:
             item = creator(value)
             setattr(self, column_name, item.id)
-        else:
+        elif nullable:
             setattr(self, column_name, value)
+        else:
+            raise ValueError(f"Invalid value for {relation_name}")
 
     return value
 

@@ -45,7 +45,7 @@ class Booru(JsonModel):
     notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('booru', uselist=False))
 
     # ## Association proxies
-    name_value = relation_association_proxy('name_id', 'name', 'name', label_creator)
+    name_value = relation_association_proxy('name_id', 'name', 'name', label_creator, nullable=False)
     name_values = association_proxy('names', 'name', creator=label_creator)
     artist_ids = association_proxy('artists', 'id')
 
