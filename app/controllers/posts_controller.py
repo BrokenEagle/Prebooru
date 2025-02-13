@@ -10,7 +10,7 @@ from sqlalchemy.orm import lazyload, selectinload
 from utility.data import eval_bool_string, is_falsey
 
 # ## LOCAL IMPORTS
-from ..models import Post, Illust, IllustUrl, Artist, PoolPost, PoolIllust, PostType
+from ..models import Post, Illust, IllustUrl, Artist, PoolElement, PostType
 from ..logical.records.post_rec import create_sample_preview_files, create_video_sample_preview_files,\
     archive_post_for_deletion, redownload_post, delete_post, save_post_to_archive
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -21,10 +21,16 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("post", __name__)
 
-POST_POOLS_SUBQUERY = Post.query.join(PoolPost, Post._pools).filter(Post.id == PoolPost.post_id).with_entities(Post.id)
-ILLUST_POOLS_SUBQUERY = Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust)\
-                            .join(PoolIllust, Illust._pools).filter(Illust.id == PoolIllust.illust_id)\
-                            .with_entities(Post.id)
+POST_POOLS_SUBQUERY = Post.query.join(PoolElement, Post.pool_elements)\
+                                .filter(Post.id == PoolElement.post_id,
+                                        PoolElement.type_value == 'pool_post')\
+                                .with_entities(Post.id)
+ILLUST_POOLS_SUBQUERY = Post.query.join(IllustUrl, Post.illust_urls)\
+                                  .join(Illust, IllustUrl.illust)\
+                                  .join(PoolElement, Illust.pool_elements)\
+                                  .filter(Illust.id == PoolElement.illust_id,
+                                          PoolElement.type_value == 'pool_ilust')\
+                                  .with_entities(Post.id)
 
 POOL_SEARCH_KEYS = ['has_any_pool', 'has_post_pool', 'has_illust_pool']
 
@@ -43,7 +49,7 @@ SHOW_HTML_OPTIONS = (
     ),
     selectinload(Post.notations),
     selectinload(Post.errors),
-    selectinload(Post._pools).selectinload(PoolPost.pool),
+    selectinload(Post.pool_elements).selectinload(PoolElement.pool),
 )
 
 INDEX_HTML_OPTIONS = (
@@ -76,12 +82,14 @@ def pool_filter(query, search):
         query = query.filter(subclause)
     elif 'pool_id' in search or 'pool_id_not' in search:
         if search.get('pool_id', "").isdigit():
-            subquery = PoolPost.query.filter(PoolPost.pool_id == int(search['pool_id']))\
-                                     .with_entities(PoolPost.post_id)
+            subquery = PoolElement.query.filter(PoolElement.pool_id == int(search['pool_id']),
+                                                PoolElement.type_value == 'pool_post')\
+                                        .with_entities(PoolElement.post_id)
             query = query.filter(Post.id.in_(subquery))
         if search.get('pool_id_not', "").isdigit():
-            subquery = PoolPost.query.filter(PoolPost.pool_id == int(search['pool_id_not']))\
-                                     .with_entities(PoolPost.post_id)
+            subquery = PoolElement.query.filter(PoolElement.pool_id == int(search['pool_id_not']),
+                                                PoolElement.type_value == 'pool_post')\
+                                        .with_entities(PoolElement.post_id)
             query = query.filter(Post.id.not_in(subquery))
     return query
 

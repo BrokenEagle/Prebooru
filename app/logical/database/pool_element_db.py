@@ -1,26 +1,19 @@
 # APP/LOGICAL/DATABASE/POOL_ELEMENT_DB.PY
 
 # ## LOCAL IMPORTS
-from ...models import Illust, Post, Notation
-from ...models.pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation
+from ...models import PoolElement
 from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
 
 ANY_WRITABLE_COLUMNS = ['position']
-NULL_WRITABLE_ATTRIBUTES = ['pool_id', 'post_id', 'illust_id', 'notation_id']
+NULL_WRITABLE_ATTRIBUTES = ['pool_id', 'type_name', 'post_id', 'illust_id', 'notation_id']
 
-ID_MODEL_DICT = {
-    'illust_id': Illust,
-    'post_id': Post,
-    'notation_id': Notation,
-}
-
-ELEMENT_DICT = {
-    'post_id': PoolPost,
-    'illust_id': PoolIllust,
-    'notation_id': PoolNotation,
+ELEMENT_TYPE_DICT = {
+    'post_id': 'pool_post',
+    'illust_id': 'pool_illust',
+    'notation_id': 'pool_notation',
 }
 
 
@@ -29,9 +22,8 @@ ELEMENT_DICT = {
 # #### Create
 
 def create_pool_element_from_parameters(createparams, commit=True):
-    item_key = next((key for key in createparams if key in ELEMENT_DICT))
-    pool_element = ELEMENT_DICT[item_key]()
-    return set_pool_element_from_parameters(pool_element, createparams, 'created', commit)
+    createparams['type_name'] = next((ELEMENT_TYPE_DICT[key] for key in createparams if key in ELEMENT_TYPE_DICT))
+    return set_pool_element_from_parameters(PoolElement(), createparams, 'created', commit)
 
 
 # #### Set

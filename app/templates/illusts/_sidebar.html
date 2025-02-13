@@ -9,7 +9,7 @@
     {{ boorus_section(illust.boorus, 'illust-boorus') }}
     {{ artists_section(illust.artist, 'illust-artists') }}
     {{ posts_display(helpers.illust.post_search(illust), illust.post_count, 'illust-posts') }}
-    {{ pools_section(illust._pools, 'illust-pools') }}
+    {{ pools_section(illust.pool_elements, 'illust-pools') }}
     {{ timestamps_section(illust, 'illust-timestamps') }}
     {{ notations_section(illust.notations, 'illust-notations') }}
     <section id="illust-upload">

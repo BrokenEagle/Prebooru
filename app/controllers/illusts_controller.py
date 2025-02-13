@@ -11,7 +11,7 @@ from wtforms.validators import DataRequired
 from utility.data import eval_bool_string, is_falsey, str_or_blank
 
 # ## LOCAL IMPORTS
-from ..models import Illust, IllustUrl, Artist, Post, PoolIllust, PoolPost, SiteDescriptor
+from ..models import Illust, IllustUrl, Artist, Post, PoolElement, SiteDescriptor
 from ..logical.utility import set_error
 from ..logical.sites import site_name_by_url
 from ..logical.sources import source_by_site_name
@@ -43,10 +43,16 @@ VALUES_MAP = {
     **{k: k for k in Illust.__table__.columns.keys()},
 }
 
-ILLUST_POOLS_SUBQUERY = Illust.query.join(PoolIllust, Illust._pools).filter(Illust.id == PoolIllust.illust_id)\
-    .with_entities(Illust.id)
-POST_POOLS_SUBQUERY = Illust.query.join(IllustUrl, Illust.urls).join(Post, IllustUrl.post).join(PoolPost, Post._pools)\
-    .filter(Post.id == PoolPost.post_id).with_entities(Illust.id)
+ILLUST_POOLS_SUBQUERY = Illust.query.join(PoolElement, Illust.pool_elements)\
+                                    .filter(Illust.id == PoolElement.illust_id,
+                                            PoolElement.type_value == 'pool_illust')\
+                                    .with_entities(Illust.id)
+POST_POOLS_SUBQUERY = Illust.query.join(IllustUrl, Illust.urls)\
+                                  .join(Post, IllustUrl.post)\
+                                  .join(PoolElement, Post.pool_elements)\
+                                  .filter(Post.id == PoolElement.post_id,
+                                          PoolElement.type_value == 'pool_post')\
+                                  .with_entities(Illust.id)
 
 POOL_SEARCH_KEYS = ['has_pools', 'has_post_pools', 'has_illust_pools']
 
@@ -59,7 +65,7 @@ SHOW_HTML_OPTIONS = (
     selectinload(Illust.additional_commentaries),
     selectinload(Illust.artist).selectinload(Artist.boorus),
     selectinload(Illust.notations),
-    selectinload(Illust._pools).selectinload(PoolIllust.pool),
+    selectinload(Illust.pool_elements).selectinload(PoolElement.pool),
 )
 
 SHOW_URLS_HTML_OPTIONS = (
@@ -160,7 +166,8 @@ def pool_filter(query, search):
             subclause = not_(subclause)
         query = query.filter(subclause)
     elif 'pool_id' in search and search['pool_id'].isdigit():
-        query = query.unique_join(PoolIllust, Illust._pools).filter(PoolIllust.pool_id == int(search['pool_id']))
+        query = query.unique_join(PoolElement, Illust.pool_elements)
+        query = query.filter(PoolElement.pool_id == int(search['pool_id']), PoolElement.type_value == 'pool_illust')
     return query
 
 

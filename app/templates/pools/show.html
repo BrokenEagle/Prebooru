@@ -37,11 +37,11 @@
             <form id="form" method="post" action="{{ url_for('pool_element.batch_delete_html') }}">
         {% endif %}
         <div id="pool-items">
-            {% for item in page.items %}
+            {% for element in page.items %}
                 {% if edit_pool %}
-                    {{ pool_element_select_preview(page.elements[loop.index0], item) }}
+                    {{ pool_element_select_preview(element, element.item) }}
                 {% else %}
-                    {{ pool_element_preview(item) }}
+                    {{ pool_element_preview(element.item) }}
                 {% endif %}
             {% endfor %}
         </div>

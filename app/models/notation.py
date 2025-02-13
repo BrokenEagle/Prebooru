@@ -8,7 +8,7 @@ from utility.data import is_string
 
 # ## LOCAL IMPORTS
 from .. import DB
-from .pool_element import PoolNotation
+from .pool_element import PoolElement
 from .base import JsonModel, integer_column, text_column, boolean_column, timestamp_column, relationship, backref,\
     validate_attachment_json
 
@@ -55,7 +55,8 @@ class Notation(JsonModel):
     no_pool = boolean_column(nullable=False)
 
     # ## Relationships
-    _pool = relationship(PoolNotation, uselist=False, cascade='all,delete', backref=backref('item', uselist=False))
+    pool_element = relationship(PoolElement, uselist=False, cascade='all,delete',
+                                backref=backref('notation', uselist=False))
     # (MtO) subscription [Subscription]
     # (MtO) booru [Booru]
     # (MtO) artist [Artist]
@@ -63,14 +64,14 @@ class Notation(JsonModel):
     # (MtO) post [Post]
 
     # ## Association proxies
-    pool = association_proxy('_pool', 'pool')
+    pool = association_proxy('pool_element', 'pool')
 
     # ## Instance properties
 
     @property
     def append_item(self):
         return self.subscription or self.booru or self.artist or self.illust or self.post or\
-            (self._pool if not self.no_pool else None)
+            (self.pool_element if not self.no_pool else None)
 
     @property
     def append_type(self):
@@ -79,9 +80,9 @@ class Notation(JsonModel):
     # ## Private
 
     @property
-    def _pools(self):
+    def pool_elements(self):
         # All other pool elements are MtM, so there needs to be a plural property
-        return [self._pool]
+        return [self.pool_element]
 
     __table_args__ = (
         DB.CheckConstraint("no_pool = 0 or no_pool = 1", name="no_pool_boolean"),

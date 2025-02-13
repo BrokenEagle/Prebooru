@@ -17,7 +17,7 @@ from .tag import SiteTag, site_tag_creator
 from .illust_url import IllustUrl
 from .description import Description, description_creator
 from .notation import Notation
-from .pool_element import PoolIllust
+from .pool_element import PoolElement
 from .base import JsonModel, integer_column, enum_column, boolean_column, timestamp_column, secondarytable,\
     register_enum_column, relationship, backref, relation_association_proxy
 
@@ -67,14 +67,14 @@ class Illust(JsonModel):
     urls = relationship(IllustUrl, uselist=True, cascade="all, delete", backref=backref('illust', uselist=False))
     notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('illust', uselist=False))
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
-    _pools = relationship(PoolIllust, uselist=True, backref=backref('item', uselist=False))
+    pool_elements = relationship(PoolElement, uselist=True, backref=backref('illust', uselist=False))
     # (OtO) artist [Artist]
 
     # ## Association proxies
     tag_names = association_proxy('tags', 'name', creator=site_tag_creator)
     title_body = relation_association_proxy('title_id', 'title', 'body', description_creator)
     commentary_body = relation_association_proxy('commentary_id', 'commentary', 'body', description_creator)
-    pools = association_proxy('_pools', 'pool')
+    pools = association_proxy('pool_elements', 'pool')
     boorus = association_proxy('artist', 'boorus')
     title_bodies = association_proxy('titles', 'body', creator=description_creator)
     commentary_bodies = association_proxy('commentaries', 'body', creator=description_creator)

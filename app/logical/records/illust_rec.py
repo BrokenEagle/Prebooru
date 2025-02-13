@@ -71,7 +71,7 @@ def delete_illust(illust, retdata=None):
 
     def _delete(illust):
         msg = "[%s]: deleted\n" % illust.shortlink
-        for pool_element in illust._pools:
+        for pool_element in illust.pool_elements:
             delete_pool_element(pool_element)
         delete_record(illust)
         commit_session()

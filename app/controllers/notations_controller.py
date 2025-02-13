@@ -11,7 +11,7 @@ from wtforms.validators import DataRequired
 from utility.data import eval_bool_string, is_falsey
 
 # ## LOCAL IMPORTS
-from ..models import Notation, Pool, Subscription, Booru, Artist, Illust, Post, PoolNotation, TABLES
+from ..models import Notation, Pool, Subscription, Booru, Artist, Illust, Post, PoolElement, TABLES
 from ..logical.utility import set_error
 from ..logical.database.notation_db import create_notation_from_parameters, update_notation_from_parameters
 from ..logical.records.notation_rec import append_notation_to_item, delete_notation
@@ -32,14 +32,16 @@ VALUES_MAP = {
     **{'pool_id': 'pool_id'},
 }
 
-NOTATION_POOLS_SUBQUERY = Notation.query.join(PoolNotation, Notation._pool)\
-    .filter(Notation.id == PoolNotation.notation_id).with_entities(Notation.id)
+NOTATION_POOLS_SUBQUERY = Notation.query.join(PoolElement, Notation.pool_element)\
+                                        .filter(Notation.id == PoolElement.notation_id,
+                                                PoolElement.type_value == 'pool_notation')\
+                                        .with_entities(Notation.id)
 
 
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(Notation._pool).selectinload(PoolNotation.pool),
+    selectinload(Notation.pool_element).selectinload(PoolElement.pool),
     selectinload(Notation.booru),
     selectinload(Notation.artist),
     selectinload(Notation.illust),
@@ -94,7 +96,8 @@ def pool_filter(query, search):
             subclause = not_(subclause)
         query = query.filter(subclause)
     elif 'pool_id' in search and search['pool_id'].isdigit():
-        query = query.unique_join(PoolNotation, Notation._pool).filter(PoolNotation.pool_id == int(search['pool_id']))
+        query = query.unique_join(PoolElement, Notation.pool_element)
+        query = query.filter(PoolElement.pool_id == int(search['pool_id']), PoolElement.type_value == 'pool_notation')
     return query
 
 

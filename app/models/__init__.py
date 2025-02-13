@@ -28,8 +28,8 @@ def load_all():
         Illust, IllustTags, IllustTitles, IllustCommentaries, AdditionalCommentaries, IllustUrl,\
         ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
         Booru, BooruNames, BooruArtists, Error, Post,\
-        PostTags, Upload, Notation, Pool, PoolElement, PoolPost,\
-        PoolIllust, PoolNotation, Subscription, SubscriptionElement,\
+        PostTags, Upload, Notation, Pool, PoolElement,\
+        Subscription, SubscriptionElement,\
         ImageHash, SimilarityMatch, ApiData,\
         Archive, ArchivePost, ArchiveIllust, ArchiveArtist, ArchiveBooru,\
         Download, DownloadElement, DownloadUrl,\
@@ -62,7 +62,7 @@ def load_all():
     from .upload import Upload
     from .notation import Notation
     from .pool import Pool
-    from .pool_element import PoolElement, PoolPost, PoolIllust, PoolNotation
+    from .pool_element import PoolElement
     from .subscription import Subscription
     from .subscription_element import SubscriptionElement
 
@@ -106,8 +106,8 @@ def initialize():
             Illust, IllustTags, IllustTitles, IllustCommentaries, AdditionalCommentaries, IllustUrl,
             ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
             Booru, BooruNames, BooruArtists, Error, Post,
-            PostTags, Upload, Notation, Pool, PoolElement, PoolPost,
-            PoolIllust, PoolNotation, Subscription, SubscriptionElement,
+            PostTags, Upload, Notation, Pool, PoolElement,
+            Subscription, SubscriptionElement,
             ImageHash, SimilarityMatch, ApiData,
             Archive, ArchivePost, ArchiveIllust, ArchiveArtist, ArchiveBooru,
             Download, DownloadElement, DownloadUrl,

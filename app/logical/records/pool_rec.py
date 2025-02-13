@@ -38,8 +38,8 @@ def add_item_to_pool(pool, id, id_key, itemclass, itemtype, retdata):
     item = itemclass.find(id)
     if item is None:
         return set_error(retdata, "%s not found." % itemtype)
-    pool_ids = list(set([pool_element.pool_id for pool_element in item._pools]))
-    pool_element_ids = [pool_element.id for pool_element in item._pools]
+    pool_ids = list(set([pool_element.pool_id for pool_element in item.pool_elements]))
+    pool_element_ids = [pool_element.id for pool_element in item.pool_elements]
     if pool.id in pool_ids:
         return set_error(retdata, "%s already added to %s." % (item.shortlink, pool.shortlink))
     next_position = pool.next_position
@@ -63,7 +63,7 @@ def add_items_to_pool(pool, ids, id_key, itemclass, itemtype, retdata):
     next_position = pool.next_position
     elements = []
     for i, item in enumerate(items):
-        pool_ids = [pool_element.pool_id for pool_element in item._pools]
+        pool_ids = [pool_element.pool_id for pool_element in item.pool_elements]
         if pool.id in pool_ids:
             continue
         params = {
@@ -81,7 +81,7 @@ def add_items_to_pool(pool, ids, id_key, itemclass, itemtype, retdata):
 
 
 def update_pool_positions(pool):
-    pool._elements.reorder()
+    pool.elements.reorder()
     params = {'element_count': pool._get_element_count(), 'checked': get_current_time()}
     update_pool_from_parameters(pool, params, commit=True, update=False)
 

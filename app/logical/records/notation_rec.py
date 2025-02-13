@@ -5,6 +5,7 @@ from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
 from ...models import Pool, Subscription, Booru, Artist, Illust, Post
+from ..database.pool_element_db import create_pool_element_from_parameters
 from ..database.base_db import delete_record, commit_session, flush_session
 from .pool_rec import delete_pool_element
 
@@ -30,12 +31,17 @@ def append_notation_to_item(notation, append_key, dataparams):
         msg = "Unable to add to %s; %s #%d does not exist." % (dataparams[append_key], table_name, table_name)
         return {'error': True, 'message': msg}
     if table_name == 'pool':
-        item.elements.append(notation)
+        params = {
+            'pool_id': item.id,
+            'notation_id': notation.id,
+            'position': item.next_position,
+        }
+        create_pool_element_from_parameters(params, commit=False)
         item.updated = get_current_time()
         item.element_count += 1
         notation.no_pool = False
         flush_session()
-        item = notation._pool
+        item = notation.pool_element
     else:
         setattr(notation, table_name + '_id', item.id)
     commit_session()
@@ -44,8 +50,8 @@ def append_notation_to_item(notation, append_key, dataparams):
 
 def delete_notation(notation):
     msg = "[%s]: deleted\n" % notation.shortlink
-    if notation._pool is not None:
-        delete_pool_element(notation._pool)
+    if notation.pool_element is not None:
+        delete_pool_element(notation.pool_element)
     delete_record(notation)
     commit_session()
     print(msg)

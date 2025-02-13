@@ -338,7 +338,7 @@ def delete_post(post, retdata=None):
 
     def _delete(post):
         msg = "[%s]: deleted\n" % post.shortlink
-        for pool_element in post._pools:
+        for pool_element in post.pool_elements:
             delete_pool_element(pool_element)
         delete_record(post)
         commit_session()

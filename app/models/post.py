@@ -22,7 +22,7 @@ from .illust_url import IllustUrl
 from .subscription_element import SubscriptionElement
 from .notation import Notation
 from .tag import UserTag, user_tag_creator
-from .pool_element import PoolPost, pool_element_delete
+from .pool_element import PoolElement
 from .image_hash import ImageHash
 from .similarity_match import SimilarityMatch
 from .base import JsonModel, integer_column, enum_column, text_column, boolean_column, real_column, md5_column,\
@@ -72,7 +72,7 @@ class Post(JsonModel):
     notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('post', uselist=False))
     tags = relationship(UserTag, secondary=PostTags, uselist=True)
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
-    _pools = relationship(PoolPost, backref=backref('item', uselist=False))
+    pool_elements = relationship(PoolElement, uselist=True, backref=backref('post', uselist=False))
     image_hashes = relationship(ImageHash, cascade='all,delete', backref=backref('post', uselist=False))
     similarity_matches_forward = relationship(SimilarityMatch, cascade='all,delete',
                                               backref=backref('forward_post', uselist=False),
@@ -83,7 +83,7 @@ class Post(JsonModel):
 
     # ## Association proxies
     tag_names = association_proxy('tags', 'name', creator=user_tag_creator)
-    pools = association_proxy('_pools', 'pool')
+    pools = association_proxy('pool_elements', 'pool')
 
     # ## Instance properties
 

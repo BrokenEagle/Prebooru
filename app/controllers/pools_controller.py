@@ -11,7 +11,7 @@ from wtforms.validators import DataRequired
 from utility.data import eval_bool_string
 
 # ## LOCAL IMPORTS
-from ..models import Pool, Post, Illust, IllustUrl, PoolPost, PoolIllust, PoolNotation
+from ..models import Pool, Post, Illust, IllustUrl, PoolElement
 from ..logical.utility import set_error
 from ..logical.database.pool_db import create_pool_from_parameters, update_pool_from_parameters
 from ..logical.searchable import numeric_matching
@@ -31,14 +31,16 @@ VALUES_MAP = {
 
 # #### Load options
 
-SHOW_HTML_ILLUST_OPTIONS = (
-    selectinload(Illust.urls).selectinload(IllustUrl.post),
-    selectinload(Illust.notations),
-)
-
-SHOW_HTML_POST_OPTIONS = (
-    selectinload(Post.notations),
-    selectinload(Post.illust_urls).selectinload(IllustUrl.illust),
+SHOW_HTML_OPTIONS = (
+    selectinload(PoolElement.post).options(
+        selectinload(Post.notations),
+        selectinload(Post.illust_urls).selectinload(IllustUrl.illust),
+    ),
+    selectinload(PoolElement.illust).options(
+        selectinload(Illust.urls).selectinload(IllustUrl.post),
+        selectinload(Illust.notations),
+    ),
+    selectinload(PoolElement.notation)
 )
 
 
@@ -102,14 +104,17 @@ def index():
     q = Pool.query
     q = search_filter(q, search)
     if 'post_id' in search:
-        q = q.unique_join(PoolPost, Pool._elements)
-        q = q.filter(numeric_matching(PoolPost, 'post_id', search['post_id']))
+        q = q.unique_join(PoolElement, Pool.elements)
+        q = q.filter(PoolElement.type_value == 'pool_post')
+        q = q.filter(numeric_matching(PoolElement, 'post_id', search['post_id']))
     elif 'illust_id' in search:
-        q = q.unique_join(PoolIllust, Pool._elements)
-        q = q.filter(numeric_matching(PoolIllust, 'illust_id', search['illust_id']))
+        q = q.unique_join(PoolElement, Pool.elements)
+        q = q.filter(PoolElement.type_value == 'pool_illust')
+        q = q.filter(numeric_matching(PoolElement, 'illust_id', search['illust_id']))
     elif 'notation_id' in search:
-        q = q.unique_join(PoolNotation, Pool._elements)
-        q = q.filter(numeric_matching(PoolNotation, 'notation_id', search['notation_id']))
+        q = q.unique_join(PoolElement, Pool.elements)
+        q = q.filter(PoolElement.type_value == 'pool_notation')
+        q = q.filter(numeric_matching(PoolElement, 'notation_id', search['notation_id']))
     if 'order' in search and search['order'] in ['updated']:
         q = q.order_by(Pool.updated.desc())
     else:
@@ -158,9 +163,8 @@ def show_json(id):
 @bp.route('/pools/<int:id>', methods=['GET'])
 def show_html(id):
     pool = get_or_abort(Pool, id)
-    page = pool.element_paginate(page=get_page(request), per_page=get_limit(request),
-                                 illust_options=SHOW_HTML_ILLUST_OPTIONS,
-                                 post_options=SHOW_HTML_POST_OPTIONS)
+    page = pool.element_paginate(pagenum=get_page(request), per_page=get_limit(request),
+                                 options=SHOW_HTML_OPTIONS)
     edit_pool = request.values.get('edit_pool', type=eval_bool_string, default=False)
     return render_template("pools/show.html", pool=pool, page=page, edit_pool=edit_pool)
 
