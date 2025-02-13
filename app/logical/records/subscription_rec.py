@@ -379,7 +379,7 @@ def reinstantiate_element(element):
         else:
             update_subscription_element_from_parameters(element, {'status_name': 'deleted'})
         return {'error': True, 'message': f'Post archive with MD5 {element.md5} does not exist.'}
-    results = recreate_archived_post(archive, False)
+    results = recreate_archived_post(archive)
     if results['error']:
         unlinked = SubscriptionElement.query.filter(SubscriptionElement.md5 == element.md5,
                                                     SubscriptionElement.id.is_not(element.id),
