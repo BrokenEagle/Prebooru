@@ -26,17 +26,17 @@ def update_download_element_from_parameters(download_element, updateparams, comm
     return set_download_element_from_parameters(download_element, updateparams, 'updated', commit)
 
 
-# #### Query
-
-def get_download_element(download_id, illust_url_id):
-    return DownloadElement.query.filter(DownloadElement.download_id == download_id,
-                                        DownloadElement.illust_url_id == illust_url_id)\
-                                .one_or_none()
-
-
 # #### Set
 
 def set_download_element_from_parameters(download_element, setparams, action, commit):
     if set_column_attributes(download_element, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(download_element, action, commit=commit)
     return download_element
+
+
+# #### Query
+
+def get_download_element(download_id, illust_url_id):
+    return DownloadElement.query.filter(DownloadElement.download_id == download_id,
+                                        DownloadElement.illust_url_id == illust_url_id)\
+                                .one_or_none()
