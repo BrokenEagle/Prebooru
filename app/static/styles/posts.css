@@ -219,6 +219,17 @@ div#related-posts-container {
 
 div.related-post-block {
     width: 340px;
+    padding: 5px;
+    text-align: center;
+}
+
+div.related-post-block.post-self {
+    background-color: #EEE;
+    border: 1px solid #CCC;
+}
+
+div.related-post-block article.post {
+    margin: 0;
 }
 
 div#similar-posts-container {

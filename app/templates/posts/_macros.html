@@ -76,13 +76,16 @@
 {%- endmacro %}
 
 {% macro related_posts(post) -%}
-    {% if post.related_posts | length > 0 %}
+    {% if post.related_posts | length > 1 %}
         <div id="related-posts-heading" class="heading">
             Related posts
             {% if post_search_link is not none %}{{ helpers.base.general_link("»", helpers.post.related_posts_search(post)) }}{% endif %}
         </div>
         <div id="related-posts-container">
-            {% for post in post.related_posts %}<div class="related-post-block">{{ post_preview(post) }}</div>{% endfor %}
+            {% for rel_post in post.related_posts %}
+                {% set classname = 'post-self' if rel_post.id == post.id else 'post-other' %}
+                <div class="related-post-block {{ classname }}">{{ post_preview(rel_post) }}</div>
+            {% endfor %}
         </div>
     {% endif %}
 {%- endmacro %}
