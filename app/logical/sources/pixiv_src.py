@@ -110,28 +110,12 @@ def has_artist_urls(artist):
     return True
 
 
-def artist_main_url(artist):
-    return ARTIST_HREFURL % artist.site_artist_id
-
-
 def artist_artworks_url(artist):
-    url = artist_main_url(artist)
-    return url + '/artworks' if len(url) else ""
-
-
-def artist_illustrations_url(artist):
-    url = artist_main_url(artist)
-    return url + '/illustrations' if len(url) else ""
-
-
-def artist_manga_url(artist):
-    url = artist_main_url(artist)
-    return url + '/manga' if len(url) else ""
+    return ARTIST_HREFURL % artist.site_artist_id + '/artworks'
 
 
 def artist_bookmarks_url(artist):
-    url = artist_main_url(artist)
-    return url + '/bookmarks/artworks' if len(url) else ""
+    return ARTIST_HREFURL % artist.site_artist_id + '/bookmarks/artworks'
 
 
 def artist_booru_search_url(artist):
@@ -159,10 +143,6 @@ def get_primary_url(illust):
 
 def get_secondary_url(illust):
     return None
-
-
-def image_illust_download_urls(illust):
-    return list(filter(lambda x: image_url_mapper, illust.urls))
 
 
 def get_full_url(illust_url):
@@ -193,10 +173,7 @@ def video_url_mapper(x):
 
 def artist_links(artist):
     return {
-        'main': artist_main_url(artist),
         'artworks': artist_artworks_url(artist),
-        # 'illustrations': artist_illustrations_url(artist),
-        # 'manga': artist_manga_url(artist),
         'bookmarks': artist_bookmarks_url(artist),
     }
 
@@ -222,33 +199,12 @@ def is_request_url(request_url):
     return ARTWORKS_RG.match(request_url) or IMAGE_RG.match(request_url)
 
 
-def is_media_url(url):
-    return is_image_url(url) or is_video_url(url)
-
-
-def is_partial_media_url(url):
-    return is_partial_image_url(url) or is_partial_video_url(url)
-
-
 def is_image_url(image_url):
     return bool(IMAGE_RG.match(image_url))
 
 
-def is_partial_image_url(image_url):
-    return bool(IMAGE_PARTIAL_RG.match(image_url))
-
-
 def is_video_url(video_url):
     return False
-
-
-def is_partial_video_url(video_url):
-    return False
-
-
-def get_domain_from_partial_url(url):
-    if is_partial_image_url(url):
-        return 'i.pximg.net'
 
 
 def is_artist_id_url(artist_url):
@@ -357,15 +313,6 @@ def get_pixiv_artist(artist_id):
     return data['body']
 
 
-def get_all_pixiv_artist_illusts(artist_id):
-    data = pixiv_request('https://www.pixiv.net/ajax/user/%d/profile/all' % artist_id)
-    if data['error']:
-        return _create_module_error('get_all_pixiv_artist_illusts', data['message'])
-    ids = get_data_illust_ids(data['body'], 'illusts')
-    ids += get_data_illust_ids(data['body'], 'manga')
-    return ids
-
-
 def get_pixiv_page_data(site_illust_id):
     print("Downloading pages for pixiv #%d" % site_illust_id)
     data = pixiv_request("https://www.pixiv.net/ajax/illust/%s/pages" % site_illust_id)
@@ -459,19 +406,13 @@ def get_illust_parameters_from_artwork(artwork, page_data):
         illust_urls = get_illust_urls_from_artwork(artwork)
     else:
         illust_urls = get_illust_urls_from_page(page_data)
-    sub_data = artwork['userIllusts'][str(site_illust_id)]
     return {
         'site_name': SITE.name,
         'site_illust_id': site_illust_id,
         'site_created': process_utc_timestring(artwork['createDate']),
         'pages': artwork['pageCount'],
         'score': artwork['likeCount'],
-        'site_uploaded': process_utc_timestring(artwork['uploadDate']),
-        'site_updated': process_utc_timestring(sub_data['updateDate']),
         'title': artwork['title'],
-        'bookmarks': artwork['bookmarkCount'],
-        'replies': artwork['responseCount'],
-        'views': artwork['viewCount'],
         'tags': get_illust_tags(artwork),
         'commentary': get_artwork_commentary(artwork),
         'illust_urls': illust_urls,

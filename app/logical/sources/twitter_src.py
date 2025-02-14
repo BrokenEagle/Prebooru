@@ -459,12 +459,6 @@ LAST_QUERY = None
 
 # ## FUNCTIONS
 
-# Illust
-
-def image_illust_download_urls(illust):
-    return list(filter(lambda x: image_url_mapper, illust.urls))
-
-
 # Artist
 
 def artist_links(artist):
@@ -527,36 +521,12 @@ def partial_media_url(url):
     return parse.path + query_addon
 
 
-def is_media_url(url):
-    return is_image_url(url) or is_video_url(url)
-
-
-def is_partial_media_url(url):
-    return is_partial_image_url(url) or is_partial_video_url(url)
-
-
 def is_image_url(url):
     return bool(IMAGE1_RG.match(url) or IMAGE2_RG.match(url) or IMAGE3_RG.match(url) or IMAGE4_RG.match(url))
 
 
-def is_partial_image_url(url):
-    return bool(IMAGE1_PARTIAL_RG.match(url) or IMAGE2_PARTIAL_RG.match(url)
-                or IMAGE3_PARTIAL_RG.match(url) or IMAGE4_PARTIAL_RG.match(url))
-
-
 def is_video_url(url):
     return bool(VIDEO1_RG.match(url) or VIDEO2_RG.match(url))
-
-
-def is_partial_video_url(url):
-    return bool(VIDEO1_PARTIAL_RG.match(url) or VIDEO2_PARTIAL_RG.match(url))
-
-
-def get_domain_from_partial_url(url):
-    if is_partial_image_url(url):
-        return 'pbs.twimg.com'
-    if is_partial_video_url(url):
-        return 'video.twimg.com'
 
 
 def is_request_url(request_url):
@@ -658,10 +628,6 @@ def has_artist_urls(artist):
     return True
 
 
-def artist_screen_name(artist):
-    return artist.site_account_value
-
-
 def artist_profile_urls(artist):
     profile_urls = ['https://twitter.com/intent/user?user_id=%d' % artist.site_artist_id]
     for site_account in artist.site_accounts:
@@ -685,7 +651,7 @@ def illust_commentaries_dtext(illust):
 
 
 def artist_main_url(artist):
-    screen_name = artist_screen_name(artist)
+    screen_name = artist.site_account_value
     return 'https://twitter.com/%s' % screen_name
 
 
@@ -787,7 +753,7 @@ def source_prework(site_illust_id):
 # #### Network auxiliary functions
 
 def timeline_iterator(data, cursor, tweet_ids, seen_users, user_id=None, last_id=None, **kwargs):
-    results = get_graphql_timeline_entries_v2(data['body'])
+    results = get_graphql_timeline_entries(data['body'])
     tweets = [tweet for tweet in results['tweets'].values()]
     if len(results['tweets']) == 0:
         # Only check on the first iteration
@@ -932,20 +898,20 @@ def twitter_request(url, method='get', wait=True):
     return {'error': False, 'body': data, 'response': response}
 
 
-def get_graphql_timeline_entries(data, found_tweets):
+def get_graphql_tweetdetail_entries(data, found_tweets):
     for key in data:
         if key == 'tweet_results':
             found_tweets.append(data[key])
         elif type(data[key]) is list:
             for i in range(len(data[key])):
                 if type(data[key][i]) is dict:
-                    found_tweets = get_graphql_timeline_entries(data[key][i], found_tweets)
+                    found_tweets = get_graphql_tweetdetail_entries(data[key][i], found_tweets)
         elif type(data[key]) is dict:
-            found_tweets = get_graphql_timeline_entries(data[key], found_tweets)
+            found_tweets = get_graphql_tweetdetail_entries(data[key], found_tweets)
     return found_tweets
 
 
-def get_graphql_timeline_entries_v2(data, retdata=None):
+def get_graphql_timeline_entries(data, retdata=None):
     retdata = retdata or {'tweets': {}, 'retweets': {}, 'users': {}, 'cursors': {}, 'retweeted_ids': []}
     for key in data:
         if key == '__typename':
@@ -967,7 +933,7 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
             if 'rest_id' not in node_data:
                 continue
             if key == 'retweets':
-                retweet = get_graphql_timeline_entries_v2(node_data['legacy']['retweeted_status_result'])
+                retweet = get_graphql_timeline_entries(node_data['legacy']['retweeted_status_result'])
                 retweet_id = node_data['legacy']['retweet_id'] = next(key for key in retweet['tweets'])
                 retdata['retweeted_ids'].append(retweet_id)
             item = node_data['legacy']
@@ -979,9 +945,9 @@ def get_graphql_timeline_entries_v2(data, retdata=None):
             for i in range(len(data[key])):
                 if type(data[key][i]) is dict and not ('type' in data[key][i]
                                                        and data[key][i]['type'] == 'TimelinePinEntry'):
-                    retdata = get_graphql_timeline_entries_v2(data[key][i], retdata)
+                    retdata = get_graphql_timeline_entries(data[key][i], retdata)
         elif type(data[key]) is dict and not ('type' in data[key] and data[key]['type'] == 'TimelinePinEntry'):
-            retdata = get_graphql_timeline_entries_v2(data[key], retdata)
+            retdata = get_graphql_timeline_entries(data[key], retdata)
     return retdata
 
 
@@ -999,7 +965,7 @@ def get_twitter_illust_timeline(illust_id):
     try:
         if data['error']:
             return _create_module_error('get_twitter_illust_timeline', data['message'])
-        found_tweets = get_graphql_timeline_entries(data['body'], [])
+        found_tweets = get_graphql_tweetdetail_entries(data['body'], [])
     except Exception as e:
         msg = "Error parsing Twitter data: %s" % str(e)
         return _create_module_error('get_twitter_illust_timeline', msg)
@@ -1033,7 +999,7 @@ def get_tweet_by_rest_id(tweet_id):
     try:
         if data['error']:
             return _create_module_error('get_tweet_by_rest_id', data['message'])
-        results = get_graphql_timeline_entries_v2(data['body'])
+        results = get_graphql_timeline_entries(data['body'])
     except Exception as e:
         msg = "Error parsing Twitter data: %s" % str(e)
         return _create_module_error('get_tweet_by_rest_id', msg)
@@ -1043,7 +1009,7 @@ def get_tweet_by_rest_id(tweet_id):
         else _create_module_error('get_tweet_by_rest_id', "Tweet not found: %d" % tweet_id)
 
 
-def get_media_page_v2(user_id, count, cursor=None):
+def get_media_page(user_id, count, cursor=None):
     variables = TWITTER_MEDIA_TIMELINE_GRAPHQL.copy()
     features = TWITTER_MEDIA_TIMELINE_FEATURES.copy()
     toggles = TWITTER_MEDIA_TIMELINE_TOGGLES.copy()
@@ -1056,7 +1022,7 @@ def get_media_page_v2(user_id, count, cursor=None):
     return twitter_request("https://x.com/i/api/graphql/aQQLnkexAl5z9ec_UgbEIA/UserMedia?" + url_params)
 
 
-def get_search_page_v2(query, count, cursor=None):
+def get_search_page(query, count, cursor=None):
     variables = TWITTER_SEARCH_TIMELINE_VARIABLES.copy()
     features = TWITTER_SEARCH_TIMELINE_FEATURES.copy()
     field_toggles = TWITTER_SEARCH_TIMELINE_FIELD_TOGGLES.copy()
@@ -1078,7 +1044,7 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
         job_status['range'] = 'media:' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        return get_media_page_v2(user_id, count, cursor)
+        return get_media_page(user_id, count, cursor)
 
     count = 100 if last_id is None else 20
     page = 1
@@ -1107,25 +1073,13 @@ def populate_twitter_search_timeline(account, since_date, until_date, filter_lin
         job_status['range'] = since_date + '..' + until_date + ':' + str(page)
         update_job_status(job_id, job_status)
         page += 1
-        return get_search_page_v2(query, count, cursor)
+        return get_search_page(query, count, cursor)
 
     count = 100
     page = 1
     tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, **kwargs)
     return _create_module_error('populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
-
-
-def get_twitter_illust(illust_id):
-    print("Getting twitter #%d" % illust_id)
-    request_url = 'https://api.twitter.com/1.1/statuses/lookup.json?id=%d' % illust_id +\
-                  '&trim_user=true&tweet_mode=extended&include_quote_count=true&include_reply_count=true'
-    data = twitter_request(request_url)
-    if data['error']:
-        return _create_module_error('get_twitter_illust', data['message'])
-    if len(data['body']) == 0:
-        return _create_module_error('get_twitter_illust', "Tweet not found: %d" % illust_id)
-    return data['body'][0]
 
 
 def get_twitter_user_id(account):
@@ -1286,9 +1240,6 @@ def get_illust_parameters_from_tweet(tweet):
         'site_created': process_twitter_timestring(tweet['created_at']),
         'pages': len(tweet['extended_entities']['media']),
         'score': tweet['favorite_count'],
-        'retweets': tweet['retweet_count'],
-        'replies': tweet.get('reply_count'),
-        'quotes': tweet.get('quote_count'),
         'tags': get_illust_tags(tweet),
         'commentary': get_tweet_commentary(tweet) or None,
         'illust_urls': get_tweet_illust_urls(tweet),
@@ -1391,12 +1342,6 @@ def print_auth():
 
 def snowflake_to_epoch(snowflake):
     return ((snowflake >> 22) + 1288834974657) / 1000.0
-
-
-def snowflake_to_timestring(snowflake):
-    timestamp = snowflake_to_epoch(snowflake)
-    timeval = datetime_from_epoch(timestamp)
-    return timeval.isoformat()
 
 
 def populate_artist_recheck_active(artist):
