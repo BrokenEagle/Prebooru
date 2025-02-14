@@ -68,36 +68,25 @@ class NoSource():
 # #### Source lookup functions
 
 def get_post_source(request_url):
-    _import_package()
-    for source in SOURCES:
+    for source in _source_iterator():
         if source.is_request_url(request_url):
             return source
 
 
 def get_artist_source(artist_url):
-    _import_package()
-    for source in SOURCES:
+    for source in _source_iterator():
         if source.is_artist_url(artist_url):
             return source
 
 
-def get_illust_source(illust_url):
-    _import_package()
-    for source in SOURCES:
-        if source.is_post_url(illust_url):
-            return source
-
-
 def get_artist_id_source(artist_url):
-    _import_package()
-    for source in SOURCES:
+    for source in _source_iterator():
         if source.is_artist_id_url(artist_url):
             return source
 
 
 def get_media_source(image_url):
-    _import_package()
-    for source in SOURCES:
+    for source in _source_iterator():
         if source.is_image_url(image_url) or source.is_video_url(image_url):
             return source
     return NoSource
@@ -122,6 +111,7 @@ def get_artist_required_params(url):
 
 # #### Private
 
-def _import_package():
-    global SOURCES, SOURCEDICT
-    from ..sources import SOURCES, SOURCEDICT
+def _source_iterator():
+    from ..sources import SOURCES
+    for source in SOURCES:
+        yield source

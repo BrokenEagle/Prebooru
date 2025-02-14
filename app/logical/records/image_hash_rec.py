@@ -9,7 +9,7 @@ import imagehash
 
 # ## LOCAL IMPORTS
 from ...models.image_hash import ImageHash, HASH_SIZE, TOTAL_BITS
-from ..sources.base_src import get_media_source, NoSource
+from ..sources.base_src import get_media_source
 from ..database.post_db import get_posts_by_id
 from ..database.image_hash_db import create_image_hash_from_parameters
 from .media_file_rec import batch_get_or_create_media
@@ -136,7 +136,7 @@ def generate_post_image_hashes(post, printer=print):
 
 
 def check_all_image_urls_for_matches(image_urls, min_score, size, limit, include_posts=False, sim_clause=None):
-    media_sources = [get_media_source(image_url) or NoSource() for image_url in image_urls]
+    media_sources = [get_media_source(image_url) for image_url in image_urls]
     if size == 'actual':
         download_urls = image_urls
     elif size == 'original':
