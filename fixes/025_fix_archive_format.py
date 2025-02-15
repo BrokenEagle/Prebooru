@@ -17,8 +17,10 @@ def initialize():
     sys.path.append(os.path.abspath('.'))
     from app import SESSION
     from app.models import Archive
+    from app.models.base import json_column
     from utility.uprint import print_info
     from utility.data import safe_get, swap_key_value
+    Archive.data = json_column(nullable=False)
 
 
 def fix_post_archives():
