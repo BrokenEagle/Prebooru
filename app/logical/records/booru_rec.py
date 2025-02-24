@@ -124,7 +124,7 @@ def save_booru_to_archive(booru, days_to_expire):
     retdata = {'error': False}
     archive = get_archive_by_booru_name(booru.name_value)
     if archive is None:
-        archive = create_archive_from_parameters({'days': days_to_expire, 'type_name': 'post'}, commit=False)
+        archive = create_archive_from_parameters({'days': days_to_expire, 'type_name': 'booru'}, commit=False)
     else:
         update_archive_from_parameters(archive, {'days': days_to_expire}, commit=False)
     retdata['item'] = archive.basic_json()
