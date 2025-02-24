@@ -44,6 +44,8 @@ VALUES_MAP = {
     **{k: k for k in Artist.__table__.columns.keys()},
 }
 
+DEFAULT_DELETE_EXPIRES = 30  # Days
+
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
@@ -413,7 +415,8 @@ def update_json(id):
 @bp.route('/artists/<int:id>/archive', methods=['DELETE'])
 def soft_delete_html(id):
     artist = get_or_abort(Artist, id)
-    results = archive_artist_for_deletion(artist)
+    expires = request.values.get('expires', DEFAULT_DELETE_EXPIRES, type=int)
+    results = archive_artist_for_deletion(artist, expires)
     if results['error']:
         flash(results['message'], 'error')
         if not results['is_deleted']:

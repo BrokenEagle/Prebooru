@@ -56,6 +56,8 @@ POST_POOLS_SUBQUERY = Illust.query.join(IllustUrl, Illust.urls)\
 
 POOL_SEARCH_KEYS = ['has_pools', 'has_post_pools', 'has_illust_pools']
 
+DEFAULT_DELETE_EXPIRES = 30  # Days
+
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
@@ -459,7 +461,8 @@ def update_json(id):
 @bp.route('/illusts/<int:id>/archive', methods=['DELETE'])
 def soft_delete_html(id):
     illust = get_or_abort(Illust, id)
-    results = archive_illust_for_deletion(illust)
+    expires = request.values.get('expires', DEFAULT_DELETE_EXPIRES, type=int)
+    results = archive_illust_for_deletion(illust, expires)
     if results['error']:
         flash(results['message'], 'error')
         if not results['is_deleted']:

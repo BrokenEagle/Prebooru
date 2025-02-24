@@ -29,6 +29,7 @@ VALUES_MAP = {
     **{k: k for k in Booru.__table__.columns.keys()},
 }
 
+DEFAULT_DELETE_EXPIRES = 30  # Days
 
 # #### Load options
 
@@ -267,7 +268,8 @@ def update_json(id):
 @bp.route('/boorus/<int:id>/archive', methods=['DELETE'])
 def soft_delete_html(id):
     booru = get_or_abort(Booru, id)
-    results = archive_booru_for_deletion(booru)
+    expires = request.values.get('expires', DEFAULT_DELETE_EXPIRES, type=int)
+    results = archive_booru_for_deletion(booru, expires)
     if results['error']:
         flash(results['message'], 'error')
         if not results['is_deleted']:
