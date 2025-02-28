@@ -119,7 +119,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
         subscription.errors.append(site_illust_ids)
         params = {
             'status_name': 'error',
-            'checked': get_current_time,
+            'checked': get_current_time(),
             'requery': None,
         }
         update_subscription_from_parameters(subscription, params)
