@@ -48,7 +48,6 @@ def fix_post_archives():
                 print("Skipping...")
                 continue
             if original_body_params != updated_body_params:
-                print(arch.shortlink, "Will update body params.")
                 arch.data['body'] = updated_body_params
                 attributes.flag_modified(arch, 'data')
                 dirty = True
