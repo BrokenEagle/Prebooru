@@ -76,6 +76,9 @@ FORM_CONFIG = {
     'post_id': {
         'field': IntegerField,
     },
+    'md5': {
+        'field': StringField,
+    },
 }
 
 

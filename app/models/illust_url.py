@@ -13,8 +13,8 @@ from ..logical.sites import domain_by_site_name
 from .model_enums import SiteDescriptor
 from .download_element import DownloadElement
 from .subscription_element import SubscriptionElement
-from .base import JsonModel, integer_column, text_column, enum_column, boolean_column, register_enum_column,\
-    relationship, backref
+from .base import JsonModel, integer_column, text_column, enum_column, boolean_column, md5_column,\
+    register_enum_column, relationship, backref
 
 
 # ## FUNCTIONS
@@ -42,6 +42,7 @@ class IllustUrl(JsonModel):
     illust_id = integer_column(foreign_key='illust.id', nullable=False, index=True)
     active = boolean_column(nullable=False)
     post_id = integer_column(foreign_key='post.id', nullable=True)
+    md5 = md5_column(nullable=True)
 
     # ## Relationships
     download_elements = relationship(DownloadElement, uselist=True, cascade="all, delete",
@@ -110,10 +111,6 @@ class IllustUrl(JsonModel):
     @check_video
     def alternate_sample_url(self):
         return self.source.get_sample_url(self, False)
-
-    @property
-    def md5(self):
-        return self.post.md5 if self.post_id is not None else None
 
     @property
     def site_domain(self):
