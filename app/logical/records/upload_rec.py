@@ -95,6 +95,7 @@ def create_post_from_upload(upload):
         return
     buffer = put_get_raw(upload.media_filepath, 'rb')
     md5 = get_buffer_checksum(buffer)
+    update_illust_url_from_parameters(illust_url, {'md5': md5})
     post = get_post_by_md5(md5)
     if post is not None:
         update_illust_url_from_parameters(illust_url, {'post_id': post.id})
