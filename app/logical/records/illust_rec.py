@@ -251,9 +251,10 @@ def download_illust_sample(illust_url):
 def create_download_from_illust_url(illust_url):
     from .download_rec import create_post_from_download_element
     illust = illust_url.illust
-    illust_download = get_download_by_request_url(illust.key)
+    illust_key = '%s-%d' % (illust.site_name, illust.site_illust_id)
+    illust_download = get_download_by_request_url(illust_key)
     if illust_download is None:
-        illust_download = create_download_from_parameters({'request_url': illust.key, 'status_name': 'processing'})
+        illust_download = create_download_from_parameters({'request_url': illust_key, 'status_name': 'processing'})
     else:
         update_download_from_parameters(illust_download, {'status_name': 'processing'})
     illust_url_element = get_download_element(illust_download.id, illust_url.id)
