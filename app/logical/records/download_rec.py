@@ -117,7 +117,7 @@ def create_post_from_download_element(element):
     if illust_url.type == 'unknown':
         raise Exception("Unable to create post for unknown illust URL type")
     if illust_url.post_id is not None:
-        update_download_element_from_parameters(element, {'status_name': 'duplicate', 'md5': illust_url.post.md5})
+        update_download_element_from_parameters(element, {'status_name': 'duplicate'})
         if illust_url.post.type_name != 'user':
             update_post_from_parameters(illust_url.post, {'type_name': 'user'})
         return
@@ -132,7 +132,7 @@ def create_post_from_download_element(element):
     post = get_post_by_md5(md5)
     if post is not None:
         update_illust_url_from_parameters(illust_url, {'post_id': post.id})
-        update_download_element_from_parameters(element, {'status_name': 'duplicate', 'md5': md5})
+        update_download_element_from_parameters(element, {'status_name': 'duplicate'})
         if post.type_name != 'user':
             update_post_from_parameters(post, {'type_name': 'user'})
         return
@@ -144,7 +144,7 @@ def create_post_from_download_element(element):
     if results['post'] is None:
         update_download_element_from_parameters(element, {'status_name': 'error'})
     else:
-        update_download_element_from_parameters(element, {'status_name': 'complete', 'md5': md5})
+        update_download_element_from_parameters(element, {'status_name': 'complete'})
 
 
 # #### Secondary task functions
