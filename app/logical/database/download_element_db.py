@@ -8,7 +8,7 @@ from .base_db import set_column_attributes, save_record
 # ## GLOBAL VARIABLES
 
 ANY_WRITABLE_ATTRIBUTES = ['status_name']
-NULL_WRITABLE_ATTRIBUTES = ['download_id', 'illust_url_id', 'md5']
+NULL_WRITABLE_ATTRIBUTES = ['download_id', 'illust_url_id']
 
 
 # ## FUNCTIONS

@@ -23,7 +23,14 @@ def resubmit_link(download):
 
 
 def post_search_link(download):
-    return general_link('»', search_url_for('post.index_html', downloads={'id': download.id}))
+    params = {
+        'illust_urls': {
+            'download_elements': {
+                'download_id': download.id,
+            },
+        },
+    }
+    return general_link('»', search_url_for('post.index_html', **params))
 
 
 # #### Download elements

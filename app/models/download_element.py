@@ -8,10 +8,9 @@ from utility.obj import classproperty, memoized_classproperty
 from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
-from .. import DB
 from .model_enums import DownloadElementStatus
 from .error import Error
-from .base import JsonModel, integer_column, enum_column, md5_column, register_enum_column, relationship, backref
+from .base import JsonModel, integer_column, enum_column, register_enum_column, relationship, backref
 
 
 # ## CLASSES
@@ -21,7 +20,6 @@ class DownloadElement(JsonModel):
     id = integer_column(primary_key=True)
     download_id = integer_column(foreign_key='download.id', nullable=False, index=True)
     illust_url_id = integer_column(foreign_key='illust_url.id', nullable=False)
-    md5 = md5_column(nullable=True)
     status_id = enum_column(foreign_key='download_element_status.id', nullable=False)
 
     # ## Relationships
@@ -33,6 +31,10 @@ class DownloadElement(JsonModel):
     post = association_proxy('illust_url', 'post')
 
     # ## Class properties
+
+    @property
+    def md5(self):
+        return getattr(self.illust_url, 'md5', None)
 
     @memoized_classproperty
     def repr_attributes(cls):
@@ -50,7 +52,6 @@ class DownloadElement(JsonModel):
 
 def initialize():
     from .download import Download
-    DB.Index(None, DownloadElement.md5, unique=False, sqlite_where=DownloadElement.md5.is_not(None))
     # Access the opposite side of the relationship to force the back reference to be generated
     Download.elements.property._configure_started
     DownloadElement.set_relation_properties()
