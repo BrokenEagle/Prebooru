@@ -8,14 +8,14 @@ from config import EXPIRED_SUBSCRIPTION
 from utility.time import get_current_time
 
 # ## LOCAL IMPORTS
-from ...models import Subscription, SubscriptionElement, Post
+from ...models import Subscription, SubscriptionElement, Post, IllustUrl
 from .base_db import set_column_attributes, save_record
 
 
 # ## GLOBAL VARIABLES
 
 ANY_WRITABLE_ATTRIBUTES = ['status_name', 'keep_name', 'post_id', 'expires']
-NULL_WRITABLE_ATTRIBUTES = ['subscription_id', 'illust_url_id', 'md5']
+NULL_WRITABLE_ATTRIBUTES = ['subscription_id', 'illust_url_id']
 
 if EXPIRED_SUBSCRIPTION is True:
     EXPIRED_SUBSCRIPTION_ACTION = 'archive'
@@ -57,8 +57,8 @@ def get_elements_by_id(id_list):
 
 
 def get_subscription_elements_by_md5(md5):
-    return SubscriptionElement.query\
-                              .filter(SubscriptionElement.md5 == md5)\
+    return SubscriptionElement.query.join(IllustUrl)\
+                              .filter(IllustUrl.md5 == md5)\
                               .all()
 
 

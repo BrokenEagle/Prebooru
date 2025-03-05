@@ -307,7 +307,7 @@ def create_post_from_subscription_element(element):
     if illust_url.type == 'unknown':
         return False
     if illust_url.post_id is not None:
-        _update_duplicate_element(element, illust_url.post.md5)
+        _update_duplicate_element(element)
         return False
     results = download_illust_url(illust_url)
     create_and_extend_errors(element, results['errors'])
@@ -320,12 +320,12 @@ def create_post_from_subscription_element(element):
     post = get_post_by_md5(md5)
     if post is not None:
         update_illust_url_from_parameters(illust_url, {'post_id': post.id})
-        _update_duplicate_element(element, md5)
+        _update_duplicate_element(element)
         return False
     if element.status_name != 'deleted':
         element_ids = get_subscription_elements_by_md5(md5)
         if len(element_ids) > 0:
-            _update_duplicate_element(element, md5)
+            _update_duplicate_element(element)
             return False
     if illust_url.type == 'image':
         results = create_image_post(buffer, illust_url, 'subscription')
@@ -336,7 +336,7 @@ def create_post_from_subscription_element(element):
         update_subscription_element_from_parameters(element, {'status_name': 'error'})
         return False
     else:
-        update_subscription_element_from_parameters(element, {'post_id': results['post'].id, 'md5': md5})
+        update_subscription_element_from_parameters(element, {'post_id': results['post'].id})
         return True
 
 
@@ -353,7 +353,8 @@ def redownload_element(element):
         elif element.status_name == 'duplicate':
             post = element.illust_url.post
             if post is None:
-                duplicate_string = '; '.join([dupelement.shortlink for dupelement in element.duplicate_elements])
+                duplicate_elements = get_subscription_elements_by_md5(element.md5)
+                duplicate_string = '; '.join(dupelement.shortlink for dupelement in duplicate_elements)
                 msg = "Duplicate of previous elements: " + duplicate_string
             else:
                 msg = f'Duplicate of {element.illust_url.post.shortlink}'
@@ -404,7 +405,6 @@ def relink_element(element):
     params = {
         'status_name': 'active',
         'keep_name': None,
-        'md5': post.md5,
         'post_id': post.id,
         'expires': days_from_now(element.subscription.expiration),
     }
@@ -507,11 +507,10 @@ def _process_videos(elements):
         thread.start()
 
 
-def _update_duplicate_element(element, md5):
+def _update_duplicate_element(element):
     params = {
         'status_name': 'duplicate',
         'keep_name': 'unknown',
-        'md5': md5,
         'expires': None,
     }
     update_subscription_element_from_parameters(element, params)
