@@ -319,7 +319,6 @@ def create_post_from_subscription_element(element):
     update_illust_url_from_parameters(illust_url, {'md5': md5})
     post = get_post_by_md5(md5)
     if post is not None:
-        update_illust_url_from_parameters(illust_url, {'post_id': post.id})
         _update_duplicate_element(element)
         return False
     if element.status_name != 'deleted':

@@ -78,10 +78,6 @@ def set_temporary_link(archive):
 
 
 def has_relink(archive):
-    if archive.type_name == 'post' and archive.subdata.illusts is not None:
-        return True
-    if archive.type_name == 'illust' and any(url_data['md5'] for url_data in archive.subdata.urls_json):
-        return True
     if archive.type_name == 'artist' and archive.subdata.boorus is not None:
         return True
     if archive.type_name == 'booru' and archive.subdata.artists is not None:
