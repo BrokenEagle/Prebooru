@@ -60,14 +60,6 @@ def get_posts_by_id(ids):
     return posts
 
 
-def get_posts_by_md5s(md5s):
-    posts = []
-    for i in range(0, len(md5s), 100):
-        sublist = md5s[i: i + 100]
-        posts += Post.query.filter(Post.md5.in_(sublist)).all()
-    return posts
-
-
 def get_post_by_md5(md5):
     return Post.query.filter_by(md5=md5).one_or_none()
 

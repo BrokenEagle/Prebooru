@@ -33,14 +33,3 @@ def set_illust_url_from_parameters(illust_url, setparams, action, commit):
     if set_column_attributes(illust_url, ANY_WRITABLE_ATTRIBUTES, NULL_WRITABLE_ATTRIBUTES, setparams):
         save_record(illust_url, action, commit=commit)
     return illust_url
-
-
-# #### Query
-
-def get_illust_url_by_full_url(full_url):
-    from ..sites import site_name_by_url
-    from ..sources import source_by_site_name
-    site_name = site_name_by_url(full_url)
-    source = source_by_site_name(site_name)
-    partial = source.partial_media_url(full_url)
-    return IllustUrl.query.filter(IllustUrl.site_value == site_name, IllustUrl.url == partial).one_or_none()

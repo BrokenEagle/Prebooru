@@ -85,15 +85,15 @@
                     <li class="narrow">
                         <strong>MD5:</strong> <code>{{ helpers.base.val_or_none(element.md5) }}</code>
                     </li>
-                    {% if element.archive_match is not none %}
+                    {% if element.archive_post is not none %}
                         <li>
                             <strong>[ {{ helpers.subscription.nopost_function_link('reinstantiate', element) }} ]</strong>
                         </li>
-                    {% elif element.status_name == 'unlinked' and element.post_match is not none %}
+                    {% elif element.status_name == 'unlinked' and element.post is not none %}
                         <li>
                             <strong>[ {{ helpers.subscription.nopost_function_link('relink', element) }} ]</strong>
                         </li>
-                    {% elif (element.status_name in ['deleted', 'error'] )and element.post_match is none %}
+                    {% elif (element.status_name in ['deleted', 'error'] )and element.post is none %}
                         <li>
                             <strong>[ {{ helpers.subscription.nopost_function_link('redownload', element) }} ]</strong>
                         </li>

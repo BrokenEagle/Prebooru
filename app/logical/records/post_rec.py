@@ -25,7 +25,6 @@ from ..database.post_db import create_post_from_parameters,\
     get_posts_to_query_danbooru_id_page, update_post_from_parameters, alternate_posts_query,\
     missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
     get_artist_posts_without_danbooru_ids, get_post_by_md5
-from ..database.illust_url_db import update_illust_url_from_parameters, get_illust_url_by_full_url
 from ..database.notation_db import create_notation_from_parameters
 from ..database.error_db import create_error_from_parameters, create_and_append_error, create_and_extend_errors
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
@@ -75,7 +74,6 @@ def create_image_post(buffer, illust_url, post_type):
         return retdata
     # From this point forward, the post will be created and all errors attached to that post
     retdata['post'] = post = create_post_from_parameters(params)
-    update_illust_url_from_parameters(illust_url, {'post_id': post.id})
     create_image_post_sample_preview_images(post, image)
     return retdata
 
@@ -153,7 +151,6 @@ def create_video_post(buffer, illust_url, post_type):
         msg = "Mismatching image dimensions: Reported - %d x %d, Actual - %d x %d" %\
               (illust_url.width, illust_url.height, info['width'], info['height'])
         create_and_append_error(post, *_module_error('create_video_post', msg))
-    update_illust_url_from_parameters(illust_url, {'post_id': post.id})
     create_video_post_sample_preview_images(post)
     return retdata
 
@@ -355,7 +352,6 @@ def save_post_to_archive(post, days_to_expire):
     retdata['item'] = archive.basic_json()
     archive_params = {k: v for (k, v) in post.basic_json().items() if k in ArchivePost.basic_attributes}
     archive_params['tags_json'] = list(post.tag_names)
-    archive_params['illusts_json'] = [illust_url.full_url for illust_url in post.illust_urls]
     archive_params['errors_json'] = [{'module': error.module,
                                       'message': error.message,
                                       'created': error.created.isoformat()}
@@ -386,7 +382,6 @@ def recreate_archived_post(archive):
         SESSION.rollback()
         return handle_error_message(error)
     # Once the file move is successful, keep going even if there are errors.
-    _link_post(post, post_data)
     post.tag_names.extend(post_data.tags_json)
     for notation in post_data.notations_json:
         createparams = merge_dicts(notation, {'post_id': post.id})
@@ -402,17 +397,6 @@ def recreate_archived_post(archive):
         create_video_sample_preview_files(temppost)
     SessionThread(target=process_image_matches, args=([temppost.id],)).start()
     update_archive_from_parameters(archive, {'days': 7})
-    return retdata
-
-
-def relink_archived_post(archive):
-    post_data = archive.post_data
-    post = get_post_by_md5(post_data.md5)
-    if post is None:
-        handle_error_message(f"No post found with md5 {post_data.md5}.")
-    retdata = {'error': False, 'item': post.basic_json()}
-    _link_post(post, post_data)
-    commit_session()
     return retdata
 
 
@@ -599,13 +583,6 @@ def _load_image(buffer):
             return image
     except Exception as e:
         return _module_error('load_image', "Error removing alpha transparency: %s" % repr(e))
-
-
-def _link_post(post, post_data):
-    for image_url in post_data.illusts_json:
-        illust_url = get_illust_url_by_full_url(image_url)
-        if illust_url is not None:
-            update_illust_url_from_parameters(illust_url, {'post_id': post.id}, commit=False)
 
 
 def _module_error(function, message):

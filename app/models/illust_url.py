@@ -8,11 +8,12 @@ from utility.obj import memoized_classproperty
 from utility.data import list_difference, swap_list_values
 
 # ## LOCAL IMPORTS
-from .. import DB
 from ..logical.sites import domain_by_site_name
 from .model_enums import SiteDescriptor
+from .post import Post
 from .download_element import DownloadElement
 from .subscription_element import SubscriptionElement
+from .archive_post import ArchivePost
 from .base import JsonModel, integer_column, text_column, enum_column, boolean_column, md5_column,\
     register_enum_column, relationship, backref
 
@@ -41,7 +42,6 @@ class IllustUrl(JsonModel):
     order = integer_column(nullable=False)
     illust_id = integer_column(foreign_key='illust.id', nullable=False, index=True)
     active = boolean_column(nullable=False)
-    post_id = integer_column(foreign_key='post.id', nullable=True)
     md5 = md5_column(nullable=True)
 
     # ## Relationships
@@ -49,6 +49,12 @@ class IllustUrl(JsonModel):
                                      backref=backref('illust_url', uselist=False))
     subscription_element = relationship(SubscriptionElement, uselist=False, cascade="all, delete",
                                         backref=backref('illust_url', uselist=False))
+    post = relationship(Post, primaryjoin=(md5 == Post.md5), foreign_keys=md5,
+                        remote_side=Post.md5, uselist=False, overlaps="illust_urls,archive_post",
+                        backref=backref('illust_urls', uselist=True, overlaps="illust_urls,archive_post"))
+    archive_post = relationship(ArchivePost, primaryjoin=(md5 == ArchivePost.md5), foreign_keys=md5,
+                                remote_side=ArchivePost.md5, uselist=False, overlaps="illust_urls,post",
+                                backref=backref('illust_urls', uselist=True, overlaps="illust_urls,post"))
     # (MtO) illust [Illust]
     # (MtO) post [Post]
     # (OtO) uploads [Upload]
@@ -144,7 +150,6 @@ class IllustUrl(JsonModel):
 
 def initialize():
     from .illust import Illust
-    DB.Index(None, IllustUrl.post_id, unique=False, sqlite_where=IllustUrl.post_id.is_not(None))
     # Access the opposite side of the relationship to force the back reference to be generated
     Illust.urls.property._configure_started
     IllustUrl.set_relation_properties()

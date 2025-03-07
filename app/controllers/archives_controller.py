@@ -9,8 +9,8 @@ from ..models import Archive
 from ..logical.database.archive_db import update_archive_from_parameters
 from ..logical.records.booru_rec import recreate_archived_booru, relink_archived_booru
 from ..logical.records.artist_rec import recreate_archived_artist, relink_archived_artist
-from ..logical.records.illust_rec import recreate_archived_illust, relink_archived_illust
-from ..logical.records.post_rec import recreate_archived_post, relink_archived_post
+from ..logical.records.illust_rec import recreate_archived_illust
+from ..logical.records.post_rec import recreate_archived_post
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, index_html_response
 
@@ -29,8 +29,6 @@ RECREATE_ARCHIVE_FUNCS = {
 RELINK_ARCHIVE_FUNCS = {
     'booru': relink_archived_booru,
     'artist': relink_archived_artist,
-    'illust': relink_archived_illust,
-    'post': relink_archived_post,
 }
 
 # #### Load options

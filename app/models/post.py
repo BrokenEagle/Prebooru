@@ -14,13 +14,12 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, ALTERNATE_MEDIA_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from utility.obj import memoized_classproperty
-from utility.data import swap_list_values, dict_prune, dict_filter
+from utility.data import swap_list_values, dict_filter
 
 # ## LOCAL IMPORTS
 from ..logical.utility import unique_objects
 from .model_enums import PostType
 from .error import Error
-from .illust_url import IllustUrl
 from .subscription_element import SubscriptionElement
 from .notation import Notation
 from .tag import UserTag, user_tag_creator
@@ -68,7 +67,6 @@ class Post(JsonModel):
     simcheck = boolean_column(nullable=False)
 
     # ## Relationships
-    illust_urls = relationship(IllustUrl, uselist=True, backref=backref('post', uselist=False))
     errors = relationship(Error, uselist=True, cascade='all,delete', backref=backref('post', uselist=False))
     subscription_element = relationship(SubscriptionElement, uselist=False, backref=backref('post', uselist=False))
     notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('post', uselist=False))
@@ -176,6 +174,7 @@ class Post(JsonModel):
 
     @memoized_property
     def related_posts(self):
+        from .illust_url import IllustUrl
         from .illust import Illust
         query = Post.query.join(IllustUrl, Post.illust_urls)
         query = query.filter(IllustUrl.illust_id.in_(self._illust_query.with_entities(Illust.id)))
@@ -222,10 +221,6 @@ class Post(JsonModel):
         return query.limit(10).all()
 
     @property
-    def illust_urls_json(self):
-        return [dict_prune(illust_url.to_json(), ['id', 'post_id']) for illust_url in self.illust_urls]
-
-    @property
     def errors_json(self):
         return [dict_filter(error.to_json(), ['module', 'message', 'created']) for error in self.errors]
 
@@ -264,23 +259,26 @@ class Post(JsonModel):
 
     @property
     def _illust_query(self):
+        from .illust_url import IllustUrl
         from .illust import Illust
-        return Illust.query.join(IllustUrl, Illust.urls).filter(IllustUrl.post_id == self.id).group_by(Illust.id)
+        return Illust.query.join(IllustUrl, Illust.urls).filter(IllustUrl.md5 == self.md5).group_by(Illust.id)
 
     @property
     def _artist_query(self):
+        from .illust_url import IllustUrl
         from .illust import Illust
         from .artist import Artist
         return Artist.query.join(Illust, Artist.illusts).join(IllustUrl, Illust.urls)\
-                           .filter(IllustUrl.post_id == self.id).group_by(Artist.id)
+                           .filter(IllustUrl.md5 == self.md5).group_by(Artist.id)
 
     @property
     def _booru_query(self):
+        from .illust_url import IllustUrl
         from .illust import Illust
         from .artist import Artist
         from .booru import Booru
         return Booru.query.join(Artist, Booru.artists).join(Illust, Artist.illusts).join(IllustUrl, Illust.urls)\
-                          .filter(IllustUrl.post_id == self.id).group_by(Booru.id)
+                          .filter(IllustUrl.md5 == self.md5).group_by(Booru.id)
 
 
 # ## INITIALIZATION

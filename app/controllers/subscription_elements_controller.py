@@ -9,13 +9,11 @@ from utility.data import eval_bool_string
 from utility.time import days_from_now
 
 # ## LOCAL IMPORTS
-from ..models import SubscriptionElement, IllustUrl, Illust, Artist
+from ..models import SubscriptionElement, IllustUrl, Illust, Artist, ArchivePost
 from ..logical.utility import search_url_for, set_error
 from ..logical.database.base_db import commit_session
 from ..logical.database.subscription_element_db import get_elements_by_id,\
     update_subscription_element_from_parameters
-from ..logical.database.post_db import get_posts_by_md5s, get_post_by_md5
-from ..logical.database.archive_db import get_archives_by_post_md5s, get_archive_by_post_md5
 from ..logical.records.subscription_rec import redownload_element, reinstantiate_element, relink_element,\
     create_elements_from_source
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -30,9 +28,9 @@ bp = Blueprint("subscription_element", __name__)
 # #### Load options
 
 INDEX_HTML_OPTIONS = (
-    selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).options(
-        selectinload(Illust.artist).selectinload(Artist.site_account),
-        selectinload(Illust.urls).lazyload('*'),
+    selectinload(SubscriptionElement.illust_url).options(
+        selectinload(IllustUrl.illust).selectinload(Illust.artist).selectinload(Artist.site_account),
+        selectinload(IllustUrl.archive_post).selectinload(ArchivePost.archive),
     ),
     selectinload(SubscriptionElement.post).lazyload('*'),
     selectinload(SubscriptionElement.errors),
@@ -106,20 +104,6 @@ def index_html():
             and page > elements.pages:
         return redirect(url_for('subscription_element.index_html', page=elements.pages,
                                 **{k: v for (k, v) in request.args.items() if k != 'page'}))
-    missing_md5s = set(element.md5 for element in elements.items
-                       if element.post is None and element.status_name in ['unlinked', 'duplicate'])
-    missing_posts = get_posts_by_md5s(list(missing_md5s)) if len(missing_md5s) else []
-    archive_md5s = set(element.md5 for element in elements.items if element.status_name == 'archived')
-    archives = get_archives_by_post_md5s(list(archive_md5s)) if len(archive_md5s) else []
-    for item in elements.items:
-        post_match = None
-        if item.md5 in missing_md5s:
-            post_match = next((post for post in missing_posts if post.md5 == item.md5), None)
-        setattr(item, 'post_match', post_match)
-        archive_match = None
-        if item.md5 in archive_md5s:
-            archive_match = next((archive for archive in archives if archive.subdata.md5 == item.md5), None)
-        setattr(item, 'archive_match', archive_match)
     return render_template_ws("subscription_elements/index.html",
                               page=elements,
                               subscription_element=SubscriptionElement())
@@ -233,9 +217,6 @@ def relink_json(id):
 # #### Private functions
 
 def _json_preview(results, element):
-    if element.post is None:
-        element.post_match = get_post_by_md5(element.md5)
-        element.archive_match = get_archive_by_post_md5(element.md5) if element.post_match is None else None
     results['item'] = element.to_json()
     results['html'] = render_template_ws("subscription_elements/_element_preview.html", element=element)
     return results

@@ -10,7 +10,7 @@ from .archive_post import ArchivePost
 from .archive_illust import ArchiveIllust
 from .archive_artist import ArchiveArtist
 from .archive_booru import ArchiveBooru
-from .base import JsonModel, integer_column, enum_column, timestamp_column, register_enum_column, relationship
+from .base import JsonModel, integer_column, enum_column, timestamp_column, register_enum_column, relationship, backref
 
 
 # ## CLASSES
@@ -22,10 +22,14 @@ class Archive(JsonModel):
     expires = timestamp_column(nullable=True)
 
     # ## Relationships
-    post_data = relationship(ArchivePost, uselist=False, cascade='all,delete')
-    illust_data = relationship(ArchiveIllust, uselist=False, cascade='all,delete')
-    artist_data = relationship(ArchiveArtist, uselist=False, cascade='all,delete')
-    booru_data = relationship(ArchiveBooru, uselist=False, cascade='all,delete')
+    post_data = relationship(ArchivePost, uselist=False, cascade='all,delete',
+                             backref=backref('archive', uselist=False))
+    illust_data = relationship(ArchiveIllust, uselist=False, cascade='all,delete',
+                               backref=backref('archive', uselist=False))
+    artist_data = relationship(ArchiveArtist, uselist=False, cascade='all,delete',
+                               backref=backref('archive', uselist=False))
+    booru_data = relationship(ArchiveBooru, uselist=False, cascade='all,delete',
+                              backref=backref('archive', uselist=False))
 
     @property
     def subdata(self):

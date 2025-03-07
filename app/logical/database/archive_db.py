@@ -46,14 +46,6 @@ def get_archive_by_post_md5(md5):
     return Archive.query.join(ArchivePost).filter(ArchivePost.md5 == md5).one_or_none()
 
 
-def get_archives_by_post_md5s(data_keys):
-    archive_posts = []
-    for i in range(0, len(data_keys), 100):
-        sublist = data_keys[i: i + 100]
-        archive_posts += Archive.query.join(ArchivePost).filter(ArchivePost.md5.in_(sublist)).all()
-    return archive_posts
-
-
 def get_archive_by_illust_site(site_id, site_illust_id):
     return Archive.query.join(ArchiveIllust).filter(ArchiveIllust.site_id == site_id,
                                                     ArchiveIllust.site_illust_id == site_illust_id)\

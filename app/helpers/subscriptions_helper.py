@@ -225,10 +225,10 @@ def keep_element_val(subscription_element):
 # ###### Link functions
 
 def element_preview_link(element, lazyload):
-    if element.post_match is not None:
-        return post_preview_link(element.post_match, lazyload)
-    if element.archive_match is not None:
-        return archive_preview_link(element.archive_match, lazyload)
+    if element.post is not None:
+        return post_preview_link(element.post, lazyload)
+    if element.archive_post is not None:
+        return archive_preview_link(element.archive_post.archive, lazyload)
     preview_url = element.illust_url.preview_url
     title = f"( {element.illust_url.width} x  {element.illust_url.height} )"
     addons = {

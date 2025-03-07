@@ -131,7 +131,6 @@ def create_post_from_download_element(element):
     update_illust_url_from_parameters(illust_url, {'md5': md5})
     post = get_post_by_md5(md5)
     if post is not None:
-        update_illust_url_from_parameters(illust_url, {'post_id': post.id})
         update_download_element_from_parameters(element, {'status_name': 'duplicate'})
         if post.type_name != 'user':
             update_post_from_parameters(post, {'type_name': 'user'})

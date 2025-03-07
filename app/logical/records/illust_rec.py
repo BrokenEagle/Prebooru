@@ -16,8 +16,7 @@ from ..database.base_db import delete_record, commit_session
 from ..database.artist_db import get_blank_artist, get_site_artist
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters_standard,\
     get_site_illust
-from ..database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
-from ..database.post_db import get_posts_by_md5s
+from ..database.illust_url_db import create_illust_url_from_parameters
 from ..database.notation_db import create_notation_from_parameters
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
     get_archive_by_illust_site
@@ -158,27 +157,12 @@ def recreate_archived_illust(archive):
     illust.title_bodies.extend(illust_data.titles_json)
     illust.commentary_bodies.extend(illust_data.commentaries_json)
     illust.additional_commentary_bodies.extend(illust_data.additional_commentaries_json)
-    _link_illust_urls(illust_urls, illust_data)
     for notation in illust_data.notations_json:
         createparams = merge_dicts(notation, {'illust_id': illust.id})
         create_notation_from_parameters(createparams, commit=False)
     retdata = {'error': False, 'item': illust.basic_json()}
     commit_session()
     update_archive_from_parameters(archive, {'days': 7})
-    return retdata
-
-
-def relink_archived_illust(archive):
-    illust_data = archive.illust_data
-    if illust_data.urls is None:
-        return handle_error_message("No urls data on archive record.")
-    illust = get_site_illust(illust_data.site_illust_id, illust_data.site_id)
-    if illust is None:
-        msg = f"{illust_data.site_name} #{illust_data.site_artist_id} not found in illusts."
-        return handle_error_message(msg)
-    retdata = {'error': False, 'item': illust.basic_json()}
-    _link_illust_urls(illust.urls, illust_data)
-    commit_session()
     return retdata
 
 
@@ -302,14 +286,3 @@ def _relation_params_check(illust, model, m2m_model, model_id, model_field, name
         msg = "%s with %s does not exist on %s." % (name, attach.shortlink, illust.shortlink)
         return set_error(retdata, msg)
     return retdata
-
-
-def _link_illust_urls(illust_urls, illust_data):
-    md5s = [data['md5'] for data in illust_data.urls_json if data['md5'] is not None]
-    if len(md5s) == 0:
-        return
-    posts = get_posts_by_md5s(md5s)
-    for post in posts:
-        url_data = next(data for data in illust_data.urls_json if data['md5'] == post.md5)
-        illust_url = next(iu for iu in illust_urls if iu.full_url == url_data['url'])
-        update_illust_url_from_parameters(illust_url, {'post_id': post.id}, commit=False)

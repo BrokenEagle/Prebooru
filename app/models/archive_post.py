@@ -39,7 +39,6 @@ class ArchivePost(JsonModel):
     tags = json_column(nullable=True)
     notations = json_column(nullable=True)
     errors = json_column(nullable=True)
-    illusts = json_column(nullable=True)
 
     # Instance properties
 
@@ -76,7 +75,6 @@ class ArchivePost(JsonModel):
     tags_json = json_list_proxy('tags', str)
     errors_json = errors_json
     notations_json = notations_json
-    illusts_json = json_list_proxy('illusts', str)
 
     # Class properties
 
@@ -93,7 +91,6 @@ class ArchivePost(JsonModel):
             'tags': ('tags', 'tags_json'),
             'errors': ('errors', 'errors_json'),
             'notations': ('notations', 'notations_json'),
-            'illusts': ('illusts', 'illusts_json'),
         }
         return swap_list_values(cls.repr_attributes, mapping)
 
