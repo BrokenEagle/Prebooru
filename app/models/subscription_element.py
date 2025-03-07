@@ -1,5 +1,8 @@
 # APP/MODELS/SUBSCRIPTION_ELEMENT.PY
 
+# ## EXTERNAL IMPORTS
+from sqlalchemy.ext.associationproxy import association_proxy
+
 # ## PACKAGE IMPORTS
 from utility.obj import classproperty, memoized_classproperty
 from utility.data import swap_list_values
@@ -30,6 +33,9 @@ class SubscriptionElement(JsonModel):
     # (MtO) subscription [Susbscription]
     # (MtO) post [Post]
     # (OtO) illust_url [IllustUrl]
+
+    # ## Association proxies
+    archive_post = association_proxy('illust_url', 'archive_post')
 
     # ## Instance properties
 
