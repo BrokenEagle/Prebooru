@@ -189,11 +189,11 @@ class Post(JsonModel):
 
     @memoized_property
     def selectin_artists(self):
-        return unique_objects([illust.artist for illust in self.illusts])
+        return unique_objects([illust.artist for illust in self.selectin_illusts])
 
     @memoized_property
     def selectin_boorus(self):
-        return unique_objects(list(itertools.chain(*[artist.boorus for artist in self.artists])))
+        return unique_objects(list(itertools.chain(*[artist.boorus for artist in self.selectin_artists])))
 
     @memoized_property
     def illusts(self):
