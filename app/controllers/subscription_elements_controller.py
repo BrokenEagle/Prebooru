@@ -30,9 +30,9 @@ bp = Blueprint("subscription_element", __name__)
 INDEX_HTML_OPTIONS = (
     selectinload(SubscriptionElement.illust_url).options(
         selectinload(IllustUrl.illust).selectinload(Illust.artist).selectinload(Artist.site_account),
+        selectinload(IllustUrl.post).lazyload('*'),
         selectinload(IllustUrl.archive_post).selectinload(ArchivePost.archive),
     ),
-    selectinload(SubscriptionElement.post).lazyload('*'),
     selectinload(SubscriptionElement.errors),
 )
 
@@ -91,8 +91,6 @@ def index_html():
     q = index()
     element_type = request.args.get('type')
     if request.args.get('search[keep]') is None:
-        if element_type in ['yes', 'no', 'maybe', 'archive', 'undecided']:
-            q = q.filter(SubscriptionElement.post_id.__ne__(None))
         if element_type in ['yes', 'no', 'maybe', 'archive']:
             q = q.filter(SubscriptionElement.keep_value == element_type)
         elif element_type == 'undecided':

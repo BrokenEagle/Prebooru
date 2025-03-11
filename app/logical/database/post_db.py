@@ -17,12 +17,10 @@ ANY_WRITABLE_ATTRIBUTES = ['type_name', 'simcheck', 'alternate', 'width', 'heigh
                            'pixel_md5', 'duration', 'audio']
 NULL_WRITABLE_ATTRIBUTES = ['danbooru_id', 'created']
 
-SUBELEMENT_SUBCLAUSE = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
-                                                .with_entities(SubscriptionElement.post_id)
-NO_SUBELEMENT_CLAUSE = Post.id.not_in(SUBELEMENT_SUBCLAUSE)
-
-SUBELEMENT_SUBQUERY = SubscriptionElement.query.filter(SubscriptionElement.post_id.is_not(None))\
-                                               .with_entities(SubscriptionElement.post_id)
+SUBELEMENT_SUBQUERY = Post.query.join(IllustUrl, Post.illust_urls)\
+                                .join(SubscriptionElement, IllustUrl.subscription_element)\
+                                .filter(SubscriptionElement.status_value == 'active')\
+                                .with_entities(Post.id)
 
 
 # ## FUNCTIONS
@@ -79,10 +77,15 @@ def missing_similarity_matches_query():
 
 def get_posts_to_query_danbooru_id_page(limit):
     query = Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)
-    query = query.filter(Post.danbooru_id.is_(None), Artist.primary.is_(True), NO_SUBELEMENT_CLAUSE)
+    query = query.filter(Post.danbooru_id.is_(None), Artist.primary.is_(True), Post.id.not_in(SUBELEMENT_SUBQUERY))
     return query.limit_paginate(per_page=limit)
 
 
 def get_artist_posts_without_danbooru_ids(artist):
     query = artist._post_query.filter(Post.danbooru_id.is_(None))
     return query.limit_paginate(per_page=100, distinct=True)
+
+
+def get_posts_by_subscription_elements(elements):
+    query = Post.query.join(IllustUrl, Post.illust_urls).join(SubscriptionElement, IllustUrl.subscription_element)
+    return query.filter(SubscriptionElement.id.in_(element.id for element in elements)).all()

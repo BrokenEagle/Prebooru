@@ -36,11 +36,11 @@
 {%- endmacro %}
 
 {% macro subscription_element_preview(element, lazyload) -%}
-    {% set element_post = 'post' if element.post is not none else 'no-post' %}
+    {% set element_post = 'post' if element.post is not none and element.status_name == 'active' else 'no-post' %}
     {% set element_keep = element.keep_name if element.keep is not none else 'undecided' %}
     <article id="subscription-element-{{ element.id }}"
              class="subscription-element subscription-{{ element.illust_url.type }} subscription-{{ element_post }} subscription-{{ element_keep }}">
-        {% if element.post is not none %}
+        {% if element.post is not none and element.status_name == 'active' %}
             <div class="subscription-element-display">
                 <div class="input">
                     <label for="subscription-element-{{ element.id }}-checkbox">
@@ -85,18 +85,20 @@
                     <li class="narrow">
                         <strong>MD5:</strong> <code>{{ helpers.base.val_or_none(element.md5) }}</code>
                     </li>
-                    {% if element.archive_post is not none %}
-                        <li>
-                            <strong>[ {{ helpers.subscription.nopost_function_link('reinstantiate', element) }} ]</strong>
-                        </li>
-                    {% elif element.status_name == 'unlinked' and element.post is not none %}
+                    {% if element.post is not none %}
                         <li>
                             <strong>[ {{ helpers.subscription.nopost_function_link('relink', element) }} ]</strong>
                         </li>
-                    {% elif (element.status_name in ['deleted', 'error'] )and element.post is none %}
-                        <li>
-                            <strong>[ {{ helpers.subscription.nopost_function_link('redownload', element) }} ]</strong>
-                        </li>
+                    {% else %}
+                        {% if element.archive_post is not none %}
+                            <li>
+                                <strong>[ {{ helpers.subscription.nopost_function_link('reinstantiate', element) }} ]</strong>
+                            </li>
+                        {% elif element.illust_url.active %}
+                            <li>
+                                <strong>[ {{ helpers.subscription.nopost_function_link('redownload', element) }} ]</strong>
+                            </li>
+                        {% endif %}
                     {% endif %}
                 </ul>
                 {{ error_list(element.errors) }}

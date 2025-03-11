@@ -24,9 +24,9 @@ from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..sources.base_src import get_post_source
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
-    pending_subscription_downloads_query, update_subscription_element_from_parameters,\
-    expired_subscription_elements, get_subscription_elements_by_md5
-from ..database.post_db import get_post_by_md5, get_posts_by_id
+    missing_subscription_downloads_query, update_subscription_element_from_parameters,\
+    expired_subscription_elements, get_subscription_elements_by_md5, subscription_elements_to_download_query
+from ..database.post_db import get_post_by_md5, get_posts_by_id, get_posts_by_subscription_elements
 from ..database.illust_url_db import update_illust_url_from_parameters
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
 from ..database.artist_db import get_site_artist, update_artist_from_parameters_standard
@@ -163,9 +163,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
 def download_subscription_elements(subscription, job_id=None):
     job_status = get_job_status_data(job_id) or {'downloads': 0}
     job_status['stage'] = 'downloads'
-    q = SubscriptionElement.query.filter(SubscriptionElement.subscription_id == subscription.id,
-                                         SubscriptionElement.post_id.is_(None),
-                                         SubscriptionElement.status_value == 'active')
+    q = subscription_elements_to_download_query(subscription.id)
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
@@ -177,8 +175,9 @@ def download_subscription_elements(subscription, job_id=None):
             if create_post_from_subscription_element(element):
                 job_status['downloads'] += 1
         active_elements = [element for element in page.items if element.status_name == 'active']
-        _process_image_matches(active_elements)
-        _process_videos(active_elements)
+        post_ids = [post.id for post in get_posts_by_subscription_elements(active_elements)]
+        _process_image_matches(post_ids)
+        _process_videos(post_ids)
         if not page.has_prev:
             break
         page = page.prev()
@@ -187,7 +186,7 @@ def download_subscription_elements(subscription, job_id=None):
 
 def download_missing_elements(manual=False):
     max_pages = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
-    q = pending_subscription_downloads_query()
+    q = missing_subscription_downloads_query()
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     q = q.order_by(SubscriptionElement.id.asc())
     page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
@@ -198,8 +197,9 @@ def download_missing_elements(manual=False):
             print(f"Downloading {element.shortlink}")
             create_post_from_subscription_element(element)
             element_count += 1
-        _process_image_matches(page.items)
-        _process_videos(page.items)
+        post_ids = [post.id for post in get_posts_by_subscription_elements(page.items)]
+        _process_image_matches(post_ids)
+        _process_videos(post_ids)
         if not page.has_next or page.page >= max_pages:
             return element_count
         page = page.prev()
@@ -237,11 +237,12 @@ def delete_expired_subscription_elements(manual):
     while True:
         print_info(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
-            if element.post is not None:
-                if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+            post = element.post
+            if post is not None:
+                if post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
                     continue
                 print(f"Deleting post of {element.shortlink}")
-                delete_post(element.post)
+                delete_post(post)
             update_subscription_element_from_parameters(element, {'status_name': 'deleted', 'expires': None})
             deleted_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
@@ -259,11 +260,12 @@ def archive_expired_subscription_elements(manual):
     while True:
         print_info(f"\nexpire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})\n")
         for element in page.items:
-            if element.post is not None:
-                if element.post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+            post = element.post
+            if post is not None:
+                if post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
                     continue
                 print(f"Archiving post of {element.shortlink}")
-                archive_post_for_deletion(element.post, None)
+                archive_post_for_deletion(post, None)
             update_subscription_element_from_parameters(element, {'status_name': 'archived', 'expires': None})
             archived_elements.append(element.id)
         if not page.has_next or page.page >= max_pages:
@@ -335,29 +337,20 @@ def create_post_from_subscription_element(element):
         update_subscription_element_from_parameters(element, {'status_name': 'error'})
         return False
     else:
-        update_subscription_element_from_parameters(element, {'post_id': results['post'].id})
         return True
 
 
 def redownload_element(element):
     def try_func(scope_vars):
-        nonlocal element
         initial_errors = [error.id for error in element.errors]
-        if create_post_from_subscription_element(element) and element.post_id is not None:
+        if create_post_from_subscription_element(element):
+            post = element.post
             update_subscription_element_from_parameters(element, {'status_name': 'active'})
-            if element.post.is_video:
-                SessionThread(target=convert_mp4_to_webp,
-                              args=(element.post.file_path, element.post.video_preview_path)).start()
+            if post.is_video:
+                thread = SessionThread(target=convert_mp4_to_webp,
+                                       args=(post.file_path, post.video_preview_path))
+                thread.start()
             return {'error': False}
-        elif element.status_name == 'duplicate':
-            post = element.illust_url.post
-            if post is None:
-                duplicate_elements = get_subscription_elements_by_md5(element.md5)
-                duplicate_string = '; '.join(dupelement.shortlink for dupelement in duplicate_elements)
-                msg = "Duplicate of previous elements: " + duplicate_string
-            else:
-                msg = f'Duplicate of {element.illust_url.post.shortlink}'
-            return {'error': True, 'message': msg}
         else:
             update_subscription_element_from_parameters(element, {'status_name': 'error', 'keep_name': 'unknown'})
             new_errors = [error for error in element.errors if error.id not in initial_errors]
@@ -367,9 +360,8 @@ def redownload_element(element):
     def msg_func(scope_vars, error):
         return f"Unhandled exception occurred on subscripton #{element.subscription_id}: {repr(error)}"
 
-    results = safe_db_execute('redownload_element', 'records.subscription_rec', try_func=try_func, msg_func=msg_func,
-                              printer=print)
-    return results
+    return safe_db_execute('redownload_element', 'records.subscription_rec',
+                           try_func=try_func, msg_func=msg_func, printer=print)
 
 
 def reinstantiate_element(element):
@@ -452,15 +444,14 @@ def subscription_slots_needed_per_hour():
 
 # #### Private
 
-def _process_image_matches(elements):
-
-    def _process(post_ids):
+def _process_image_matches(post_ids):
+    def _process():
         print("Image match semaphore waits: %d" % WAITING_THREADS['image_match'])
         WAITING_THREADS['image_match'] += 1
         IMAGEMATCH_SEMAPHORE.acquire()
         WAITING_THREADS['image_match'] -= 1
+        posts = get_posts_by_id(post_ids)
         try:
-            posts = get_posts_by_id(post_ids)
             for post in posts:
                 generate_post_image_hashes(post)
                 SESSION.commit()
@@ -471,22 +462,21 @@ def _process_image_matches(elements):
         finally:
             IMAGEMATCH_SEMAPHORE.release()
 
-    post_ids = [element.post_id for element in elements]
-    SessionThread(target=_process, args=(post_ids,)).start()
+    SessionThread(target=_process).start()
 
 
-def _process_videos(elements):
-    def _process(post_ids):
+def _process_videos(post_ids):
+    def _process():
         printer = buffered_print(f"Process Videos [{thread.ident}]")
         print_info("Video semaphore wait:", WAITING_THREADS['video'])
         WAITING_THREADS['video'] += 1
         VIDEO_SEMAPHORE.acquire()
         WAITING_THREADS['video'] -= 1
         print_info("Video semaphore acquire:", WAITING_THREADS['video'])
-        video_posts = get_posts_by_id(post_ids)
+        posts = get_posts_by_id(post_ids)
         mp4_count = 0
         try:
-            for post in video_posts:
+            for post in posts:
                 if post.file_ext == 'mp4':
                     convert_mp4_to_webp(post.file_path, post.video_preview_path)
                     mp4_count += 1
@@ -497,13 +487,10 @@ def _process_videos(elements):
             VIDEO_SEMAPHORE.release()
             print_info("Video semaphore release:", WAITING_THREADS['video'])
         printer("Videos processed:", {'mp4': mp4_count})
+        printer.print()
 
-    posts = [element.post for element in elements if element.post is not None]
-    video_posts = [post for post in posts if post.is_video]
-    if len(video_posts):
-        post_ids = [post.id for post in video_posts]
-        thread = SessionThread(target=_process, args=(post_ids,))
-        thread.start()
+    thread = SessionThread(target=_process)
+    thread.start()
 
 
 def _update_duplicate_element(element):

@@ -13,13 +13,13 @@ from ..logical.utility import search_url_for
 from ..logical.database.subscription_db import get_average_interval_for_subscriptions,\
     get_available_subscriptions_query, ordered_subscriptions_by_pending_elements
 from ..logical.database.subscription_element_db import expired_subscription_elements,\
-    pending_subscription_downloads_query
+    missing_subscription_downloads_query
 from ..logical.records.subscription_rec import subscription_slots_needed_per_hour
 from ..logical.tasks import JOB_CONFIG
 from ..models.subscription import Subscription
 from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
-from .base_helper import general_link, url_for_with_params, format_time_ago
+from .base_helper import general_link, url_for_with_params, format_time_ago, render_tag
 
 
 # ## GLOBAL VARIABLES
@@ -152,7 +152,7 @@ def download_iterator():
         "Downloads Per interval": per_interval,
         "Processed Every": "%0.1f hours" % hours,
         "Downloads Per Hour": "%0.1f" % (per_interval / hours),
-        "Pending": pending_subscription_downloads_query().get_count(),
+        "Pending": missing_subscription_downloads_query().get_count(),
     }
     for key, value in output.items():
         yield key, value
@@ -226,7 +226,7 @@ def keep_element_val(subscription_element):
 
 def element_preview_link(element, lazyload):
     if element.post is not None:
-        return post_preview_link(element.post, lazyload)
+        return render_tag('a', post_preview_link(element.post, lazyload), {'href': element.post.show_url})
     if element.archive_post is not None:
         return archive_preview_link(element.archive_post.archive, lazyload)
     preview_url = element.illust_url.preview_url
