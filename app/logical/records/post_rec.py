@@ -403,13 +403,13 @@ def recreate_archived_post(archive):
 def generate_missing_image_hashes(manual):
     max_pages = 10 if not manual else float('inf')
     query = missing_image_hashes_query()
-    query = query.options(selectinload(Post.subscription_element))
+    query = query.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.subscription_element))
     page = query.limit_paginate(per_page=20)
     while page.count > 0:
         print_info(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
         for post in page.items:
             generate_post_image_hashes(post)
-            if post.subscription_element is None:
+            if post.active_subscription_element is None:
                 generate_similarity_matches(post)
         SESSION.commit()
         if not page.has_next or page.page >= max_pages:

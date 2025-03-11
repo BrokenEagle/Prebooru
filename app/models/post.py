@@ -20,7 +20,6 @@ from utility.data import swap_list_values, dict_filter
 from ..logical.utility import unique_objects
 from .model_enums import PostType
 from .error import Error
-from .subscription_element import SubscriptionElement
 from .notation import Notation
 from .tag import UserTag, user_tag_creator
 from .pool_element import PoolElement
@@ -68,7 +67,6 @@ class Post(JsonModel):
 
     # ## Relationships
     errors = relationship(Error, uselist=True, cascade='all,delete', backref=backref('post', uselist=False))
-    subscription_element = relationship(SubscriptionElement, uselist=False, backref=backref('post', uselist=False))
     notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('post', uselist=False))
     tags = relationship(UserTag, secondary=PostTags, uselist=True)
     # Pool elements must be deleted individually, since pools will need to be reordered/recounted
@@ -80,6 +78,7 @@ class Post(JsonModel):
     similarity_matches_reverse = relationship(SimilarityMatch, cascade='all,delete',
                                               backref=backref('reverse_post', uselist=False),
                                               foreign_keys=[SimilarityMatch.reverse_id])
+    # (OtM) illust_urls [IllustUrl]
 
     # ## Association proxies
     tag_names = association_proxy('tags', 'name', creator=user_tag_creator)
@@ -219,6 +218,15 @@ class Post(JsonModel):
                                SimilarityMatch.forward_id.desc(),
                                SimilarityMatch.reverse_id.desc())
         return query.limit(10).all()
+
+    @property
+    def subscription_elements(self):
+        return [illust_url.subscription_element for illust_url in self.illust_urls
+                if illust_url.subscription_element is not None]
+
+    @property
+    def active_subscription_element(self):
+        return next((element for element in self.subscription_elements if element.status_name == 'active'), None)
 
     @property
     def errors_json(self):

@@ -8,7 +8,6 @@ from utility.obj import classproperty, memoized_classproperty
 from utility.data import swap_list_values
 
 # ## LOCAL IMPORTS
-from .. import DB
 from .model_enums import SubscriptionElementStatus, SubscriptionElementKeep
 from .error import Error
 from .base import JsonModel, integer_column, enum_column, timestamp_column, register_enum_column,\
@@ -21,8 +20,7 @@ class SubscriptionElement(JsonModel):
     # ## Columns
     id = integer_column(primary_key=True)
     subscription_id = integer_column(foreign_key='subscription.id', nullable=False, index=True)
-    post_id = integer_column(foreign_key='post.id', nullable=True)
-    illust_url_id = integer_column(foreign_key='illust_url.id', nullable=False)
+    illust_url_id = integer_column(foreign_key='illust_url.id', nullable=False, index=True, unique=True)
     keep_id = enum_column(foreign_key='subscription_element_keep.id', nullable=True)
     status_id = enum_column(foreign_key='subscription_element_status.id', nullable=False)
     expires = timestamp_column(nullable=True)
@@ -31,10 +29,10 @@ class SubscriptionElement(JsonModel):
     errors = relationship(Error, uselist=True, cascade='all,delete',
                           backref=backref('subscription_element', uselist=False))
     # (MtO) subscription [Susbscription]
-    # (MtO) post [Post]
     # (OtO) illust_url [IllustUrl]
 
     # ## Association proxies
+    post = association_proxy('illust_url', 'post')
     archive_post = association_proxy('illust_url', 'archive_post')
 
     # ## Instance properties
@@ -62,7 +60,6 @@ class SubscriptionElement(JsonModel):
 
 def initialize():
     from .subscription import Subscription
-    DB.Index(None, SubscriptionElement.post_id, unique=True, sqlite_where=SubscriptionElement.post_id.is_not(None))
     # Access the opposite side of the relationship to force the back reference to be generated
     Subscription.elements.property._configure_started
     SubscriptionElement.set_relation_properties()

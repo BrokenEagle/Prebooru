@@ -26,6 +26,10 @@ elif EXPIRED_SUBSCRIPTION is False:
 else:
     raise ValueError("Bad value set in config for EXPIRED_SUBSCRIPTION.")
 
+ELEMENTS_WITH_POSTS_SUBQUERY = SubscriptionElement.query.join(IllustUrl, SubscriptionElement.illust_url)\
+                                                        .join(Post, IllustUrl.post)\
+                                                        .with_entities(SubscriptionElement.id)
+
 
 # ## FUNCTIONS
 
@@ -64,25 +68,29 @@ def get_subscription_elements_by_md5(md5):
 
 def expired_subscription_elements(expire_type):
     switcher = {
-        'unlink': lambda q: q.join(Post, SubscriptionElement.post)
+        'unlink': lambda q: q.join(IllustUrl, SubscriptionElement.illust_url).join(IllustUrl, IllustUrl.post)
                              .filter(or_(_expired_clause('yes', 'unlink'), Post.type_value == 'user')),
         'delete': lambda q: q.filter(_expired_clause('no', 'delete')),
         'archive': lambda q: q.filter(_expired_clause('archive', 'archive')),
     }
-    query = SubscriptionElement.query.filter(SubscriptionElement.expires < get_current_time(),
-                                             SubscriptionElement.post_id.is_not(None))
+    query = SubscriptionElement.query
+    if expire_type != 'unlink':
+        # Since subscription element gets joined to post on unlink, there's no need to test it it exists
+        query = query.filter(SubscriptionElement.id.in_(ELEMENTS_WITH_POSTS_SUBQUERY))
     return switcher[expire_type](query)
 
 
-def pending_subscription_downloads_query():
+def missing_subscription_downloads_query():
     return SubscriptionElement.query.join(Subscription)\
-                                    .filter(SubscriptionElement.post_id.is_(None),
+                                    .filter(SubscriptionElement.id.not_in_(ELEMENTS_WITH_POSTS_SUBQUERY),
                                             SubscriptionElement.status_value == 'active',
                                             Subscription.status_value.not_in(['automatic', 'manual']))
 
 
-def total_missing_downloads():
-    return pending_subscription_downloads_query().get_count()
+def subscription_elements_to_download_query(subscription_id):
+    return SubscriptionElement.query.filter(SubscriptionElement.subscription_id == subscription_id,
+                                            SubscriptionElement.id.not_in(ELEMENTS_WITH_POSTS_SUBQUERY),
+                                            SubscriptionElement.status_value == 'active')
 
 
 # #### Private
