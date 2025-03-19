@@ -53,6 +53,7 @@ SITE = SiteDescriptor.twitter
 
 HAS_TAG_SEARCH = True
 
+USE_TWEET_RESTID_FUNC = True
 
 # #### Regex variables
 
@@ -383,35 +384,43 @@ TWEET_REST_ID_VARIABLES = {
 
 TWEET_REST_ID_FEATURES = {
     "creator_subscriptions_tweet_preview_api_enabled": False,
+    "premium_content_api_read_enabled": False,
     "communities_web_enable_tweet_community_results_fetch": False,
     "c9s_tweet_anatomy_moderator_badge_enabled": False,
+    "responsive_web_grok_analyze_button_fetch_trends_enabled": False,
+    "responsive_web_grok_analyze_post_followups_enabled": False,
+    "responsive_web_jetfuel_frame": False,
+    "responsive_web_grok_share_attachment_enabled": False,
     "articles_preview_enabled": False,
-    "tweetypie_unmention_optimization_enabled": False,
     "responsive_web_edit_tweet_api_enabled": False,
     "graphql_is_translatable_rweb_tweet_is_translatable_enabled": False,
     "view_counts_everywhere_api_enabled": False,
     "longform_notetweets_consumption_enabled": False,
     "responsive_web_twitter_article_tweet_consumption_enabled": False,
     "tweet_awards_web_tipping_enabled": False,
+    "responsive_web_grok_analysis_button_from_backend": False,
     "creator_subscriptions_quote_tweet_preview_enabled": False,
     "freedom_of_speech_not_reach_fetch_enabled": False,
     "standardized_nudges_misinfo": False,
     "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": False,
-    "tweet_with_visibility_results_prefer_gql_media_interstitial_enabled": False,
     "rweb_video_timestamps_enabled": False,
     "longform_notetweets_rich_text_read_enabled": False,
     "longform_notetweets_inline_media_enabled": False,
+    "profile_label_improvements_pcf_label_in_post_enabled": False,
     "rweb_tipjar_consumption_enabled": False,
     "responsive_web_graphql_exclude_directive_enabled": False,
     "verified_phone_label_enabled": False,
+    "responsive_web_grok_image_annotation_enabled": False,
     "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
     "responsive_web_graphql_timeline_navigation_enabled": False,
     "responsive_web_enhance_cards_enabled": False,
 }
 
-TWEET_REST_ID_FIELD_TOGGLES = {
+TWEET_REST_ID_FIELD_TOGGLES ={
     "withArticleRichContentState": False,
     "withArticlePlainText": False,
+    "withGrokAnalyze": False,
+    "withDisallowedReplyControls": False,
     "withAuxiliaryUserLabels": False,
 }
 
@@ -995,7 +1004,7 @@ def get_tweet_by_rest_id(tweet_id):
         'features': json.dumps(features),
         'fieldToggles': json.dumps(field_toggles)
     })
-    data = twitter_request("https://x.com/i/api/graphql/7xflPyRiUxGVbJd4uWmbfg/TweetResultByRestId?" + url_params)
+    data = twitter_request("https://x.com/i/api/graphql/_y7SZqeOFfgEivILXIy3tQ/TweetResultByRestId?" + url_params)
     try:
         if data['error']:
             return _create_module_error('get_tweet_by_rest_id', data['message'])
@@ -1007,6 +1016,18 @@ def get_tweet_by_rest_id(tweet_id):
     return tweet\
         if tweet is not None\
         else _create_module_error('get_tweet_by_rest_id', "Tweet not found: %d" % tweet_id)
+
+
+def get_tweet_by_tweet_detail(tweet_id):
+     tweet_id_str = str(tweet_id)
+     twitter_data = get_twitter_illust_timeline(tweet_id)
+     if is_error(twitter_data):
+         return twitter_data
+     for i in range(len(twitter_data)):
+         tweet = safe_get(twitter_data[i], 'result', 'legacy')
+         if tweet is not None and tweet['id_str'] == tweet_id_str:
+             return tweet
+     return _create_module_error('get_tweet_by_tweet_detail', "Tweet not found: %d" % illust_id)
 
 
 def get_media_page(user_id, count, cursor=None):
@@ -1306,7 +1327,8 @@ def get_artist_data(site_artist_id):
 def get_illust_api_data(site_illust_id):
     tweet = get_api_illust(site_illust_id, SITE.id)
     if tweet is None:
-        tweet = get_tweet_by_rest_id(site_illust_id)
+        func = get_tweet_by_rest_id if USE_TWEET_RESTID_FUNC else get_tweet_by_tweet_detail
+        tweet = func(site_illust_id)
         if is_error(tweet):
             return
         save_api_data([tweet], 'id_str', SITE.id, ApiDataType.illust.id)
