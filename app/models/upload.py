@@ -38,6 +38,10 @@ class Upload(JsonModel):
     # ## Instance properties
 
     @property
+    def md5(self):
+        return getattr(self.illust_url, 'md5', None)
+
+    @property
     def artist(self):
         return getattr(self.illust, 'artist', None)
 
