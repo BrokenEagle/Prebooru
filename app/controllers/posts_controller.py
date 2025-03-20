@@ -10,7 +10,7 @@ from sqlalchemy.orm import lazyload, selectinload
 from utility.data import eval_bool_string, is_falsey
 
 # ## LOCAL IMPORTS
-from ..models import Post, Illust, IllustUrl, Artist, PoolElement, PostType
+from ..models import Post, Illust, IllustUrl, Artist, Booru, PoolElement, PostType
 from ..logical.records.post_rec import create_sample_preview_files, create_video_sample_preview_files,\
     archive_post_for_deletion, redownload_post, delete_post, save_post_to_archive
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
@@ -39,13 +39,17 @@ DEFAULT_DELETE_EXPIRES = 30  # Days
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(Post.illust_urls).selectinload(IllustUrl.illust).options(
-        selectinload(Illust.tags),
-        selectinload(Illust.title),
-        selectinload(Illust.commentary),
-        selectinload(Illust.artist).selectinload(Artist.boorus),
-        # Eager load all posts underneath the same illust(s)
-        selectinload(Illust.urls).selectinload(IllustUrl.post).lazyload('*'),
+    selectinload(Post.illust_urls).options(
+        selectinload(IllustUrl.illust).options(
+            selectinload(Illust.tags),
+            selectinload(Illust.title),
+            selectinload(Illust.commentary),
+            selectinload(Illust.artist).options(
+                selectinload(Artist.site_account),
+                selectinload(Artist.boorus).selectinload(Booru.name),
+            ),
+        ),
+        selectinload(IllustUrl.subscription_element),
     ),
     selectinload(Post.notations),
     selectinload(Post.errors),

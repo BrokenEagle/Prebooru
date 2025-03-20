@@ -8,6 +8,15 @@ import traceback
 
 # ## FUNCTIONS
 
+def checkcolorama(func):
+    def wrapper(*args, **kwargs):
+        if colorama.initialise.orig_stdout is None:
+            normal_print(*args, **kwargs)
+        else:
+            func(*args, **kwargs)
+    return wrapper
+
+
 def normal_print(*args, trim=False, **kwargs):
     print(_coalesce_arguments(args, trim), **kwargs)
 
@@ -16,16 +25,24 @@ def safe_print(*args, trim=False, **kwargs):
     print(_coalesce_arguments(args, trim).encode('ascii', 'backslashreplace').decode(), **kwargs)
 
 
+@checkcolorama
 def print_info(*args, trim=False, **kwargs):
     print(_convert(_coalesce_arguments(args, trim), 'GREEN'), **kwargs)
 
 
+@checkcolorama
 def print_warning(*args, trim=False, **kwargs):
     print(_convert(_coalesce_arguments(args, trim), 'YELLOW'), **kwargs)
 
 
+@checkcolorama
 def print_error(*args, trim=False, **kwargs):
     print(_convert(_coalesce_arguments(args, trim), 'RED'), **kwargs)
+
+
+@checkcolorama
+def print_sql(*args, trim=False, **kwargs):
+    print(_convert(_coalesce_arguments(args, trim), 'CYAN'), **kwargs)
 
 
 def buffered_print(name, safe=False, header=True, trim=False, sep=" ", end="\n"):

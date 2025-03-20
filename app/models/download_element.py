@@ -30,7 +30,7 @@ class DownloadElement(JsonModel):
     # ## Association proxies
     post = association_proxy('illust_url', 'post')
 
-    # ## Class properties
+    # ## Instance properties
 
     @property
     def md5(self):

@@ -28,7 +28,7 @@ from werkzeug.exceptions import HTTPException
 from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION, DEBUG_LOG, DEBUG_VERBOSE, LOGHANDLER,\
     CHECK_FOREIGN_KEYS
 from utility import RepeatTimer, is_interactive_shell
-from utility.uprint import buffered_print, print_warning
+from utility.uprint import buffered_print, print_warning, print_sql
 
 # ## LOCAL IMPORTS
 from .logical import query_extensions
@@ -76,7 +76,7 @@ def _fk_pragma_on_connect(dbapi_connection, connection_record, database):
                 print(final_str, **kwargs)
 
         else:
-            _dbg_print = print
+            _dbg_print = print_sql
         dbapi_connection.set_trace_callback(_dbg_print)
 
     DATABASE_INFO.connections[database].add(connection_record.uuid)
