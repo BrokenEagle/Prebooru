@@ -21,7 +21,7 @@
                 </div>
                 <article class="post select-post">
                     {% if url_data['media_file'] is not none %}
-                        {{ helpers.media_file.file_link(url_data['media_file']) }}
+                        <a href="{{ url_data['full_url'] }}" target="_blank">{{ helpers.media_file.file_link(url_data['media_file']) }}</a>
                     {% else %}
                         <div class="missing-image">Missing image.</div>
                         <div class="full-url">{{ url_data['full_url'] }}</div>

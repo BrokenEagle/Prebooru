@@ -209,3 +209,8 @@ div.select-image-block div.full-url {
     text-align: left;
     word-break: break-word;
 }
+
+article.post > a > img {
+    max-height: 300px;
+    max-width: 300px;
+}

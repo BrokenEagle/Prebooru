@@ -208,9 +208,9 @@ def update(artist):
     dataparams = get_data_params(request, 'artist')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
-    errors = check_param_requirements(updateparams, REQUIRED_PARAMS, 'update')
-    if len(errors) > 0:
-        return set_error(retdata, '\n'.join(errors))
+    #errors = check_param_requirements(updateparams, REQUIRED_PARAMS, 'update')
+    #if len(errors) > 0:
+        #return set_error(retdata, '\n'.join(errors))
     check_artist = uniqueness_check(updateparams, artist)
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
