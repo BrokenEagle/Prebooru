@@ -2,7 +2,7 @@
 
 # ## LOCAL IMPORTS
 from ...models import Download, DownloadUrl
-from .base_db import set_column_attributes, add_record, save_record, commit_session, commit_or_flush
+from .base_db import set_column_attributes, add_record, save_record, commit_session, commit_or_flush, session_query
 
 
 # ## GLOBAL VARIABLES
@@ -42,6 +42,10 @@ def set_download_from_parameters(download, setparams, action, commit):
 
 def get_pending_downloads():
     return Download.query.filter(Download.status_value == 'pending').all()
+
+
+def get_pending_download_count():
+    return Download.query.filter(Download.status_value == 'pending').get_count()
 
 
 def get_processing_downloads():

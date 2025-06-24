@@ -24,7 +24,8 @@ from ..logical.sources import source_by_site_name
 from ..logical.records.download_rec import process_download
 from ..logical.records.media_file_rec import batch_get_or_create_media
 from ..logical.database.download_db import create_download_from_parameters, update_download_from_parameters,\
-    get_pending_downloads, get_processing_downloads, get_processing_download_count, get_download_by_request_url
+    get_pending_downloads, get_processing_downloads, get_processing_download_count, get_download_by_request_url,\
+    get_pending_download_count
 from ..logical.database.base_db import commit_session
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_form, get_data_params, parse_string_list,\
@@ -165,7 +166,7 @@ def create():
     createparams['image_urls'] = [url for url in createparams['image_urls'] if source.is_image_url(url)]
     download = create_download_from_parameters(createparams)
     retdata['item'] = download.to_json()
-    if get_processing_download_count() < 3:
+    if get_processing_download_count() < 3 and get_pending_download_count() == 1:
         SCHEDULER.add_job("process_download-%d" % download.id, process_download, args=(download.id,))
     if RECHECK_DOWNLOADS is None:
         RECHECK_DOWNLOADS = RepeatTimer(15, _recheck_pending_downloads)

@@ -492,16 +492,18 @@ def relocate_old_posts_to_alternate(manual):
     moved = 0
     max_pages = RELOCATE_PAGE_LIMIT if not manual else float('inf')
     query = alternate_posts_query(ALTERNATE_MOVE_DAYS)
-    page = query.limit_paginate(per_page=50)
+    page = query.sequential_paginate(per_page=50, page='oldest_first')
+    batch_num = 1
     while True:
-        print_info(f"\nrelocate_old_posts_to_alternate: {page.first} - {page.last} / Total({page.count})\n")
+        print_info(f"\nrelocate_old_posts_to_alternate[{batch_num}]: {page.range} / Total({page.count})\n")
         for post in page.items:
             print(f"Moving {post.shortlink}")
             move_post_media_to_alternate(post)
             moved += 1
-        if not page.has_next or page.page >= max_pages:
+        if not page.has_above or batch_num >= max_pages:
             return moved
-        page = page.next()
+        batch_num += 1
+        page = page.above()
 
 
 def process_image_matches(post_ids):
