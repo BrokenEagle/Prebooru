@@ -621,11 +621,11 @@ def get_sample_url(illust_url, original=False):
 
 
 def get_primary_url(illust):
-    return "https://twitter.com/i/web/status/%d" % illust.site_illust_id
+    return "https://twitter.com/%s/status/%d" % (illust.artist.site_account_value, illust.site_illust_id)
 
 
 def get_secondary_url(illust):
-    return "https://twitter.com/%s/status/%d" % (illust.artist.site_account_value, illust.site_illust_id)
+    return "https://twitter.com/i/web/status/%d" % illust.site_illust_id
 
 
 def normalize_image_url(image_url):
@@ -1067,7 +1067,7 @@ def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}
         page += 1
         return get_media_page(user_id, count, cursor)
 
-    count = 100 if last_id is None else 20
+    count = 100  # if last_id is None else 20 (TEMPORARY)
     page = 1
     tweet_ids = get_timeline(page_func, user_id=user_id, last_id=last_id, job_id=job_id, job_status=job_status)
     return _create_module_error('populate_twitter_media_timeline', tweet_ids)\

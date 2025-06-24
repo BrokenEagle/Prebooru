@@ -113,7 +113,7 @@ def get_average_interval_for_subscriptions(subscriptions, days):
                               .with_entities(SubscriptionElement.subscription_id, average_interval_clause)\
                               .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
                                       Illust.site_created > days_ago(days),
-                                      SubscriptionElement.keep_value == 'yes',
+                                      # SubscriptionElement.keep_value == 'yes', (TEMPORARY)
                                       )\
                               .group_by(SubscriptionElement.subscription_id)\
                               .having(DISTINCT_ILLUST_COUNT > 0).all()
