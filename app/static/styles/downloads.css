@@ -36,6 +36,11 @@ aside#download-sidebar > section {
     margin-bottom: 1em;
 }
 
+section#download-posts {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
 div#download-heading {
     font-size: 32px;
 }
@@ -90,7 +95,7 @@ div.status-heading {
 div.download-element {
     margin-top: 1em;
     width: 25%;
-    height: 420px;
+    height: 450px;
     overflow-y: auto;
 }
 

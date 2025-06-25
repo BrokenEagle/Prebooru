@@ -878,6 +878,7 @@ def twitter_request(url, method='get', wait=True):
             error = e
             time.sleep(5)
             continue
+        return response
         if response.status_code == 200:
             break
         if reauthentication_check(response):
@@ -1004,6 +1005,7 @@ def get_tweet_by_rest_id(tweet_id):
         'features': json.dumps(features),
         'fieldToggles': json.dumps(field_toggles)
     })
+    return twitter_request("https://x.com/i/api/graphql/_y7SZqeOFfgEivILXIy3tQ/TweetResultByRestId?" + url_params)
     data = twitter_request("https://x.com/i/api/graphql/_y7SZqeOFfgEivILXIy3tQ/TweetResultByRestId?" + url_params)
     try:
         if data['error']:

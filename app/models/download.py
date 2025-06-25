@@ -171,6 +171,13 @@ class Download(JsonModel):
     def _elements_query(self):
         return DownloadElement.query.filter_by(download_id=self.id)
 
+    @property
+    def _post_query(self):
+        from .post import Post
+        from .illust_url import IllustUrl
+        return Post.query.join(IllustUrl, Post.illust_urls).join(DownloadElement, IllustUrl.download_elements)\
+                         .filter(DownloadElement.download_id == self.id)
+
     def _populate_illust_urls(self):
         if len(self.elements):
             selectinload_batch_primary(self.elements, 'illust_url')

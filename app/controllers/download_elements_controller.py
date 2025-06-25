@@ -5,7 +5,9 @@ from flask import Blueprint, request, render_template
 from sqlalchemy.orm import selectinload
 
 # ## LOCAL IMPORTS
-from ..models import DownloadElement, IllustUrl, Illust
+from ..models import DownloadElement, IllustUrl
+from ..logical.database.download_element_db import update_download_element_from_parameters
+from ..logical.records.download_rec import process_network_download
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_or_abort, index_html_response
 
@@ -17,10 +19,7 @@ bp = Blueprint("download_element", __name__)
 # #### Load options
 
 SHOW_HTML_OPTIONS = (
-    selectinload(DownloadElement.illust_url).options(
-        selectinload(IllustUrl.illust).selectinload(Illust.artist).lazyload('*'),
-        selectinload(IllustUrl.post).lazyload('*'),
-    ),
+    selectinload(DownloadElement.illust_url).selectinload(IllustUrl.post).lazyload('*'),
     selectinload(DownloadElement.errors),
 )
 
@@ -70,3 +69,13 @@ def index_html():
     q = q.options(INDEX_HTML_OPTIONS)
     page = paginate(q, request)
     return index_html_response(page, 'download_element', 'download_elements')
+
+
+# ###### MISC
+
+@bp.route('/download_elements/<int:id>/redownload', methods=['POST'])
+def redownload_html(id):
+    download_element = get_or_abort(DownloadElement, id)
+    update_download_element_from_parameters(download_element, {'status_name': 'pending'})
+    create_post_from_download_element(download_element)
+    return redirect(request.referrer)

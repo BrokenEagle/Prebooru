@@ -1,11 +1,13 @@
 {% from "layouts/_macros.html" import timestamps_section %}
 {% from "artists/_macros.html" import artists_section %}
 {% from "illusts/_macros.html" import illusts_section %}
+{% from "posts/_macros.html" import posts_display %}
 {% from "errors/_macros.html" import errors_section %}
 
 <aside id="download-sidebar">
     {{ artists_section(download.artist, 'download-artist') }}
     {{ illusts_section(download.illust, 'download-illust') }}
+    {{ posts_display(helpers.download.post_search(download), download.selectin_posts | length, 'download-posts') }}
     {{ errors_section(download.errors, 'download-errors') }}
     {{ timestamps_section(download, 'download-timestamps') }}
 </aside>
