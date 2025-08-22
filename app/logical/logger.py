@@ -42,9 +42,9 @@ def log_network_error(module, response):
         content = response.text
     all_errors.append({
         'module': module,
-        'url': response.url,
+        'url': str(response.url),
         'status_code': response.status_code,
-        'reason': response.reason,
+        'reason': response.reason_phrase,
         'content': content,
         'time': time.ctime(),
     })
