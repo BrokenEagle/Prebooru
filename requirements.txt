@@ -14,6 +14,7 @@ beautifulsoup4==4.10.0
 
 requests==2.26.0
 httpx==0.23.3
+XClientTransaction==0.0.2
 
 Pillow==8.3.2
 ImageHash==4.2.1

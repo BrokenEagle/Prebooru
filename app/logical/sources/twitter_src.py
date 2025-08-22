@@ -13,6 +13,8 @@ import datetime
 # ## EXTERNAL IMPORTS
 import httpx
 from wtforms import RadioField, BooleanField, IntegerField, TextField
+from x_client_transaction.utils import handle_x_migration
+from x_client_transaction import ClientTransaction
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN, TWITTER_MINIMUM_QUERY_INTERVAL
@@ -37,6 +39,18 @@ from ..database.jobs_db import get_job_status_data, update_job_status
 # #### Module variables
 
 SELF = sys.modules[__name__]
+
+CLIENT_TRANSACTION = None
+
+CLIENT_TRANSACTION_HEADERS = {
+    "Authority": "x.com",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control": "no-cache",
+    "Referer": "https://x.com",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+    "X-Twitter-Active-User": "yes",
+    "X-Twitter-Client-Language": "en",
+}
 
 IMAGE_HEADERS = {}
 
@@ -830,6 +844,19 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
 
 # #### Network functions
 
+def get_client_transaction_id(endpoint, reinitialize):
+    global CLIENT_TRANSACTION
+    if CLIENT_TRANSACTION is None or reinitialize:
+        print("Getting new client transaction")
+        session = httpx.Client()
+        session.headers = CLIENT_TRANSACTION_HEADERS
+        response = handle_x_migration(session)
+        CLIENT_TRANSACTION = ClientTransaction(response)
+        # Sleeping after a new client transaction is started seems to be needed for it to reliably work.
+        time.sleep(5)
+    return CLIENT_TRANSACTION.generate_transaction_id('GET', endpoint)
+
+
 def reauthentication_check(response):
     if response.status_code == 401:
         return True
@@ -865,14 +892,19 @@ def check_request_wait(wait):
     update_next_wait('twitter', TWITTER_MINIMUM_QUERY_INTERVAL)
 
 
-def twitter_request(url, method='get', wait=True):
+def twitter_request(endpoint, addons, wait=True):
     if not HAS_USER_AUTH:
         raise Exception("Cannot access Twitter API without valid credetials.")
     check_request_wait(wait)
-    request_method = getattr(httpx, method)
+    reinitialize_transaction_id = False
+    transaction_endpoint = '/i/api/graphql/' + endpoint
     for i in range(3):
+        transaction_id = get_client_transaction_id(transaction_endpoint, reinitialize_transaction_id)
+        print("Transaction ID:", transaction_id)
+        headers = TWITTER_HEADERS.copy()
+        headers['x-client-transaction-id'] = transaction_id
         try:
-            response = request_method(url, headers=TWITTER_HEADERS, timeout=10)
+            response = httpx.get('https://x.com/i/api/graphql/' + endpoint + '?' + addons, headers=headers, timeout=10)
         except httpx.ConnectTimeout as e:
             print_warning("Pausing for network timeout...")
             error = e
@@ -880,6 +912,10 @@ def twitter_request(url, method='get', wait=True):
             continue
         if response.status_code == 200:
             break
+        if response.status_code == 404:
+            print_warning("Possible transaction ID failure... retrying.")
+            reinitialize_transaction_id = True
+            time.sleep(5)
         if reauthentication_check(response):
             raise Exception("Should not authenticate with user auth.")
         elif response.status_code == 429:
@@ -892,7 +928,7 @@ def twitter_request(url, method='get', wait=True):
             time.sleep(60)
         else:
             msg = "HTTP %d - %s" % (response.status_code, response.reason_phrase)
-            print_error("\n%s\n%s" % (url, msg))
+            print_error("\n%s\n%s\n%s" % (endpoint, addons, msg))
             if DEBUG_MODE:
                 log_network_error('sources.twitter.twitter_request', response)
             return {'error': True, 'message': msg, 'response': response}
@@ -965,12 +1001,12 @@ def get_twitter_illust_timeline(illust_id):
     illust_id_str = str(illust_id)
     variables = TWITTER_ILLUST_TIMELINE_GRAPHQL.copy()
     variables['focalTweetId'] = illust_id_str
-    features = TWITTER_ILLUST_TIMELINE_GRAPHQL_FEATURES.copy()
-    field_toggles = TWITTER_ILLUST_TIMELINE_GRAPHQL_FIELD_TOGGLES.copy()
-    urladdons = urllib.parse.urlencode({'variables': json.dumps(variables),
-                                        'features': json.dumps(features),
-                                        'fieldToggles': json.dumps(field_toggles)})
-    data = twitter_request("https://x.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons)
+    urladdons = _encode_graphql_data({
+        'variables': variables,
+        'features': TWITTER_ILLUST_TIMELINE_GRAPHQL_FEATURES.copy(),
+        'fieldToggles': TWITTER_ILLUST_TIMELINE_GRAPHQL_FIELD_TOGGLES.copy(),
+    })
+    data = twitter_request('q94uRCEn65LZThakYcPT6g/TweetDetail', urladdons)
     try:
         if data['error']:
             return _create_module_error('get_twitter_illust_timeline', data['message'])
@@ -997,14 +1033,12 @@ def get_tweet_by_rest_id(tweet_id):
     tweet_id_str = str(tweet_id)
     variables = TWEET_REST_ID_VARIABLES.copy()
     variables['tweetId'] = tweet_id
-    features = TWEET_REST_ID_FEATURES.copy()
-    field_toggles = TWEET_REST_ID_FIELD_TOGGLES.copy()
-    url_params = urllib.parse.urlencode({
-        'variables': json.dumps(variables),
-        'features': json.dumps(features),
-        'fieldToggles': json.dumps(field_toggles)
+    urladdons = _encode_graphql_data({
+        'variables': variables,
+        'features': TWEET_REST_ID_FEATURES.copy(),
+        'fieldToggles': TWEET_REST_ID_FIELD_TOGGLES.copy(),
     })
-    data = twitter_request("https://x.com/i/api/graphql/_y7SZqeOFfgEivILXIy3tQ/TweetResultByRestId?" + url_params)
+    data = twitter_request('_y7SZqeOFfgEivILXIy3tQ/TweetResultByRestId', urladdons)
     try:
         if data['error']:
             return _create_module_error('get_tweet_by_rest_id', data['message'])
@@ -1032,29 +1066,30 @@ def get_tweet_by_tweet_detail(tweet_id):
 
 def get_media_page(user_id, count, cursor=None):
     variables = TWITTER_MEDIA_TIMELINE_GRAPHQL.copy()
-    features = TWITTER_MEDIA_TIMELINE_FEATURES.copy()
-    toggles = TWITTER_MEDIA_TIMELINE_TOGGLES.copy()
     variables['userId'] = str(user_id)
     variables['count'] = count
     if cursor is not None:
         variables['cursor'] = cursor
-    url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features),
-                                         'toggles': json.dumps(toggles)})
-    return twitter_request("https://x.com/i/api/graphql/aQQLnkexAl5z9ec_UgbEIA/UserMedia?" + url_params)
+    urladdons = _encode_graphql_data({
+        'variables': variables,
+        'features': TWITTER_MEDIA_TIMELINE_FEATURES.copy(),
+        'fieldToggles': TWITTER_MEDIA_TIMELINE_TOGGLES.copy(),
+    })
+    return twitter_request('aQQLnkexAl5z9ec_UgbEIA/UserMedia', urladdons)
 
 
 def get_search_page(query, count, cursor=None):
     variables = TWITTER_SEARCH_TIMELINE_VARIABLES.copy()
-    features = TWITTER_SEARCH_TIMELINE_FEATURES.copy()
-    field_toggles = TWITTER_SEARCH_TIMELINE_FIELD_TOGGLES.copy()
     variables['rawQuery'] = query
     variables['count'] = count
     if cursor is not None:
         variables['cursor'] = cursor
-    url_params = urllib.parse.urlencode({'variables': json.dumps(variables),
-                                         'features': json.dumps(features),
-                                         'fieldToggles': json.dumps(field_toggles)})
-    return twitter_request("https://x.com/i/api/graphql/KUnA_SzQ4DMxcwWuYZh9qg/SearchTimeline?" + url_params)
+    urladdons = _encode_graphql_data({
+        'variables': variables,
+        'features': TWITTER_SEARCH_TIMELINE_FEATURES.copy(),
+        'fieldToggles': TWITTER_SEARCH_TIMELINE_FIELD_TOGGLES.copy(),
+    })
+    return twitter_request('KUnA_SzQ4DMxcwWuYZh9qg/SearchTimeline', urladdons)
 
 
 def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
@@ -1109,10 +1144,8 @@ def get_twitter_user_id(account):
         'screen_name': account,
         'withHighlightedLabel': False
     }
-    urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    request_url = 'https://x.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
-                  'UserByScreenNameWithoutResults?%s' % urladdons
-    data = twitter_request(request_url, wait=False)
+    urladdons = _encode_graphql_data({'variables': jsondata})
+    data = twitter_request('Vf8si2dfZ1zmah8ePYPjDQ/UserByScreenNameWithoutResults', urladdons, wait=False)
     if data['error']:
         return _create_module_error('get_user_id', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
@@ -1124,10 +1157,8 @@ def get_twitter_artist(artist_id):
         'userId': str(artist_id),
         'withHighlightedLabel': False,
     }
-    urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    request_url = 'https://x.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
-                  'UserByRestIdWithoutResults?%s' % urladdons
-    data = twitter_request(request_url)
+    urladdons = _encode_graphql_data({'variables': jsondata})
+    data = twitter_request('WN6Hck-Pwm-YP0uxVj1oMQ/UserByRestIdWithoutResults', urladdons)
     if data['error']:
         return _create_module_error('get_twitter_artist', data['message'])
     twitterdata = data['body']
@@ -1431,3 +1462,7 @@ def populate_all_artist_illusts(artist, job_id=None, params=None):
 
 def _create_module_error(function, message):
     return create_error(f'twitter_src.{function}', message, commit=True)
+
+
+def _encode_graphql_data(data):
+    return urllib.parse.urlencode({key: json.dumps(value, separators=(',', ':')) for (key, value) in data.items()})
