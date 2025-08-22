@@ -615,14 +615,7 @@ def small_image_url(image_url):
 
 
 def normalized_image_url(image_url):
-    match = IMAGE1_RG.match(image_url) or IMAGE2_RG.match(image_url)
-    if match:
-        type, imagekey, extension, _ = match.groups()
-        return IMAGE_SERVER + "/%s/%s.%s" % (type, imagekey, extension)
-    match = IMAGE3_RG.match(image_url) or IMAGE4_RG.match(image_url)
-    type, imageid, path, imagekey, extension, _ = match.groups()
-    path = path or ""
-    return IMAGE_SERVER + "/%s/%s%s/img/%s.%s" % (type, imageid, path, imagekey, extension)
+    return IMAGE_SERVER + normalize_image_url(image_url)
 
 
 def get_media_url(illust_url):
@@ -635,16 +628,22 @@ def get_sample_url(illust_url, original=False):
 
 
 def get_primary_url(illust):
-    return "https://twitter.com/i/web/status/%d" % illust.site_illust_id
-
-
-def get_secondary_url(illust):
     return "https://twitter.com/%s/status/%d" % (illust.artist.site_account_value, illust.site_illust_id)
 
 
+def get_secondary_url(illust):
+    return "https://twitter.com/i/web/status/%d" % illust.site_illust_id
+
+
 def normalize_image_url(image_url):
-    image_match = IMAGE1_RG.match(image_url) or IMAGE2_RG.match(image_url)
-    return r'/media/%s.%s' % (image_match.group(2), image_match.group(3))
+    match = IMAGE1_RG.match(image_url) or IMAGE2_RG.match(image_url)
+    if match:
+        type, imagekey, extension, _ = match.groups()
+        return "/%s/%s.%s" % (type, imagekey, extension)
+    match = IMAGE3_RG.match(image_url) or IMAGE4_RG.match(image_url)
+    type, imageid, path, imagekey, extension, _ = match.groups()
+    path = path or ""
+    return "/%s/%s%s/img/%s.%s" % (type, imageid, path, imagekey, extension)
 
 
 def has_artist_urls(artist):
