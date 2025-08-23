@@ -76,10 +76,6 @@ table {
     border-spacing: 0;
 }
 
-table.striped {
-    margin-top: 2em;
-}
-
 table.striped thead tr {
     border-bottom: 2px solid #5b5c79;
 }
@@ -398,6 +394,7 @@ header#top menu.main li.current a {
 
 section#content {
     margin-left: 2.5em;
+    margin-top: 2em;
 }
 
 div#notice {

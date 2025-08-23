@@ -27,7 +27,7 @@ section#content.c-subscription-element.a-index {
 
 div#subscription-page-controls {
     border-bottom: 2px solid #eee;
-    height: 4em;
+    height: 2em;
     position: relative;
     width: 95%;
 }
@@ -44,8 +44,7 @@ div#subscription-controls {
 div#subscription-type-selector {
     font-size: 20px;
     left: 0;
-    margin-top: 1em;
-    width: 21em;
+    bottom: -1px;
 }
 
 a.element-type {

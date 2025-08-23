@@ -19,8 +19,8 @@
         <div id="pool-name">
             <strong>Name:</strong> {{ pool.name }}
         </div>
-        <div id="pool-page-controls">
-            {% if edit_pool %}
+        {% if edit_pool %}
+            <div id="pool-page-controls">
                 <div id="pool-controls">
                     {% call image_select_controls('pool-element-select-input') %}
                         &emsp;&emsp;&emsp;
@@ -31,8 +31,10 @@
                         </strong>
                     {% endcall %}
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% else %}
+            <div style="height: 1.5em;"></div> {# spacer #}
+        {% endif %}
         {% if edit_pool %}
             <form id="form" method="post" action="{{ url_for('pool_element.batch_delete_html') }}">
         {% endif %}

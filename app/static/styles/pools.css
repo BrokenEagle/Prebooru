@@ -10,16 +10,17 @@ div#pool-name {
 }
 
 div#pool-page-controls {
-    border-bottom: 2px solid #eee;
-    height: 4em;
+    border-bottom: 2px solid #ddd;
+    height: 2em;
     position: relative;
-    width: 95%;
+    width: 96%;
 }
 
 div#pool-controls {
     position: absolute;
     right: 0;
     bottom: 0;
+    padding: 5px;
 }
 
 article.pool-element-select {

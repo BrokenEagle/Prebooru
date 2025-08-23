@@ -249,9 +249,10 @@ div.illust-preview > span.explanation {
 }
 
 div#illust-page-controls {
-    height: 4em;
+    height: 2em;
     position: relative;
-    width: 95%;
+    width: 100%;
+    border-bottom: 2px solid #ddd;
 }
 
 div#illust-page-controls > div {
@@ -260,13 +261,8 @@ div#illust-page-controls > div {
 
 div#illust-controls {
     bottom: 0;
-    right: 0;
-    border: 2px solid #eee;
+    right: 1em;
     padding: 5px;
-}
-
-div#illust-controls div#image-select-controls {
-    margin-top: 0;
 }
 
 div.illust-display div.input label {
