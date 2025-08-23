@@ -22,9 +22,9 @@ from ..media import load_image, create_sample, create_preview, create_video_scre
     convert_mp4_to_webm, check_filetype, get_pixel_hash, check_alpha, convert_alpha, create_data, get_video_info
 from ..database.base_db import delete_record, commit_session
 from ..database.post_db import create_post_from_parameters,\
-    get_posts_to_query_danbooru_id_page, update_post_from_parameters, alternate_posts_query,\
+    get_posts_to_query_danbooru_id_query, update_post_from_parameters, alternate_posts_query,\
     missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
-    get_artist_posts_without_danbooru_ids, get_post_by_md5
+    get_artist_posts_without_danbooru_ids_query, get_post_by_md5
 from ..database.notation_db import create_notation_from_parameters
 from ..database.error_db import create_error_from_parameters, create_and_append_error, create_and_extend_errors
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
@@ -247,7 +247,8 @@ def redownload_post(post):
 def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
     status = {'total': 0}
-    page = get_posts_to_query_danbooru_id_page(5000)
+    query = get_posts_to_query_danbooru_id_query()
+    page = query.limit_paginate(per_page=5000)
     while True:
         print_info(f"\ncheck_all_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})\n")
         if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, status) or not page.has_next:
@@ -257,7 +258,8 @@ def check_all_posts_for_danbooru_id():
 
 def check_artist_posts_for_danbooru_id(artist_id):
     artist = Artist.find(artist_id)
-    page = get_artist_posts_without_danbooru_ids(artist)
+    query = get_artist_posts_without_danbooru_ids_query(artist)
+    page = query.limit_paginate(per_page=100, distinct=True)
     while True:
         print_info(f"\ncheck_artist_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})\n")
         if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, {}) or not page.has_next:

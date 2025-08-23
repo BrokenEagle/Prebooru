@@ -13,7 +13,7 @@ from ..utility import set_error
 from ..logger import handle_error_message
 from ..database.base_db import delete_record, commit_session
 from ..database.artist_db import create_artist_from_parameters, update_artist_from_parameters_standard,\
-    get_site_artist, get_artists_without_boorus_page
+    get_site_artist, get_artists_without_boorus_query
 from ..database.artist_url_db import create_artist_url_from_parameters
 from ..database.booru_db import get_boorus, create_booru_from_parameters, booru_append_artist
 from ..database.notation_db import create_notation_from_parameters
@@ -28,7 +28,8 @@ from .base_rec import delete_data, delete_version_relation, swap_version_relatio
 def check_all_artists_for_boorus():
     print("Checking all artists for Danbooru artists.")
     status = {'total': 0, 'created': 0}
-    page = get_artists_without_boorus_page(100)
+    query = get_artists_without_boorus_query()
+    page = query.limit_paginate(per_page=100)
     booru_dict = {}
     while True:
         print_info(f"\ncheck_all_artists_for_boorus: {page.first} - {page.last} / Total({page.count})\n")

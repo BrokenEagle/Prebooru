@@ -118,8 +118,8 @@ def get_site_artists(artist_keys):
     return Artist.query.filter(tuple_(Artist.site_id, Artist.site_artist_id).in_(artist_keys)).all()
 
 
-def get_artists_without_boorus_page(limit):
-    return Artist.query.filter(Artist.primary.is_(True), not_(BOORU_SUBCLAUSE)).limit_paginate(per_page=limit)
+def get_artists_without_boorus_query():
+    return Artist.query.filter(Artist.primary.is_(True), not_(BOORU_SUBCLAUSE))
 
 
 # #### Private functions

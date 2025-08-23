@@ -75,15 +75,13 @@ def missing_similarity_matches_query():
                              or_(Post.type_value == 'user', Post.id.not_in(SUBELEMENT_SUBQUERY)))
 
 
-def get_posts_to_query_danbooru_id_page(limit):
+def get_posts_to_query_danbooru_id_query(limit):
     query = Post.query.join(IllustUrl, Post.illust_urls).join(Illust, IllustUrl.illust).join(Artist, Illust.artist)
-    query = query.filter(Post.danbooru_id.is_(None), Artist.primary.is_(True), Post.id.not_in(SUBELEMENT_SUBQUERY))
-    return query.limit_paginate(per_page=limit)
+    return query.filter(Post.danbooru_id.is_(None), Artist.primary.is_(True), Post.id.not_in(SUBELEMENT_SUBQUERY))
 
 
-def get_artist_posts_without_danbooru_ids(artist):
-    query = artist._post_query.filter(Post.danbooru_id.is_(None))
-    return query.limit_paginate(per_page=100, distinct=True)
+def get_artist_posts_without_danbooru_ids_query(artist):
+    return artist._post_query.filter(Post.danbooru_id.is_(None))
 
 
 def get_posts_by_subscription_elements(elements):
