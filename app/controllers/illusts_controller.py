@@ -386,7 +386,8 @@ def index_html():
     q = index()
     q = q.options(INDEX_HTML_OPTIONS)
     page = paginate(q, request, distinct=True)
-    return index_html_response(page, 'illust', 'illusts')
+    edit_illusts = request.values.get('edit_illusts', type=eval_bool_string, default=False)
+    return index_html_response(page, 'illust', 'illusts', edit_illusts=edit_illusts)
 
 
 # ###### CREATE
