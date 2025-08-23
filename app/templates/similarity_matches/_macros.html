@@ -64,7 +64,7 @@
                        id="similarity-match-{{ element.id }}-input"
                        name="similarity_match[id][]"
                        value="{{ element.id }}"
-                       onchange="return SimilarityMatches.toggleCheckbox(this)"
+                       onchange="return Prebooru.toggleCheckbox(this)"
                        onclick="return Prebooru.selectClick(this)">
             </label>
             <div class="similarity-match-preview-delete">(&thinsp;{{ helpers.similarity_match.delete_element_link(element, True) }}&thinsp;)</div>

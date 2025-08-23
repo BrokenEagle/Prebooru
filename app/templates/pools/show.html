@@ -58,7 +58,7 @@
 {% block pagescript %}
     Prebooru.initializeLazyLoad(".pool-display-block");
     {% if edit_pool %}
-        Pools.setAllInputsTimeout();
-        Pools.initializeEventCallbacks();
+        Prebooru.setAllInputsTimeout('post-element-select');
+        Prebooru.initializeEventCallbacks('post-element-select');
     {% endif %}
 {% endblock pagescript %}

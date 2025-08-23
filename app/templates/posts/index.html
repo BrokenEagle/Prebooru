@@ -47,7 +47,7 @@
     Prebooru.initializeLazyLoad('.post');
     Prebooru.initializeVideoPreviews('.video-post');
     {% if edit_posts %}
-        Posts.setAllInputsTimeout();
-        Posts.initializeEventCallbacks();
+        Prebooru.setAllInputsTimeout('post-select');
+        Prebooru.initializeEventCallbacks('post-select');
     {% endif %}
 {% endblock pagescript %}

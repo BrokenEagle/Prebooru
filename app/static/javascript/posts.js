@@ -4,37 +4,6 @@
 
 const Posts = {};
 
-Posts.toggleCheckbox = function(obj) {
-    let $div = Prebooru.closest(obj, 'div');
-    if (obj.checked) {
-        $div.classList.add('checkbox-active');
-    } else {
-        $div.classList.remove('checkbox-active');
-    }
-};
-
-Posts.setAllInputsTimeout = function () {
-    setTimeout(() => {
-        document.querySelectorAll('.post-select input[type=checkbox]').forEach((input) => {
-            if (!input.checked) return;
-            let curr = Prebooru.closest(input, 'div.input');
-            if (curr !== null) {
-                curr.classList.add('checkbox-active');
-            }
-        });
-    }, 500);
-};
-
-Posts.initializeEventCallbacks = function () {
-    document.addEventListener('prebooru:update-inputs', Posts.updateAllInputs);
-};
-
-Posts.updateAllInputs = function() {
-    document.querySelectorAll('.post-select input[type=checkbox]').forEach((input) => {
-        Posts.toggleCheckbox(input);
-    });
-};
-
 Posts.submitForm = function (type, url) {
     if (['pool', 'tag'].includes(type)) {
         let post_inputs = document.querySelectorAll('.post-select input[type=checkbox]');

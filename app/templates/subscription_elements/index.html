@@ -50,8 +50,8 @@
 {% endblock pages %}
 
 {% block pagescript %}
-    Subscriptions.initializeEventCallbacks();
-    Subscriptions.setAllInputsTimeout();
+    Prebooru.initializeEventCallbacks('subscription-element');
+    Prebooru.setAllInputsTimeout('subscription-element');
     Prebooru.initializeLazyLoad('.subscription-element');
     Prebooru.initializeVideoPreviews('.video-post');
 {% endblock pagescript %}
