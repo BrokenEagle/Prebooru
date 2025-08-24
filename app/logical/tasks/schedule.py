@@ -399,10 +399,10 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
     if info is not None:
         info['processed'] = int(datetime_to_epoch(start))
         info['duration'] = (get_current_time() - start).seconds
-        status.append(info)
+        filtered.append(info)
         dirty = True
     if dirty:
-        create_or_update_job_status(id, status)
+        create_or_update_job_status(id, filtered)
         SESSION.commit()
     SESSION.remove()
 
