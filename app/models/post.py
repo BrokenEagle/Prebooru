@@ -229,6 +229,10 @@ class Post(JsonModel):
         return next((element for element in self.subscription_elements if element.status_name == 'active'), None)
 
     @property
+    def illust_urls_json(self):
+        return [dict_prune(illust_url.to_json(), ['id', 'post_id']) for illust_url in self.illust_urls]
+
+    @property
     def errors_json(self):
         return [dict_filter(error.to_json(), ['module', 'message', 'created']) for error in self.errors]
 
