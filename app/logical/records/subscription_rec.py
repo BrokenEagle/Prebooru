@@ -35,6 +35,7 @@ from ..database.error_db import is_error, create_and_append_error, create_and_ex
 from ..database.jobs_db import get_job_status_data, update_job_status, update_job_by_id
 from ..database.subscription_db import update_subscription_from_parameters, check_processing_subscriptions
 from ..database.base_db import safe_db_execute
+from .base_rec import records_paginate
 from .post_rec import create_image_post, create_video_post, recreate_archived_post, archive_post_for_deletion,\
     delete_post
 from .illust_rec import download_illust_url
@@ -165,55 +166,43 @@ def download_subscription_elements(subscription, job_id=None):
     job_status['stage'] = 'downloads'
     q = subscription_elements_to_download_query(subscription.id)
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
-    q = q.order_by(SubscriptionElement.id.asc())
-    page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
-    while True:
-        print_info(f"\ndownload_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
-        job_status['range'] = f"({page.first} - {page.last}) / {page.count}"
+    page = q.sequential_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE, page='oldest_first')
+    for elements in records_paginate('download_subscription_elements', page):
+        job_status['range'] = f"({elements[0].id} - {elements[-1].id}) / [{page.min_id} - {page.max_id}]"
         update_job_status(job_id, job_status)
-        for element in page.items:
+        for element in elements:
             if create_post_from_subscription_element(element):
                 job_status['downloads'] += 1
-        active_elements = [element for element in page.items if element.status_name == 'active']
+        active_elements = [element for element in elements if element.status_name == 'active']
         post_ids = [post.id for post in get_posts_by_subscription_elements(active_elements)]
         _process_image_matches(post_ids)
         _process_videos(post_ids)
-        if not page.has_prev:
-            break
-        page = page.prev()
     update_job_status(job_id, job_status)
 
 
 def download_missing_elements(manual=False):
-    max_pages = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
+    max_batches = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
     q = missing_subscription_downloads_query()
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
-    q = q.order_by(SubscriptionElement.id.asc())
-    page = q.limit_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE)
+    page = q.sequential_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE, page='oldest_first')
     element_count = 0
-    while True:
-        print_info(f"\ndownload_missing_elements: {page.first} - {page.last} / Total({page.count})\n")
-        for element in page.items:
+    for elements in records_paginate('download_missing_elements', page, max_batches):
+        for element in elements:
             print(f"Downloading {element.shortlink}")
             create_post_from_subscription_element(element)
             element_count += 1
-        post_ids = [post.id for post in get_posts_by_subscription_elements(page.items)]
+        post_ids = [post.id for post in get_posts_by_subscription_elements(elements)]
         _process_image_matches(post_ids)
         _process_videos(post_ids)
-        if not page.has_next or page.page >= max_pages:
-            return element_count
-        page = page.prev()
 
 
 def unlink_expired_subscription_elements(manual):
     unlinked_elements = []
-    max_pages = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
+    max_batches = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
     q = expired_subscription_elements('unlink')
-    q = q.order_by(SubscriptionElement.id.desc())
-    page = q.limit_paginate(per_page=UNLINK_ELEMENTS_PER_PAGE)
-    while True:
-        print_info(f"\nunlink_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
-        for element in page.items:
+    page = q.sequential_paginate(per_page=UNLINK_ELEMENTS_PER_PAGE, page='oldest_first')
+    for elements in records_paginate('unlink_expired_subscription_elements', page, max_batches):
+        for element in elements:
             print(f"Unlinking {element.shortlink}")
             params = {
                 'status_name': 'unlinked',
@@ -222,21 +211,16 @@ def unlink_expired_subscription_elements(manual):
             }
             update_subscription_element_from_parameters(element, params)
             unlinked_elements.append(element.id)
-        if not page.has_next or page.page >= max_pages:
-            break
-        page = page.next()
     return unlinked_elements
 
 
 def delete_expired_subscription_elements(manual):
     deleted_elements = []
-    max_pages = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
+    max_batches = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
     q = expired_subscription_elements('delete')
-    q = q.order_by(SubscriptionElement.id.desc())
-    page = q.limit_paginate(per_page=DELETE_ELEMENTS_PER_PAGE)
-    while True:
-        print_info(f"\ndelete_expired_subscription_elements: {page.first} - {page.last} / Total({page.count})\n")
-        for element in page.items:
+    page = q.sequential_paginate(per_page=DELETE_ELEMENTS_PER_PAGE, page='oldest_first')
+    for elements in records_paginate('delete_expired_subscription_elements', page, max_batches):
+        for element in elements:
             post = element.post
             if post is not None:
                 if post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
@@ -245,21 +229,17 @@ def delete_expired_subscription_elements(manual):
                 delete_post(post)
             update_subscription_element_from_parameters(element, {'status_name': 'deleted', 'expires': None})
             deleted_elements.append(element.id)
-        if not page.has_next or page.page >= max_pages:
-            break
-        page = page.next()
     return deleted_elements
 
 
 def archive_expired_subscription_elements(manual):
     archived_elements = []
-    max_pages = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
+    max_batches = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
     q = expired_subscription_elements('archive')
     q = q.order_by(SubscriptionElement.id.desc())
-    page = q.limit_paginate(per_page=ARCHIVE_ELEMENTS_PER_PAGE)
-    while True:
-        print_info(f"\nexpire_subscription_elements-archive: {page.first} - {page.last} / Total({page.count})\n")
-        for element in page.items:
+    page = q.sequential_paginate(per_page=ARCHIVE_ELEMENTS_PER_PAGE, page='oldest_first')
+    for elements in records_paginate('archive_expired_subscription_elements', page, max_batches):
+        for element in elements:
             post = element.post
             if post is not None:
                 if post.alternate and not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
@@ -268,9 +248,6 @@ def archive_expired_subscription_elements(manual):
                 archive_post_for_deletion(post, None)
             update_subscription_element_from_parameters(element, {'status_name': 'archived', 'expires': None})
             archived_elements.append(element.id)
-        if not page.has_next or page.page >= max_pages:
-            break
-        page = page.next()
     return archived_elements
 
 

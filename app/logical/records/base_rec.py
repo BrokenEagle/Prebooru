@@ -1,7 +1,7 @@
 # APP/LOGICAL/RECORDS/BASE_REC.PY
 
 # ## PACKAGE IMPORTS
-from utility.uprint import print_error
+from utility.uprint import print_error, print_info
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -43,6 +43,20 @@ def swap_version_relation(item, attach_model, m2m_model, attach_id, item_col, at
         getattr(item, collname).append(swap)
     commit_session()
     return retdata
+
+
+def records_paginate(func_name, page, max_batches=None):
+    batch_num = 1
+    while True:
+        print_info(f"\n{func_name}[{batch_num}]: {page.range} / Total({page.count})\n")
+        if len(page.items) > 0:
+            yield page.items
+        if (page.direction == 'a' and not page.has_above)\
+                or (page.direction == 'b' and not page.has_below)\
+                or (max_batches is not None and batch_num >= max_batches):
+            break
+        page = page.above() if page.direction == 'a' else page.below()
+        batch_num += 1
 
 
 # ## Private

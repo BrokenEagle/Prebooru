@@ -248,23 +248,20 @@ def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
     status = {'total': 0}
     query = get_posts_to_query_danbooru_id_query()
-    page = query.limit_paginate(per_page=5000)
-    while True:
-        print_info(f"\ncheck_all_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})\n")
-        if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, status) or not page.has_next:
-            return status
-        page = page.next()
+    page = query.sequential_paginate(per_page=5000, page='newest_first')
+    for posts in records_paginate('check_all_posts_for_danbooru_id', page):
+        if not check_posts_for_danbooru_id(posts, status):
+            break
+    return status
 
 
 def check_artist_posts_for_danbooru_id(artist_id):
     artist = Artist.find(artist_id)
     query = get_artist_posts_without_danbooru_ids_query(artist)
-    page = query.limit_paginate(per_page=100, distinct=True)
-    while True:
-        print_info(f"\ncheck_artist_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})\n")
-        if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, {}) or not page.has_next:
+    page = query.sequential_paginate(per_page=100, page='newest_first', distinct=True)
+    for posts in records_paginate('check_artist_posts_for_danbooru_id', page):
+        if not check_posts_for_danbooru_id(posts, {}):
             break
-        page = page.next()
 
 
 def check_posts_for_danbooru_id(posts, status=None):
@@ -403,36 +400,28 @@ def recreate_archived_post(archive):
 
 
 def generate_missing_image_hashes(manual):
-    max_pages = 10 if not manual else float('inf')
+    max_batches = 10 if not manual else float('inf')
     query = missing_image_hashes_query()
     query = query.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.subscription_element))
-    page = query.limit_paginate(per_page=20)
-    while page.count > 0:
-        print_info(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
-        for post in page.items:
+    page = query.sequential_paginate(per_page=20, page='newest_first')
+    for posts in records_paginate('generate_missing_image_hashes', page, max_batches):
+        for post in posts:
             generate_post_image_hashes(post)
             if post.active_subscription_element is None:
                 generate_similarity_matches(post)
-        SESSION.commit()
-        if not page.has_next or page.page >= max_pages:
-            break
-        page = page.next()
+        commit_session()
     return {'total': page.count}
 
 
 def calculate_similarity_matches(manual):
-    max_pages = 10 if not manual else float('inf')
+    max_batches = 10 if not manual else float('inf')
     query = missing_similarity_matches_query()
     query = query.options(selectinload(Post.image_hashes))
-    page = query.limit_paginate(per_page=50)
-    while page.count > 0:
-        print_info(f"\ngenerate_missing_image_hashes: {page.first} - {page.last} / Total({page.count})\n")
-        for post in page.items:
+    page = query.sequential_paginate(per_page=50, page='newest_first')
+    for posts in records_paginate('calculate_similarity_matches', page, max_batches):
+        for post in posts:
             generate_similarity_matches(post)
-        SESSION.commit()
-        if not page.has_next or page.page >= max_pages:
-            break
-        page = page.next()
+        commit_session()
     return {'total': page.count}
 
 
@@ -476,18 +465,15 @@ def relocate_old_posts_to_alternate(manual):
     if ALTERNATE_MOVE_DAYS is None:
         return
     moved = 0
-    max_pages = RELOCATE_PAGE_LIMIT if not manual else float('inf')
+    max_batches = RELOCATE_PAGE_LIMIT if not manual else float('inf')
     query = alternate_posts_query(ALTERNATE_MOVE_DAYS)
-    page = query.limit_paginate(per_page=50)
-    while True:
-        print_info(f"\nrelocate_old_posts_to_alternate: {page.first} - {page.last} / Total({page.count})\n")
+    page = query.sequential_paginate(per_page=50, page='oldest_first')
+    for posts in records_paginate('relocate_old_posts_to_alternate', page, max_batches):
         for post in page.items:
             print(f"Moving {post.shortlink}")
             move_post_media_to_alternate(post)
             moved += 1
-        if not page.has_next or page.page >= max_pages:
-            return moved
-        page = page.next()
+    return moved
 
 
 def process_image_matches(post_ids):

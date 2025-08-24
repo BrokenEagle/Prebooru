@@ -5,7 +5,6 @@ import itertools
 
 # ## PACKAGE IMPORTS
 from utility.data import inc_dict_entry, merge_dicts
-from utility.uprint import print_info
 
 # ## LOCAL IMPORTS
 from ...models import ArchiveArtist, ArtistSiteAccounts, ArtistNames, ArtistProfiles, Description, Label
@@ -20,7 +19,7 @@ from ..database.notation_db import create_notation_from_parameters
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
     get_archive_by_artist_site
 from ..database.archive_artist_db import create_archive_artist_from_parameters, update_archive_artist_from_parameters
-from .base_rec import delete_data, delete_version_relation, swap_version_relation
+from .base_rec import delete_data, delete_version_relation, swap_version_relation, records_paginate
 
 
 # ## FUNCTIONS
@@ -29,15 +28,12 @@ def check_all_artists_for_boorus():
     print("Checking all artists for Danbooru artists.")
     status = {'total': 0, 'created': 0}
     query = get_artists_without_boorus_query()
-    page = query.limit_paginate(per_page=100)
+    page = query.sequential_paginate(per_page=100, page='newest_first')
     booru_dict = {}
-    while True:
-        print_info(f"\ncheck_all_artists_for_boorus: {page.first} - {page.last} / Total({page.count})\n")
-        if len(page.items) == 0\
-           or not check_artists_for_boorus(page.items, booru_dict, status)\
-           or not page.has_next:
-            return status
-        page = page.next()
+    for artists in records_paginate('check_all_artists_for_boorus', page):
+        if not check_artists_for_boorus(artists, booru_dict, status):
+            break
+    return status
 
 
 def check_artists_for_boorus(artists, booru_dict=None, status=None):
