@@ -246,7 +246,7 @@ def redownload_post(post):
 
 def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
-    status = {'total': 0}
+    status = {'found': 0, 'notfound': 0}
     query = get_posts_to_query_danbooru_id_query()
     page = query.sequential_paginate(per_page=5000, page='newest_first')
     for posts in records_paginate('check_all_posts_for_danbooru_id', page):
@@ -277,9 +277,10 @@ def check_posts_for_danbooru_id(posts, status=None):
             for post in posts:
                 danbooru_post = next(filter(lambda x: x['md5'] == post.md5, results['posts']), None)
                 if danbooru_post is None:
+                    inc_dict_entry(status, 'notfound')
                     continue
                 update_post_from_parameters(post, {'danbooru_id': danbooru_post['id']})
-                inc_dict_entry(status, 'total')
+                inc_dict_entry(status, 'found')
     return True
 
 
@@ -400,6 +401,7 @@ def recreate_archived_post(archive):
 
 
 def generate_missing_image_hashes(manual):
+    total = 0
     max_batches = 10 if not manual else float('inf')
     query = missing_image_hashes_query()
     query = query.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.subscription_element))
@@ -409,11 +411,13 @@ def generate_missing_image_hashes(manual):
             generate_post_image_hashes(post)
             if post.active_subscription_element is None:
                 generate_similarity_matches(post)
+            total += 1
         commit_session()
-    return {'total': page.count}
+    return total
 
 
 def calculate_similarity_matches(manual):
+    total = 0
     max_batches = 10 if not manual else float('inf')
     query = missing_similarity_matches_query()
     query = query.options(selectinload(Post.image_hashes))
@@ -421,8 +425,9 @@ def calculate_similarity_matches(manual):
     for posts in records_paginate('calculate_similarity_matches', page, max_batches):
         for post in posts:
             generate_similarity_matches(post)
+            total += 1
         commit_session()
-    return {'total': page.count}
+    return total
 
 
 def create_sample_preview_files(post, retdata=None):

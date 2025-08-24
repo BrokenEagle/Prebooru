@@ -26,7 +26,7 @@ from .base_rec import delete_data, delete_version_relation, swap_version_relatio
 
 def check_all_artists_for_boorus():
     print("Checking all artists for Danbooru artists.")
-    status = {'total': 0, 'created': 0}
+    status = {'found': 0, 'notfound': 0, 'created': 0}
     query = get_artists_without_boorus_query()
     page = query.sequential_paginate(per_page=100, page='newest_first')
     booru_dict = {}
@@ -47,32 +47,35 @@ def check_artists_for_boorus(artists, booru_dict=None, status=None):
         print(results['message'])
         return False
     if len(results['data']) > 0:
-        danb_artists = itertools.chain(*[results['data'][url] for url in results['data']])
-        danb_artist_ids = set(artist['id'] for artist in danb_artists if artist['id'] not in booru_dict)
-        boorus = get_boorus(danb_artist_ids)
+        danbooru_artists = itertools.chain(*[results['data'][url] for url in results['data']])
+        danbooru_artist_ids = set(artist['id'] for artist in danbooru_artists if artist['id'] not in booru_dict)
+        boorus = get_boorus(danbooru_artist_ids)
         booru_dict.update({booru.danbooru_id: booru for booru in boorus})
-        for url in results['data']:
-            add_danbooru_artists(url, results['data'][url], booru_dict, artists, status)
+        for artist in artists:
+            check_artist_for_danbooru(artist, results['data'], booru_dict, status)
     return True
 
 
-def add_danbooru_artists(url, danbooru_artists, booru_dict, db_artists, status):
-    artist = next(filter(lambda x: x.booru_search_url == url, db_artists))
-    for data in danbooru_artists:
-        booru = booru_dict.get(data['id'])
-        if booru is None:
-            params =\
-                {
-                    'danbooru_id': data['id'],
-                    'name': data['name'],
-                    'banned': data['is_banned'],
-                    'deleted': data['is_deleted'],
-                }
-            booru = create_booru_from_parameters(params)
-            booru_dict[data['id']] = booru
-            inc_dict_entry(status, 'created')
-        booru_append_artist(booru, artist)
-        inc_dict_entry(status, 'total')
+def check_artist_for_danbooru(artist, network_data, booru_dict, status):
+    if artist.booru_search_url in network_data:
+        danbooru_artists = network_data[artist.booru_search_url]
+        for danbooru_artist in danbooru_artists:
+            booru = booru_dict.get(danbooru_artist['id'])
+            if booru is None:
+                params =\
+                    {
+                        'danbooru_id': danbooru_artist['id'],
+                        'name': danbooru_artist['name'],
+                        'banned': danbooru_artist['is_banned'],
+                        'deleted': danbooru_artist['is_deleted'],
+                    }
+                booru = create_booru_from_parameters(params)
+                booru_dict[danbooru_artist['id']] = booru
+                inc_dict_entry(status, 'created')
+            booru_append_artist(booru, artist)
+        inc_dict_entry(status, 'found')
+    else:
+        inc_dict_entry(status, 'notfound')
 
 
 def get_or_create_artist_from_source(site_artist_id, source):

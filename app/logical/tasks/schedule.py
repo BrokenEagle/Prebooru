@@ -121,12 +121,12 @@ def expunge_archive_records_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['generate_missing_image_hashes']['config'])
 def generate_missing_image_hashes_task():
     def _task(printer, is_manual):
-        status = generate_missing_image_hashes(is_manual)
-        if status['total'] > 0:
-            printer("Post records updated:", status['total'])
+        total = generate_missing_image_hashes(is_manual)
+        if total > 0:
+            printer("Post records updated:", total)
         else:
             printer("No post records to update.")
-        return status
+        return {'total': total}
 
     _execute_scheduled_task(_task, 'generate_missing_image_hashes')
 
@@ -135,12 +135,12 @@ def generate_missing_image_hashes_task():
 def calculate_similarity_matches_task():
     """Processes newly unlinked subscription posts for similarity matches."""
     def _task(printer, is_manual):
-        status = calculate_similarity_matches(is_manual)
-        if status['total'] > 0:
-            printer("Post records updated:", status['total'])
+        total = calculate_similarity_matches(is_manual)
+        if total > 0:
+            printer("Post records updated:", total)
         else:
             printer("No post records to update.")
-        return status
+        return {'total': total}
 
     _execute_scheduled_task(_task, 'calculate_similarity_matches', busy_check=True)
 
@@ -161,11 +161,12 @@ def check_all_boorus_task():
 def check_all_artists_for_boorus_task():
     def _task(printer, *args):
         status = check_all_artists_for_boorus()
-        if status['total'] > 0:
-            printer("Artists updated:", status['total'])
+        if status['found'] > 0:
+            printer("Artists updated:", status['found'])
             printer("Boorus created:", status['created'])
-            return status
-        printer("No artists updated.")
+        else:
+            printer("No artists updated.")
+        return status
 
     _execute_scheduled_task(_task, 'check_all_artists_for_boorus')
 
@@ -174,10 +175,11 @@ def check_all_artists_for_boorus_task():
 def check_all_posts_for_danbooru_id_task():
     def _task(printer, *args):
         status = check_all_posts_for_danbooru_id()
-        if status['total'] > 0:
-            printer("Posts updated:", status['total'])
-            return status
-        printer("No posts updated.")
+        if status['found'] > 0:
+            printer("Posts updated:", status['found'])
+        else:
+            printer("No posts updated.")
+        return status
 
     _execute_scheduled_task(_task, 'check_all_posts_for_danbooru_id')
 
