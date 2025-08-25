@@ -48,6 +48,10 @@ def get_processing_downloads():
     return Download.query.filter(Download.status_value == 'processing').all()
 
 
+def get_pending_download_count():
+    return Download.query.filter(Download.status_value == 'pending').get_count()
+
+
 def get_processing_download_count():
     return Download.query.filter(Download.status_value == 'processing').get_count()
 
