@@ -2,6 +2,7 @@
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
+from sqlalchemy.ext.associationproxy import association_proxy
 
 # ## PACKAGE IMPORTS
 from utility.obj import memoized_classproperty
@@ -10,6 +11,7 @@ from utility.data import list_difference, swap_list_values
 # ## LOCAL IMPORTS
 from ..logical.sites import domain_by_site_name
 from .model_enums import SiteDescriptor
+from .ugoira import Ugoira, ugoira_creator
 from .post import Post
 from .download_element import DownloadElement
 from .subscription_element import SubscriptionElement
@@ -43,8 +45,10 @@ class IllustUrl(JsonModel):
     illust_id = integer_column(foreign_key='illust.id', nullable=False, index=True)
     active = boolean_column(nullable=False)
     md5 = md5_column(nullable=True)
+    ugoira_id = integer_column(foreign_key='ugoira.id', nullable=True)
 
     # ## Relationships
+    ugoira = relationship(Ugoira, uselist=False)
     download_elements = relationship(DownloadElement, uselist=True, cascade="all, delete",
                                      backref=backref('illust_url', uselist=False))
     subscription_element = relationship(SubscriptionElement, uselist=False, cascade="all, delete",
@@ -60,7 +64,13 @@ class IllustUrl(JsonModel):
     # (MtO) post [Post]
     # (OtO) uploads [Upload]
 
-    # ## Instance properties
+    # ## Association proxies
+    frames = association_proxy('ugoira', 'frames', creator=ugoira_creator)
+
+    # ## Instance functions
+
+    def frame(self, num):
+        return self.source.get_frame_url(self, num)
 
     @memoized_property
     def source(self):
@@ -73,12 +83,14 @@ class IllustUrl(JsonModel):
             return 'video'
         elif self.source.image_url_mapper(self):
             return 'image'
+        elif self.source.ugoira_url_mapper(self):
+            return 'ugoira'
         else:
             return 'unknown'
 
     @memoized_property
     def preview_url(self):
-        if self.type == 'image':
+        if self.type in ['image', 'ugoira']:
             return self.source.get_preview_url(self)
         elif self.type == 'video':
             return self.full_sample_url
@@ -127,7 +139,7 @@ class IllustUrl(JsonModel):
     def sample_site_domain(self):
         return domain_by_site_name(self.sample_site_name)
 
-    # ## Class properties
+    # ## Class functions
 
     @memoized_classproperty
     def repr_attributes(cls):
@@ -142,6 +154,7 @@ class IllustUrl(JsonModel):
         mapping = {
             'url': ('url', 'full_url'),
             'sample_url': ('sample_url', 'full_sample_url'),
+            'ugoira_id': 'frames',
         }
         attributes = list_difference(super().json_attributes, ['site_id', 'sample_site_id'])
         return swap_list_values(attributes, mapping)

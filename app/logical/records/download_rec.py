@@ -5,7 +5,6 @@ import itertools
 
 # ## PACKAGE IMPORTS
 from utility.time import minutes_ago, days_ago
-from utility.data import get_buffer_checksum
 from utility.file import no_file_extension
 from utility.uprint import buffered_print
 
@@ -25,11 +24,10 @@ from ..database.illust_url_db import update_illust_url_from_parameters
 from ..database.download_db import update_download_from_parameters
 from ..database.download_element_db import create_download_element_from_parameters,\
     update_download_element_from_parameters
-from ..database.post_db import get_posts_by_id, update_post_from_parameters, get_post_by_md5
+from ..database.post_db import get_posts_by_id, get_post_by_md5, update_post_from_parameters
 from ..database.error_db import create_and_extend_errors, create_and_append_error, append_error
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
-from .illust_rec import download_illust_url
-from .post_rec import create_image_post, create_video_post
+from .post_rec import create_image_post, create_video_post, create_ugoira_post
 
 
 # ## FUNCTIONS
@@ -94,6 +92,8 @@ def process_network_download(download):
         if image_download\
         else None
     for illust_url in illust.urls:
+        if not illust_url.active:
+            continue
         normalized_illust_url = no_file_extension(illust_url.url)
         if image_download and normalized_request_url != normalized_illust_url:
             continue
@@ -114,32 +114,30 @@ def process_network_download(download):
 
 def create_post_from_download_element(element):
     illust_url = element.illust_url
-    if illust_url.type == 'unknown':
-        raise Exception("Unable to create post for unknown illust URL type")
-    if illust_url.post_id is not None:
+    if illust_url.post is not None:
         update_download_element_from_parameters(element, {'status_name': 'duplicate'})
         if illust_url.post.type_name != 'user':
             update_post_from_parameters(illust_url.post, {'type_name': 'user'})
         return
-    results = download_illust_url(illust_url)
+    if illust_url.type == 'image':
+        results = create_image_post(illust_url, 'user', _duplicate_check)
+    elif illust_url.type == 'video':
+        results = create_video_post(illust_url, 'user', _duplicate_check)
+    elif illust_url.type == 'ugoira':
+        results = create_ugoira_post(illust_url, 'user', _duplicate_check)
+    else:
+        raise Exception("Unable to create post for unknown illust URL type")
     create_and_extend_errors(element, results['errors'])
-    if results['buffer'] is None:
+    if results['md5'] is None:
         update_download_element_from_parameters(element, {'status_name': 'error'})
         return
-    buffer = results['buffer']
-    md5 = get_buffer_checksum(buffer)
-    update_illust_url_from_parameters(illust_url, {'md5': md5})
-    post = get_post_by_md5(md5)
-    if post is not None:
+    update_illust_url_from_parameters(illust_url, {'md5': results['md5']})
+    if results['duplicate']:
         update_download_element_from_parameters(element, {'status_name': 'duplicate'})
+        post = get_post_by_md5(results['md5'])
         if post.type_name != 'user':
             update_post_from_parameters(post, {'type_name': 'user'})
         return
-    if illust_url.type == 'image':
-        results = create_image_post(buffer, illust_url, 'user')
-    else:
-        results = create_video_post(buffer, illust_url, 'user')
-    create_and_extend_errors(element, results['errors'])
     if results['post'] is None:
         update_download_element_from_parameters(element, {'status_name': 'error'})
     else:
@@ -193,6 +191,11 @@ def check_for_new_artist_boorus(post_ids):
 
 
 # ## Private
+
+def _duplicate_check(md5):
+    post = get_post_by_md5(md5)
+    return post is not None
+
 
 def _create_download_illust(download):
     # Request URL should have already been validated, so no null test needed

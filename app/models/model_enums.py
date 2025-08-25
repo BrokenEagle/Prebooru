@@ -104,6 +104,7 @@ class ApiDataType(EnumModel):
         'artist': 1,
         'profile': 2,
         'page': 3,
+        'ugoira': 4,
     }
     __mandatory_mapping__ = {
         'unknown': 127,

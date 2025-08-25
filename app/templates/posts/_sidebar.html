@@ -49,7 +49,11 @@
             <li>{{ helpers.post.add_to_pool_link(post) }}</li>
             <li>{{ helpers.post.add_tag_link(post) }}</li>
             <li>{{ helpers.post.add_notation_link(post) }}</li>
-            <li>{{ helpers.post.redownload_post_link(post) }}</li>
+            {% if post.is_ugoira %}
+                <li>{{ helpers.post.redownload_frames_link(post) }}</li>
+            {% else %}
+                <li>{{ helpers.post.redownload_post_link(post) }}</li>
+            {% endif %}
             <li>{{ helpers.post.regenerate_previews_link(post) }}</li>
             <li>{{ helpers.post.regenerate_image_matches_link(post) }}</li>
         </ul>

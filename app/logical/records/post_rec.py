@@ -2,19 +2,21 @@
 
 # ### PYTHON IMPORTS
 import os
+import uuid
 
 # ### EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
 
 # ### PACKAGE IMPORTS
 from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
-from utility.data import get_buffer_checksum, merge_dicts, inc_dict_entry
-from utility.file import create_directory, put_get_raw, copy_file, delete_file
-from utility.uprint import buffered_print, print_info
+from utility.data import get_buffer_checksum, merge_dicts, inc_dict_entry, encode_json
+from utility.file import create_directory, put_get_raw, copy_file, delete_file, filename_join, put_get_json,\
+    clear_directory, copy_directory
+from utility.uprint import buffered_print
 
 # ### LOCAL IMPORTS
 from ... import SESSION
-from ...models import Post, Artist, ArchivePost
+from ...models import Post, Artist, ArchivePost, SubscriptionElement, IllustUrl
 from ..utility import set_error, SessionThread
 from ..logger import handle_error_message
 from ..network import get_http_data
@@ -31,8 +33,8 @@ from ..database.archive_db import create_archive_from_parameters, update_archive
     get_archive_by_post_md5
 from ..database.archive_post_db import create_archive_post_from_parameters, update_archive_post_from_parameters
 from ..sources.danbooru_src import get_danbooru_posts_by_md5s
-from .base_rec import delete_data
-from .illust_rec import download_illust_url, download_illust_sample
+from .base_rec import delete_data, records_paginate
+from .illust_rec import download_illust_url, download_illust_sample, download_illust_url_frames
 from .image_hash_rec import generate_post_image_hashes
 from .similarity_match_rec import generate_similarity_matches
 from .pool_rec import delete_pool_element
@@ -45,8 +47,11 @@ RELOCATE_PAGE_LIMIT = 10
 
 # ## FUNCTIONS
 
-def create_image_post(buffer, illust_url, post_type):
-    retdata = {'errors': [], 'post': None}
+def create_image_post(illust_url, post_type, duplicate_check):
+    retdata = _single_file_check(illust_url, duplicate_check)
+    if retdata['md5'] is None or retdata['duplicate']:
+        return retdata
+    buffer = retdata['buffer']
     file_ext = check_filetype(buffer)
     if isinstance(file_ext, tuple):
         retdata['errors'].append(_module_error('create_image_post', file_ext[0]))
@@ -121,8 +126,93 @@ def create_image_post_sample_preview_images(post, image):
     create_and_extend_errors(post, errors)
 
 
-def create_video_post(buffer, illust_url, post_type):
-    retdata = {'errors': [], 'post': None}
+def create_ugoira_post(illust_url, post_type, duplicate_check):
+    working_directory = os.path.join(TEMP_DIRECTORY, str(uuid.uuid4()))
+    create_directory(working_directory)
+    retdata = create_ugoira_post_0(illust_url, post_type, working_directory, duplicate_check)
+    if retdata['cleanup']:
+        print("Cleaning up working directory:", working_directory)
+        clear_directory(working_directory)
+    return retdata
+
+
+def create_ugoira_post_0(illust_url, post_type, working_directory, duplicate_check):
+    retdata = {'errors': [], 'md5': None, 'post': None, 'duplicate': False, 'cleanup': True}
+    illust_data = illust_url.source.get_illust_api_data(illust_url.illust.site_illust_id)
+    ugoira_data = illust_url.source.get_ugoira_data(illust_url.illust.site_illust_id)
+    save_data = {
+        'illustId': illust_data['illustId'],
+        'userId': illust_data['userId'],
+        'createDate': illust_data['createDate'],
+        'uploadDate': illust_data['uploadDate'],
+        'width': illust_data['width'],
+        'height': illust_data['height'],
+        'mime_type': ugoira_data['ugoira']['mime_type'],
+        'frames': [],
+    }
+    combined_pixel_hash = get_buffer_checksum(encode_json(illust_url.frames).encode('utf'))
+    combined_size = 0
+    params = None
+    for i, buffer in enumerate(download_illust_url_frames(illust_url)):
+        if isinstance(buffer, tuple):
+            retdata['errors'].append(buffer)
+            return retdata
+        if params is None:
+            file_ext = check_filetype(buffer)
+            if isinstance(file_ext, tuple):
+                retdata['errors'].append(_module_error('create_ugoira_post', file_ext[0]))
+                file_ext = None
+            if file_ext is None:
+                file_ext = illust_url.url_extension
+            image = _load_image(buffer)
+            if isinstance(image, tuple):
+                retdata['errors'].append(image)
+                return retdata
+            params = {
+                'width': image.width,
+                'height': image.height,
+                'file_ext': file_ext,
+                'type_name': post_type,
+                'ugoira_id': illust_url.ugoira_id,
+            }
+        frame = ugoira_data['ugoira']['frames'][i]
+        frame['md5'] = get_buffer_checksum(buffer)
+        save_data['frames'].append(frame)
+        combined_pixel_hash += get_pixel_hash(image)
+        combined_size += len(buffer)
+        result = create_data(buffer, os.path.join(working_directory, filename_join(str(i).zfill(6), file_ext)))
+        if result is not None:
+            retdata['errors'].append(_module_error('create_ugoira_post', result))
+            return retdata
+    retdata['md5'] = params['md5'] = get_buffer_checksum(encode_json(save_data).encode('utf'))
+    if duplicate_check(params['md5']):
+        retdata['duplicate'] = True
+        return retdata
+    error = _save_animation_file(working_directory, save_data)
+    if error is not None:
+        retdata['errors'].append(error)
+        return retdata
+    params['size'] = combined_size
+    params['pixel_md5'] = get_buffer_checksum(combined_pixel_hash.encode('utf'))
+    retdata['post'] = post = create_post_from_parameters(params, commit=False)
+    create_directory(post.directory, isdir=True)
+    try:
+        os.rename(working_directory, post.frame_directory)
+    except Exception as e:
+        retdata['errors'].append(_module_error('create_ugoira_post', "Unable to rename directory: %s" % str(e)))
+        return retdata
+    # Only commit the post once the directory has been successfuly moved over
+    commit_session()
+    retdata['cleanup'] = False
+    create_image_post_sample_preview_images(post, image)
+    return retdata
+
+
+def create_video_post(illust_url, post_type, duplicate_check):
+    retdata = _single_file_check(illust_url, duplicate_check)
+    if retdata['md5'] is None or retdata['duplicate']:
+        return retdata
+    buffer = retdata['buffer']
     file_ext = check_filetype(buffer)
     if isinstance(file_ext, tuple):
         retdata['errors'].append(_module_error('create_video_post', file_ext[0]))
@@ -244,6 +334,23 @@ def redownload_post(post):
         return False
 
 
+def download_post_frames(post):
+    for illust_url in post.illust_urls:
+        errors = []
+        for i, buffer in enumerate(download_illust_url_frames(illust_url)):
+            if isinstance(buffer, tuple):
+                errors.append(buffer)
+                continue
+            result = create_data(buffer, post.frame(i))
+            if result is not None:
+                errors.append(_module_error('download_frames', result))
+        if len(errors):
+            create_and_extend_errors(post, errors)
+        else:
+            return True
+    return False
+
+
 def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
     status = {'found': 0, 'notfound': 0}
@@ -288,7 +395,10 @@ def move_post_media_to_alternate(post, reverse=False):
     temppost = post.copy()
     alternate = not reverse
     temppost.alternate = alternate
-    copy_file(post.file_path, temppost.file_path, True)
+    if post.is_ugoira:
+        copy_directory(post.frame_directory, temppost.frame_directory, True)
+    else:
+        copy_file(post.file_path, temppost.file_path, True)
     if post.has_sample:
         copy_file(post.sample_path, temppost.sample_path)
     if post.has_preview:
@@ -300,7 +410,10 @@ def move_post_media_to_alternate(post, reverse=False):
     update_post_from_parameters(post, {'alternate': alternate})
     # Any errors after this point will just leave orphan images, which can always be cleaned up later
     temppost.alternate = reverse
-    delete_file(temppost.file_path)
+    if post.is_ugoira:
+        clear_directory(post.frame_directory)
+    else:
+        delete_file(temppost.file_path)
     if post.has_sample:
         delete_file(temppost.sample_path)
     if post.has_preview:
@@ -351,6 +464,7 @@ def save_post_to_archive(post, days_to_expire):
         update_archive_from_parameters(archive, {'days': days_to_expire}, commit=False)
     retdata['item'] = archive.basic_json()
     archive_params = {k: v for (k, v) in post.basic_json().items() if k in ArchivePost.basic_attributes}
+    archive_params['frames'] = post.frames
     archive_params['tags_json'] = list(post.tag_names)
     archive_params['errors_json'] = [{'module': error.module,
                                       'message': error.message,
@@ -493,12 +607,34 @@ def process_image_matches(post_ids):
 
 # #### Private functions
 
+def _single_file_check(illust_url, duplicate_check):
+    retdata = download_illust_url(illust_url)
+    if retdata['buffer'] is None:
+        retdata['md5'] = None
+        return retdata
+    retdata['md5'] = get_buffer_checksum(retdata['buffer'])
+    retdata['duplicate'] = duplicate_check(retdata['md5'])
+    return retdata
+
+
+def _save_animation_file(working_directory, save_data):
+    print("Saving animation file.")
+    try:
+        put_get_json(os.path.join(working_directory, 'animation.json'), 'w', save_data)
+    except Exception as e:
+        return _module_error('save_animation_file', "Unable to save animation file: %s" % str(e))
+
+
 def _copy_media_files(post, archive_post, copy_preview, reverse):
     from_item, to_item = (post, archive_post) if not reverse else (archive_post, post)
-    print(f"Copying file: {from_item.file_path} -> {to_item.file_path}")
     create_directory(to_item.file_path)
     try:
-        copy_file(from_item.file_path, to_item.file_path, True)
+        if post.is_ugoira:
+            print(f"Copying directory:\n\t{from_item.frame_directory}\n\t-> {to_item.frame_directory}")
+            copy_directory(from_item.frame_directory, to_item.frame_directory, True)
+        else:
+            print(f"Copying file:\n\t{from_item.file_path}\n\t-> {to_item.file_path}")
+            copy_file(from_item.file_path, to_item.file_path, True)
     except Exception as e:
         return f"Error moving post file: {repr(e)}"
     if copy_preview and post.has_preview:
@@ -511,7 +647,7 @@ def _copy_media_files(post, archive_post, copy_preview, reverse):
 
 def _delete_media_files(post):
     media_paths = {
-        'file': post.file_path,
+        'file': post.file_path if not post.is_ugoira else None,
         'sample': post.sample_path,
         'preview': post.preview_path,
         'video_sample': post.video_sample_path,
@@ -525,6 +661,12 @@ def _delete_media_files(post):
                 delete_file(media_paths[key])
             except Exception as e:
                 error_messages.append(f"Error deleting {key} file: {str(e)}")
+    if post.is_ugoira:
+        print("Clearing frame directory:", post.frame_directory)
+        try:
+            clear_directory(post.frame_directory)
+        except Exception as e:
+            error_messages.append(f"Error clearing directory: {str(e)}")
     if len(error_messages) > 0:
         return '\r\n'.join(error_messages)
 

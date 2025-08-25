@@ -33,6 +33,10 @@ def decode_unicode(byte_string):
     return decoded_string
 
 
+def encode_json(data, ascii=False):
+    return json.dumps(data, ensure_ascii=ascii, separators=(',', ':'))
+
+
 def decode_json(string):
     try:
         data = json.loads(string)
@@ -132,6 +136,10 @@ def is_boolean(value):
 
 def is_boolean_or_none(value):
     return isinstance(value, bool) or value is None
+
+
+def is_array_or_none(value):
+    return isinstance(value, list) or value is None
 
 
 # #### Number functions

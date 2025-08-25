@@ -14,7 +14,7 @@ from .base_db import set_column_attributes, save_record, set_timesvalue
 # ## GLOBAL VARIABLES
 
 ANY_WRITABLE_ATTRIBUTES = ['type_name', 'simcheck', 'alternate', 'width', 'height', 'size', 'file_ext', 'md5',
-                           'pixel_md5', 'duration', 'audio']
+                           'pixel_md5', 'duration', 'audio', 'frames', 'ugoira_id']
 NULL_WRITABLE_ATTRIBUTES = ['danbooru_id', 'created']
 
 SUBELEMENT_SUBQUERY = Post.query.join(IllustUrl, Post.illust_urls)\

@@ -15,7 +15,7 @@ def media_header(item):
     if item.model_name == 'illust':
         return item.type.title() + ':'
     if item.model_name == 'post':
-        return ('Video' if item.file_ext in ['mp4'] else 'Image') + ':'
+        return item.media_type.title() + ':'
     return ""
 
 

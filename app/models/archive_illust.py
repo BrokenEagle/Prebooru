@@ -2,7 +2,8 @@
 
 # ## PACKAGE IMPORTS
 from utility.obj import memoized_classproperty
-from utility.data import list_difference, swap_list_values, is_integer, is_string, is_string_or_none, is_boolean
+from utility.data import list_difference, swap_list_values, is_integer, is_string, is_string_or_none, is_boolean,\
+    is_array_or_none
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -21,7 +22,8 @@ URLS_JSON_DATATYPES = {
     'height': is_integer,
     'width': is_integer,
     'active': is_boolean,
-    'md5': is_string_or_none
+    'md5': is_string_or_none,
+    'frames': is_array_or_none,
 }
 
 
@@ -55,7 +57,7 @@ class ArchiveIllust(JsonModel):
         if self.urls is None:
             return []
         return [{'order': url[0], 'url': url[1], 'sample': url[2], 'height': url[3],
-                 'width': url[4], 'active': url[5], 'md5': url[6]}
+                 'width': url[4], 'active': url[5], 'md5': url[6], 'frames': url[7]}
                 for url in self.urls]
 
     @urls_json.setter

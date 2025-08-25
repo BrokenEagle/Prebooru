@@ -36,6 +36,7 @@ from ..database.archive_db import expired_archive_count
 from ..database.tag_db import prune_unused_tags
 from ..database.label_db import prune_unused_labels, remove_duplicate_labels
 from ..database.description_db import prune_unused_descriptions, remove_duplicate_descriptions
+from ..database.ugoira_db import prune_unused_ugoiras, remove_duplicate_ugoiras
 from ..database.jobs_db import get_job_item, update_job_item, update_job_by_id, get_job_status_data,\
     create_or_update_job_status
 from ..database.server_info_db import update_last_activity, server_is_busy, get_subscriptions_ready
@@ -82,6 +83,10 @@ def expunge_unused_records_task():
         printer("Descriptions deleted:", description_delete_count)
         if description_delete_count > 0:
             status['descriptions'] = description_delete_count
+        ugoira_delete_count = prune_unused_ugoiras()
+        printer("Ugoiras deleted:", ugoira_delete_count)
+        if ugoira_delete_count > 0:
+            status['ugoiras'] = ugoira_delete_count
         return status
 
     _execute_scheduled_task(_task, 'expunge_unused_records')
@@ -99,6 +104,10 @@ def expunge_duplicate_records_task():
         printer("Duplicate descriptions:", description_delete_count)
         if description_delete_count > 0:
             status['descriptions'] = description_delete_count
+        ugoira_delete_count = remove_duplicate_ugoiras()
+        printer("Duplicate ugoiras:", ugoira_delete_count)
+        if ugoira_delete_count > 0:
+            status['ugoiras'] = ugoira_delete_count
         return status
 
     _execute_scheduled_task(_task, 'expunge_duplicate_records')

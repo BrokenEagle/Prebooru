@@ -76,6 +76,16 @@ p(\d+)                                      # Order
 \.(jpg|png|gif|mp4|zip)                     # Extension
 """, re.X | re.IGNORECASE)
 
+UGOIRA_PARTIAL_RG = re.compile(r"""
+(?:/c/\w+)?                                 # Size 1
+/(?:img-original|img-master)                # Path
+/img
+/(\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2})      # Date
+/(\d+)                                      # ID
+(?:_(?:master|square)1200|_ugoira\d+)?      # Size 2
+\.(jpg|png|gif)                             # Extension
+""", re.X | re.IGNORECASE)
+
 # ###### Full URL Regexes
 
 ARTWORKS_RG = re.compile(f'{PIXIV_HOST_RG.pattern}{ARTWORKS_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
@@ -83,6 +93,8 @@ ARTWORKS_RG = re.compile(f'{PIXIV_HOST_RG.pattern}{ARTWORKS_PARTIAL_RG.pattern}'
 USERS_RG = re.compile(f'{PIXIV_HOST_RG.pattern}{USERS_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
 
 IMAGE_RG = re.compile(f'{PXIMG_HOST_RG.pattern}{IMAGE_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
+
+UGOIRA_RG = re.compile(f'{PXIMG_HOST_RG.pattern}{UGOIRA_PARTIAL_RG.pattern}', re.X | re.IGNORECASE)
 
 # #### Network variables
 
@@ -169,12 +181,23 @@ def get_preview_url(illust_url):
     return small_image_url(get_full_url(illust_url))
 
 
+def get_frame_url(illust_url, num):
+    match = UGOIRA_PARTIAL_RG.match(illust_url.url)
+    if match:
+        date, id, ext = match.groups()
+        return IMAGE_SERVER + '/img-original/img/' + date + '/' + id + '_ugoira' + str(num) + '.' + ext
+
+
 def image_url_mapper(x):
     return is_image_url(get_full_url(x))
 
 
 def video_url_mapper(x):
     return is_video_url(get_full_url(x))
+
+
+def ugoira_url_mapper(x):
+    return is_ugoira_url(get_full_url(x))
 
 
 # Artist
@@ -204,7 +227,7 @@ def get_media_extension(media_url):
 
 
 def is_request_url(request_url):
-    return ARTWORKS_RG.match(request_url) or IMAGE_RG.match(request_url)
+    return ARTWORKS_RG.match(request_url) or IMAGE_RG.match(request_url) or UGOIRA_RG.match(request_url)
 
 
 def is_image_url(image_url):
@@ -213,6 +236,10 @@ def is_image_url(image_url):
 
 def is_video_url(video_url):
     return False
+
+
+def is_ugoira_url(ugoira_url):
+    return bool(UGOIRA_RG.match(ugoira_url))
 
 
 def is_artist_id_url(artist_url):
@@ -239,8 +266,14 @@ def original_image_url(image_url):
 
 
 def small_image_url(image_url):
-    date, id, order, type = IMAGE_RG.match(image_url).groups()
-    return IMAGE_SERVER + '/c/540x540_70/img-master/img/' + date + '/' + id + '_p' + order + '_master1200.jpg'
+    match = IMAGE_RG.match(image_url)
+    if match:
+        date, id, order, ext = match.groups()
+        return IMAGE_SERVER + '/c/540x540_70/img-master/img/' + date + '/' + id + '_p' + order + '_master1200.jpg'
+    match = UGOIRA_RG.match(image_url)
+    if match:
+        date, id, ext = UGOIRA_RG.match(image_url).groups()
+        return IMAGE_SERVER + '/c/540x540_70/img-master/img/' + date + '/' + id + '_master1200.jpg'
 
 
 def normalized_image_url(image_url):
@@ -251,7 +284,7 @@ def get_illust_id(request_url):
     artwork_match = ARTWORKS_RG.match(request_url)
     if artwork_match:
         return int(artwork_match.group(1))
-    image_match = IMAGE_RG.match(request_url)
+    image_match = IMAGE_RG.match(request_url) or UGOIRA_RG.match(request_url)
     if image_match:
         return int(image_match.group(2))
 
@@ -323,10 +356,18 @@ def get_pixiv_artist(artist_id):
 
 def get_pixiv_page_data(site_illust_id):
     print("Downloading pages for pixiv #%d" % site_illust_id)
-    data = pixiv_request("https://www.pixiv.net/ajax/illust/%s/pages" % site_illust_id)
+    data = pixiv_request("https://www.pixiv.net/ajax/illust/%d/pages" % site_illust_id)
     if data['error']:
         return _create_module_error('get_page_data', data['message'])
     return {'illustId': site_illust_id, 'pages': data['body']}
+
+
+def get_pixiv_ugoira_data(site_illust_id):
+    print("Downloading ugoira for pixiv #%d" % site_illust_id)
+    data = pixiv_request("https://www.pixiv.net/ajax/illust/%d/ugoira_meta" % site_illust_id)
+    if data['error']:
+        return _create_module_error('get_page_data', data['message'])
+    return {'illustId': site_illust_id, 'ugoira': data['body']}
 
 
 def get_pixiv_profile_data(site_artist_id):
@@ -408,12 +449,15 @@ def get_illust_urls_from_page(page_data):
     return image_urls
 
 
-def get_illust_parameters_from_artwork(artwork, page_data):
+def get_frames_from_ugoira(ugoira_data):
+    return [frame['delay'] for frame in ugoira_data['ugoira']['frames']]
+
+
+def get_illust_parameters_from_artwork(artwork, page_data, ugoira_data):
     site_illust_id = int(artwork['illustId'])
-    if page_data is None:
-        illust_urls = get_illust_urls_from_artwork(artwork)
-    else:
-        illust_urls = get_illust_urls_from_page(page_data)
+    illust_urls = get_illust_urls_from_artwork(artwork) if page_data is None else get_illust_urls_from_page(page_data)
+    if ugoira_data is not None:
+        illust_urls[0]['frames'] = get_frames_from_ugoira(ugoira_data)
     return {
         'site_name': SITE.name,
         'site_illust_id': site_illust_id,
@@ -465,6 +509,18 @@ def get_page_data(site_illust_id):
     else:
         page_data = page_data[0].data
     return page_data
+
+
+def get_ugoira_data(site_illust_id):
+    ugoira_data = get_api_data([site_illust_id], SITE.id, ApiDataType.ugoira.id)
+    if len(ugoira_data) == 0:
+        ugoira_data = get_pixiv_ugoira_data(site_illust_id)
+        if is_error(ugoira_data):
+            return
+        save_api_data([ugoira_data], 'illustId', SITE.id, ApiDataType.ugoira.id)
+    else:
+        ugoira_data = ugoira_data[0].data
+    return ugoira_data
 
 
 def get_profile_data(site_artist_id):
@@ -525,9 +581,16 @@ def get_illust_data(site_illust_id):
     artwork = get_illust_api_data(site_illust_id)
     if artwork is None:
         return {'active': False}
-    page_data = get_page_data(site_illust_id) if artwork['pageCount'] > 1 else None
-    page_data = page_data if not is_error(page_data) else None
-    return get_illust_parameters_from_artwork(artwork, page_data)
+    page_data = ugoira_data = None
+    if artwork['pageCount'] > 1:
+        data = get_page_data(site_illust_id)
+        if not is_error(data):
+            page_data = data
+    if artwork['illustType'] == 2:
+        data = get_ugoira_data(site_illust_id)
+        if not is_error(data):
+            ugoira_data = data
+    return get_illust_parameters_from_artwork(artwork, page_data, ugoira_data)
 
 
 def get_illust_commentary(site_illust_id):

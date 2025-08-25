@@ -10,6 +10,7 @@ from sqlalchemy.util import memoized_property
 from config import MEDIA_DIRECTORY, PREVIEW_DIMENSIONS
 from utility.obj import memoized_classproperty
 from utility.data import swap_list_values
+from utility.file import filename_join, network_path_join
 
 # ## LOCAL IMPORTS
 from .. import DB
@@ -36,6 +37,7 @@ class ArchivePost(JsonModel):
     pixel_md5 = md5_column(nullable=True)
     duration = real_column(nullable=True)
     audio = boolean_column(nullable=True)
+    frames = json_column(nullable=True)
     tags = json_column(nullable=True)
     notations = json_column(nullable=True)
     errors = json_column(nullable=True)
@@ -43,8 +45,26 @@ class ArchivePost(JsonModel):
     # Instance properties
 
     @property
+    def directory(self):
+        return os.path.join(MEDIA_DIRECTORY, 'archive', self.md5[0:2], self.md5[2:4])
+
+    @property
+    def frame_directory(self):
+        return os.path.join(self.directory, self.md5)
+
+    def frame(self, num):
+        return os.path.join(self.frame_directory, self._frame_filename(num))
+
+    def frame_url(self, num):
+        return image_server_url(network_path_join('archive', self._partial_network_path, self._frame_filename(num)), subtype='main')
+
+    @property
     def is_image(self):
         return self.file_ext in ['jpg', 'png', 'gif']
+
+    @property
+    def is_ugoira(self):
+        return self.frames is not None
 
     @property
     def is_video(self):
@@ -56,21 +76,23 @@ class ArchivePost(JsonModel):
 
     @property
     def file_url(self):
-        return image_server_url('archive' + self._partial_network_path + self.file_ext, 'main')
+        return image_server_url(self._network_path('archive', self.file_ext), 'main')\
+            if not self.is_ugoira else self.frame_url(0)
 
     @property
     def preview_url(self):
-        return image_server_url('archive_preview' + self._partial_network_path + 'jpg', 'main')\
+        return image_server_url(self._network_path('archive_preview', 'jpg'), 'main')\
             if self.has_preview else self.file_url
 
     @property
     def file_path(self):
-        return os.path.join(MEDIA_DIRECTORY, 'archive', self._partial_file_path + self.file_ext)
+        return os.path.join(self.directory, filename_join(self._partial_file_path, self.file_ext))\
+            if not self.is_ugoira else self.frame(0)
 
     @property
     def preview_path(self):
-        return os.path.join(MEDIA_DIRECTORY, 'archive_preview', self._partial_file_path + 'jpg')\
-            if self.has_preview else None
+        return os.path.join(MEDIA_DIRECTORY, 'archive_preview', filename_join(self._partial_file_path, 'jpg'))\
+            if self.has_preview else self.file_path
 
     tags_json = json_list_proxy('tags', str)
     errors_json = errors_json
@@ -99,21 +121,27 @@ class ArchivePost(JsonModel):
         mapping = {
             'type_id': 'type_name',
         }
-        return swap_list_values(super().recreate_attributes, mapping)
+        return swap_list_values(super().recreate_attributes, mapping) + ['frames']
 
     # ## Private
 
+    def _frame_filename(self, num):
+        return filename_join(str(num).zfill(6), self.file_ext)
+
+    def _network_path(self, subpath, ext):
+        return network_path_join(subpath, filename_join(self._partial_network_path, ext))
+
     @memoized_property
     def _partial_network_path(self):
-        return '/%s/%s/%s.' % (self.md5[0:2], self.md5[2:4], self.md5)
+        return '%s/%s/%s' % (self.md5[0:2], self.md5[2:4], self.md5)
 
     @memoized_property
     def _partial_file_path(self):
-        return os.path.join(self.md5[0:2], self.md5[2:4], self._file_name)
+        return os.path.join(self.md5[0:2], self.md5[2:4], self.md5)
 
     @memoized_property
-    def _file_name(self):
-        return '%s.' % (self.md5)
+    def _partial_file_path(self):
+        return os.path.join(self.md5[0:2], self.md5[2:4], self.md5)
 
 
 # ## Initialize

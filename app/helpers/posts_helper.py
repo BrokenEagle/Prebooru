@@ -182,6 +182,10 @@ def redownload_post_link(post):
     return general_link("Redownload post", url_for('post.redownload_html', id=post.id), method='POST')
 
 
+def redownload_frames_link(post):
+    return general_link("Redownload frames", url_for('post.redownload_frames_html', id=post.id), method='POST')
+
+
 def add_notation_link(post):
     return general_link("Add notation", url_for('notation.new_html', post_id=post.id, redirect='true'))
 

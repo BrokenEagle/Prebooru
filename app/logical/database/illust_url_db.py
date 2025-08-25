@@ -8,7 +8,7 @@ from .base_db import set_column_attributes, save_record
 # ## GLOBAL VARIABLES
 
 ANY_WRITABLE_ATTRIBUTES = ['site_name', 'url', 'sample_site_name', 'sample_url', 'width', 'height',
-                           'order', 'active', 'post_id', 'md5']
+                           'order', 'active', 'post_id', 'md5', 'frames', 'ugoira_id']
 NULL_WRITABLE_ATTRIBUTES = ['illust_id']
 
 
