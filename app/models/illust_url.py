@@ -49,9 +49,10 @@ class IllustUrl(JsonModel):
                                      backref=backref('illust_url', uselist=False))
     subscription_element = relationship(SubscriptionElement, uselist=False, cascade="all, delete",
                                         backref=backref('illust_url', uselist=False))
-    post = relationship(Post, primaryjoin=(md5 == Post.md5), foreign_keys=md5,
+    post = relationship(Post, primaryjoin=(md5 == Post.md5), foreign_keys=md5, passive_deletes='all',
                         remote_side=Post.md5, uselist=False, overlaps="illust_urls,archive_post",
-                        backref=backref('illust_urls', uselist=True, overlaps="illust_urls,archive_post"))
+                        backref=backref('illust_urls', uselist=True, overlaps="illust_urls,archive_post",
+                                        passive_deletes='all'))
     archive_post = relationship(ArchivePost, primaryjoin=(md5 == ArchivePost.md5), foreign_keys=md5,
                                 remote_side=ArchivePost.md5, uselist=False, overlaps="illust_urls,post",
                                 backref=backref('illust_urls', uselist=True, overlaps="illust_urls,post"))
