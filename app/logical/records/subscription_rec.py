@@ -13,7 +13,6 @@ from config import POPULATE_ELEMENTS_PER_PAGE, SYNC_MISSING_ILLUSTS_PER_PAGE, DO
     DOWNLOAD_POSTS_PAGE_LIMIT, EXPIRE_ELEMENTS_PAGE_LIMIT, ALTERNATE_MEDIA_DIRECTORY
 from utility.time import days_from_now, hours_from_now, days_ago, get_current_time
 from utility.uprint import buffered_print, print_info
-from utility.data import get_buffer_checksum
 
 # ## LOCAL IMPORTS
 from ... import SESSION
@@ -37,8 +36,7 @@ from ..database.subscription_db import update_subscription_from_parameters, chec
 from ..database.base_db import safe_db_execute
 from .base_rec import records_paginate
 from .post_rec import create_image_post, create_video_post, recreate_archived_post, archive_post_for_deletion,\
-    delete_post
-from .illust_rec import download_illust_url
+    delete_post, create_ugoira_post
 from .image_hash_rec import generate_post_image_hashes
 
 
@@ -283,38 +281,30 @@ def populate_subscription_elements(subscription, job_id=None):
 
 def create_post_from_subscription_element(element):
     illust_url = element.illust_url
-    if illust_url.type == 'unknown':
-        return False
     if illust_url.post is not None:
         _update_duplicate_element(element)
         return False
-    results = download_illust_url(illust_url)
+    duplicate_check = _duplicate_check_standard if element.status_name == 'deleted' else _duplicate_check_additional
+    if illust_url.type == 'image':
+        results = create_image_post(illust_url, 'user', duplicate_check)
+    elif illust_url.type == 'video':
+        results = create_video_post(illust_url, 'user', duplicate_check)
+    elif illust_url.type == 'ugoira':
+        results = create_ugoira_post(illust_url, 'user', duplicate_check)
+    else:
+        return False
     create_and_extend_errors(element, results['errors'])
-    if results['buffer'] is None:
+    if results['md5'] is None:
         update_subscription_element_from_parameters(element, {'status_name': 'error'})
         return False
-    buffer = results['buffer']
-    md5 = get_buffer_checksum(buffer)
-    update_illust_url_from_parameters(illust_url, {'md5': md5})
-    post = get_post_by_md5(md5)
-    if post is not None:
+    update_illust_url_from_parameters(illust_url, {'md5': results['md5']})
+    if results['duplicate']:
         _update_duplicate_element(element)
         return False
-    if element.status_name != 'deleted':
-        element_ids = get_subscription_elements_by_md5(md5)
-        if len(element_ids) > 0:
-            _update_duplicate_element(element)
-            return False
-    if illust_url.type == 'image':
-        results = create_image_post(buffer, illust_url, 'subscription')
-    else:
-        results = create_video_post(buffer, illust_url, 'subscription')
-    create_and_extend_errors(element, results['errors'])
     if results['post'] is None:
         update_subscription_element_from_parameters(element, {'status_name': 'error'})
         return False
-    else:
-        return True
+    return True
 
 
 def redownload_element(element):
@@ -420,6 +410,18 @@ def subscription_slots_needed_per_hour():
 
 
 # #### Private
+
+def _duplicate_check_standard(md5):
+    post = get_post_by_md5(md5)
+    return post is not None
+
+
+def _duplicate_check_additional(md5):
+    if _duplicate_check_standard(md5):
+        return True
+    element_ids = get_subscription_elements_by_md5(md5)
+    return len(element_ids) > 0
+
 
 def _process_image_matches(post_ids):
     def _process():

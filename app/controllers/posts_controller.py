@@ -12,7 +12,7 @@ from utility.data import eval_bool_string, is_falsey
 # ## LOCAL IMPORTS
 from ..models import Post, Illust, IllustUrl, Artist, Booru, PoolElement, PostType
 from ..logical.records.post_rec import create_sample_preview_files, create_video_sample_preview_files,\
-    archive_post_for_deletion, redownload_post, delete_post, save_post_to_archive
+    archive_post_for_deletion, redownload_post, delete_post, save_post_to_archive, download_post_frames
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_or_abort, index_html_response
 
@@ -223,4 +223,14 @@ def redownload_html(id):
         flash("Unable to redownload post.", 'error')
     else:
         flash("Post redownloaded.")
+    return redirect(url_for('post.show_html', id=post.id))
+
+
+@bp.route('/posts/<int:id>/redownload_frames', methods=['POST'])
+def redownload_frames_html(id):
+    post = get_or_abort(Post, id)
+    if not download_post_frames(post):
+        flash("Unable to redownload all frames.", 'error')
+    else:
+        flash("Frames redownloaded.")
     return redirect(url_for('post.show_html', id=post.id))

@@ -14,11 +14,13 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ## PACKAGE IMPORTS
 from config import MEDIA_DIRECTORY, ALTERNATE_MEDIA_DIRECTORY, PREVIEW_DIMENSIONS, SAMPLE_DIMENSIONS
 from utility.obj import memoized_classproperty
-from utility.data import swap_list_values, dict_filter
+from utility.data import swap_list_values, dict_filter, dict_prune
+from utility.file import filename_join, network_path_join
 
 # ## LOCAL IMPORTS
 from ..logical.utility import unique_objects
 from .model_enums import PostType
+from .ugoira import Ugoira, ugoira_creator
 from .error import Error
 from .notation import Notation
 from .tag import UserTag, user_tag_creator
@@ -64,8 +66,10 @@ class Post(JsonModel):
     duration = real_column(nullable=True)
     audio = boolean_column(nullable=True)
     simcheck = boolean_column(nullable=False)
+    ugoira_id = integer_column(foreign_key='ugoira.id', nullable=True)
 
     # ## Relationships
+    ugoira = relationship(Ugoira, uselist=False)
     errors = relationship(Error, uselist=True, cascade='all,delete', backref=backref('post', uselist=False))
     notations = relationship(Notation, uselist=True, cascade='all,delete', backref=backref('post', uselist=False))
     tags = relationship(UserTag, secondary=PostTags, uselist=True)
@@ -81,10 +85,30 @@ class Post(JsonModel):
     # (OtM) illust_urls [IllustUrl]
 
     # ## Association proxies
+    frames = association_proxy('ugoira', 'frames', creator=ugoira_creator)
     tag_names = association_proxy('tags', 'name', creator=user_tag_creator)
     pools = association_proxy('pool_elements', 'pool')
 
-    # ## Instance properties
+    # ## Instance functions
+
+    @property
+    def directory(self):
+        return os.path.join(self.subdirectory_path, 'data', self.md5[0:2], self.md5[2:4])
+
+    @property
+    def frame_directory(self):
+        return os.path.join(self.directory, self.md5)
+
+    def frame(self, num):
+        return os.path.join(self.frame_directory, self._frame_filename(num))
+
+    @check_app_context
+    def frame_url(self, num):
+        return image_server_url(network_path_join('data', self._partial_network_path, self._frame_filename(num)), subtype=self.suburl_path)
+
+    @property
+    def is_ugoira(self):
+        return self.ugoira_id is not None
 
     @property
     def is_video(self):
@@ -113,30 +137,31 @@ class Post(JsonModel):
     @property
     @check_app_context
     def file_url(self):
-        return image_server_url('data' + self._partial_network_path + self.file_ext, subtype=self.suburl_path)
+        return image_server_url(self._network_path('data', self.file_ext), self.suburl_path)\
+            if not self.is_ugoira else self.frame_url(0)
 
     @property
     @check_app_context
     def sample_url(self):
-        return image_server_url('sample' + self._partial_network_path + 'jpg', subtype=self.suburl_path)\
+        return image_server_url(self._network_path('sample', 'jpg'), self.suburl_path)\
             if self.has_sample else self.file_url
 
     @property
     @check_app_context
     def preview_url(self):
-        return image_server_url('preview' + self._partial_network_path + 'jpg', subtype=self.suburl_path)\
+        return image_server_url(self._network_path('preview', 'jpg'), self.suburl_path)\
             if self.has_preview else self.file_url
 
     @property
     @check_app_context
     def video_sample_url(self):
-        return image_server_url('video_sample' + self._partial_network_path + 'webm', subtype=self.suburl_path)\
+        return image_server_url(self._network_path('video_sample', 'webm'), self.suburl_path)\
             if self.is_video else None
 
     @property
     @check_app_context
     def video_preview_url(self):
-        return image_server_url('video_preview' + self._partial_network_path + 'webp', subtype=self.suburl_path)\
+        return image_server_url(self._network_path('video_preview', 'webp'), self.suburl_path)\
             if self.is_video else None
 
     @property
@@ -145,26 +170,27 @@ class Post(JsonModel):
 
     @property
     def file_path(self):
-        return os.path.join(self.subdirectory_path, 'data', self._partial_file_path + self.file_ext)
+        return os.path.join(self.directory, filename_join(self.md5, self.file_ext))\
+            if not self.is_ugoira else self.frame(0)
 
     @property
     def sample_path(self):
-        return os.path.join(self.subdirectory_path, 'sample', self._partial_file_path + 'jpg')\
+        return os.path.join(self.subdirectory_path, 'sample', filename_join(self._partial_file_path, 'jpg'))\
             if self.has_sample else None
 
     @property
     def preview_path(self):
-        return os.path.join(self.subdirectory_path, 'preview', self._partial_file_path + 'jpg')\
+        return os.path.join(self.subdirectory_path, 'preview', filename_join(self._partial_file_path, 'jpg'))\
             if self.has_preview else None
 
     @property
     def video_sample_path(self):
-        return os.path.join(self.subdirectory_path, 'video_sample', self._partial_file_path + 'webm')\
+        return os.path.join(self.subdirectory_path, 'video_sample', filename_join(self._partial_file_path, 'webm'))\
             if self.is_video else None
 
     @property
     def video_preview_path(self):
-        return os.path.join(self.subdirectory_path, 'video_preview', self._partial_file_path + 'webp')\
+        return os.path.join(self.subdirectory_path, 'video_preview', filename_join(self._partial_file_path, 'webp'))\
             if self.is_video else None
 
     @property
@@ -236,7 +262,7 @@ class Post(JsonModel):
     def errors_json(self):
         return [dict_filter(error.to_json(), ['module', 'message', 'created']) for error in self.errors]
 
-    # ## Class properties
+    # ## Class functions
 
     @memoized_classproperty
     def repr_attributes(cls):
@@ -247,22 +273,28 @@ class Post(JsonModel):
 
     @memoized_classproperty
     def json_attributes(cls):
-        return cls.repr_attributes + ['preview_url', 'sample_url', 'file_url', ('tags', 'tag_names'),
-                                      ('illust_urls', 'illust_urls_json'), ('errors', 'errors_json')]
+        mapping = {
+            'ugoira_id': 'frames',
+        }
+        return swap_list_values(cls.repr_attributes, mapping) +\
+            ['preview_url', 'sample_url', 'file_url', ('tags', 'tag_names'),
+             ('illust_urls', 'illust_urls_json'), ('errors', 'errors_json')]
 
     # ## Private
 
+    def _frame_filename(self, num):
+        return filename_join(str(num).zfill(6), self.file_ext)
+
+    def _network_path(self, subpath, ext):
+        return network_path_join(subpath, filename_join(self._partial_network_path, ext))
+
     @memoized_property
     def _partial_network_path(self):
-        return '/%s/%s/%s.' % (self.md5[0:2], self.md5[2:4], self.md5)
+        return '%s/%s/%s' % (self.md5[0:2], self.md5[2:4], self.md5)
 
     @memoized_property
     def _partial_file_path(self):
-        return os.path.join(self.md5[0:2], self.md5[2:4], self._file_name)
-
-    @memoized_property
-    def _file_name(self):
-        return '%s.' % (self.md5)
+        return os.path.join(self.md5[0:2], self.md5[2:4], self.md5)
 
     @property
     def _similar_match_query(self):

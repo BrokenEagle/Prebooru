@@ -7,7 +7,7 @@ from .base_db import set_column_attributes, save_record, set_timesvalue
 
 # ## GLOBAL VARIABLES
 
-ANY_WRITABLE_ATTRIBUTES = ['md5', 'width', 'height', 'file_ext', 'size', 'danbooru_id', 'created', 'type_id',
+ANY_WRITABLE_ATTRIBUTES = ['md5', 'width', 'height', 'file_ext', 'size', 'danbooru_id', 'created', 'type_id', 'frames',
                            'pixel_md5', 'duration', 'audio', 'tags_json', 'notations_json', 'errors_json']
 NULL_WRITABLE_ATTRIBUTES = ['archive_id']
 

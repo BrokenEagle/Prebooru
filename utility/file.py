@@ -33,6 +33,14 @@ def get_directory_path(filepath):
     return str(pathlib.Path(filepath).parent.resolve())
 
 
+def filename_join(name, ext):
+    return f'{name}.{ext}'
+
+
+def network_path_join(*parts):
+    return '/'.join(parts)
+
+
 # #### File functions
 
 def get_directory_listing(directory):
@@ -65,6 +73,20 @@ def delete_directory(filepath):
         time.sleep(0.01)
 
 
+def clear_directory(filepath, recursive=False):
+    listing = get_directory_listing(filepath)
+    for name in listing:
+        delete_file(os.path.join(filepath, name))
+    delete_directory(filepath)
+
+
+def copy_directory(from_filepath, to_filepath, safe=False):
+    create_directory(to_filepath, isdir=True)
+    listing = get_directory_listing(from_filepath)
+    for name in listing:
+        copy_file(os.path.join(from_filepath, name), os.path.join(to_filepath, name), safe=safe)
+
+
 def put_get_raw(filepath, optype, data=None, unicode=False):
     if filepath != os.devnull:
         create_directory(filepath)
@@ -94,7 +116,7 @@ def get_raw(file, data, unicode):
 
 def put_get_json(filepath, optype, data=None, unicode=False):
     if optype[0] in ['w', 'a']:
-        save_data = json.dumps(data, ensure_ascii=unicode)
+        save_data = json.dumps(data, ensure_ascii=unicode, separators=(',', ':'))
         # Try writing to null device first to avoid clobbering the files upon errors
         put_get_raw(os.devnull, optype, save_data, unicode)
         return put_get_raw(filepath, optype, save_data, unicode)

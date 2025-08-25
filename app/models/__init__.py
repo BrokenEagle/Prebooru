@@ -24,7 +24,7 @@ def load_all():
     global\
         SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,\
         SubscriptionElementKeep, UploadStatus, PoolElementType, TagType,\
-        Tag, SiteTag, UserTag, Label, Description,\
+        Tag, SiteTag, UserTag, Label, Description, Ugoira,\
         Illust, IllustTags, IllustTitles, IllustCommentaries, AdditionalCommentaries, IllustUrl,\
         ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,\
         Booru, BooruNames, BooruArtists, Error, Post,\
@@ -47,6 +47,7 @@ def load_all():
     from .tag import Tag, SiteTag, UserTag
     from .label import Label
     from .description import Description
+    from .ugoira import Ugoira
     from .illust_url import IllustUrl
     from .illust import Illust, IllustTags, IllustTitles, IllustCommentaries, AdditionalCommentaries
     from .artist_url import ArtistUrl
@@ -102,7 +103,7 @@ def initialize():
         [
             SiteDescriptor, ApiDataType, ArchiveType, PostType, SubscriptionStatus, SubscriptionElementStatus,
             SubscriptionElementKeep, UploadStatus, PoolElementType, TagType,
-            Tag, SiteTag, UserTag, Label, Description,
+            Tag, SiteTag, UserTag, Label, Description, Ugoira,
             Illust, IllustTags, IllustTitles, IllustCommentaries, AdditionalCommentaries, IllustUrl,
             ArtistUrl, Artist, ArtistNames, ArtistSiteAccounts, ArtistProfiles,
             Booru, BooruNames, BooruArtists, Error, Post,

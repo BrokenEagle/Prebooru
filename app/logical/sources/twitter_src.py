@@ -525,6 +525,10 @@ def video_url_mapper(x):
     return is_video_url(get_full_url(x))
 
 
+def ugoira_url_mapper(x):
+    return False
+
+
 def is_artist_url(url):
     return bool(USERS1_RG.match(url)) or is_artist_id_url(url)
 
@@ -550,6 +554,10 @@ def is_image_url(url):
 
 def is_video_url(url):
     return bool(VIDEO1_RG.match(url) or VIDEO2_RG.match(url))
+
+
+def is_ugoira_url(url):
+    return False
 
 
 def is_request_url(request_url):
@@ -604,6 +612,10 @@ def get_alternate_url(illust_url):
 
 def get_preview_url(illust_url):
     return small_image_url(get_full_url(illust_url))
+
+
+def get_frame_url(illust_url, num):
+    pass
 
 
 def original_image_url(image_url):

@@ -112,7 +112,8 @@ def save_illust_to_archive(illust, days_to_expire):
                                     'height': illust_url.height,
                                     'width': illust_url.width,
                                     'active': illust_url.active,
-                                    'md5': illust_url.md5}
+                                    'md5': illust_url.md5,
+                                    'frames': illust_url.frames}
                                    for illust_url in illust.urls]
     archive_params['titles_json'] = list(illust.title_bodies)
     archive_params['commentaries_json'] = list(illust.commentary_bodies)
@@ -230,6 +231,12 @@ def download_illust_sample(illust_url):
     else:
         retdata['buffer'] = buffer
     return retdata
+
+
+def download_illust_url_frames(illust_url):
+    print("Downloading %d frames." % len(illust_url.frames))
+    for i in range(0, len(illust_url.frames)):
+        yield _download_media(illust_url.frame(i), illust_url.source.IMAGE_HEADERS)
 
 
 def create_download_from_illust_url(illust_url):
