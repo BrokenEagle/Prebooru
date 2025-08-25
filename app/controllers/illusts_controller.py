@@ -32,7 +32,7 @@ from .base_controller import get_params_value, process_request_values, show_json
 
 bp = Blueprint("illust", __name__)
 
-REQUIRED_PARAMS = ['site_name', 'site_illust_id']
+CREATE_REQUIRED_PARAMS = ['site_name', 'site_illust_id']
 VALUES_MAP = {
     'site_name': 'site_name',
     'illust_urls': 'illust_urls',
@@ -239,7 +239,7 @@ def create():
     check_artist = Artist.find(createparams['artist_id'])
     if check_artist is None:
         return set_error(retdata, "artist #%s not found." % dataparams['artist_id'])
-    errors = check_param_requirements(createparams, REQUIRED_PARAMS, 'create')
+    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
     if createparams['site_name'] != check_artist.site_name:
@@ -257,9 +257,6 @@ def update(illust):
     dataparams = get_data_params(request, 'illust')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
-    errors = check_param_requirements(updateparams, REQUIRED_PARAMS, 'update')
-    if len(errors) > 0:
-        return set_error(retdata, '\n'.join(errors))
     check_illust = uniqueness_check(updateparams, illust)
     if check_illust is not None:
         retdata['item'] = check_illust.to_json()
