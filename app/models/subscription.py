@@ -159,7 +159,7 @@ class Subscription(JsonModel):
     @memoized_property
     @populate_status
     def duplicate_count(self):
-        return self._status_counts.get('deleted', 0)
+        return self._status_counts.get('duplicate', 0)
 
     @memoized_property
     @populate_status
