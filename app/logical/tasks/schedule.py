@@ -372,12 +372,12 @@ def _execute_scheduled_task(func, id, has_manual=True, has_enabled=True, has_loc
         else:
             is_manual = False
         if not is_manual:
+            if has_enabled and not _is_job_enabled(id):
+                print(f"Task scheduler - {display_name}: disabled")
+                return
             if busy_check and server_is_busy():
                 print(f"Task scheduler - {display_name}: Server busy, rescheduling....")
                 reschedule_from_child(id)
-                return
-            if has_enabled and not _is_job_enabled(id):
-                print(f"Task scheduler - {display_name}: disabled")
                 return
         else:
             print(f"Task scheduler - {display_name}: manually executed")
