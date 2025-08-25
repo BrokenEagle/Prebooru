@@ -33,7 +33,7 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("artist", __name__)
 
-REQUIRED_PARAMS = ['site_name', 'site_artist_id', 'site_account']
+CREATE_REQUIRED_PARAMS = ['site_name', 'site_artist_id', 'site_account']
 VALUES_MAP = {
     'site_name': 'site_name',
     'site_account': 'site_account',
@@ -192,7 +192,7 @@ def create():
     dataparams = get_data_params(request, 'artist')
     createparams = convert_create_params(dataparams)
     retdata = {'error': False, 'data': createparams, 'params': dataparams}
-    errors = check_param_requirements(createparams, REQUIRED_PARAMS, 'create')
+    errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
     check_artist = uniqueness_check(createparams, Artist())
@@ -208,9 +208,6 @@ def update(artist):
     dataparams = get_data_params(request, 'artist')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
-    errors = check_param_requirements(updateparams, REQUIRED_PARAMS, 'update')
-    if len(errors) > 0:
-        return set_error(retdata, '\n'.join(errors))
     check_artist = uniqueness_check(updateparams, artist)
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
