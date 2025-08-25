@@ -36,10 +36,10 @@
                         <ul>
                             <li>
                                 <strong>Edit( {{ helpers.base.general_link(illust_url.type, illust_url.edit_url) }} )</strong>
-                                {% if illust_url.post_id is none %}
+                                {% if illust_url.post is none %}
                                     ・ <strong>Upload( {{ helpers.illust_url.upload_media_link(illust_url) }} )</strong>
                                 {% endif %}
-                                {% if illust_url.post_id is none and illust.active and illust.artist.active and illust_url.active %}
+                                {% if illust_url.post is none and illust.active and illust.artist.active and illust_url.active %}
                                     ・ <strong>Download( {{ helpers.illust_url.download_media_link(illust_url) }} )</strong>
                                 {% endif %}
                             </li>

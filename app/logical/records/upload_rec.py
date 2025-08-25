@@ -59,7 +59,7 @@ def process_upload(upload_id):
         printer("Upload:", upload.status)
         if upload.status_name == 'complete':
             printer("Starting secondary threads.")
-            post_ids = [upload.illust_url.post_id]
+            post_ids = [upload.illust_url.post.id]
             SessionThread(target=process_image_matches, args=(post_ids,)).start()
             if upload.artist.primary:
                 SessionThread(target=check_for_matching_danbooru_posts, args=(post_ids,)).start()
@@ -88,7 +88,7 @@ def create_post_from_upload(upload):
     illust_url = upload.illust_url
     if illust_url.type == 'unknown':
         raise Exception("Unable to create post for unknown illust URL type")
-    if illust_url.post_id is not None:
+    if illust_url.post is not None:
         update_upload_from_parameters(upload, {'status_name': 'duplicate'})
         if illust_url.post.type_name != 'user':
             update_post_from_parameters(illust_url.post, {'type_name': 'user'})

@@ -73,9 +73,6 @@ FORM_CONFIG = {
             'default': True,
         },
     },
-    'post_id': {
-        'field': IntegerField,
-    },
     'md5': {
         'field': StringField,
     },

@@ -285,7 +285,7 @@ def create_post_from_subscription_element(element):
     illust_url = element.illust_url
     if illust_url.type == 'unknown':
         return False
-    if illust_url.post_id is not None:
+    if illust_url.post is not None:
         _update_duplicate_element(element)
         return False
     results = download_illust_url(illust_url)
