@@ -6,6 +6,7 @@ import datetime
 
 # ## EXTERNAL IMPORTS
 import sqlalchemy
+from sqlalchemy import func
 
 # ## PACKAGE IMPORTS
 from utility.time import process_utc_timestring, get_current_time
@@ -232,6 +233,53 @@ def will_update_record(record, data, columns):
         if getattr(record, key) != data[key]:
             return True
     return False
+
+
+def remove_duplicate_items(check_model, check_column, foreign_keys):
+    duplicates = check_model.query.group_by(check_column)\
+                            .having(func.count(check_column) > 1)\
+                            .with_entities(check_column)\
+                            .all()
+    total = len(duplicates)
+    if total == 0:
+        return total
+    for duplicate in duplicates:
+        dup_items = check_model.query.filter(check_column == duplicate[0]).all()
+        update_id = dup_items[0].id
+        # Remove duplicates in M2M before updating, otherwise it could violate the unique constraint
+        for foreign_key in foreign_keys:
+            if not foreign_key[0]._secondary_table:
+                continue
+            attach_model, attach_column, primary_id = foreign_key
+            attach_id = attach_column.name
+            primary_column = getattr(attach_model, primary_id)
+            m2m_items = attach_model.query.filter(attach_column.in_(item.id for item in dup_items)).all()
+            seen_primary_ids = set()
+            for item in m2m_items:
+                if item[primary_id] in seen_primary_ids:
+                    attach_model.query.filter(primary_column == item[primary_id],
+                                              attach_column == item[attach_id])\
+                                      .delete()
+                    flush_session()
+                else:
+                    seen_primary_ids.add(item[primary_id])
+        # Update tables to the first item found
+        for foreign_key in foreign_keys:
+            attach_model, attach_column, *_ = foreign_key
+            for item in dup_items[1:]:
+                attach_model.query.filter(attach_column == item.id).update({attach_column.name: update_id})
+                flush_session()
+                delete_record(item)
+                flush_session()
+    commit_session()
+    return total
+
+
+def prune_unused_items(model, union_clause):
+    delete_count = model.query.filter(model.id.not_in(union_clause))\
+                              .delete(synchronize_session=False)
+    commit_session()
+    return delete_count
 
 
 # #### Private functions
