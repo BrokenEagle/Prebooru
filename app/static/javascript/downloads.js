@@ -15,3 +15,8 @@ Downloads.initializeReloadInterval = function (download_status) {
         clearInterval(page_timer);
     }, 5000);
 };
+
+Downloads.downloadAll = function (node) {
+    window.location = '/downloads/all?download[request_url]=' + encodeURIComponent(node.dataset.url);
+    return false;
+};
