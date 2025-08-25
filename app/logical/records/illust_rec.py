@@ -21,10 +21,6 @@ from ..database.notation_db import create_notation_from_parameters
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
     get_archive_by_illust_site
 from ..database.archive_illust_db import create_archive_illust_from_parameters, update_archive_illust_from_parameters
-from ..database.download_db import create_download_from_parameters, update_download_from_parameters,\
-    get_download_by_request_url
-from ..database.download_element_db import create_download_element_from_parameters,\
-    update_download_element_from_parameters, get_download_element
 from .base_rec import delete_data, delete_version_relation, swap_version_relation
 from .artist_rec import get_or_create_artist_from_source
 from .pool_rec import delete_pool_element
@@ -237,35 +233,6 @@ def download_illust_url_frames(illust_url):
     print("Downloading %d frames." % len(illust_url.frames))
     for i in range(0, len(illust_url.frames)):
         yield _download_media(illust_url.frame(i), illust_url.source.IMAGE_HEADERS)
-
-
-def create_download_from_illust_url(illust_url):
-    from .download_rec import create_post_from_download_element
-    illust = illust_url.illust
-    illust_key = '%s-%d' % (illust.site_name, illust.site_illust_id)
-    illust_download = get_download_by_request_url(illust_key)
-    if illust_download is None:
-        illust_download = create_download_from_parameters({'request_url': illust_key, 'status_name': 'processing'})
-    else:
-        update_download_from_parameters(illust_download, {'status_name': 'processing'})
-    illust_url_element = get_download_element(illust_download.id, illust_url.id)
-    if illust_url_element is None:
-        params = {
-            'download_id': illust_download.id,
-            'illust_url_id': illust_url.id,
-        }
-        illust_url_element = create_download_element_from_parameters(params)
-    else:
-        update_download_element_from_parameters(illust_url_element, {'status_name': 'pending'})
-    create_post_from_download_element(illust_url_element)
-    retdata = {'error': False}
-    if illust_url_element.status_name == 'complete':
-        update_download_from_parameters(illust_download, {'status_name': 'complete'})
-    else:
-        # Setting the unknown status so that it can't be restarted from the download UI
-        update_download_from_parameters(illust_download, {'status_name': 'unknown'})
-        retdata = set_error(retdata, "Error downloading post on %s." % illust_url_element.shortlink)
-    return retdata
 
 
 # #### Private functions
