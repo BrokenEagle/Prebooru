@@ -4,6 +4,7 @@
 import os
 
 # ## EXTERNAL IMPORTS
+from flask import has_app_context
 from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
@@ -19,6 +20,16 @@ from .error import errors_json
 from .notation import notations_json
 from .base import JsonModel, integer_column, enum_column, text_column, real_column, boolean_column, md5_column,\
     json_column, timestamp_column, image_server_url, register_enum_column, json_list_proxy
+
+
+# ## FUNCTIONS
+
+def check_app_context(func):
+    def wrapper(*args):
+        if not has_app_context():
+            return None
+        return func(*args)
+    return wrapper
 
 
 # ## CLASSES
@@ -55,6 +66,7 @@ class ArchivePost(JsonModel):
     def frame(self, num):
         return os.path.join(self.frame_directory, self._frame_filename(num))
 
+    @check_app_context
     def frame_url(self, num):
         return image_server_url(network_path_join('archive', self._partial_network_path, self._frame_filename(num)), subtype='main')
 
@@ -75,11 +87,13 @@ class ArchivePost(JsonModel):
         return self.width > PREVIEW_DIMENSIONS[0] or self.height > PREVIEW_DIMENSIONS[1]
 
     @property
+    @check_app_context
     def file_url(self):
         return image_server_url(self._network_path('archive', self.file_ext), 'main')\
             if not self.is_ugoira else self.frame_url(0)
 
     @property
+    @check_app_context
     def preview_url(self):
         return image_server_url(self._network_path('archive_preview', 'jpg'), 'main')\
             if self.has_preview else self.file_url
