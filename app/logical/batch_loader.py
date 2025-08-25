@@ -3,15 +3,19 @@
 
 # ## FUNCTIONS
 
-def selectinload_batch_primary(records, relation):
+def selectinload_batch_primary(records, relation, reverse=False):
     relation_property = getattr(records[0].__class__, relation).property
     lasttable = relation_property.mapper.class_
     primaryjoin = relation_property.primaryjoin
-    record_id_gen = (getattr(item, primaryjoin.right.name) for item in records)
-    last_items = lasttable.query.filter(primaryjoin.left.in_(record_id_gen)).all()
+    primaryjoin_left, primaryjoin_right =\
+        (primaryjoin.left, primaryjoin.right)\
+        if not reverse else\
+        (primaryjoin.right, primaryjoin.left)
+    record_id_gen = list(getattr(item, primaryjoin_right.name) for item in records)
+    last_items = lasttable.query.filter(primaryjoin_left.in_(record_id_gen)).all()
     for record in records:
-        last_id = getattr(record, primaryjoin.right.name)
-        last_item = next((item for item in last_items if getattr(item, primaryjoin.left.name) == last_id), None)
+        last_id = getattr(record, primaryjoin_right.name)
+        last_item = next((item for item in last_items if getattr(item, primaryjoin_left.name) == last_id), None)
         record.__dict__[relation] = last_item
     return last_items
 

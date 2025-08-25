@@ -5,8 +5,8 @@
 {% from "errors/_macros.html" import errors_section %}
 
 <aside id="download-sidebar">
-    {{ artists_section(download.artist, 'download-artist') }}
-    {{ illusts_section(download.illust, 'download-illust') }}
+    {{ artists_section(download.selectin_artist, 'download-artist') }}
+    {{ illusts_section(download.selectin_illust, 'download-illust') }}
     {{ posts_display(helpers.download.post_search(download), download.selectin_posts | length, 'download-posts') }}
     {{ errors_section(download.errors, 'download-errors') }}
     {{ timestamps_section(download, 'download-timestamps') }}

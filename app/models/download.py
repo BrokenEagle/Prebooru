@@ -82,6 +82,14 @@ class Download(JsonModel):
         return self._elements_query.filter(DownloadElement.status_value.not_in(['complete', 'error'])).get_count()
 
     @memoized_property
+    def selectin_artist(self):
+        return getattr(self.selectin_illust, 'artist', None)
+
+    @memoized_property
+    def selectin_illust(self):
+        return next((illust_url.illust for illust_url in self.selectin_illust_urls), None)
+
+    @memoized_property
     def selectin_illust_urls(self):
         return [element.illust_url for element in self.elements]
 
@@ -174,7 +182,8 @@ class Download(JsonModel):
     def _populate_illust_urls(self):
         if len(self.elements):
             selectinload_batch_primary(self.elements, 'illust_url')
-        self._illust_urls = [element.illust_url for element in self.elements]
+        self._illust_urls = [element.illust_url for element in self.elements
+                             if element.illust_url is not None]
         self._complete_illust_urls = [element.illust_url for element in self.elements
                                       if element.status_name == 'complete']
         self._duplicate_illust_urls = [element.illust_url for element in self.elements
@@ -182,7 +191,7 @@ class Download(JsonModel):
 
     def _populate_posts(self):
         if len(self.illust_urls):
-            selectinload_batch_primary(self.illust_urls, 'post')
+            selectinload_batch_primary(self.illust_urls, 'post', True)
         self._posts = [illust_url.post for illust_url in self.illust_urls
                        if illust_url.post is not None]
         self._complete_posts = [illust_url.post for illust_url in self.complete_illust_urls
