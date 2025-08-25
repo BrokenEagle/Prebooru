@@ -11,7 +11,7 @@ from utility.uprint import buffered_print
 # ## LOCAL IMPORTS
 from ... import SESSION
 from ...models import Download
-from ..utility import unique_objects, SessionThread
+from ..utility import unique_objects, SessionThread, set_error
 from ..sources.base_src import get_post_source
 from ..records.artist_rec import update_artist_from_source, check_artists_for_boorus
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
@@ -21,9 +21,10 @@ from ..records.similarity_match_rec import generate_similarity_matches
 from ..database.base_db import safe_db_execute
 from ..database.illust_db import get_site_illust
 from ..database.illust_url_db import update_illust_url_from_parameters
-from ..database.download_db import update_download_from_parameters
+from ..database.download_db import create_download_from_parameters, update_download_from_parameters,\
+    get_download_by_request_url
 from ..database.download_element_db import create_download_element_from_parameters,\
-    update_download_element_from_parameters
+    update_download_element_from_parameters, get_download_element
 from ..database.post_db import get_posts_by_id, get_post_by_md5, update_post_from_parameters
 from ..database.error_db import create_and_extend_errors, create_and_append_error, append_error
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
@@ -142,6 +143,34 @@ def create_post_from_download_element(element):
         update_download_element_from_parameters(element, {'status_name': 'error'})
     else:
         update_download_element_from_parameters(element, {'status_name': 'complete'})
+
+
+def create_download_from_illust_url(illust_url):
+    illust = illust_url.illust
+    illust_key = '%s-%d' % (illust.site_name, illust.site_illust_id)
+    illust_download = get_download_by_request_url(illust_key)
+    if illust_download is None:
+        illust_download = create_download_from_parameters({'request_url': illust_key, 'status_name': 'processing'})
+    else:
+        update_download_from_parameters(illust_download, {'status_name': 'processing'})
+    illust_url_element = get_download_element(illust_download.id, illust_url.id)
+    if illust_url_element is None:
+        params = {
+            'download_id': illust_download.id,
+            'illust_url_id': illust_url.id,
+        }
+        illust_url_element = create_download_element_from_parameters(params)
+    else:
+        update_download_element_from_parameters(illust_url_element, {'status_name': 'pending'})
+    create_post_from_download_element(illust_url_element)
+    retdata = {'error': False}
+    if illust_url_element.status_name == 'complete':
+        update_download_from_parameters(illust_download, {'status_name': 'complete'})
+    else:
+        # Setting the unknown status so that it can't be restarted from the download UI
+        update_download_from_parameters(illust_download, {'status_name': 'unknown'})
+        retdata = set_error(retdata, "Error downloading post on %s." % illust_url_element.shortlink)
+    return retdata
 
 
 # #### Secondary task functions
