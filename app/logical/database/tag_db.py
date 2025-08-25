@@ -5,7 +5,7 @@ from sqlalchemy import union_all
 
 # ## LOCAL IMPORTS
 from ...models import SiteTag, UserTag, IllustTags, PostTags
-from .base_db import set_column_attributes, save_record, commit_session
+from .base_db import set_column_attributes, save_record, prune_unused_items
 
 
 # ## GLOBAL VARIABLES
@@ -45,7 +45,4 @@ def set_tag_from_parameters(tag, setparams, action, commit):
 
 def prune_unused_tags():
     # Only site tags are automatically pruneable. User tags must be removed manually.
-    delete_count = SiteTag.query.filter(SiteTag.id.not_in(TAG_UNION_CLAUSE))\
-                                .delete(synchronize_session=False)
-    commit_session()
-    return delete_count
+    return prune_unused_items(SiteTag, TAG_UNION_CLAUSE)
