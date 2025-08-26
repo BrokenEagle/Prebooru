@@ -47,7 +47,7 @@ CLIENT_TRANSACTION_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
     "Cache-Control": "no-cache",
     "Referer": "https://x.com",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",  # noqa: E501
     "X-Twitter-Active-User": "yes",
     "X-Twitter-Client-Language": "en",
 }
@@ -430,7 +430,7 @@ TWEET_REST_ID_FEATURES = {
     "responsive_web_enhance_cards_enabled": False,
 }
 
-TWEET_REST_ID_FIELD_TOGGLES ={
+TWEET_REST_ID_FIELD_TOGGLES = {
     "withArticleRichContentState": False,
     "withArticlePlainText": False,
     "withGrokAnalyze": False,
@@ -1064,15 +1064,15 @@ def get_tweet_by_rest_id(tweet_id):
 
 
 def get_tweet_by_tweet_detail(tweet_id):
-     tweet_id_str = str(tweet_id)
-     twitter_data = get_twitter_illust_timeline(tweet_id)
-     if is_error(twitter_data):
-         return twitter_data
-     for i in range(len(twitter_data)):
-         tweet = safe_get(twitter_data[i], 'result', 'legacy')
-         if tweet is not None and tweet['id_str'] == tweet_id_str:
-             return tweet
-     return _create_module_error('get_tweet_by_tweet_detail', "Tweet not found: %d" % illust_id)
+    tweet_id_str = str(tweet_id)
+    twitter_data = get_twitter_illust_timeline(tweet_id)
+    if is_error(twitter_data):
+        return twitter_data
+    for i in range(len(twitter_data)):
+        tweet = safe_get(twitter_data[i], 'result', 'legacy')
+        if tweet is not None and tweet['id_str'] == tweet_id_str:
+            return tweet
+    return _create_module_error('get_tweet_by_tweet_detail', "Tweet not found: %d" % tweet_id)
 
 
 def get_media_page(user_id, count, cursor=None):

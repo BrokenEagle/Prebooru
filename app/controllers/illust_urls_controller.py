@@ -11,7 +11,6 @@ from ..models import Illust, IllustUrl
 from ..logical.utility import set_error
 from ..logical.sites import site_name_by_url
 from ..logical.sources import source_by_site_name
-from ..logical.sources.base_src import get_media_source
 from ..logical.records.download_rec import create_download_from_illust_url
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
