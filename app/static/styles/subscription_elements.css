@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/SUBSCRIPTION_ELEMENTS.CSS **/
 
-/**** General ****/
+/**** GENERAL ****/
+
 div#subscription-controls a.yes-link,
 div.subscription-element-info a.yes-link {
     color: green;
@@ -20,7 +21,8 @@ div#subscription-controls a.archive-link {
     color: #aaa;
 }
 
-/**** INDEX Page ****/
+/**** INDEX ****/
+
 section#content.c-subscription-element.a-index {
     min-width: 95em;
 }

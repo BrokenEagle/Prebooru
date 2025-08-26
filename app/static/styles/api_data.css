@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/API_DATA.CSS **/
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#api-data-heading {
     font-size: 28px;
     margin-top: 1em;
@@ -11,7 +12,8 @@ div#api-data-content {
     margin-top: 1em;
 }
 
-/**** INDEX Page ****/
+/**** INDEX ****/
+
 section.a-index div.json-data {
     max-height: 50em;
     max-width: 85em;

@@ -7,7 +7,7 @@ div.upload-elements {
     flex-wrap: wrap;
 }
 
-/**** INDEX Page ****/
+/**** INDEX ****/
 
 div.no-post {
     background: #f0f0f0;
@@ -35,7 +35,7 @@ table#upload-elements-table article.post img {
     width: auto;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
 
 div#upload-element-heading {
     font-size: 28px;

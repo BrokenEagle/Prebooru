@@ -35,7 +35,8 @@ div.illust-multi-urls img {
     max-width: 150px;
 }
 
-/**** NEW/EDIT Page ****/
+/**** NEW/EDIT ****/
+
 div#illust-url-form-heading {
     font-size: 28px;
     margin-top: 1em;
@@ -51,7 +52,8 @@ input#illust-url-url {
     width: 50em;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#illust-url-heading {
     font-size: 28px;
     margin-top: 1em;
@@ -63,7 +65,8 @@ div#illust-url-content {
     margin-top: 1em;
 }
 
-/**** INDEX Page ****/
+/**** INDEX ****/
+
 table#illust-urls-table article.post {
     height: 204px;
     width: 204px;

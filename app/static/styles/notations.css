@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/NOTATIONS.CSS **/
 
-/**** NEW/EDIT Page ****/
+/**** NEW/EDIT ****/
+
 div#notation-form-heading {
     font-size: 28px;
     margin-top: 1em;
@@ -17,7 +18,8 @@ textarea#notation-body {
     width: 50em;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#notation-heading {
     font-size: 32px;
 }

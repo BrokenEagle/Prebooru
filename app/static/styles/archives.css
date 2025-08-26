@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/ARCHIVES.CSS **/
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#archive-heading {
     font-size: 28px;
     margin-top: 1em;
@@ -16,7 +17,8 @@ section#media-container.fullsize img {
     width: auto;
 }
 
-/**** INDEX Page ****/
+/**** INDEX ****/
+
 section.a-index div.json-data {
     max-height: 50em;
     max-width: 70em;

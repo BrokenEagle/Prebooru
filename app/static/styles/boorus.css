@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/BOORUS.CSS **/
 
-/**** NEW/EDIT Page ****/
+/**** NEW/EDIT ****/
+
 div.booru-form-heading {
     font-size: 28px;
     margin-top: 1em;
@@ -11,7 +12,8 @@ textarea#booru-name-string {
     width: 20em;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#booru-heading {
     font-size: 32px;
 }
@@ -74,7 +76,8 @@ div#booru-posts {
     margin-top: 2em;
 }
 
-/****OLD NAMES****/
+/**** OLD NAMES ****/
+
 div.content {
     display: flex;
 }
@@ -83,6 +86,7 @@ div.current-section {
     width: 45%;
     margin-left: 1em;
 }
+
 div.old-section {
     width: 50%;
     margin-left: 1em;
@@ -95,7 +99,7 @@ div.current-block {
 div.old-block {
     margin: 0.2em;
     padding: 0.2em 5em 0.2em 0.2em;
-    border: 1px solid #DDD;
+    border: 1px solid #ddd;
     min-height: 2.5em;
     position: relative;
 }

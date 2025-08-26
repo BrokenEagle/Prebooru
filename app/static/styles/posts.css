@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/POSTS.CSS **/
 
-/**** INDEX Page ****/
+/**** INDEX ****/
+
 div#posts-container {
     margin-top: 2em;
 }
@@ -79,7 +80,8 @@ div.post-display div.input input {
     margin-left: 25px;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#sidebar-container {
     display: flex;
 }
@@ -224,8 +226,8 @@ div.related-post-block {
 }
 
 div.related-post-block.post-self {
-    background-color: #EEE;
-    border: 1px solid #CCC;
+    background-color: #eee;
+    border: 1px solid #ccc;
 }
 
 div.related-post-block article.post {

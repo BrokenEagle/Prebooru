@@ -40,7 +40,8 @@ form.pixiv-data > div.pixiv-data {
     display: block;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#illust-heading {
     font-size: 32px;
     margin-top: 1em;
@@ -115,7 +116,7 @@ section#illust-additional-commentaries {
 }
 
 div#illust-main-commentary-block {
-    border: 1px solid #DDD;
+    border: 1px solid #ddd;
     padding: 0.5em;
 }
 
@@ -194,7 +195,8 @@ div.no-post-preview img {
     width: auto;
 }
 
-/**** INDEX Page ****/
+/**** INDEX ****/
+
 div.simple-tags-container {
     max-width: 25vw;
 }
@@ -281,7 +283,8 @@ div.illust-display div.input.checkbox-active label {
     background: linear-gradient(270deg, green, transparent);
 }
 
-/****OLD COMMENTARIES/TITLES****/
+/**** OLD COMMENTARIES/TITLES ****/
+
 div.content {
     display: flex;
 }
@@ -290,6 +293,7 @@ div.current-section {
     width: 45%;
     margin-left: 1em;
 }
+
 div.old-section {
     width: 50%;
     margin-left: 1em;
@@ -302,7 +306,7 @@ div.current-block {
 div.old-block {
     margin: 0.2em;
     padding: 0.2em 5em 0.2em 0.2em;
-    border: 1px solid #DDD;
+    border: 1px solid #ddd;
     min-height: 2.5em;
     position: relative;
 }
