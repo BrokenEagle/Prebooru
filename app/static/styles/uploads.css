@@ -1,6 +1,6 @@
 /** APP/STATIC/STYLES/UPLOADS.CSS **/
 
-/**** NEW/EDIT Page ****/
+/**** NEW/EDIT ****/
 
 div#upload-url-info {
     margin: 1em;
@@ -20,7 +20,7 @@ textarea#upload-image-url-string {
     height: 10em;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
 
 div#upload-content {
     margin-top: 2em;
@@ -167,7 +167,7 @@ div#upload-force-select-load {
     font-weight: bold;
     font-size: 20px;
     margin-left: 1em;
-    border: 2px solid #EEE;
+    border: 2px solid #eee;
     border-radius: 25px;
     max-width: fit-content;
     padding: 0.25em 0.5em;

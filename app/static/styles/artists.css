@@ -1,6 +1,6 @@
 /** APP/STATIC/STYLES/ARTISTS.CSS **/
 
-/**** NEW/EDIT Page ****/
+/**** NEW/EDIT ****/
 
 textarea#artist-site-account-string,
 textarea#artist-name-string {
@@ -18,7 +18,8 @@ textarea#artist-profile {
     width: 50em;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#artist-heading {
     font-size: 32px;
 }
@@ -125,6 +126,7 @@ div#artist-posts {
 }
 
 /**** MACROS ****/
+
 span.artist-webpage {
     font-family: monospace;
 }
@@ -142,7 +144,8 @@ span.nonprimary-artist {
     font-size: 0.8em;
 }
 
-/****OLD PROFILES/ACCOUNTS/NAMES****/
+/**** OLD PROFILES/ACCOUNTS/NAMES ****/
+
 div.content {
     display: flex;
 }
@@ -151,6 +154,7 @@ div.current-section {
     width: 45%;
     margin-left: 1em;
 }
+
 div.old-section {
     width: 50%;
     margin-left: 1em;
@@ -163,7 +167,7 @@ div.current-block {
 div.old-block {
     margin: 0.2em;
     padding: 0.2em 5em 0.2em 0.2em;
-    border: 1px solid #DDD;
+    border: 1px solid #ddd;
     min-height: 2.5em;
     position: relative;
 }

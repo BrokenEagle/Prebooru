@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/DOWNLOADS.CSS **/
 
-/**** NEW/EDIT Page ****/
+/**** NEW/EDIT ****/
+
 div#download-url-info {
     margin: 1em;
 }
@@ -19,7 +20,8 @@ textarea#download-image-url-string {
     height: 10em;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#download-content {
     margin-top: 2em;
     display: flex;
@@ -75,7 +77,7 @@ section#download-image-urls ul {
     max-width: 100%;
     overflow-y: auto;
     padding-left: 2em;
-    margin-left: 0em;
+    margin-left: 0;
 }
 
 div#download-posts {
@@ -120,6 +122,7 @@ div.no-post-preview > div {
 }
 
 /**** INDEX ****/
+
 div.download-preview {
     display: grid;
     grid-template-columns: repeat(2, 0fr);
@@ -188,7 +191,7 @@ div#download-force-select-load {
     font-weight: bold;
     font-size: 20px;
     margin-left: 1em;
-    border: 2px solid #EEE;
+    border: 2px solid #eee;
     border-radius: 25px;
     max-width: fit-content;
     padding: 0.25em 0.5em;

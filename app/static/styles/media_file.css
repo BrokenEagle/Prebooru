@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/MEDIA_FILE.CSS **/
 
-/**** INDEX Page ****/
+/**** INDEX ****/
+
 section.a-index article.media-file img {
     max-height: 300px;
     max-width: 300px;
@@ -8,7 +9,8 @@ section.a-index article.media-file img {
     width: auto;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#media-file-heading {
     font-size: 28px;
     margin-top: 1em;

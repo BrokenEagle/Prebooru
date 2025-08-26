@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/STATIC.CSS **/
 
-/**** SITE MAP Page ****/
+/**** SITE MAP ****/
+
 div#site-map {
     display: flex;
     font-size: 16px;
@@ -19,7 +20,8 @@ div#site-map > div > section {
     margin-bottom: 2em;
 }
 
-/**** BOOKMARKLET INFO page ****/
+/**** BOOKMARKLET INFO ****/
+
 div#bookmarklet-info > h4 {
     margin-top: 1em;
 }
