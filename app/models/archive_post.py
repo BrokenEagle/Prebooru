@@ -68,7 +68,8 @@ class ArchivePost(JsonModel):
 
     @check_app_context
     def frame_url(self, num):
-        return image_server_url(network_path_join('archive', self._partial_network_path, self._frame_filename(num)), subtype='main')
+        return image_server_url(network_path_join('archive', self._partial_network_path, self._frame_filename(num)),
+                                subtype='main')
 
     @property
     def is_image(self):
@@ -148,10 +149,6 @@ class ArchivePost(JsonModel):
     @memoized_property
     def _partial_network_path(self):
         return '%s/%s/%s' % (self.md5[0:2], self.md5[2:4], self.md5)
-
-    @memoized_property
-    def _partial_file_path(self):
-        return os.path.join(self.md5[0:2], self.md5[2:4], self.md5)
 
     @memoized_property
     def _partial_file_path(self):

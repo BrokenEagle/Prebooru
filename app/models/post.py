@@ -104,7 +104,8 @@ class Post(JsonModel):
 
     @check_app_context
     def frame_url(self, num):
-        return image_server_url(network_path_join('data', self._partial_network_path, self._frame_filename(num)), subtype=self.suburl_path)
+        return image_server_url(network_path_join('data', self._partial_network_path, self._frame_filename(num)),
+                                subtype=self.suburl_path)
 
     @property
     def is_ugoira(self):
