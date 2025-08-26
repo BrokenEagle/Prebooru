@@ -270,6 +270,8 @@ def download_html(id):
     result = create_download_from_illust_url(illust_url)
     if result['error']:
         flash(result['message'], 'error')
+    elif result['message'] is not None:
+        flash(result['message'])
     else:
         flash("%s downloaded" % illust_url.shortlink)
     return redirect(request.referrer)

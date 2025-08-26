@@ -163,9 +163,11 @@ def create_download_from_illust_url(illust_url):
     else:
         update_download_element_from_parameters(illust_url_element, {'status_name': 'pending'})
     create_post_from_download_element(illust_url_element)
-    retdata = {'error': False}
-    if illust_url_element.status_name == 'complete':
+    retdata = {'error': False, 'message': None}
+    if illust_url_element.status_name in ['complete', 'duplicate']:
         update_download_from_parameters(illust_download, {'status_name': 'complete'})
+        if illust_url_element.status_name == 'duplicate':
+            retdata['message'] = "Duplicate of %s" % illust_url.post.shortlink
     else:
         # Setting the unknown status so that it can't be restarted from the download UI
         update_download_from_parameters(illust_download, {'status_name': 'unknown'})
