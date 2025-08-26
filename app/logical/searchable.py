@@ -3,7 +3,7 @@
 # ## PYTHON IMPORTS
 import re
 import logging
-from sqlalchemy import and_, not_, func
+from sqlalchemy import and_, not_, or_, func
 from sqlalchemy.orm import aliased, with_polymorphic, ColumnProperty, RelationshipProperty
 from sqlalchemy.ext.associationproxy import ColumnAssociationProxyInstance, ObjectAssociationProxyInstance,\
     AmbiguousAssociationProxyInstance
@@ -284,11 +284,31 @@ def boolean_filters(model, columnname, params):
 def relationship_has_filters(model, attribute, params, relation_model, relation_property):
     if relation_property.secondaryjoin is not None:
         return relationship_has_secondary_filters(model, attribute, params, relation_property)
-    else:
+    if len(relation_property.primaryjoin.right.foreign_keys) > 0:
         return relationship_has_foreign_key_filters(model, attribute, params, relation_model, relation_property)
+    return relationship_has_relation_filters(model, attribute, params, relation_model, relation_property)
+
+
+def relationship_has_relation_filters(model, attribute, params, relation_model, relation_property):
+    """For primary key relations not enforced by SQL, i.e. a non-null value doesn't mean the relation exists."""
+    primaryjoin = relation_property.primaryjoin
+    model_colname, relation_colname =\
+        (primaryjoin.right.name, primaryjoin.left.name)\
+        if primaryjoin.right.table == model.__table__\
+        else (primaryjoin.left.name, primaryjoin.right.name)
+    model_column = getattr(model, model_colname)
+    relation_column = getattr(relation_model, relation_colname)
+    subclause = relation_model.query.filter(relation_column.is_not(None)).with_entities(relation_column)
+    if is_truthy(params['has_' + attribute]):
+        return (model_column.is_not(None), model_column.in_(subclause))
+    elif is_falsey(params['has_' + attribute]):
+        return (or_(model_column.is_(None), model_column.not_in(subclause)),)
+    else:
+        raise Exception("%s - value must be truthy or falsey" % (attribute + '_exists'))
 
 
 def relationship_has_foreign_key_filters(model, attribute, params, relation_model, relation_property):
+    """For primary key relations enforced by SQL, i.e. a non-null value means the relation exists"""
     primaryjoin = relation_property.primaryjoin
     if primaryjoin.right.table == model.__table__:
         if is_truthy(params['has_' + attribute]):
