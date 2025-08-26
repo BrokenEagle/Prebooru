@@ -28,6 +28,10 @@ def print_error(*args, trim=False, **kwargs):
     print(_convert(_coalesce_arguments(args, trim), 'RED'), **kwargs)
 
 
+def print_sql(*args, trim=False, **kwargs):
+    print(_convert(_coalesce_arguments(args, trim), 'CYAN'), **kwargs)
+
+
 def buffered_print(name, safe=False, header=True, trim=False, sep=" ", end="\n"):
     buffer_key = name + " - " + uuid.uuid1().hex
     if header:

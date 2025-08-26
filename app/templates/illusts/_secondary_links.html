@@ -1,7 +1,15 @@
 {% from "layouts/_macros.html" import subnav_link_to %}
 
 <menu id="secondary-menu">
-    {{ subnav_link_to("Listing", 'illust.index_html') }}
+    {% if helpers.base.is_index() %}
+        {% if edit_illusts %}
+            {{ subnav_link_to("Listing", 'illust.index_html', with_params=True, edit_illusts='false', attrs={'class': 'nav-modify'}) }}
+        {% else %}
+            {{ subnav_link_to("Modify", 'illust.index_html', with_params=True, edit_illusts='true', attrs={'class': 'nav-modify'}) }}
+        {% endif %}
+    {% else %}
+        {{ subnav_link_to("Listing", 'illust.index_html') }}
+    {% endif %}
     {{ subnav_link_to("New", 'illust.new_html') }}
     {{ subnav_link_to("URLs", 'illust_url.index_html') }}
     {{ subnav_link_to("Tags", 'tag.index_html') }}

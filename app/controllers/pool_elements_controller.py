@@ -27,7 +27,7 @@ APPEND_KEYS = ['illust_id', 'post_id', 'notation_id']
 
 PARSE_PARAMS_DICT = {
     'pool_id': int,
-    'illust_id': int,
+    'illust_id': int_or_array,
     'post_id': int_or_array,
     'notation_id': int,
 }

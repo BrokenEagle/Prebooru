@@ -118,7 +118,7 @@ def convert_update_params(dataparams):
     return updateparams
 
 
-def set_url_site(dataparams, source):
+def set_url_site(dataparams):
     dataparams['site_name'] = site_name_by_url(dataparams['url'])
     source = source_by_site_name(dataparams['site_name'])
     dataparams['url'] = source.partial_media_url(dataparams['url'])
@@ -149,10 +149,10 @@ def create():
     illust = Illust.find(createparams['illust_id'])
     if illust is None:
         return set_error(retdata, "Illust #%d not found." % dataparams['illust_id'])
-    source = get_media_source(createparams['url'])
-    if source is None:
-        return set_error(retdata, "URL is not a valid image URL from a recognized source.")
-    set_url_site(createparams, source)
+    #source = get_media_source(createparams['url'])
+    #if source is None:
+    #    return set_error(retdata, "URL is not a valid image URL from a recognized source.")
+    set_url_site(createparams)
     check_illust_url = uniqueness_check(createparams, IllustUrl())
     if check_illust_url is not None:
         retdata['item'] = check_illust_url.to_json()

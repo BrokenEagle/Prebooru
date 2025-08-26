@@ -112,6 +112,7 @@ def get_danbooru_posts_by_md5s(md5_list):
         method = 'post'
     all_posts = []
     while True:
+        print("get_danbooru_posts_by_md5s: querying...")
         data = danbooru_request(request_url, params, method=method)
         if data['error']:
             return data

@@ -22,9 +22,9 @@ from ..media import load_image, create_sample, create_preview, create_video_scre
     convert_mp4_to_webm, check_filetype, get_pixel_hash, check_alpha, convert_alpha, create_data, get_video_info
 from ..database.base_db import delete_record, commit_session
 from ..database.post_db import create_post_from_parameters,\
-    get_posts_to_query_danbooru_id_page, update_post_from_parameters, alternate_posts_query,\
+    get_posts_to_query_danbooru_id_query, update_post_from_parameters, alternate_posts_query,\
     missing_image_hashes_query, missing_similarity_matches_query, get_posts_by_id,\
-    get_artist_posts_without_danbooru_ids, get_post_by_md5
+    get_artist_posts_without_danbooru_ids_query, get_post_by_md5
 from ..database.illust_url_db import update_illust_url_from_parameters, get_illust_url_by_full_url
 from ..database.notation_db import create_notation_from_parameters
 from ..database.error_db import create_error_from_parameters, create_and_append_error, create_and_extend_errors
@@ -250,22 +250,30 @@ def redownload_post(post):
 def check_all_posts_for_danbooru_id():
     print("Checking all posts for Danbooru ID.")
     status = {'total': 0}
-    page = get_posts_to_query_danbooru_id_page(5000)
+    query = get_posts_to_query_danbooru_id_query()
+    page = query.sequential_paginate(per_page=5000, page='newest_first')
+    batch_num = 1
     while True:
-        print_info(f"\ncheck_all_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})\n")
-        if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, status) or not page.has_next:
+        print_info(f"\ncheck_all_posts_for_danbooru_id[{batch_num}]: {page.range} / Total({page.count})\n")
+        success = check_posts_for_danbooru_id(page.items, status)
+        if not success or not page.has_below:
             return status
-        page = page.next()
+        batch_num += 1
+        page = page.below()
 
 
 def check_artist_posts_for_danbooru_id(artist_id):
     artist = Artist.find(artist_id)
-    page = get_artist_posts_without_danbooru_ids(artist)
+    query = get_artist_posts_without_danbooru_ids_query(artist)
+    page = query.sequential_paginate(per_page=100, distinct=True, page='newest_first')
+    batch_num = 1
     while True:
-        print_info(f"\ncheck_artist_posts_for_danbooru_id: {page.first} - {page.last} / Total({page.count})\n")
-        if len(page.items) == 0 or not check_posts_for_danbooru_id(page.items, {}) or not page.has_next:
-            break
-        page = page.next()
+        print_info(f"\ncheck_artist_posts_for_danbooru_id[{batch_num}]: {page.range} / Total({page.count})\n")
+        success = check_posts_for_danbooru_id(page.items, {})
+        if not success or not page.has_below:
+            return status
+        batch_num += 1
+        page = page.below()
 
 
 def check_posts_for_danbooru_id(posts, status=None):
@@ -278,12 +286,16 @@ def check_posts_for_danbooru_id(posts, status=None):
             print(results['message'])
             return False
         if len(results['posts']) > 0:
+            dirty = False
             for post in posts:
                 danbooru_post = next(filter(lambda x: x['md5'] == post.md5, results['posts']), None)
                 if danbooru_post is None:
                     continue
-                update_post_from_parameters(post, {'danbooru_id': danbooru_post['id']})
+                update_post_from_parameters(post, {'danbooru_id': danbooru_post['id']}, commit=False)
                 inc_dict_entry(status, 'total')
+                dirty = True
+            if dirty:
+                commit_session()
     return True
 
 

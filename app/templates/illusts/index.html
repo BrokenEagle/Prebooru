@@ -1,5 +1,5 @@
 {% extends "illusts/_base.html" %}
-{% from "layouts/_macros.html" import page_navigation %}
+{% from "layouts/_macros.html" import page_navigation, image_select_controls %}
 {% from "posts/_macros.html" import multi_post_preview, post_preview %}
 {% from "illust_urls/_macros.html" import illust_urls_preview %}
 {% from "tags/_macros.html" import simple_tag_list %}
@@ -14,6 +14,20 @@
 {% endblock title %}
 
 {% block content %}
+    {% if edit_illusts %}
+        <div id="illust-page-controls">
+            <div id="illust-controls">
+                {% call image_select_controls('illust-select-input') %}
+                    &emsp;&emsp;&emsp;
+                    <strong>
+                        ADD[
+                        <a class="pool-link" href="#" onclick="return Illusts.submitForm('pool', '{{ url_for('pool_element.create_json') }}')">POOL</a>
+                        ]
+                    </strong>
+                {% endcall %}
+            </div>
+        </div>
+    {% endif %}
     <table id="illusts-table" class="striped" width="100%">
         <thead>
             <tr>
@@ -28,6 +42,21 @@
             {% for illust in page.items %}
                 <tr id="illust-{{ illust.id }}">
                     <td>
+                        {% if edit_illusts %}
+                            <div class="illust-display">
+                                <div class="input">
+                                    <label for="illust-{{ illust.id }}-checkbox">
+                                        <input type="checkbox"
+                                               class="illust-select-input"
+                                               id="illust-{{ illust.id }}-checkbox"
+                                               name="illust[id][]"
+                                               value="{{ illust.id }}"
+                                               onchange="return Prebooru.toggleCheckbox(this)"
+                                               onclick="return Prebooru.selectClick(this)">
+                                    </label>
+                                </div>
+                            </div>
+                        {% endif %}
                         <div class="preview-header">{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</div>
                         {% if illust.selectin_posts | length > 1 %}
                             {{ multi_post_preview(illust, 'illust', True) }}
@@ -78,4 +107,8 @@
 
 {% block pagescript %}
     Prebooru.initializeLazyLoad('.illust-preview, .post, .illust-preview-url');
+    {% if edit_illusts %}
+        Prebooru.setAllInputsTimeout('illust-display');
+        Prebooru.initializeEventCallbacks('illust-display');
+    {% endif %}
 {% endblock pagescript %}

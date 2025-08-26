@@ -110,6 +110,35 @@ Prebooru.removeTag = function (obj, type) {
     return false;
 };
 
+Prebooru.toggleCheckbox = function(obj) {
+    let $div = Prebooru.closest(obj, 'div');
+    if (obj.checked) {
+        $div.classList.add('checkbox-active');
+    } else {
+        $div.classList.remove('checkbox-active');
+    }
+};
+
+Prebooru.setAllInputsTimeout = function (selector_class) {
+    setTimeout(() => {
+        document.querySelectorAll(`.${selector_class} input[type=checkbox]`).forEach((input) => {
+            if (!input.checked) return;
+            let curr = Prebooru.closest(input, 'div.input');
+            if (curr !== null) {
+                curr.classList.add('checkbox-active');
+            }
+        });
+    }, 500);
+};
+
+Prebooru.initializeEventCallbacks = function (selector_class) {
+    document.addEventListener('prebooru:update-inputs', function () {
+        document.querySelectorAll(`.${selector_class} input[type=checkbox]`).forEach((input) => {
+            Prebooru.toggleCheckbox(input);
+        });
+    });
+};
+
 Prebooru.selectAll = function(classname) {
     let counter = 0;
     [...document.getElementsByClassName(classname)].forEach((input) => {

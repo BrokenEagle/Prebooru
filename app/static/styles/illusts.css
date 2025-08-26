@@ -40,6 +40,43 @@ form.pixiv-data > div.pixiv-data {
     display: block;
 }
 
+div#illust-page-controls {
+    height: 4em;
+    position: relative;
+    width: 95%;
+}
+
+div#illust-page-controls > div {
+    position: absolute;
+}
+
+div#illust-controls {
+    bottom: 0;
+    right: 0;
+    border: 2px solid #eee;
+    padding: 5px;
+}
+
+div#illust-controls div#image-select-controls {
+    margin-top: 0;
+}
+
+div.illust-display div.input label {
+    display: block;
+    text-align: start;
+    border: 1px solid;
+    border-radius: 25px;
+    margin-bottom: 5px;
+    margin-top: 0;
+    padding: 5px;
+    background: #f0f0d0;
+    border-color: #dd8;
+}
+
+div.illust-display div.input.checkbox-active label {
+    background: linear-gradient(270deg, green, transparent);
+}
+
 /**** SHOW Page ****/
 div#illust-heading {
     font-size: 32px;

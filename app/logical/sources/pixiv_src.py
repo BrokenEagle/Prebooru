@@ -110,6 +110,10 @@ def has_artist_urls(artist):
     return True
 
 
+def artist_profile_urls(artist):
+    return [ARTIST_HREFURL % artist.site_artist_id, 'https://www.pixiv.net/stacc/%s' % artist.site_account_value]
+
+
 def artist_artworks_url(artist):
     return ARTIST_HREFURL % artist.site_artist_id + '/artworks'
 
@@ -120,6 +124,10 @@ def artist_bookmarks_url(artist):
 
 def artist_booru_search_url(artist):
     return 'https://www.pixiv.net/users/%d' % artist.site_artist_id
+
+
+def illust_commentaries_dtext(illust):
+    return [illust.commentary_body] if illust.commentary_id is not None else []
 
 
 def get_data_illust_ids(pixiv_data, type):

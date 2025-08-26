@@ -12,7 +12,11 @@ import datetime
 
 # ## EXTERNAL IMPORTS
 import httpx
+import requests
 from wtforms import RadioField, BooleanField, IntegerField, TextField
+"""pip install xclienttransaction"""
+from x_client_transaction.utils import handle_x_migration
+from x_client_transaction import ClientTransaction
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN, TWITTER_MINIMUM_QUERY_INTERVAL
@@ -38,6 +42,18 @@ from ..database.jobs_db import get_job_status_data, update_job_status
 
 SELF = sys.modules[__name__]
 
+CLIENT_TRANSACTION = None
+
+CLIENT_TRANSACTION_HEADERS = {
+    "Authority": "x.com",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control": "no-cache",
+    "Referer": "https://x.com",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+    "X-Twitter-Active-User": "yes",
+    "X-Twitter-Client-Language": "en",
+}
+
 IMAGE_HEADERS = {}
 
 BAD_ID_TAGS = ['bad_id', 'bad_twitter_id']
@@ -52,7 +68,6 @@ TAG_SEARCH_HREFURL = 'https://twitter.com/hashtag/%s?src=hashtag_click&f=live'
 SITE = SiteDescriptor.twitter
 
 HAS_TAG_SEARCH = True
-
 
 # #### Regex variables
 
@@ -213,52 +228,61 @@ TWITTER_USER_HEADERS = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',  # noqa: E501
     'authorization': 'Bearer ' + TWITTER_AUTH,
     'x-csrf-token': TWITTER_CSRF_TOKEN,
-    'cookie': f'auth_token={TWITTER_USER_TOKEN}; ct0={TWITTER_CSRF_TOKEN}'
+    'cookie': f'auth_token={TWITTER_USER_TOKEN}; ct0={TWITTER_CSRF_TOKEN}',
 }
 
 HAS_USER_AUTH = TWITTER_USER_TOKEN is not None and TWITTER_CSRF_TOKEN is not None
 TWITTER_HEADERS = TWITTER_USER_HEADERS if HAS_USER_AUTH else None
 
 TWITTER_ILLUST_TIMELINE_GRAPHQL_FEATURES = {
-    "rweb_lists_timeline_redesign_enabled": True,
-    "responsive_web_graphql_exclude_directive_enabled": True,
+    "rweb_video_screen_enabled": False,
+    "profile_label_improvements_pcf_label_in_post_enabled": True,
+    "rweb_tipjar_consumption_enabled": True,
     "verified_phone_label_enabled": False,
     "creator_subscriptions_tweet_preview_api_enabled": True,
     "responsive_web_graphql_timeline_navigation_enabled": True,
     "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
-    "tweetypie_unmention_optimization_enabled": True,
+    "premium_content_api_read_enabled": False,
+    "communities_web_enable_tweet_community_results_fetch": True,
+    "c9s_tweet_anatomy_moderator_badge_enabled": True,
+    "responsive_web_grok_analyze_button_fetch_trends_enabled": False,
+    "responsive_web_grok_analyze_post_followups_enabled": True,
+    "responsive_web_jetfuel_frame": False,
+    "responsive_web_grok_share_attachment_enabled": True,
+    "articles_preview_enabled": True,
     "responsive_web_edit_tweet_api_enabled": True,
     "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
     "view_counts_everywhere_api_enabled": True,
     "longform_notetweets_consumption_enabled": True,
-    "responsive_web_twitter_article_tweet_consumption_enabled": False,
+    "responsive_web_twitter_article_tweet_consumption_enabled": True,
     "tweet_awards_web_tipping_enabled": False,
+    "responsive_web_grok_show_grok_translated_post": False,
+    "responsive_web_grok_analysis_button_from_backend": True,
+    "creator_subscriptions_quote_tweet_preview_enabled": False,
     "freedom_of_speech_not_reach_fetch_enabled": True,
     "standardized_nudges_misinfo": True,
     "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
     "longform_notetweets_rich_text_read_enabled": True,
     "longform_notetweets_inline_media_enabled": True,
-    "responsive_web_media_download_video_enabled": False,
+    "responsive_web_grok_image_annotation_enabled": True,
     "responsive_web_enhance_cards_enabled": False,
 }
 
 TWITTER_ILLUST_TIMELINE_GRAPHQL_FIELD_TOGGLES = {
-    "withArticleRichContentState": False,
+    "withArticleRichContentState": True,
+    "withArticlePlainText": False,
+    "withGrokAnalyze": False,
+    "withDisallowedReplyControls": False,
 }
 
 TWITTER_ILLUST_TIMELINE_GRAPHQL = {
+    "with_rux_injections": False,
+    "rankingMode": "Relevance",
     "includePromotedContent": True,
-    "withHighlightedLabel": True,
-    "withCommunity": False,
-    "withTweetQuoteCount": True,
-    "withBirdwatchNotes": False,
-    "withBirdwatchPivots": False,
-    "withTweetResult": True,
-    "withReactions": False,
-    "withSuperFollowsTweetFields": False,
-    "withSuperFollowsUserFields": False,
-    "withUserResults": False,
-    "withVoice": True
+    "withCommunity": True,
+    "withQuickPromoteEligibilityTweetFields": True,
+    "withBirdwatchNotes": True,
+    "withVoice": True,
 }
 
 TWITTER_MEDIA_TIMELINE_GRAPHQL = {
@@ -592,14 +616,7 @@ def small_image_url(image_url):
 
 
 def normalized_image_url(image_url):
-    match = IMAGE1_RG.match(image_url) or IMAGE2_RG.match(image_url)
-    if match:
-        type, imagekey, extension, _ = match.groups()
-        return IMAGE_SERVER + "/%s/%s.%s" % (type, imagekey, extension)
-    match = IMAGE3_RG.match(image_url) or IMAGE4_RG.match(image_url)
-    type, imageid, path, imagekey, extension, _ = match.groups()
-    path = path or ""
-    return IMAGE_SERVER + "/%s/%s%s/img/%s.%s" % (type, imageid, path, imagekey, extension)
+    return IMAGE_SERVER + normalize_image_url(image_url)
 
 
 def get_media_url(illust_url):
@@ -612,16 +629,23 @@ def get_sample_url(illust_url, original=False):
 
 
 def get_primary_url(illust):
-    return "https://twitter.com/i/web/status/%d" % illust.site_illust_id
-
-
-def get_secondary_url(illust):
     return "https://twitter.com/%s/status/%d" % (illust.artist.site_account_value, illust.site_illust_id)
 
 
+def get_secondary_url(illust):
+    return "https://twitter.com/i/web/status/%d" % illust.site_illust_id
+
+
+
 def normalize_image_url(image_url):
-    image_match = IMAGE1_RG.match(image_url) or IMAGE2_RG.match(image_url)
-    return r'/media/%s.%s' % (image_match.group(2), image_match.group(3))
+    match = IMAGE1_RG.match(image_url) or IMAGE2_RG.match(image_url)
+    if match:
+        type, imagekey, extension, _ = match.groups()
+        return "/%s/%s.%s" % (type, imagekey, extension)
+    match = IMAGE3_RG.match(image_url) or IMAGE4_RG.match(image_url)
+    type, imageid, path, imagekey, extension, _ = match.groups()
+    path = path or ""
+    return "/%s/%s%s/img/%s.%s" % (type, imageid, path, imagekey, extension)
 
 
 def has_artist_urls(artist):
@@ -821,6 +845,19 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
 
 # #### Network functions
 
+def get_client_transaction_id(endpoint, reinitialize):
+    global CLIENT_TRANSACTION
+    if CLIENT_TRANSACTION is None or reinitialize:
+        print("Getting new client transaction")
+        session = requests.Session()
+        session.headers = CLIENT_TRANSACTION_HEADERS
+        response = handle_x_migration(session)
+        CLIENT_TRANSACTION = ClientTransaction(response)
+        # Sleeping after a new client transaction is started seems to be needed for it to reliably work.
+        time.sleep(5)
+    return CLIENT_TRANSACTION.generate_transaction_id('GET', endpoint)
+
+
 def reauthentication_check(response):
     if response.status_code == 401:
         return True
@@ -856,14 +893,19 @@ def check_request_wait(wait):
     update_next_wait('twitter', TWITTER_MINIMUM_QUERY_INTERVAL)
 
 
-def twitter_request(url, method='get', wait=True):
+def twitter_request(endpoint, addons, method='get', wait=True):
     if not HAS_USER_AUTH:
         raise Exception("Cannot access Twitter API without valid credetials.")
     check_request_wait(wait)
     request_method = getattr(httpx, method)
+    reinitialize_transaction_id = False
     for i in range(3):
+        transaction_id =  get_client_transaction_id(endpoint, reinitialize_transaction_id)
+        print("Transaction ID:", transaction_id)
+        headers = TWITTER_HEADERS.copy()
+        headers['x-client-transaction-id'] = transaction_id
         try:
-            response = request_method(url, headers=TWITTER_HEADERS, timeout=10)
+            response = request_method('https://x.com' + endpoint + '?' + addons, headers=headers, timeout=10)
         except httpx.ConnectTimeout as e:
             print_warning("Pausing for network timeout...")
             error = e
@@ -871,6 +913,10 @@ def twitter_request(url, method='get', wait=True):
             continue
         if response.status_code == 200:
             break
+        if response.status_code == 404:
+            print_warning("Possible transaction ID failure... retrying.")
+            reinitialize_transaction_id = True
+            time.sleep(5)
         if reauthentication_check(response):
             raise Exception("Should not authenticate with user auth.")
         elif response.status_code == 429:
@@ -883,7 +929,7 @@ def twitter_request(url, method='get', wait=True):
             time.sleep(60)
         else:
             msg = "HTTP %d - %s" % (response.status_code, response.reason_phrase)
-            print_error("\n%s\n%s" % (url, msg))
+            print_error("\n%s\n%s\n%s" % (endpoint, addons, msg))
             if DEBUG_MODE:
                 log_network_error('sources.twitter.twitter_request', response)
             return {'error': True, 'message': msg, 'response': response}
@@ -958,10 +1004,10 @@ def get_twitter_illust_timeline(illust_id):
     variables['focalTweetId'] = illust_id_str
     features = TWITTER_ILLUST_TIMELINE_GRAPHQL_FEATURES.copy()
     field_toggles = TWITTER_ILLUST_TIMELINE_GRAPHQL_FIELD_TOGGLES.copy()
-    urladdons = urllib.parse.urlencode({'variables': json.dumps(variables),
-                                        'features': json.dumps(features),
-                                        'fieldToggles': json.dumps(field_toggles)})
-    data = twitter_request("https://x.com/i/api/graphql/q94uRCEn65LZThakYcPT6g/TweetDetail?%s" % urladdons)
+    urladdons = urllib.parse.urlencode({'variables': json.dumps(variables, separators=(',', ':')),
+                                        'features': json.dumps(features, separators=(',', ':')),
+                                        'fieldToggles': json.dumps(field_toggles, separators=(',', ':'))})
+    data = twitter_request("/i/api/graphql/_8aYOgEDz35BrBcBal1-_w/TweetDetail", urladdons)
     try:
         if data['error']:
             return _create_module_error('get_twitter_illust_timeline', data['message'])
@@ -995,7 +1041,7 @@ def get_tweet_by_rest_id(tweet_id):
         'features': json.dumps(features),
         'fieldToggles': json.dumps(field_toggles)
     })
-    data = twitter_request("https://x.com/i/api/graphql/7xflPyRiUxGVbJd4uWmbfg/TweetResultByRestId?" + url_params)
+    data = twitter_request("/i/api/graphql/7xflPyRiUxGVbJd4uWmbfg/TweetResultByRestId", url_params)
     try:
         if data['error']:
             return _create_module_error('get_tweet_by_rest_id', data['message'])
@@ -1019,7 +1065,7 @@ def get_media_page(user_id, count, cursor=None):
         variables['cursor'] = cursor
     url_params = urllib.parse.urlencode({'variables': json.dumps(variables), 'features': json.dumps(features),
                                          'toggles': json.dumps(toggles)})
-    return twitter_request("https://x.com/i/api/graphql/aQQLnkexAl5z9ec_UgbEIA/UserMedia?" + url_params)
+    return twitter_request("/i/api/graphql/aQQLnkexAl5z9ec_UgbEIA/UserMedia", url_params)
 
 
 def get_search_page(query, count, cursor=None):
@@ -1033,7 +1079,7 @@ def get_search_page(query, count, cursor=None):
     url_params = urllib.parse.urlencode({'variables': json.dumps(variables),
                                          'features': json.dumps(features),
                                          'fieldToggles': json.dumps(field_toggles)})
-    return twitter_request("https://x.com/i/api/graphql/KUnA_SzQ4DMxcwWuYZh9qg/SearchTimeline?" + url_params)
+    return twitter_request("/i/api/graphql/KUnA_SzQ4DMxcwWuYZh9qg/SearchTimeline", url_params)
 
 
 def populate_twitter_media_timeline(user_id, last_id, job_id=None, job_status={}, **kwargs):
@@ -1089,9 +1135,7 @@ def get_twitter_user_id(account):
         'withHighlightedLabel': False
     }
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    request_url = 'https://x.com/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/' +\
-                  'UserByScreenNameWithoutResults?%s' % urladdons
-    data = twitter_request(request_url, wait=False)
+    data = twitter_request('/i/api/graphql/Vf8si2dfZ1zmah8ePYPjDQ/UserByScreenNameWithoutResults', urladdons, wait=False)
     if data['error']:
         return _create_module_error('get_user_id', data['message'])
     return safe_get(data, 'body', 'data', 'user', 'rest_id')
@@ -1104,9 +1148,7 @@ def get_twitter_artist(artist_id):
         'withHighlightedLabel': False,
     }
     urladdons = urllib.parse.urlencode({'variables': json.dumps(jsondata)})
-    request_url = 'https://x.com/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/' +\
-                  'UserByRestIdWithoutResults?%s' % urladdons
-    data = twitter_request(request_url)
+    data = twitter_request('/i/api/graphql/WN6Hck-Pwm-YP0uxVj1oMQ/UserByRestIdWithoutResults', urladdons)
     if data['error']:
         return _create_module_error('get_twitter_artist', data['message'])
     twitterdata = data['body']

@@ -30,7 +30,7 @@ DOMAINS = merge_dicts({v: k for k, v in SITES.items() if v is not None}, DOMAIN_
 
 def site_name_by_url(url):
     parse = urllib.parse.urlparse(url)
-    return DOMAINS.get(parse.netloc)
+    return DOMAINS.get(parse.netloc) or 'custom'
 
 
 def site_name_by_domain(domain):
