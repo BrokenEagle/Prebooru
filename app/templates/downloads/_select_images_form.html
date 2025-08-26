@@ -2,13 +2,13 @@
 
 {{ image_select_controls('select-image-input') }}
 {% call render_form(form, 'POST', download.create_url, manual=True) %}
-    <div style="display: flex;">
+    <div id="download-select-controls">
         <div id="force-input" class="input checkbox-input inline-input">
             <label for="select-force">Force</label>
             <input type="checkbox" id="select-force" name="force" value="true">
         </div>
-        <div id="download-all" style="display: flex; align-items: center; margin-left: 1.5em;">
-            <button style="font-weight: bold; padding: 5px; margin-top: 1em;" onclick="return Downloads.downloadAll(this)" data-url="{{ form.request_url.data }}">Download All</button>
+        <div id="download-all-button">
+            <button onclick="return Downloads.downloadAll(this)" data-url="{{ form.request_url.data }}">Download All</button>
         </div>
     </div>
     <div id="select-images">

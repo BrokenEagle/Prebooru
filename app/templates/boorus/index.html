@@ -24,7 +24,7 @@
                     <td class="booru-info"><strong>Danbooru ID:</strong> {{ booru.danbooru_id }}</td>
                     <td class="booru-name">{{ helpers.booru.site_booru_link(booru) }} {{ helpers.booru.site_search_link(booru) }}</td>
                     <td class="booru-banned">{{ booru.banned | tojson }}</td>
-                    <td class="booru-deleted">{{ booru.deleted | tojson}}</td>
+                    <td class="booru-deleted">{{ booru.deleted | tojson }}</td>
                     <td class="booru-timestamps">
                         <strong>Created:</strong> {{ helpers.base.format_timestamp(booru.created) }}
                         <br>

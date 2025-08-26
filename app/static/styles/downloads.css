@@ -157,6 +157,22 @@ div.download-preview img {
 
 /**** ALL/SELECT ****/
 
+div#download-select-controls {
+    display: flex;
+}
+
+div#download-all-button {
+    display: flex;
+    align-items: center;
+    margin-left: 1.5em;
+}
+
+div#download-all-button > button {
+    font-weight: bold;
+    padding: 5px;
+    margin-top: 1em;
+}
+
 div#download-duplicate-section {
     display: flex;
     margin-top: 1em;

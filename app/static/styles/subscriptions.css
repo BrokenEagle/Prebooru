@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/SUBSCRIPTIONS.CSS **/
 
-/**** NEW/EDIT Page ****/
+/**** NEW/EDIT ****/
+
 div#subscription-form-heading {
     font-size: 28px;
     margin-top: 1em;
@@ -12,7 +13,8 @@ div#subscription-form-info {
     margin-top: 1em;
 }
 
-/**** INDEX Page ****/
+/**** INDEX ****/
+
 table#subscriptions-table span.explanation {
     font-size: 80%;
 }
@@ -22,7 +24,8 @@ div.subscription-show-link {
     text-align: center;
 }
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#subscription-heading {
     font-size: 32px;
 }
@@ -108,11 +111,16 @@ div#subscription-elements {
     margin-top: 1em;
 }
 
+div#subscription-elements div.element-display-controls {
+    font-size: 0.8em;
+}
+
 div#subscription-posts {
     margin-top: 2em;
 }
 
-/**** PROCESS Page ****/
+/**** PROCESS ****/
+
 ul#process-type,
 ul#process-type li,
 ul#process-type label,
@@ -139,7 +147,7 @@ form.search-timeline > div.search-timeline {
     display: block;
 }
 
-/**** STATUS Page ****/
+/**** STATUS ****/
 
 div#subscription-pending-elements table {
     font-size: 16px;

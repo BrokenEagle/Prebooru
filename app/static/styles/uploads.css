@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/UPLOADS.CSS **/
 
 /**** NEW/EDIT Page ****/
+
 div#upload-url-info {
     margin: 1em;
 }
@@ -20,6 +21,7 @@ textarea#upload-image-url-string {
 }
 
 /**** SHOW Page ****/
+
 div#upload-content {
     margin-top: 2em;
     display: flex;
@@ -61,8 +63,17 @@ section#upload-sources {
     width: 75%;
 }
 
-div#upload-posts {
+div#upload-post {
     margin-top: 2em;
+}
+
+div#upload-post > div.heading {
+    font-size: 24px;
+    margin-top: 1em;
+}
+
+div#upload-post > div.post {
+    margin-top: 1em;
 }
 
 div#upload-elements-container {
@@ -103,6 +114,7 @@ div.no-post-preview > div {
 }
 
 /**** INDEX ****/
+
 div.upload-preview {
     display: grid;
     grid-template-columns: repeat(2, 0fr);
