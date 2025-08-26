@@ -1,6 +1,7 @@
 /** APP/STATIC/STYLES/POOLS.CSS **/
 
-/**** SHOW Page ****/
+/**** SHOW ****/
+
 div#pool-heading {
     font-size: 32px;
 }
@@ -21,6 +22,10 @@ div#pool-controls {
     right: 0;
     bottom: 0;
     padding: 5px;
+}
+
+div#pool-spacer {
+    height: 1.5em;
 }
 
 article.pool-element-select {

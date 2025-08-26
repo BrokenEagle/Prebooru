@@ -33,7 +33,7 @@
                 </div>
             </div>
         {% else %}
-            <div style="height: 1.5em;"></div> {# spacer #}
+            <div id="pool-spacer"></div>
         {% endif %}
         {% if edit_pool %}
             <form id="form" method="post" action="{{ url_for('pool_element.batch_delete_html') }}">
