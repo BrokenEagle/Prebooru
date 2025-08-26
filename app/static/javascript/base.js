@@ -132,7 +132,7 @@ Prebooru.setAllInputsTimeout = function (selector_class) {
 };
 
 Prebooru.initializeEventCallbacks = function (selector_class) {
-    document.addEventListener('prebooru:update-inputs', function () {
+    document.addEventListener('prebooru:update-inputs', () => {
         document.querySelectorAll(`.${selector_class} input[type=checkbox]`).forEach((input) => {
             Prebooru.toggleCheckbox(input);
         });
