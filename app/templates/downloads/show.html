@@ -20,9 +20,6 @@
 {% endblock pages %}
 
 {% block pagescript %}
-    (function () {
-    const download_status = "{{ download.status_name }}";
-    Downloads.initializeReloadInterval(download_status);
-    })();
+    Downloads.initializeReloadInterval('{{ download.status_name }}');
     Prebooru.initializeLazyLoad('.download-element-preview');
 {% endblock pagescript %}
