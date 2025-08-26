@@ -99,21 +99,11 @@ def delay_subscription_elements(subscription, delay_days):
 
 def get_average_interval_for_subscriptions(subscriptions, days):
     subscription_ids = [s.id for s in subscriptions]
-    undecided_count_cte = SubscriptionElement.query.filter(SubscriptionElement.subscription_id.in_(subscription_ids))\
-                                                   .group_by(SubscriptionElement.subscription_id)\
-                                                   .with_entities(SubscriptionElement.subscription_id,
-                                                                  COUNT_UNDECIDED_ELEMENTS,
-                                                                  )\
-                                                   .cte()
-    average_interval_clause = (func.iif(undecided_count_cte.c.count == 0,
-                                        Subscription.checked - func.min(Illust.site_created),
-                                        func.max(Illust.site_created) - func.min(Illust.site_created))
-                               ) / DISTINCT_ILLUST_COUNT
-    return SubscriptionElement.query.join(Subscription).join(IllustUrl).join(Illust).join(undecided_count_cte)\
+    average_interval_clause = (func.max(Illust.site_created) - func.min(Illust.site_created)) / DISTINCT_ILLUST_COUNT
+    return SubscriptionElement.query.join(Subscription).join(IllustUrl).join(Illust)\
                               .with_entities(SubscriptionElement.subscription_id, average_interval_clause)\
-                              .filter(SubscriptionElement.subscription_id.in_([s.id for s in subscriptions]),
+                              .filter(SubscriptionElement.subscription_id.in_(subscription_ids),
                                       Illust.site_created > days_ago(days),
-                                      SubscriptionElement.keep_value == 'yes',
                                       )\
                               .group_by(SubscriptionElement.subscription_id)\
                               .having(DISTINCT_ILLUST_COUNT > 0).all()
