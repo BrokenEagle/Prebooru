@@ -13,7 +13,7 @@ from ..logical.utility import search_url_for
 from ..logical.database.subscription_db import get_average_interval_for_subscriptions,\
     get_available_subscriptions_query, ordered_subscriptions_by_pending_elements
 from ..logical.database.subscription_element_db import expired_subscription_elements,\
-    missing_subscription_downloads_query
+    all_pending_subscription_elements_query
 from ..logical.records.subscription_rec import subscription_slots_needed_per_hour
 from ..logical.tasks import JOB_CONFIG
 from ..models.subscription import Subscription
@@ -152,7 +152,7 @@ def download_iterator():
         "Downloads Per interval": per_interval,
         "Processed Every": "%0.1f hours" % hours,
         "Downloads Per Hour": "%0.1f" % (per_interval / hours),
-        "Pending": missing_subscription_downloads_query().get_count(),
+        "Pending": all_pending_subscription_elements_query().get_count(),
     }
     for key, value in output.items():
         yield key, value

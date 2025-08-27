@@ -23,8 +23,8 @@ from ..media import convert_mp4_to_webp
 from ..logger import log_error
 from ..sources.base_src import get_post_source
 from ..database.subscription_element_db import create_subscription_element_from_parameters,\
-    missing_subscription_downloads_query, update_subscription_element_from_parameters,\
-    expired_subscription_elements, get_subscription_elements_by_md5, subscription_elements_to_download_query
+    all_pending_subscription_elements_query, update_subscription_element_from_parameters,\
+    expired_subscription_elements, get_subscription_elements_by_md5, subscription_pending_elements_query
 from ..database.post_db import get_post_by_md5, get_posts_by_id, get_posts_by_subscription_elements
 from ..database.illust_url_db import update_illust_url_from_parameters
 from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
@@ -162,7 +162,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
 def download_subscription_elements(subscription, job_id=None):
     job_status = get_job_status_data(job_id) or {'downloads': 0}
     job_status['stage'] = 'downloads'
-    q = subscription_elements_to_download_query(subscription.id)
+    q = subscription_pending_elements_query(subscription.id)
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     page = q.sequential_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE, page='oldest_first')
     for elements in records_paginate('download_subscription_elements', page):
@@ -180,7 +180,7 @@ def download_subscription_elements(subscription, job_id=None):
 
 def download_missing_elements(manual=False):
     max_batches = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
-    q = missing_subscription_downloads_query()
+    q = all_pending_subscription_elements_query()
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
     page = q.sequential_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE, page='oldest_first')
     element_count = 0
@@ -192,6 +192,7 @@ def download_missing_elements(manual=False):
         post_ids = [post.id for post in get_posts_by_subscription_elements(elements)]
         _process_image_matches(post_ids)
         _process_videos(post_ids)
+    return element_count
 
 
 def unlink_expired_subscription_elements(manual):
@@ -204,7 +205,6 @@ def unlink_expired_subscription_elements(manual):
             print(f"Unlinking {element.shortlink}")
             params = {
                 'status_name': 'unlinked',
-                'post_id': None,
                 'expires': None,
             }
             update_subscription_element_from_parameters(element, params)
@@ -304,6 +304,7 @@ def create_post_from_subscription_element(element):
     if results['post'] is None:
         update_subscription_element_from_parameters(element, {'status_name': 'error'})
         return False
+    update_subscription_element_from_parameters(element, {'status_name': 'active'})
     return True
 
 
@@ -312,7 +313,6 @@ def redownload_element(element):
         initial_errors = [error.id for error in element.errors]
         if create_post_from_subscription_element(element):
             post = element.post
-            update_subscription_element_from_parameters(element, {'status_name': 'active'})
             if post.is_video:
                 thread = SessionThread(target=convert_mp4_to_webp,
                                        args=(post.file_path, post.video_preview_path))
@@ -363,7 +363,6 @@ def relink_element(element):
     params = {
         'status_name': 'active',
         'keep_name': None,
-        'post_id': post.id,
         'expires': days_from_now(element.subscription.expiration),
     }
     update_subscription_element_from_parameters(element, params)

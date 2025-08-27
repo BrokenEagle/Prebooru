@@ -161,6 +161,7 @@ class SubscriptionElementStatus(EnumModel):
         'active': 2,
         'archived': 3,
         'duplicate': 4,
+        'pending': 5,
     }
     __mandatory_mapping__ = {
         'error': 126,

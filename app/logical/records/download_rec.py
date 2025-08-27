@@ -25,6 +25,7 @@ from ..database.download_db import create_download_from_parameters, update_downl
     get_download_by_request_url
 from ..database.download_element_db import create_download_element_from_parameters,\
     update_download_element_from_parameters, get_download_element
+from ..database.subscription_element_db import update_subscription_element_from_parameters
 from ..database.post_db import get_posts_by_id, get_post_by_md5, update_post_from_parameters
 from ..database.error_db import create_and_extend_errors, create_and_append_error, append_error
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
@@ -138,11 +139,13 @@ def create_post_from_download_element(element):
         post = get_post_by_md5(results['md5'])
         if post.type_name != 'user':
             update_post_from_parameters(post, {'type_name': 'user'})
+            _unlink_subscription_element(post)
         return
     if results['post'] is None:
         update_download_element_from_parameters(element, {'status_name': 'error'})
     else:
         update_download_element_from_parameters(element, {'status_name': 'complete'})
+        _unlink_subscription_element(results['post'])
 
 
 def create_download_from_illust_url(illust_url):
@@ -222,6 +225,14 @@ def check_for_new_artist_boorus(post_ids):
 
 
 # ## Private
+
+def _unlink_subscription_element(post):
+    selectinload_batch_primary(post.illust_urls, 'subscription_element', reverse=True)
+    for illust_url in post.illust_urls:
+        element = illust_url.subscription_element
+        if element is not None and element.status_name not in ['duplicate', 'unlinked']:
+            update_subscription_element_from_parameters(element, {'status_name': 'unlinked', 'expires': None})
+
 
 def _duplicate_check(md5):
     post = get_post_by_md5(md5)
