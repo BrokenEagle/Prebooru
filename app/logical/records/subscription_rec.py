@@ -164,7 +164,7 @@ def download_subscription_elements(subscription, job_id=None):
     job_status['stage'] = 'downloads'
     q = subscription_pending_elements_query(subscription.id)
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
-    page = q.sequential_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE, page='oldest_first')
+    page = q.sequential_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE, page='oldest_first', expunge=True)
     for elements in records_paginate('download_subscription_elements', page):
         job_status['range'] = f"({elements[0].id} - {elements[-1].id}) / [{page.min_id} - {page.max_id}]"
         update_job_status(job_id, job_status)
@@ -182,7 +182,7 @@ def download_missing_elements(manual=False):
     max_batches = DOWNLOAD_POSTS_PAGE_LIMIT if not manual else float('inf')
     q = all_pending_subscription_elements_query()
     q = q.options(selectinload(SubscriptionElement.illust_url).selectinload(IllustUrl.illust).lazyload('*'))
-    page = q.sequential_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE, page='oldest_first')
+    page = q.sequential_paginate(per_page=DOWNLOAD_POSTS_PER_PAGE, page='oldest_first', expunge=True)
     element_count = 0
     for elements in records_paginate('download_missing_elements', page, max_batches):
         for element in elements:

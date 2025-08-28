@@ -519,7 +519,7 @@ def generate_missing_image_hashes(manual):
     max_batches = 10 if not manual else float('inf')
     query = missing_image_hashes_query()
     query = query.options(selectinload(Post.illust_urls).selectinload(IllustUrl.subscription_element))
-    page = query.sequential_paginate(per_page=20, page='newest_first')
+    page = query.sequential_paginate(per_page=20, page='newest_first', expunge=True)
     for posts in records_paginate('generate_missing_image_hashes', page, max_batches):
         for post in posts:
             generate_post_image_hashes(post)
@@ -535,7 +535,7 @@ def calculate_similarity_matches(manual):
     max_batches = 10 if not manual else float('inf')
     query = missing_similarity_matches_query()
     query = query.options(selectinload(Post.image_hashes))
-    page = query.sequential_paginate(per_page=50, page='newest_first')
+    page = query.sequential_paginate(per_page=50, page='newest_first', expunge=True)
     for posts in records_paginate('calculate_similarity_matches', page, max_batches):
         for post in posts:
             generate_similarity_matches(post)
