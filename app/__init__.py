@@ -29,6 +29,7 @@ from config import DB_PATH, JOBS_PATH, DEBUG_MODE, NAMING_CONVENTION, DEBUG_LOG,
     CHECK_FOREIGN_KEYS
 from utility import RepeatTimer, is_interactive_shell
 from utility.uprint import buffered_print, print_warning, print_sql
+from utility.data import encode_json
 
 # ## LOCAL IMPORTS
 from .logical import query_extensions
@@ -44,7 +45,7 @@ PREBOORU_DB_URL = os.environ.get('PREBOORU_DB', 'sqlite:///%s' % DB_PATH)
 SCHEDULER_DB_URL = os.environ.get('SCHEDULER_JOBSTORES', r'sqlite:///%s' % JOBS_PATH)
 
 ENGINE_OPTIONS = {
-    'json_serializer': lambda obj: json.dumps(obj, ensure_ascii=False, separators=(',', ':')),
+    'json_serializer': lambda obj: encode_json(obj, ascii=False),
     'connect_args': {
         'check_same_thread': False,
         'timeout': 60},
