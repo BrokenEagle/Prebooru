@@ -149,6 +149,7 @@ div.download-preview > article.overflow > span {
 
 div.download-preview > span.explanation {
     width: 150px;
+    text-align: center;
 }
 
 div.download-preview img {
