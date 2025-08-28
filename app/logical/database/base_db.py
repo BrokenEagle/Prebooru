@@ -65,7 +65,7 @@ def set_column_attributes(item, any_columns, null_columns, dataparams,
     printer("(%s)" % item.shortlink)
     is_dirty = False
     allowed_attrs = any_columns + null_columns
-    create = item not in SESSION
+    create = item.is_new
     if create:
         allowed_attrs += create_attributes if create_attributes is not None else []
     for attr in allowed_attrs:
@@ -83,10 +83,11 @@ def set_column_attributes(item, any_columns, null_columns, dataparams,
     if create:
         if 'created' not in dataparams and hasattr(item, 'created'):
             item.created = get_current_time()
-        add_record(item)
     if is_dirty or create:
         if 'updated' not in dataparams:
             _update_record(item, update)
+        if item not in SESSION:
+            add_record(item)
         flush_session(safe=safe)
         printer.print()
     return is_dirty

@@ -542,6 +542,10 @@ class JsonModel(DB.Model):
                 setattr(self, attr, data[attr])
 
     @property
+    def is_new(self):
+        return not all(self.pk_values)
+
+    @property
     def pk_values(self):
         return tuple(getattr(self, key) for key in self.primary_keys)
 
