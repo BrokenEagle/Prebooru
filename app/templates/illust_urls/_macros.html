@@ -7,7 +7,15 @@
             <br>
             <br>
             <div class="illust-urls {{ 'illust-multi-urls' if illust_urls | length > 1 else 'illust-single-url' }}">
-                {% for illust_url in illust_urls %}<div class="illust-preview-url">{{ helpers.illust_url.preview_link(illust_url, True) }}</div>{% endfor %}
+                {% for illust_url in illust_urls %}
+                    {% if (loop.index == 4) and ((illust_urls | length) > 4) %}
+                        <article class="overflow">
+                            <span>{{ (illust_urls | length) - 3 }} more URLs available</span>
+                        </article>
+                        {% break %}
+                    {% endif %}
+                    <article class="illust-preview-url">{{ helpers.illust_url.preview_link(illust_url, True) }}</article>
+                {% endfor %}
             </div>
         {% else %}
             <span class="explanation">No URLs.</span>
