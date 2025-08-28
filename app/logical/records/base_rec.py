@@ -51,11 +51,11 @@ def records_paginate(func_name, page, max_batches=None):
         print_info(f"\n{func_name}[{batch_num}]: {page.range} / Total({page.count})\n")
         if len(page.items) > 0:
             yield page.items
-        if (page.direction == 'a' and not page.has_above)\
-                or (page.direction == 'b' and not page.has_below)\
-                or (max_batches is not None and batch_num >= max_batches):
+        if not page.has_next:
             break
-        page = page.above() if page.direction == 'a' else page.below()
+        if max_batches is not None and batch_num >= max_batches:
+            break
+        page = page.next()
         batch_num += 1
 
 

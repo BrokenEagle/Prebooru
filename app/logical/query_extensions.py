@@ -125,6 +125,7 @@ class SequentialPaginate():
             self.min_id = self.max_id = self.page_min = self.page_max = None
             self.items = []
             self.range = 'N/A'
+            self.direction = None
 
     @property
     def above_pagenum(self):
@@ -133,6 +134,14 @@ class SequentialPaginate():
     @property
     def below_pagenum(self):
         return f'b{self.page_min.id}' if self.current_count > 0 else None
+
+    @property
+    def has_next(self):
+        if self.direction == 'a':
+            return self.has_above
+        if self.direction == 'b':
+            return self.has_below
+        return False
 
     @property
     def has_above(self):
@@ -149,6 +158,15 @@ class SequentialPaginate():
     def below(self):
         return SequentialPaginate(query=self.query, per_page=self.per_page, page=self.below_pagenum, count=self.count,
                                   min_id=self.min_id, max_id=self.max_id, distinct=self.distinct)
+
+    @property
+    def next(self):
+        if self.direction == 'a':
+            return self.above
+        if self.direction == 'b':
+            return self.below
+        return None
+
 
     def _get_min_id(self):
         model = _query_model(self.query)
