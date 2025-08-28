@@ -19,6 +19,7 @@ from sqlalchemy.ext.associationproxy import _AssociationList
 from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 from utility.time import process_utc_timestring, datetime_from_epoch, datetime_to_epoch, datetime_valid
 from utility.obj import classproperty, memoized_classproperty, staticproperty
+from utility.data import encode_json
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION, SERVER_INFO
@@ -33,6 +34,14 @@ sqlalchemy_backref = backref
 
 
 # ## FUNCTIONS
+
+def check_same_model(func):
+    def wrapper(model1, model2, *args):
+        if model1.model_name != model2.model_name:
+            raise Exception("Unable to compare different models.")
+        return func(model1, model2, *args)
+    return wrapper
+
 
 # #### JSON functions
 
@@ -524,11 +533,6 @@ class JsonModel(DB.Model):
         """Return an uncommitted copy of the record."""
         return self.__class__(**self.column_dict())
 
-    def compare(self, cmp):
-        if self.__class__ != cmp.__class__:
-            return False
-        return all(getattr(self, col) == getattr(cmp, col) for col in self.all_columns)
-
     def attach(self, attr, record):
         setattr(self, attr, record)
 
@@ -643,6 +647,14 @@ class JsonModel(DB.Model):
 
     # Private
 
+    @check_same_model
+    def __eq__(self, cmp):
+        return all(_is_equal(self, cmp, col) for col in self.all_columns)
+
+    @check_same_model
+    def __ne__(self, cmp):
+        return any(not _is_equal(self, cmp, col) for col in self.all_columns)
+
     def __repr__(self):
         data = {}
         keys = []
@@ -728,3 +740,13 @@ class JsonModel(DB.Model):
 
 def _sorted_dict(data):
     return dict(sorted(data.items(), key=lambda x: x[0]))
+
+
+def _is_equal(model1, model2, column):
+    cmp1 = getattr(model1, column)
+    cmp2 = getattr(model2, column)
+    if isinstance(cmp1, list) and isinstance(cmp2, list) or isinstance(cmp1, dict) and isinstance(cmp2, dict):
+        is_equal = encode_json(cmp1) == encode_json(cmp2)
+    else:
+        is_equal = cmp1 == cmp2
+    return is_equal

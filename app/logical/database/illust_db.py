@@ -102,7 +102,8 @@ def _set_illust_urls(illust, params, update):
         else:
             temp_illust_url = illust_url.copy()
             update_illust_url_from_parameters(illust_url, url_data)
-            update_results = update_results or illust_url.compare(temp_illust_url)
+            if illust_url != temp_illust_url:
+                update_results = True
         current_urls.append(url_data['url'])
     removed_urls = set(existing_urls).difference(current_urls)
     for url in removed_urls:
