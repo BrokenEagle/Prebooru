@@ -12,6 +12,7 @@ from utility.uprint import buffered_print
 from ... import SESSION
 from ...models import Download
 from ..utility import unique_objects, SessionThread, set_error
+from ..batch_loader import selectinload_batch_primary
 from ..sources.base_src import get_post_source
 from ..records.artist_rec import update_artist_from_source, check_artists_for_boorus
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
@@ -25,6 +26,7 @@ from ..database.download_db import create_download_from_parameters, update_downl
     get_download_by_request_url
 from ..database.download_element_db import create_download_element_from_parameters,\
     update_download_element_from_parameters, get_download_element
+from ..database.subscription_element_db import update_subscription_element_from_parameters
 from ..database.post_db import get_posts_by_id, get_post_by_md5, update_post_from_parameters
 from ..database.error_db import create_and_extend_errors, create_and_append_error, append_error
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
@@ -116,9 +118,7 @@ def process_network_download(download):
 def create_post_from_download_element(element):
     illust_url = element.illust_url
     if illust_url.post is not None:
-        update_download_element_from_parameters(element, {'status_name': 'duplicate'})
-        if illust_url.post.type_name != 'user':
-            update_post_from_parameters(illust_url.post, {'type_name': 'user'})
+        _duplicate_update(element, illust_url.post)
         return
     if illust_url.type == 'image':
         results = create_image_post(illust_url, 'user', _duplicate_check)
@@ -134,15 +134,14 @@ def create_post_from_download_element(element):
         return
     update_illust_url_from_parameters(illust_url, {'md5': results['md5']})
     if results['duplicate']:
-        update_download_element_from_parameters(element, {'status_name': 'duplicate'})
         post = get_post_by_md5(results['md5'])
-        if post.type_name != 'user':
-            update_post_from_parameters(post, {'type_name': 'user'})
+        _duplicate_update(element, post)
         return
     if results['post'] is None:
         update_download_element_from_parameters(element, {'status_name': 'error'})
     else:
         update_download_element_from_parameters(element, {'status_name': 'complete'})
+        _unlink_subscription_element(results['post'])
 
 
 def create_download_from_illust_url(illust_url):
@@ -222,6 +221,21 @@ def check_for_new_artist_boorus(post_ids):
 
 
 # ## Private
+
+def _unlink_subscription_element(post):
+    selectinload_batch_primary(post.illust_urls, 'subscription_element', reverse=True)
+    for illust_url in post.illust_urls:
+        element = illust_url.subscription_element
+        if element is not None and element.status_name not in ['duplicate', 'unlinked']:
+            update_subscription_element_from_parameters(element, {'status_name': 'unlinked', 'expires': None})
+
+
+def _duplicate_update(element, post):
+    update_download_element_from_parameters(element, {'status_name': 'duplicate'})
+    if post.type_name != 'user':
+        update_post_from_parameters(post, {'type_name': 'user'})
+    _unlink_subscription_element(post)
+
 
 def _duplicate_check(md5):
     post = get_post_by_md5(md5)

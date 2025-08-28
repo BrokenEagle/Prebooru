@@ -29,7 +29,7 @@ from ..database.base_db import safe_db_execute, commit_session
 from ..database.pool_db import get_all_recheck_pools
 from ..database.subscription_db import get_available_subscriptions_query, update_subscription_from_parameters,\
     get_subscription_by_ids
-from ..database.subscription_element_db import missing_subscription_downloads_query, expired_subscription_elements
+from ..database.subscription_element_db import all_pending_subscription_elements_query, expired_subscription_elements
 from ..database.api_data_db import expired_api_data_count, delete_expired_api_data
 from ..database.media_file_db import get_expired_media_files, get_all_media_files
 from ..database.archive_db import expired_archive_count
@@ -231,7 +231,7 @@ def check_pending_subscriptions_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['check_pending_downloads']['config'])
 def check_pending_downloads_task():
     def _task(printer, is_manual):
-        total = missing_subscription_downloads_query().get_count()
+        total = all_pending_subscription_elements_query().get_count()
         printer("Missing downloads:", total)
         if total > 0:
             processed = download_missing_elements(is_manual)

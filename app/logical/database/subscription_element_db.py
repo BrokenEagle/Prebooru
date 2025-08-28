@@ -36,7 +36,7 @@ ELEMENTS_WITH_POSTS_SUBQUERY = SubscriptionElement.query.join(IllustUrl, Subscri
 # #### Create
 
 def create_subscription_element_from_parameters(createparams, commit=True):
-    createparams.setdefault('status_name', 'active')
+    createparams.setdefault('status_name', 'pending')
     return set_subscription_element_from_parameters(SubscriptionElement(), createparams, 'created', commit)
 
 
@@ -68,29 +68,22 @@ def get_subscription_elements_by_md5(md5):
 
 def expired_subscription_elements(expire_type):
     switcher = {
-        'unlink': lambda q: q.join(IllustUrl, SubscriptionElement.illust_url).join(Post, IllustUrl.post)
-                             .filter(or_(_expired_clause('yes', 'unlink'), Post.type_value == 'user')),
+        'unlink': lambda q: q.filter(_expired_clause('yes', 'unlink')),
         'delete': lambda q: q.filter(_expired_clause('no', 'delete')),
         'archive': lambda q: q.filter(_expired_clause('archive', 'archive')),
     }
-    query = SubscriptionElement.query
-    if expire_type != 'unlink':
-        # Since subscription element gets joined to post on unlink, there's no need to test it it exists
-        query = query.filter(SubscriptionElement.id.in_(ELEMENTS_WITH_POSTS_SUBQUERY))
-    return switcher[expire_type](query)
+    return switcher[expire_type](SubscriptionElement.query)
 
 
-def missing_subscription_downloads_query():
+def all_pending_subscription_elements_query():
     return SubscriptionElement.query.join(Subscription)\
-                                    .filter(SubscriptionElement.id.not_in(ELEMENTS_WITH_POSTS_SUBQUERY),
-                                            SubscriptionElement.status_value == 'active',
+                                    .filter(SubscriptionElement.status_value == 'pending',
                                             Subscription.status_value.not_in(['automatic', 'manual']))
 
 
-def subscription_elements_to_download_query(subscription_id):
+def subscription_pending_elements_query(subscription_id):
     return SubscriptionElement.query.filter(SubscriptionElement.subscription_id == subscription_id,
-                                            SubscriptionElement.id.not_in(ELEMENTS_WITH_POSTS_SUBQUERY),
-                                            SubscriptionElement.status_value == 'active')
+                                            SubscriptionElement.status_value == 'pending')
 
 
 # #### Private
