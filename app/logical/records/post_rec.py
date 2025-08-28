@@ -12,7 +12,7 @@ from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
 from utility.data import get_buffer_checksum, merge_dicts, inc_dict_entry, encode_json
 from utility.file import create_directory, put_get_raw, copy_file, delete_file, filename_join, put_get_json,\
     clear_directory, copy_directory
-from utility.uprint import buffered_print
+from utility.uprint import buffered_print, print_warning
 
 # ### LOCAL IMPORTS
 from ... import SESSION
@@ -394,6 +394,9 @@ def check_posts_for_danbooru_id(posts, status=None):
 def move_post_media_to_alternate(post, reverse=False):
     temppost = post.copy()
     alternate = not reverse
+    if post.alternate == alternate:
+        print_warning("%s already moved!" % post.shortlink)
+        return
     temppost.alternate = alternate
     if post.is_ugoira:
         copy_directory(post.frame_directory, temppost.frame_directory, True)
@@ -588,7 +591,7 @@ def relocate_old_posts_to_alternate(manual):
     query = alternate_posts_query(ALTERNATE_MOVE_DAYS)
     page = query.sequential_paginate(per_page=50, page='oldest_first')
     for posts in records_paginate('relocate_old_posts_to_alternate', page, max_batches):
-        for post in page.items:
+        for post in posts:
             print(f"Moving {post.shortlink}")
             move_post_media_to_alternate(post)
             moved += 1
