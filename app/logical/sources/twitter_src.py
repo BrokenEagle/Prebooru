@@ -5,7 +5,6 @@ import os
 import re
 import sys
 import time
-import json
 import html
 import urllib.parse
 import datetime
@@ -18,7 +17,7 @@ from x_client_transaction import ClientTransaction
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN, TWITTER_MINIMUM_QUERY_INTERVAL
-from utility.data import safe_get, decode_json, fixup_crlf, safe_check
+from utility.data import safe_get, decode_json, fixup_crlf, safe_check, encode_json
 from utility.time import get_current_time, datetime_from_epoch
 from utility.file import get_file_extension, get_http_filename, put_get_json
 from utility.uprint import print_info, print_warning, print_error
@@ -1026,7 +1025,7 @@ def get_twitter_illust_timeline(illust_id):
         msg = "Error parsing Twitter data: %s" % str(e)
         return _create_module_error('get_twitter_illust_timeline', msg)
     if len(found_tweets) == 0:
-        put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], unicode=True)
+        put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], ascii=True)
         return _create_module_error('get_twitter_illust_timeline', "No tweets found in data.")
     # Normalize the hierarchical position of tweet info
     for tweet in found_tweets:
@@ -1035,7 +1034,7 @@ def get_twitter_illust_timeline(illust_id):
                 tweet['result'][k] = tweet['result']['tweet'][k]
     tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
     if illust_id_str not in tweet_ids:
-        put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], unicode=True)
+        put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], ascii=True)
         return _create_module_error('get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
     return found_tweets
 
@@ -1178,7 +1177,7 @@ def get_twitter_artist(artist_id):
         return _create_module_error('get_twitter_artist', msg)
     userdata = safe_get(twitterdata, 'data', 'user')
     if userdata is None or 'rest_id' not in userdata or 'legacy' not in userdata:
-        msg = "Error parsing data: %s" % json.dumps(twitterdata)
+        msg = "Error parsing data: %s" % encode_json(twitterdata)
         return _create_module_error('get_twitter_artist', msg)
     retdata = userdata['legacy']
     retdata['id_str'] = userdata['rest_id']
@@ -1476,4 +1475,4 @@ def _create_module_error(function, message):
 
 
 def _encode_graphql_data(data):
-    return urllib.parse.urlencode({key: json.dumps(value, separators=(',', ':')) for (key, value) in data.items()})
+    return urllib.parse.urlencode({key: encode_json(value) for (key, value) in data.items()})

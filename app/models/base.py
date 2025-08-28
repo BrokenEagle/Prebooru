@@ -445,7 +445,7 @@ class CompressedJSON(DB.TypeDecorator):
     cache_ok = True
 
     def process_bind_param(self, value, dialect):
-        string_value = json.dumps(value, ensure_ascii=False, separators=(',', ':'))
+        string_value = encode_json(value, ascii=False)
         encoded_value = string_value.encode('UTF')
         return zlib.compress(encoded_value)
 

@@ -7,7 +7,7 @@ import json
 import pathlib
 
 # ## LOCAL IMPORTS
-from .data import decode_unicode, decode_json, get_buffer_checksum
+from .data import decode_unicode, decode_json, get_buffer_checksum, encode_json
 
 
 # ## FUNCTIONS
@@ -87,50 +87,50 @@ def copy_directory(from_filepath, to_filepath, safe=False):
         copy_file(os.path.join(from_filepath, name), os.path.join(to_filepath, name), safe=safe)
 
 
-def put_get_raw(filepath, optype, data=None, unicode=False):
+def put_get_raw(filepath, optype, data=None, ascii=False):
     if filepath != os.devnull:
         create_directory(filepath)
         if optype[0] == 'r' and not os.path.exists(filepath):
             return
     with open(filepath, optype) as file:
         if optype[0] in ['w', 'a']:
-            return put_raw(file, data, unicode)
+            return put_raw(file, data, ascii)
         elif optype[0] == 'r':
-            return get_raw(file, data, unicode)
+            return get_raw(file, data, ascii)
 
 
-def put_raw(file, data, unicode):
-    if unicode:
+def put_raw(file, data, ascii):
+    if ascii:
         data = data.encode('utf')
     return 0 if file.write(data) else -1
 
 
-def get_raw(file, data, unicode):
+def get_raw(file, data, ascii):
     try:
         load = file.read()
     except Exception:
         print("File not found!")
         return
-    return decode_unicode(load) if unicode else load
+    return decode_unicode(load) if ascii else load
 
 
-def put_get_json(filepath, optype, data=None, unicode=False):
+def put_get_json(filepath, optype, data=None, ascii=False):
     if optype[0] in ['w', 'a']:
-        save_data = json.dumps(data, ensure_ascii=unicode, separators=(',', ':'))
+        save_data = encode_json(data, ascii=ascii)
         # Try writing to null device first to avoid clobbering the files upon errors
-        put_get_raw(os.devnull, optype, save_data, unicode)
-        return put_get_raw(filepath, optype, save_data, unicode)
+        put_get_raw(os.devnull, optype, save_data, ascii)
+        return put_get_raw(filepath, optype, save_data, ascii)
     if optype[0] == 'r':
-        load = put_get_raw(filepath, optype, None, unicode)
+        load = put_get_raw(filepath, optype, None, ascii)
         if load is not None:
             return decode_json(load)
 
 
-def load_default(filepath, defaultvalue, binary=False, unicode=False):
+def load_default(filepath, defaultvalue, binary=False, ascii=False):
     optype = 'rb' if binary else 'r'
     data = None
     if os.path.exists(filepath):
-        data = put_get_json(filepath, optype, unicode=unicode)
+        data = put_get_json(filepath, optype, ascii=ascii)
     return defaultvalue if data is None else data
 
 
