@@ -68,7 +68,7 @@ def get_subscription_elements_by_md5(md5):
 
 def expired_subscription_elements(expire_type):
     switcher = {
-        'unlink': lambda q: q.join(IllustUrl, SubscriptionElement.illust_url).join(IllustUrl, IllustUrl.post)
+        'unlink': lambda q: q.join(IllustUrl, SubscriptionElement.illust_url).join(Post, IllustUrl.post)
                              .filter(or_(_expired_clause('yes', 'unlink'), Post.type_value == 'user')),
         'delete': lambda q: q.filter(_expired_clause('no', 'delete')),
         'archive': lambda q: q.filter(_expired_clause('archive', 'archive')),
@@ -82,7 +82,7 @@ def expired_subscription_elements(expire_type):
 
 def missing_subscription_downloads_query():
     return SubscriptionElement.query.join(Subscription)\
-                                    .filter(SubscriptionElement.id.not_in_(ELEMENTS_WITH_POSTS_SUBQUERY),
+                                    .filter(SubscriptionElement.id.not_in(ELEMENTS_WITH_POSTS_SUBQUERY),
                                             SubscriptionElement.status_value == 'active',
                                             Subscription.status_value.not_in(['automatic', 'manual']))
 
