@@ -22,10 +22,11 @@ INIT = False
 # ## CLASSES
 
 class CountPaginate():
-    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT, distinct=False, count=True):
+    def __init__(self, query=None, page=1, per_page=DEFAULT_PAGINATE_LIMIT, distinct=False, count=True, expunge=False):
         self.query = query
         self.per_page = per_page
         self.distinct = distinct
+        self.expunge = expunge
         self.page = max(page, 1)
         self.offset = (page - 1) * per_page
         if count:
@@ -54,11 +55,13 @@ class CountPaginate():
 
     def next(self):
         if self.has_next:
-            return CountPaginate(query=self.query, page=self.page + 1, per_page=self.per_page, distinct=self.distinct)
+            return CountPaginate(query=self.query, page=self.page + 1, per_page=self.per_page, distinct=self.distinct,
+                                 expunge=expunge)
 
     def prev(self):
         if self.has_prev:
-            return CountPaginate(query=self.query, page=self.page - 1, per_page=self.per_page, distinct=self.distinct)
+            return CountPaginate(query=self.query, page=self.page - 1, per_page=self.per_page, distinct=self.distinct,
+                                 expunge=expunge)
 
     def _get_items(self):
         if self.distinct:
@@ -66,7 +69,8 @@ class CountPaginate():
             q = self.query.group_by(*model.pk_cols)
         else:
             q = self.query
-        return q.limit(self.per_page).offset(self.offset).all()
+        q = q.limit(self.per_page).offset(self.offset)
+        return q.allexp() if self.expunge else q.all()
 
     def _get_count(self):
         # Easy way to get an exact copy of a query
@@ -86,10 +90,11 @@ class CountPaginate():
 
 class SequentialPaginate():
     def __init__(self, query=None, per_page=DEFAULT_PAGINATE_LIMIT, page=None, count=None, distinct=False,
-                 min_id=None, max_id=None):
+                 min_id=None, max_id=None, expunge=False):
         self.query = query
         self.per_page = per_page
         self.distinct = distinct
+        self.expunge = expunge
         self.current_count = self._get_count()
         self.count = count or self.current_count
         if self.current_count > 0:
@@ -153,11 +158,11 @@ class SequentialPaginate():
 
     def above(self):
         return SequentialPaginate(query=self.query, per_page=self.per_page, page=self.above_pagenum, count=self.count,
-                                  min_id=self.min_id, max_id=self.max_id, distinct=self.distinct)
+                                  min_id=self.min_id, max_id=self.max_id, distinct=self.distinct, expunge=self.expunge)
 
     def below(self):
         return SequentialPaginate(query=self.query, per_page=self.per_page, page=self.below_pagenum, count=self.count,
-                                  min_id=self.min_id, max_id=self.max_id, distinct=self.distinct)
+                                  min_id=self.min_id, max_id=self.max_id, distinct=self.distinct, expunge=self.expunge)
 
     @property
     def next(self):
@@ -186,7 +191,8 @@ class SequentialPaginate():
             q = q.filter(model.id > self.sequential_id).order_by(model.id.asc())
         else:
             q = q.filter(model.id < self.sequential_id).order_by(model.id.desc())
-        return q.limit(self.per_page).all()
+        q = q.limit(self.per_page)
+        return q.allexp() if self.expunge else q.all()
 
     def _get_count(self):
         # Easy way to get an exact copy of a query
@@ -220,6 +226,7 @@ def initialize():
         sqlalchemy.orm.Query.distinct_count = distinct_count
         sqlalchemy.orm.Query.count_paginate = count_paginate
         sqlalchemy.orm.Query.sequential_paginate = sequential_paginate
+        sqlalchemy.orm.Query.allexp = expunge_all
         sqlalchemy.orm.Query.all2 = secondary_all
         sqlalchemy.orm.Query.first2 = secondary_first
         sqlalchemy.orm.Query.one2 = secondary_one
@@ -268,6 +275,14 @@ def count_paginate(self, **kwargs):
 
 def sequential_paginate(self, **kwargs):
     return SequentialPaginate(query=self, **kwargs)
+
+
+def expunge_all(self):
+    from .. import SESSION
+    items = self.all()
+    for item in items:
+        SESSION.expunge(item)
+    return items
 
 
 def secondary_all(self):

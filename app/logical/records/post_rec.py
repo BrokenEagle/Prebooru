@@ -532,7 +532,8 @@ def generate_missing_image_hashes(manual):
     total = 0
     max_batches = 10 if not manual else float('inf')
     query = missing_image_hashes_query()
-    query = query.options(selectinload(Post.illust_urls).selectinload(IllustUrl.subscription_element))
+    query = query.options(selectinload(Post.illust_urls).selectinload(IllustUrl.subscription_element),
+                          selectinload(Post.image_hashes))
     page = query.sequential_paginate(per_page=20, page='newest_first')
     for posts in records_paginate('generate_missing_image_hashes', page, max_batches):
         for post in posts:
