@@ -192,6 +192,7 @@ def download_missing_elements(manual=False):
         post_ids = [post.id for post in get_posts_by_subscription_elements(elements)]
         _process_image_matches(post_ids)
         _process_videos(post_ids)
+    return element_count
 
 
 def unlink_expired_subscription_elements(manual):
