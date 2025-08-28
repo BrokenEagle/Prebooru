@@ -205,7 +205,6 @@ def unlink_expired_subscription_elements(manual):
             print(f"Unlinking {element.shortlink}")
             params = {
                 'status_name': 'unlinked',
-                'post_id': None,
                 'expires': None,
             }
             update_subscription_element_from_parameters(element, params)
@@ -364,7 +363,6 @@ def relink_element(element):
     params = {
         'status_name': 'active',
         'keep_name': None,
-        'post_id': post.id,
         'expires': days_from_now(element.subscription.expiration),
     }
     update_subscription_element_from_parameters(element, params)
