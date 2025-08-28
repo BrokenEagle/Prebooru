@@ -3,6 +3,7 @@
 # ## PACKAGE IMPORTS
 from utility.time import get_current_time
 from utility.data import swap_key_value
+from utility.uprint import buffered_print
 
 # ## LOCAL IMPORTS
 from ...models import Illust
@@ -90,6 +91,7 @@ def get_site_illust(site_illust_id, site):
 def _set_illust_urls(illust, params, update):
     if 'illust_urls' not in params:
         return False
+    printer = buffered_print('set_column_attributes', safe=True, header=False)
     update_results = False
     existing_urls = [illust_url.url for illust_url in illust.urls]
     current_urls = []
@@ -98,11 +100,13 @@ def _set_illust_urls(illust, params, update):
         if illust_url is None:
             url_data['illust_id'] = illust.id
             illust_url = create_illust_url_from_parameters(url_data)
+            printer(f"set_illust_urls: {illust_url.shortlink} created")
             update_results = True
         else:
             temp_illust_url = illust_url.copy()
             update_illust_url_from_parameters(illust_url, url_data)
             if illust_url != temp_illust_url:
+                printer(f"set_illust_urls: {illust_url.shortlink} updated")
                 update_results = True
         current_urls.append(url_data['url'])
     removed_urls = set(existing_urls).difference(current_urls)
@@ -110,9 +114,11 @@ def _set_illust_urls(illust, params, update):
         # These will only be removable via the illust urls controller
         illust_url = next(filter(lambda x: x.url == url, illust.urls))
         illust_url.active = False
+        printer(f"set_illust_urls: {illust_url.shortlink} inactivated")
         update_results = True
     if update_results:
         if update:
             illust.updated = get_current_time()
         flush_session()
+        printer.print()
     return update_results
