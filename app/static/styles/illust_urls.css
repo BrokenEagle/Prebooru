@@ -3,7 +3,7 @@
 /**** GENERAL ****/
 
 div.illust-urls-preview {
-    background-color: #e8e8e8;
+    background-color: #f0f0f0;
     border: 1px solid #d8d8d8;
     margin: 5px;
     padding: 5px;
@@ -11,18 +11,34 @@ div.illust-urls-preview {
 }
 
 div.illust-urls {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 0fr);
+    text-align: left;
 }
 
-div.illust-preview-url {
+div.illust-urls > article {
     padding: 2px;
+    height: 150px;
+    width: 150px;
+}
+
+div.illust-urls > article.overflow {
+    background-color: grey;
+    padding: 5px;
+    margin: 2px;
+}
+
+div.illust-urls > article.overflow > span {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 div.illust-urls img {
     height: auto;
     text-indent: 5px;
     width: auto;
+    border: 2px solid white;
 }
 
 div.illust-single-url img {
