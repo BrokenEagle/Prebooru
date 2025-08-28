@@ -27,7 +27,7 @@ from ..database.subscription_element_db import create_subscription_element_from_
     expired_subscription_elements, get_subscription_elements_by_md5, subscription_pending_elements_query
 from ..database.post_db import get_post_by_md5, get_posts_by_id, get_posts_by_subscription_elements
 from ..database.illust_url_db import update_illust_url_from_parameters
-from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters, get_site_illust
+from ..database.illust_db import create_illust_from_parameters, update_illust_from_parameters_standard, get_site_illust
 from ..database.artist_db import get_site_artist, update_artist_from_parameters_standard
 from ..database.archive_db import get_archive_by_post_md5
 from ..database.error_db import is_error, create_and_append_error, create_and_extend_errors
@@ -143,7 +143,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
             data_params['artist_id'] = artist.id
             create_illust_from_parameters(data_params)
         else:
-            update_illust_from_parameters(illust, data_params)
+            update_illust_from_parameters_standard(illust, data_params)
         job_status['illusts'] += 1
     job_status['ids'] = None
     update_job_status(job_id, job_status)
