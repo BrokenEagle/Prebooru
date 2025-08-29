@@ -101,7 +101,7 @@ class ArchivePost(JsonModel):
 
     @property
     def file_path(self):
-        return os.path.join(self.directory, filename_join(self._partial_file_path, self.file_ext))\
+        return os.path.join(self.directory, filename_join(self.md5, self.file_ext))\
             if not self.is_ugoira else self.frame(0)
 
     @property
