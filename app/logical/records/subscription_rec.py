@@ -286,11 +286,11 @@ def create_post_from_subscription_element(element):
         return False
     duplicate_check = _duplicate_check_standard if element.status_name == 'deleted' else _duplicate_check_additional
     if illust_url.type == 'image':
-        results = create_image_post(illust_url, 'user', duplicate_check)
+        results = create_image_post(illust_url, 'subscription', duplicate_check)
     elif illust_url.type == 'video':
-        results = create_video_post(illust_url, 'user', duplicate_check)
+        results = create_video_post(illust_url, 'subscription', duplicate_check)
     elif illust_url.type == 'ugoira':
-        results = create_ugoira_post(illust_url, 'user', duplicate_check)
+        results = create_ugoira_post(illust_url, 'subscription', duplicate_check)
     else:
         return False
     create_and_extend_errors(element, results['errors'])
