@@ -6,7 +6,6 @@ import itertools
 # ## PACKAGE IMPORTS
 from utility.time import minutes_ago, days_ago
 from utility.uprint import buffered_print
-from utility.data import get_buffer_checksum
 from utility.file import put_get_raw
 
 # ## LOCAL IMPORTS
@@ -24,7 +23,7 @@ from ..database.post_db import update_post_from_parameters, get_posts_by_id, get
 from ..database.illust_url_db import update_illust_url_from_parameters
 from ..database.error_db import create_and_extend_errors
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
-from .post_rec import create_image_post, create_video_post
+from .post_rec import create_image_post, create_video_post, unlink_post_subscription_element
 
 
 # ## FUNCTIONS
@@ -86,31 +85,31 @@ def process_file_upload(upload):
 
 def create_post_from_upload(upload):
     illust_url = upload.illust_url
-    if illust_url.type == 'unknown':
-        raise Exception("Unable to create post for unknown illust URL type")
     if illust_url.post is not None:
-        update_upload_from_parameters(upload, {'status_name': 'duplicate'})
-        if illust_url.post.type_name != 'user':
-            update_post_from_parameters(illust_url.post, {'type_name': 'user'})
-        return
-    buffer = put_get_raw(upload.media_filepath, 'rb')
-    md5 = get_buffer_checksum(buffer)
-    update_illust_url_from_parameters(illust_url, {'md5': md5})
-    post = get_post_by_md5(md5)
-    if post is not None:
-        update_upload_from_parameters(upload, {'status_name': 'duplicate'})
-        if post.type_name != 'user':
-            update_post_from_parameters(post, {'type_name': 'user'})
+        _duplicate_update(upload, illust_url.post)
         return
     if illust_url.type == 'image':
-        results = create_image_post(buffer, illust_url, 'user')
+        results = create_image_post(upload, 'user', _get_buffer, _duplicate_check)
+    elif illust_url.type == 'video':
+        results = create_video_post(upload, 'user', _get_buffer, _duplicate_check)
+    elif illust_url.type == 'ugoira':
+        raise Exception("Ugoira uploads not handled yet.")
     else:
-        results = create_video_post(buffer, illust_url, 'user')
+        raise Exception("Unable to create post for unknown illust URL type")
     create_and_extend_errors(upload, results['errors'])
+    if results['md5'] is None:
+        update_upload_from_parameters(upload, {'status_name': 'error'})
+        return
+    update_illust_url_from_parameters(illust_url, {'md5': results['md5']})
+    if results['duplicate']:
+        post = get_post_by_md5(results['md5'])
+        _duplicate_update(upload, post)
+        return
     if results['post'] is None:
         update_upload_from_parameters(upload, {'status_name': 'error'})
     else:
         update_upload_from_parameters(upload, {'status_name': 'complete'})
+        unlink_post_subscription_element(results['post'])
 
 
 # #### Secondary task functions
@@ -156,3 +155,25 @@ def check_for_new_artist_boorus(post_ids):
     if len(check_artists):
         check_artists_for_boorus(check_artists)
     printer.print()
+
+
+# #### Private functions
+
+def _get_buffer(upload):
+    retdata = {'errors': []}
+    retdata['buffer'] = put_get_raw(upload.media_filepath, 'rb')
+    if retdata['buffer'] is None:
+        retdata['errors'].append(('upload_rec.get_buffer', "Unable to load file"))
+    return retdata
+
+
+def _duplicate_check(md5):
+    post = get_post_by_md5(md5)
+    return post is not None
+
+
+def _duplicate_update(upload, post):
+    update_upload_from_parameters(upload, {'status_name': 'duplicate'})
+    if post.type_name != 'user':
+        update_post_from_parameters(post, {'type_name': 'user'})
+    unlink_post_subscription_element(post)

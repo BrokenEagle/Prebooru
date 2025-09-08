@@ -16,8 +16,9 @@ from utility.uprint import buffered_print, print_warning
 
 # ### LOCAL IMPORTS
 from ... import SESSION
-from ...models import Post, Artist, ArchivePost, SubscriptionElement, IllustUrl
+from ...models import Post, Artist, ArchivePost, IllustUrl
 from ..utility import set_error, SessionThread
+from ..batch_loader import selectinload_batch_primary
 from ..logger import handle_error_message
 from ..network import get_http_data
 from ..media import load_image, create_sample, create_preview, create_video_screenshot, convert_mp4_to_webp,\
@@ -32,6 +33,7 @@ from ..database.error_db import create_error_from_parameters, create_and_append_
 from ..database.archive_db import create_archive_from_parameters, update_archive_from_parameters,\
     get_archive_by_post_md5
 from ..database.archive_post_db import create_archive_post_from_parameters, update_archive_post_from_parameters
+from ..database.subscription_element_db import update_subscription_element_from_parameters
 from ..sources.danbooru_src import get_danbooru_posts_by_md5s
 from .base_rec import delete_data, records_paginate
 from .illust_rec import download_illust_url, download_illust_sample, download_illust_url_frames
@@ -47,8 +49,8 @@ RELOCATE_PAGE_LIMIT = 10
 
 # ## FUNCTIONS
 
-def create_image_post(illust_url, post_type, duplicate_check):
-    retdata = _single_file_check(illust_url, duplicate_check)
+def create_image_post(record, post_type, get_buffer, duplicate_check):
+    retdata = _single_file_check(record, get_buffer, duplicate_check)
     if retdata['md5'] is None or retdata['duplicate']:
         return retdata
     buffer = retdata['buffer']
@@ -57,7 +59,7 @@ def create_image_post(illust_url, post_type, duplicate_check):
         retdata['errors'].append(_module_error('create_image_post', file_ext[0]))
         file_ext = None
     if file_ext is None:
-        file_ext = illust_url.url_extension
+        file_ext = record.illust_url.url_extension
     image = _load_image(buffer)
     if isinstance(image, tuple):
         retdata['errors'].append(image)
@@ -208,10 +210,11 @@ def create_ugoira_post_0(illust_url, post_type, working_directory, duplicate_che
     return retdata
 
 
-def create_video_post(illust_url, post_type, duplicate_check):
-    retdata = _single_file_check(illust_url, duplicate_check)
+def create_video_post(record, post_type, get_buffer, duplicate_check):
+    retdata = _single_file_check(record, get_buffer, duplicate_check)
     if retdata['md5'] is None or retdata['duplicate']:
         return retdata
+    illust_url = record.illust_url
     buffer = retdata['buffer']
     file_ext = check_filetype(buffer)
     if isinstance(file_ext, tuple):
@@ -308,6 +311,14 @@ def create_video_post_sample_preview_images(post):
         else:
             errors.append(sample_image)
     create_and_extend_errors(post, errors)
+
+
+def unlink_post_subscription_element(post):
+    selectinload_batch_primary(post.illust_urls, 'subscription_element', reverse=True)
+    for illust_url in post.illust_urls:
+        element = illust_url.subscription_element
+        if element is not None and element.status_name not in ['duplicate', 'unlinked']:
+            update_subscription_element_from_parameters(element, {'status_name': 'unlinked', 'expires': None})
 
 
 def redownload_post(post):
@@ -610,8 +621,8 @@ def process_image_matches(post_ids):
 
 # #### Private functions
 
-def _single_file_check(illust_url, duplicate_check):
-    retdata = download_illust_url(illust_url)
+def _single_file_check(record, get_buffer, duplicate_check):
+    retdata = get_buffer(record)
     if retdata['buffer'] is None:
         retdata['md5'] = None
         return retdata

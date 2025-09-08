@@ -12,7 +12,6 @@ from utility.uprint import buffered_print
 from ... import SESSION
 from ...models import Download
 from ..utility import unique_objects, SessionThread, set_error
-from ..batch_loader import selectinload_batch_primary
 from ..sources.base_src import get_post_source
 from ..records.artist_rec import update_artist_from_source, check_artists_for_boorus
 from ..records.illust_rec import create_illust_from_source, update_illust_from_source
@@ -26,11 +25,11 @@ from ..database.download_db import create_download_from_parameters, update_downl
     get_download_by_request_url
 from ..database.download_element_db import create_download_element_from_parameters,\
     update_download_element_from_parameters, get_download_element
-from ..database.subscription_element_db import update_subscription_element_from_parameters
 from ..database.post_db import get_posts_by_id, get_post_by_md5, update_post_from_parameters
 from ..database.error_db import create_and_extend_errors, create_and_append_error, append_error
 from ..media import convert_mp4_to_webp, convert_mp4_to_webm
-from .post_rec import create_image_post, create_video_post, create_ugoira_post
+from .post_rec import create_image_post, create_video_post, create_ugoira_post, unlink_post_subscription_element
+from .illust_rec import download_illust_url
 
 
 # ## FUNCTIONS
@@ -121,9 +120,9 @@ def create_post_from_download_element(element):
         _duplicate_update(element, illust_url.post)
         return
     if illust_url.type == 'image':
-        results = create_image_post(illust_url, 'user', _duplicate_check)
+        results = create_image_post(element, 'user', _get_buffer, _duplicate_check)
     elif illust_url.type == 'video':
-        results = create_video_post(illust_url, 'user', _duplicate_check)
+        results = create_video_post(element, 'user', _get_buffer, _duplicate_check)
     elif illust_url.type == 'ugoira':
         results = create_ugoira_post(illust_url, 'user', _duplicate_check)
     else:
@@ -141,7 +140,7 @@ def create_post_from_download_element(element):
         update_download_element_from_parameters(element, {'status_name': 'error'})
     else:
         update_download_element_from_parameters(element, {'status_name': 'complete'})
-        _unlink_subscription_element(results['post'])
+        unlink_post_subscription_element(results['post'])
 
 
 def create_download_from_illust_url(illust_url):
@@ -222,19 +221,15 @@ def check_for_new_artist_boorus(post_ids):
 
 # ## Private
 
-def _unlink_subscription_element(post):
-    selectinload_batch_primary(post.illust_urls, 'subscription_element', reverse=True)
-    for illust_url in post.illust_urls:
-        element = illust_url.subscription_element
-        if element is not None and element.status_name not in ['duplicate', 'unlinked']:
-            update_subscription_element_from_parameters(element, {'status_name': 'unlinked', 'expires': None})
-
-
 def _duplicate_update(element, post):
     update_download_element_from_parameters(element, {'status_name': 'duplicate'})
     if post.type_name != 'user':
         update_post_from_parameters(post, {'type_name': 'user'})
-    _unlink_subscription_element(post)
+    unlink_post_subscription_element(post)
+
+
+def _get_buffer(element):
+    return download_illust_url(element.illust_url)
 
 
 def _duplicate_check(md5):
