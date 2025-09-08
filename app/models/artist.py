@@ -69,6 +69,7 @@ class Artist(JsonModel):
     site_account_values = association_proxy('site_accounts', 'name', creator=label_creator)
     name_values = association_proxy('names', 'name', creator=label_creator)
     profile_bodies = association_proxy('profiles', 'body', creator=description_creator)
+    booru_ids = association_proxy('boorus', 'id')
 
     # ## Instance properties
 

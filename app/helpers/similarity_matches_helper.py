@@ -5,7 +5,7 @@ from flask import url_for
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from .base_helper import general_link
+from .base_helper import general_link, delete_link
 
 
 # ## FUNCTIONS
@@ -31,5 +31,5 @@ def delete_element_link(element, is_json):
         }
         return general_link("remove", url, **addons)
     else:
-        url = url_for('similarity_match.delete_html', forward_id=element.forward_id, reverse_id=element.reverse_id)
-        return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})
+        return delete_link("remove", url_for('similarity_match.delete_html', forward_id=element.forward_id,
+                                             reverse_id=element.reverse_id))

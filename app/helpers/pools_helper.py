@@ -38,6 +38,22 @@ def page_navigation(pool_element):
     return general_link(text, pool_element.page_url)
 
 
+def add_pool_link(item):
+    if item.model_name == 'post':
+        data_key = 'data-post-id'
+    elif item.model_name == 'illust':
+        data_key = 'data-illust-id'
+    else:
+        raise Exception("Invalid model for pool adds.")
+    url = url_for('pool_element.create_json', preview='true')
+    addons = {
+        'class': 'action-link',
+        'onclick': f"return Pools.createElement(this, '{item.model_name}')",
+        data_key: item.id,
+    }
+    return general_link("+", url, **addons)
+
+
 def remove_pool_link(pool_element):
     url = url_for('pool_element.delete_json', id=pool_element.id, preview='true')
     addons = {

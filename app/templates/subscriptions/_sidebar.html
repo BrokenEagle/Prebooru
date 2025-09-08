@@ -9,23 +9,13 @@
     {{ boorus_section(subscription.artist.boorus, 'subscription-boorus') }}
     {{ artists_section(subscription.artist, 'subscription-artist') }}
     {{ illusts_display(helpers.subscription.illust_search(subscription), subscription.illust_count, 'subscription-illusts', False) }}
-    {{ notations_section(subscription.notations, 'subscription-notations') }}
+    {{ notations_section(subscription.notations, 'subscription-notations', 'subscription_id', subscription.id) }}
     {{ errors_section(subscription.errors, 'subscription-errors') }}
-    {{ timestamps_section(subscription, 'subscription-timestamps', other_timestamps=['requery']) }}
+    {{ timestamps_section(subscription, 'subscription-timestamps') }}
     <section id="subscription-options">
         <h4>Options</h4>
         <ul>
-            {% if subscription.status_name == 'idle' %}
-                <li>{{ helpers.subscription.process_subscription_link_auto(subscription) }}</li>
-                <li>{{ helpers.subscription.process_subscription_link_manual(subscription) }}</li>
-            {% endif %}
-            <li>{{ helpers.subscription.add_notation_link(subscription) }}</li>
-            {% if subscription.status_name != 'retired' %}
-                <li>{{ helpers.subscription.reset_requery_link(subscription) }}</li>
-                <li>{{ helpers.subscription.delay_subscription_link(subscription) }}</li>
-                <li>{{ helpers.subscription.retire_link(subscription) }}</li>
-            {% endif %}
-            <li>{{ helpers.subscription.get_last_job_status_link(subscription) }}</li>
+            <li>{{ helpers.subscription.delay_subscription_link(subscription) }}</li>
         </ul>
     </section>
 </div>

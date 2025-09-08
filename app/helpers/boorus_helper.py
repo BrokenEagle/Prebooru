@@ -11,7 +11,7 @@ from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from .base_helper import general_link, external_link
+from .base_helper import general_link, external_link, post_link, put_link, delete_link
 
 
 # ## FUNCTIONS
@@ -39,35 +39,28 @@ def danbooru_post_search(booru):
 # ###### SHOW
 
 def query_update_link(booru):
-    return general_link("Update from source", url_for('booru.query_update_html', id=booru.id), method="POST")
+    return post_link("Update from source", url_for('booru.query_update_html', id=booru.id))
 
 
 def check_artists_link(booru):
-    return general_link("Check for artists", url_for('booru.check_artists_html', id=booru.id), method="POST")
+    return post_link("query Danbooru", url_for('booru.check_artists_html', id=booru.id))
 
 
 def add_artist_link(booru):
-    addons = {'onclick': "return Boorus.addArtist(this)"}
-    return general_link("Add artist", url_for('booru.add_artist_html', id=booru.id), **addons)
+    addons = {'prompt': "Enter artist ID to add:", 'prompt-arg': 'artist_id'}
+    return general_link("+", url_for('booru.add_artist_html', id=booru.id), **addons)
 
 
 def remove_artist_link(booru, artist):
-    url = url_for('booru.remove_artist_html', id=booru.id, artist_id=artist.id)
-    return general_link('remove', url, method="DELETE", **{'class': 'warning-link'})
-
-
-def add_notation_link(booru):
-    return general_link("Add notation", url_for('notation.new_html', booru_id=booru.id, redirect='true'))
+    return delete_link('remove', url_for('booru.remove_artist_html', id=booru.id, artist_id=artist.id))
 
 
 def delete_name_link(booru, name):
-    return general_link("remove", url_for('booru.delete_name_html', id=booru.id, label_id=name.id),
-                        method="DELETE", **{'class': 'warning-link'})
+    return delete_link("remove", url_for('booru.delete_name_html', id=booru.id, label_id=name.id))
 
 
 def swap_name_link(booru, name):
-    url = url_for('booru.swap_name_html', id=booru.id, label_id=name.id)
-    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+    return put_link("swap", url_for('booru.swap_name_html', id=booru.id, label_id=name.id))
 
 
 def names_link(booru):

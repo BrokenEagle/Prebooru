@@ -22,7 +22,7 @@ from ..logical.records.artist_rec import update_artist_from_source, archive_arti
 from ..logical.records.post_rec import check_artist_posts_for_danbooru_id
 from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
     artist_append_booru
-from ..logical.database.booru_db import create_booru_from_parameters
+from ..logical.database.booru_db import create_booru_from_parameters, booru_append_artist, booru_remove_artist
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, get_or_error,\
     check_param_requirements, nullify_blanks, set_default, parse_bool_parameter,\
@@ -483,6 +483,38 @@ def query_booru_html(id):
         flash(response['message'])
     else:
         flash('Artist updated.')
+    return redirect(url_for('artist.show_html', id=id))
+
+
+@bp.route('/artists/<int:id>/add_booru', methods=['POST'])
+def add_booru_html(id):
+    artist = get_or_abort(Artist, id)
+    booru_id = request.values.get('booru_id', type=int)
+    booru = Booru.find(booru_id)
+    if booru is not None:
+        if booru.id not in artist.booru_ids:
+            booru_append_artist(booru, artist)
+            flash("Artist added.")
+        else:
+            flash(f'{booru.shortlink} already added to {artist.shortlink}.', 'error')
+    else:
+        flash(f'booru #{booru_id} not found.', 'error')
+    return redirect(url_for('artist.show_html', id=id))
+
+
+@bp.route('/artists/<int:id>/remove_booru', methods=['DELETE'])
+def remove_booru_html(id):
+    artist = get_or_abort(Artist, id)
+    booru_id = request.values.get('booru_id', type=int)
+    booru = Booru.find(booru_id)
+    if booru is not None:
+        if booru.id in artist.booru_ids:
+            booru_remove_artist(booru, artist)
+            flash("Booru removed.")
+        else:
+            flash(f'{booru.shortlink} not associated with {artist.shortlink}.')
+    else:
+        flash(f'artist #{booru_id} not found.')
     return redirect(url_for('artist.show_html', id=id))
 
 

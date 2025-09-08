@@ -33,6 +33,19 @@ Prebooru.promptArgPost = function(obj, prompt_text, argname) {
 };
 
 Prebooru.linkPost = function(obj) {
+    var message;
+    message = obj.getAttribute('confirm');
+    if (message !== null) {
+        if (confirm(message)) {
+            Prebooru.postRequest(obj.href, {});
+        }
+        return false;
+    }
+    message = obj.getAttribute('prompt');
+    if (message !== null) {
+        let argname = obj.getAttribute('prompt-arg');
+        return Prebooru.promptArgPost(obj, message, argname)
+    }
     Prebooru.postRequest(obj.href, {});
     return false;
 };

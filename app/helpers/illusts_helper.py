@@ -12,7 +12,7 @@ from config import DANBOORU_HOSTNAME
 # ## LOCAL IMPORTS
 from ..models.model_enums import SiteDescriptor
 from ..logical.utility import search_url_for
-from .base_helper import external_link, general_link
+from .base_helper import external_link, general_link, put_link, delete_link, post_link
 
 
 # ## FUNCTIONS
@@ -50,58 +50,38 @@ def danbooru_upload_link(illust):
 
 
 def update_from_source_link(illust):
-    url = url_for('illust.query_update_html', id=illust.id)
-    addons = {'onclick': "return Prebooru.linkPost(this)"}
-    return general_link("Update from source", url, **addons)
+    return post_link("Update from source", url_for('illust.query_update_html', id=illust.id))
 
 
 def add_media_url_link(illust):
-    return general_link("Add media url", url_for('illust_url.new_html', illust_id=illust.id))
-
-
-def add_notation_link(illust):
-    return general_link("Add notation", url_for('notation.new_html', illust_id=illust.id, redirect='true'))
+    return general_link("+", url_for('illust_url.new_html', illust_id=illust.id))
 
 
 def add_commentary_link(illust):
-    url = url_for('illust.create_commentary_from_source', id=illust.id)
-    addons = {'onclick': "return Illusts.createCommentary(this)"}
-    return general_link("Add commentary", url, **addons)
-
-
-def add_pool_link(illust):
-    url = url_for('pool_element.create_json', preview='true')
-    addons = {
-        'onclick': "return Pools.createElement(this, 'illust')",
-        'data-illust-id': illust.id,
-    }
-    return general_link("Add to pool", url, **addons)
+    addons = {'prompt': "Enter the site illust URL of commentary:", 'prompt-arg': 'url'}
+    return post_link("+", url_for('illust.create_commentary_from_source', id=illust.id), **addons)
 
 
 def update_artist_link(illust):
-    url = url_for('illust.update_artist_html', id=illust.id)
-    addons = {'onclick': "return Illusts.updateArtist(this)"}
-    return general_link("Update artist", url, **addons)
+    addons = {'prompt': "Enter the artist ID:", 'prompt-arg': 'artist_id'}
+    return post_link("change", url_for('illust.update_artist_html', id=illust.id), **addons)
 
 
 def delete_title_link(illust, title):
-    url = url_for('illust.delete_title_html', id=illust.id, description_id=title.id)
-    return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})
+    return delete_link("remove", url_for('illust.delete_title_html', id=illust.id, description_id=title.id))
 
 
 def swap_title_link(illust, title):
-    url = url_for('illust.swap_title_html', id=illust.id, description_id=title.id)
-    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+    return put_link("swap", url_for('illust.swap_title_html', id=illust.id, description_id=title.id))
 
 
 def delete_commentary_link(illust, commentary, relation):
-    url = url_for('illust.delete_commentary_html', id=illust.id, description_id=commentary.id, relation=relation)
-    return general_link("remove", url, method="DELETE", **{'class': 'warning-link'})
+    return delete_link("remove", url_for('illust.delete_commentary_html', id=illust.id,
+                                         description_id=commentary.id, relation=relation))
 
 
 def swap_commentary_link(illust, commentary):
-    url = url_for('illust.swap_commentary_html', id=illust.id, description_id=commentary.id)
-    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+    return put_link("swap", url_for('illust.swap_commentary_html', id=illust.id, description_id=commentary.id))
 
 
 def urls_navigation_link(illust, url_type):

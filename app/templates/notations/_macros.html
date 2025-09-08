@@ -25,15 +25,17 @@
     </ul>
 {%- endmacro %}
 
-{% macro notations_section(notations, section_id) -%}
-    {% if notations | length > 0 %}
+{% macro notations_section(notations, section_id, key, id) -%}
         <section id="{{ section_id }}">
-            <h4>Notations</h4>
-            <div class="artist-notations-container">
-                <ul>
-                    {% for notation in notations %}<li>{{ notation_block(notation) }}</li>{% endfor %}
-                </ul>
+            <div class="heading medium-2">
+                Notations [&thinsp;<span class="notation-add">{{ helpers.notation.add_notation_link(key, id) }}</span>&thinsp;]
             </div>
+            {% if notations | length > 0 %}
+                <div class="artist-notations-container">
+                    <ul>
+                        {% for notation in notations %}<li>{{ notation_block(notation) }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
         </section>
-    {% endif %}
 {%- endmacro %}

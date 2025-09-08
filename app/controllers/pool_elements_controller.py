@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from utility.data import eval_bool_string, int_or_array
 
 # ## LOCAL IMPORTS
-from ..models import Pool, PoolElement
+from ..models import Pool, PoolElement, Post, Illust
 from ..logical.utility import set_error
 from ..logical.database.pool_element_db import get_pool_elements_by_id
 from ..logical.records.pool_rec import add_to_pool, delete_pool_element, batch_delete_pool_elements
@@ -101,10 +101,14 @@ def create_json():
         return result
     is_preview = request.values.get('preview', type=eval_bool_string, default=False)
     if is_preview:
+        if result['type'] == 'post':
+            item = Post.find(result['item']['id'])
+        elif result['type'] == 'illust':
+            item = Illust.find(result['item']['id'])
         pool_elements = PoolElement.query.options(selectinload(PoolElement.pool))\
                                          .filter(PoolElement.id.in_(result['element_ids'])).all()
         result['html'] = render_template_ws("pools/_section.html", pool_elements=pool_elements,
-                                            section_id=f"{result['type']}-pools")
+                                            section_id=f"{result['type']}-pools", item=item)
     return result
 
 
@@ -122,9 +126,14 @@ def delete_json(id):
     delete_pool_element(pool_element)
     retdata = {'error': False, 'type': item_table, 'item': item_json}
     if is_preview:
+        if retdata['type'] == 'post':
+            item = Post.find(retdata['item']['id'])
+        elif retdata['type'] == 'illust':
+            item = Illust.find(retdata['item']['id'])
         pool_elements = PoolElement.query.options(selectinload(PoolElement.pool))\
                                          .filter(getattr(PoolElement, item_fkey) == item_json['id']).all()
-        html = render_template_ws("pools/_section.html", pool_elements=pool_elements, section_id=f"{item_table}-pools")
+        html = render_template_ws("pools/_section.html", pool_elements=pool_elements,
+                                  section_id=f"{item_table}-pools", item=item)
         retdata['html'] = html
     return retdata
 

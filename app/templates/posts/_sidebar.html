@@ -11,10 +11,10 @@
     {{ boorus_section(post.selectin_boorus, 'booru-info') }}
     {{ artists_section(post.selectin_artists, 'artist-info') }}
     {{ illusts_section(post.selectin_illusts, 'illust-info') }}
-    {{ pools_section(post.pool_elements, 'pool-list') }}
     {{ subscription_element_section(post.active_subscription_element, 'subscription-info') }}
-    {{ tags_section(post.tags, 'tag-list', 'post', post.id) }}
-    {{ notations_section(post.notations, 'notation-list') }}
+    {{ pools_section(post.pool_elements, 'pool-list', post) }}
+    {{ tags_section(post.tags, 'tag-list', post) }}
+    {{ notations_section(post.notations, 'notation-list', 'post_id', post.id) }}
     {{ errors_section(post.errors, 'error-list') }}
     <section id="post-image-search">
         <h4>Image search</h4>
@@ -44,11 +44,6 @@
     <section id="post-options">
         <h4>Options</h4>
         <ul>
-            <li>{{ helpers.base.general_link("Original file", post.file_url) }}</li>
-            <li>{{ helpers.base.file_link(post.file_path, "Copy file link") }}</li>
-            <li>{{ helpers.post.add_to_pool_link(post) }}</li>
-            <li>{{ helpers.post.add_tag_link(post) }}</li>
-            <li>{{ helpers.post.add_notation_link(post) }}</li>
             {% if post.is_ugoira %}
                 <li>{{ helpers.post.redownload_frames_link(post) }}</li>
             {% else %}

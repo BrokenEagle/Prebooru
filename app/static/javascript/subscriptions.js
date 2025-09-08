@@ -29,10 +29,6 @@ Subscriptions.networkHandler = function(obj) {
     return false;
 };
 
-Subscriptions.delaySubscriptionElements = function(obj) {
-    return Prebooru.promptArgPost(obj, "Enter the number of days to delay active elements (0 removes expiration):", 'days');
-};
-
 Subscriptions.dragKeepClick = function(obj) {
     obj.click();
     return false;

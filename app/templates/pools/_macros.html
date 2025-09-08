@@ -90,31 +90,34 @@
     </div>
 {%- endmacro %}
 
-{% macro pools_section(pool_elements, section_id) -%}
+{% macro pools_section(pool_elements, section_id, item=None) -%}
     <section id="{{ section_id }}" class="pool-section">
-        {% if pool_elements is not none %}
-            {% if pool_elements is not iterable %}
-                {% set pool_elements = [pool_elements] %}
-                {% set singular = True %}
-            {% else %}
-                {% set singular = False %}
+        {% if pool_elements is not iterable %}
+            {% set pool_elements = [pool_elements] if pool_elements is not none else [] %}
+            {% set singular = True %}
+        {% else %}
+            {% set singular = False %}
+        {% endif %}
+        <div class="heading medium-2">
+            {{ "Pool" if singular else "Pools" }}
+            {% if item is not none %}
+                [&thinsp;<span class="pool-add">{{ helpers.pool.add_pool_link(item) }}</span>&thinsp;]
             {% endif %}
-            {% if pool_elements | length > 0 %}
-                <h4>{{ "Pool" if singular else "Pools" }}</h4>
-                <ul>
-                    {% for pool_element in pool_elements %}
-                        <li class="{{ "listless-item" if pool_element.pool.series else "" }}">
-                            <strong>
-                                {{ helpers.pool.prev_navigation(pool_element) }}
-                                {{ pool_element.pool.name_link }}
-                                {{ helpers.pool.next_navigation(pool_element) }}
-                                [{{ helpers.pool.page_navigation(pool_element) }}]
-                            </strong>
-                            <span class="delete-control small-2">( {{ helpers.pool.remove_pool_link(pool_element) }} )</span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+        </div>
+        {% if pool_elements | length > 0 %}
+            <ul>
+                {% for pool_element in pool_elements %}
+                    <li class="{{ "listless-item" if pool_element.pool.series else "" }}">
+                        <strong>
+                            {{ helpers.pool.prev_navigation(pool_element) }}
+                            {{ pool_element.pool.name_link }}
+                            {{ helpers.pool.next_navigation(pool_element) }}
+                            [{{ helpers.pool.page_navigation(pool_element) }}]
+                        </strong>
+                        <span class="delete-control small-2">( {{ helpers.pool.remove_pool_link(pool_element) }} )</span>
+                    </li>
+                {% endfor %}
+            </ul>
         {% endif %}
     </section>
 {%- endmacro %}

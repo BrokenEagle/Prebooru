@@ -243,6 +243,10 @@ a.notice-link {
     color: orange;
 }
 
+a.action-link {
+    color: green;
+}
+
 article.post {
     display: inline-block;
     height: 304px;

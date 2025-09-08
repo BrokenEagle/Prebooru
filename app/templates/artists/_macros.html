@@ -1,52 +1,63 @@
-{% macro artists_section(artists, section_id, booru=None) -%}
-    {% if artists is not none %}
+{% macro artists_section(artists, section_id, booru=None, illust=None) -%}
+    {% if artists is not none or booru is not none %}
         {% if artists is not iterable %}
             {% set artists = [artists] %}
             {% set singular = True %}
         {% else %}
             {% set singular = False %}
         {% endif %}
-        {% if artists | length > 0 %}
-            <section id="{{ section_id }}">
-                <h4>{{ "Artist" if singular else "Artists" }}</h4>
-                <ul>
-                    {% for artist in artists %}
-                        {% if artist.active %}
-                            {% set li_class = 'artist-active' %}
-                        {% else %}
-                            {% set li_class = 'artist-deleted' %}
-                        {% endif %}
-                        <li class="{{ li_class }}">
-                            <span class="item-heading">
-                                {{ artist.show_link }} {{ helpers.artist.post_search_link(artist) }}
-                                {% if not artist.primary %}
-                                    <span class="nonprimary-artist">(nonprimary)</span>
-                                {% endif %}
-                            </span>
-                            <ul>
+        <section id="{{ section_id }}">
+            <div class="heading medium-2">
+                {{ "Artist" if singular else "Artists" }}
+                {% if booru is not none %}
+                    [&thinsp;<span class="artist-add">{{ helpers.booru.add_artist_link(booru) }}</span>&thinsp;]
+                {% endif %}
+            </div>
+            {% if artists | length > 0 %}
+            <ul>
+                {% for artist in artists %}
+                    {% if artist.active %}
+                        {% set li_class = 'artist-active' %}
+                    {% else %}
+                        {% set li_class = 'artist-deleted' %}
+                    {% endif %}
+                    <li class="{{ li_class }}">
+                        <span class="item-heading">
+                            {{ artist.show_link }} {{ helpers.artist.post_search_link(artist) }}
+                            {% if not artist.primary %}
+                                <span class="nonprimary-artist">(nonprimary)</span>
+                            {% endif %}
+                        </span>
+                        <ul>
+                            <li>
+                                <strong>{{ helpers.artist.site_artist_link(artist) }}</strong>
+                            </li>
+                            <li>
+                                <strong>Site ID:</strong> {{ artist.site_artist_id }}
+                            </li>
+                            <li>
+                                <strong>Account:</strong> {{ helpers.base.val_or_none(artist.site_account_value) }}
+                            </li>
+                            <li>
+                                <strong>Links:</strong> {{ helpers.artist.artist_links(artist) }}
+                            </li>
+                            {% if booru is not none %}
                                 <li>
-                                    <strong>{{ helpers.artist.site_artist_link(artist) }}</strong>
+                                    <strong>( {{ helpers.booru.remove_artist_link(booru, artist) }} )</strong>
                                 </li>
-                                <li>
-                                    <strong>Site ID:</strong> {{ artist.site_artist_id }}
-                                </li>
-                                <li>
-                                    <strong>Account:</strong> {{ helpers.base.val_or_none(artist.site_account_value) }}
-                                </li>
-                                <li>
-                                    <strong>Links:</strong> {{ helpers.artist.artist_links(artist) }}
-                                </li>
-                                {% if booru is not none %}
-                                    <li>
-                                        <strong>( {{ helpers.booru.remove_artist_link(booru, artist) }} )</strong>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </section>
-        {% endif %}
+                            {% endif %}
+                            {% if illust is not none %}
+                                <li class="illust-update-artist">({{ helpers.illust.update_artist_link(illust) }})</li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                {% endfor %}
+                {% if booru is not none %}
+                    <li class="booru-query-artist">({{ helpers.booru.check_artists_link(booru) }})</li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </section>
     {% endif %}
 {%- endmacro %}
 

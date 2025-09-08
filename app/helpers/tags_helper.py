@@ -39,6 +39,20 @@ def tag_search_links(tag):
     return Markup(' | ').join(links)
 
 
+def add_tag_link(item):
+    if item.model_name == 'post':
+        data_key = 'data-post-id'
+    else:
+        raise Exception("Invalid model for pool adds.")
+    url = url_for('tag.append_item_index_json', preview='true')
+    addons = {
+        'class': 'action-link',
+        'onclick': f"return Prebooru.addTag(this, '{item.model_name}')",
+        data_key: item.id
+    }
+    return general_link("+", url, **addons)
+
+
 def remove_tag_link(tag, item_type, item_id):
     url = url_for('tag.remove_item_show_json', id=tag.id, preview='true')
     addons = {

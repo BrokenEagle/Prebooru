@@ -59,20 +59,6 @@ Posts.createDownload = function(obj) {
     return false;
 };
 
-Posts.regeneratePreviews = function(obj) {
-    if (confirm("Regenerate sample and preview images?")) {
-        Prebooru.postRequest(obj.href);
-    }
-    return false;
-};
-
-Posts.regenerateImageMatches = function(obj) {
-    if (confirm("Regenerate image matches?")) {
-        Prebooru.postRequest(obj.href);
-    }
-    return false;
-};
-
 Posts.loadOriginal = function (obj) {
     let video = document.querySelector('#media-container video');
     video.src = video.dataset.original;

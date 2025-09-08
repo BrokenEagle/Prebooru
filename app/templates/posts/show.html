@@ -28,9 +28,11 @@
                 </section>
             {% else %}
                 <section id="media-container" onclick="return Prebooru.resizeImage(this)" class="image fullsize">
-                    <picture>
-                        {{ helpers.post.image_sample_link(post) }}
-                    </picture>
+                    <a href="{{ post.file_url }}">
+                        <picture>
+                            {{ helpers.post.image_sample_link(post) }}
+                        </picture>
+                    </a>
                 </section>
             {% endif %}
             {% include "posts/_site_content.html" %}

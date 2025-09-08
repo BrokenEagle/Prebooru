@@ -5,7 +5,7 @@ import re
 import html
 
 # ## EXTERNAL IMPORTS
-from flask import Markup
+from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
 from .base_helper import general_link, convert_to_html
@@ -45,3 +45,13 @@ def to_html(notation):
         else:
             lines[i] = convert_to_html(line)
     return Markup("<br>").join(lines)
+
+
+# #### Link functions
+
+def add_notation_link(notation_key, item_id):
+    params = {
+        notation_key: item_id,
+        'redirect': 'true',
+    }
+    return general_link("+", url_for('notation.new_html', **params))

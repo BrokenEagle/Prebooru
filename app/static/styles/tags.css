@@ -24,6 +24,6 @@ div#tag-illusts {
     margin-bottom: 1em;
 }
 
-div#tag-illusts > span {
+div#tag-illusts > span.heading {
     text-decoration: underline;
 }

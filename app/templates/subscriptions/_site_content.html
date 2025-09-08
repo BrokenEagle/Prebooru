@@ -5,12 +5,29 @@
             <ul>
                 <li>
                     <strong>Status:</strong> {{ helpers.subscription.status_link(subscription) }}
+                    {% if subscription.status_name in ('idle', 'error') %}
+                        <strong>&ensp;(
+                        {%- if subscription.status_name == 'idle' -%}
+                            {{- helpers.subscription.process_subscription_link_auto(subscription) -}}
+                            &thinsp;|&thinsp;
+                            {{- helpers.subscription.process_subscription_link_manual(subscription) -}}
+                            &thinsp;|&thinsp;
+                        {%- endif -%}
+                        {{- helpers.subscription.retire_link(subscription) -}}
+                        &thinsp;)</strong>
+                    {% endif %}
                 </li>
                 <li>
                     <strong>Last Illust ID:</strong> {{ helpers.base.val_or_none(subscription.last_id) }}
                 </li>
                 <li>
                     <strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription.checked) }}
+                </li>
+                <li>
+                    <strong>Requery:</strong> {{ helpers.base.format_timestamp(subscription.requery) }}
+                    {% if subscription.status_name == 'idle' %}
+                        <strong>(&thinsp;{{ helpers.subscription.reset_requery_link(subscription) }}&thinsp;)</strong>
+                    {% endif %}
                 </li>
                 <li>
                     <strong>Total storage:</strong> {{ helpers.subscription.storage_bytes(subscription) }}
@@ -87,31 +104,37 @@
     </div>
     <div id="subscription-site-content-2">
         <section id="subscription-intervals">
-            <h4>Average intervals</h4>
-            <ul>
-                <li>
-                    <strong>Last illust:</strong> {{ helpers.subscription.last_illust_created(subscription) }}
-                </li>
-                <li>
-                    <strong>Last keep:</strong> {{ helpers.subscription.last_keep_created(subscription) }}
-                </li>
-                <li>
-                    <strong>Last week:</strong> {{ helpers.subscription.average_interval(subscription, 7) }}
-                </li>
-                <li>
-                    <strong>Last month:</strong> {{ helpers.subscription.average_interval(subscription, 30) }}
-                </li>
-                <li>
-                    <strong>Last quarter:</strong> {{ helpers.subscription.average_interval(subscription, 91) }}
-                </li>
-                <li>
-                    <strong>Last year:</strong> {{ helpers.subscription.average_interval(subscription, 365) }}
-                </li>
-            </ul>
+            <div class="heading medium-2">
+                <u>Average intervals</u> (&thinsp;<span class="notation-add">{{ helpers.subscription.show_average_intervals(show_intervals) }}</span>&thinsp;)
+            </div>
+            {% if show_intervals %}
+                <ul>
+                    <li>
+                        <strong>Last illust:</strong> {{ helpers.subscription.last_illust_created(subscription) }}
+                    </li>
+                    <li>
+                        <strong>Last keep:</strong> {{ helpers.subscription.last_keep_created(subscription) }}
+                    </li>
+                    <li>
+                        <strong>Last week:</strong> {{ helpers.subscription.average_interval(subscription, 7) }}
+                    </li>
+                    <li>
+                        <strong>Last month:</strong> {{ helpers.subscription.average_interval(subscription, 30) }}
+                    </li>
+                    <li>
+                        <strong>Last quarter:</strong> {{ helpers.subscription.average_interval(subscription, 91) }}
+                    </li>
+                    <li>
+                        <strong>Last year:</strong> {{ helpers.subscription.average_interval(subscription, 365) }}
+                    </li>
+                </ul>
+            {% endif %}
         </section>
-        {% if job_status is not none %}
-            <section id="subscription-job">
-                <h4>Job Status</h4>
+        <section id="subscription-job">
+            <div class="heading medium-2">
+                <u>Job status</u> (&thinsp;<span class="notation-add">{{ helpers.subscription.show_job_status(subscription, job_status) }}</span>&thinsp;)
+            </div>
+            {% if job_status is not none %}
                 <ul>
                     <li>
                         <strong>Stage:</strong> <span id="subscription-job-stage">{{ helpers.base.val_or_none(job_status['stage']) }}</span>
@@ -132,7 +155,7 @@
                         <strong>Downloads:</strong> <span id="subscription-job-downloads">{{ job_status['downloads'] }}</span>
                     </li>
                 </ul>
-            </section>
-        {% endif %}
+            {% endif %}
+        </section>
     </div>
 </div>

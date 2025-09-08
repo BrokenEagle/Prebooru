@@ -19,7 +19,7 @@ from ..logical.tasks import JOB_CONFIG
 from ..models.subscription import Subscription
 from .archives_helper import archive_preview_link
 from .posts_helper import post_preview_link
-from .base_helper import general_link, url_for_with_params, format_time_ago, render_tag
+from .base_helper import general_link, url_for_with_params, format_time_ago, render_tag, post_link, put_link
 
 
 # ## GLOBAL VARIABLES
@@ -66,46 +66,46 @@ def element_search_link(subscription):
 
 
 def process_subscription_link_auto(subscription):
-    url = url_for('subscription.process_form_html', id=subscription.id, type="auto")
-    return general_link("Automatic process", url, method="POST")
+    return post_link("auto", url_for('subscription.process_form_html', id=subscription.id, type="auto"))
 
 
 def process_subscription_link_manual(subscription):
-    url = url_for('subscription.process_form_html', id=subscription.id)
-    return general_link("Manual process", url, method="GET")
-
-
-def add_notation_link(subscription):
-    return general_link("Add notation", url_for('notation.new_html', subscription_id=subscription.id, redirect='true'))
+    return general_link("manual", url_for('subscription.process_form_html', id=subscription.id))
 
 
 def delay_subscription_link(subscription):
-    url = url_for('subscription.delay_html', id=subscription.id)
-    addons = {'onclick': 'return Subscriptions.delaySubscriptionElements(this)'}
-    return general_link("Delay expiration", url, **addons)
+    addons = {
+        'prompt': 'Enter the number of days to delay active elements (0 removes expiration):',
+        'prompt-arg': 'days',
+    }
+    return post_link("Delay all elements", url_for('subscription.delay_html', id=subscription.id), **addons)
 
 
-def get_last_job_status_link(subscription):
-    job_id = "process_subscription_manual-%d" % subscription.id
-    url = url_for('subscription.show_html', id=subscription.id, job=job_id)
-    return general_link("Get last job status", url)
+def show_job_status(subscription, job_status):
+    job_id = "process_subscription_manual-%d" % subscription.id if job_status is None else None
+    url = url_for_with_params('subscription.show_html', job=job_id)
+    text = 'show' if job_status is None else 'hide'
+    return general_link(text, url)
+
+
+def show_average_intervals(show_intervals):
+    url = url_for_with_params('subscription.show_html', show_intervals=not show_intervals)
+    text = 'hide' if show_intervals else 'show'
+    return general_link(text, url)
 
 
 def status_link(subscription):
     if subscription.status_name == 'idle':
         return 'idle'
-    url = url_for('subscription.reset_html', id=subscription.id)
-    return general_link(subscription.status.name, url, method='PUT')
+    return put_link(subscription.status.name, url_for('subscription.reset_html', id=subscription.id))
 
 
 def retire_link(subscription):
-    url = url_for('subscription.retire_html', id=subscription.id)
-    return general_link("Retire subscription", url, method='PUT')
+    return put_link("retire", url_for('subscription.retire_html', id=subscription.id))
 
 
 def reset_requery_link(subscription):
-    url = url_for('subscription.requery_html', id=subscription.id)
-    return general_link("Reset requery", url, method='PUT')
+    return put_link("reset", url_for('subscription.requery_html', id=subscription.id))
 
 
 def element_keep_link(subscription, keep):
@@ -122,6 +122,10 @@ def element_status_link(subscription, status):
     search_args = {'subscription_id': subscription.id, 'status': status}
     url = search_url_for('subscription_element.index_html', base_args={'type': 'all'}, **search_args)
     return general_link('»', url)
+
+
+def add_subscription_link(item_key, item_id):
+    return general_link("+", url_for('subscription.new_html', **{item_key: item_id}))
 
 
 # ###### Iterator functions

@@ -5,19 +5,15 @@
 {% from "notations/_macros.html" import notations_section %}
 
 <div id="artist-sidebar">
-    {{ boorus_section(artist.boorus, 'artist-boorus') }}
-    {{ illusts_display(helpers.artist.illust_search(artist), artist.illust_count, 'artist-illusts') }}
-    {{ subscription_section(artist.subscription, 'artist-subscription') }}
+    {{ boorus_section(artist.boorus, 'artist-boorus', artist) }}
+    {{ illusts_display(helpers.artist.illust_search(artist), artist.illust_count, 'artist-illusts', artist=artist) }}
+    {{ subscription_section(artist.subscription, 'artist-subscription', 'artist_id', artist.id) }}
     {{ timestamps_section(artist, 'artist-timestamps') }}
-    {{ notations_section(artist.notations, 'artist-notations') }}
+    {{ notations_section(artist.notations, 'artist-notations', 'artist_id', artist.id) }}
     <section id="artist-options">
         <h4>Options</h4>
         <ul>
             <li>{{ helpers.artist.query_update_link(artist) }}</li>
-            <li>{{ helpers.artist.query_booru_link(artist) }}</li>
-            {% if artist.subscription is none %}<li>{{ helpers.artist.add_subscription_link(artist) }}</li>{% endif %}
-            <li>{{ helpers.artist.add_illust_link(artist) }}</li>
-            <li>{{ helpers.artist.add_notation_link(artist) }}</li>
             <li>{{ helpers.artist.check_posts_link(artist) }}</li>
         </ul>
     </section>

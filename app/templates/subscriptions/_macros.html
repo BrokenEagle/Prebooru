@@ -1,24 +1,26 @@
-{% macro subscription_section(subscription, section_id) -%}
-    {% if subscription is not none %}
-        <section id="{{ section_id }}">
-            <h4>Subscription</h4>
-            <ul>
-                <li>
-                    <strong>{{ subscription.show_link }} {{ helpers.subscription.element_search_link(subscription) }}</strong>
-                </li>
-                <li>
-                    <strong>Status:</strong> {{ subscription.status_name }}
-                </li>
-                <li>
-                    <strong>Elements:</strong> {{ subscription.element_count }}
-                </li>
-                <li>
-                    <strong>Posts:</strong> {{ subscription.post_count }}
-                </li>
-                <li>
-                    <strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription.checked) }}
-                </li>
-            </ul>
-        </section>
-    {% endif %}
+{% macro subscription_section(subscription, section_id, item_key, item_id) -%}
+    <section id="{{ section_id }}">
+        <div class="heading medium-2">
+            Subscription [&thinsp;<span class="subscription-add">{{ helpers.subscription.add_subscription_link(item_key, item_id) }}</span>&thinsp;]
+        </div>
+        {% if subscription is not none %}
+        <ul>
+            <li>
+                <strong>{{ subscription.show_link }} {{ helpers.subscription.element_search_link(subscription) }}</strong>
+            </li>
+            <li>
+                <strong>Status:</strong> {{ subscription.status_name }}
+            </li>
+            <li>
+                <strong>Elements:</strong> {{ subscription.element_count }}
+            </li>
+            <li>
+                <strong>Posts:</strong> {{ subscription.post_count }}
+            </li>
+            <li>
+                <strong>Checked:</strong> {{ helpers.base.format_timestamp(subscription.checked) }}
+            </li>
+        </ul>
+        {% endif %}
+    </section>
 {%- endmacro %}

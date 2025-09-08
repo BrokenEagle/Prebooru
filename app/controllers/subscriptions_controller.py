@@ -181,8 +181,9 @@ def show_html(id):
     subscription = get_or_abort(Subscription, id)
     job_id = request.args.get('job')
     job_status = get_job_status_data(job_id)
+    show_intervals = request.values.get('show_intervals', type=eval_bool_string, default=False)
     return render_template("subscriptions/show.html", subscription=subscription, job_status=job_status,
-                           job_id=job_id)
+                           job_id=job_id, show_intervals=show_intervals)
 
 
 # ###### INDEX

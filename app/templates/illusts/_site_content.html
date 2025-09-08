@@ -56,8 +56,10 @@
             {% endif %}
         </section>
         <section id="illust-additional-commentaries">
+            <div class="heading medium-2">
+                Additional commentaries [&thinsp;<span class="notation-add">{{ helpers.illust.add_commentary_link(illust) }}</span>&thinsp;]
+            </div>
             {% if illust.additional_commentaries | length > 0 %}
-                <h4>Additional commentaries</h4>
                 <div id="illust-commentaries-container">
                     {% call(description) items_block(illust.additional_commentaries, 'additional commentaries') %}
                         <div class="illust-commentaries-block">

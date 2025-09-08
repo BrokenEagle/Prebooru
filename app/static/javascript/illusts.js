@@ -11,12 +11,6 @@ Illusts.changeSite = function () {
     let site_id = document.getElementById("illust-site-id").value;
     document.getElementById('form').className = Illusts.SITE_MAP[site_id];
 };
-Illusts.updateArtist = function(obj) {
-    return Prebooru.promptArgPost(obj, "Enter the artist ID:", 'artist_id');
-};
-Illusts.createCommentary = function (obj) {
-    return Prebooru.promptArgPost(obj, "Enter the site illust URL of commentary:", 'url');
-};
 Illusts.submitForm = function (url) {
     let illust_inputs = document.querySelectorAll('.illust-display input[type=checkbox]');
     let illust_ids = [...illust_inputs].filter((input) => input.checked && input.value.match(/^\d+$/)).map((input) => input.value);

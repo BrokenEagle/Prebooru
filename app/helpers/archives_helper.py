@@ -8,7 +8,7 @@ from config import PREVIEW_DIMENSIONS
 from utility.data import readable_bytes
 
 # ## LOCAL IMPORTS
-from .base_helper import general_link, render_tag, get_preview_dimensions
+from .base_helper import render_tag, get_preview_dimensions, post_link
 
 
 # ## FUNCTIONS
@@ -58,23 +58,19 @@ def post_video_link(archive):
 
 
 def reinstantiate_item_link(archive):
-    addons = {'onclick': "return Prebooru.linkPost(this)"}
-    return general_link("Recreate", url_for('archive.reinstantiate_item_html', id=archive.id), **addons)
+    return post_link("Recreate", url_for('archive.reinstantiate_item_html', id=archive.id))
 
 
 def relink_item_link(archive):
-    addons = {'onclick': "return Prebooru.linkPost(this)"}
-    return general_link("Relink", url_for('archive.relink_item_html', id=archive.id), **addons)
+    return post_link("Relink", url_for('archive.relink_item_html', id=archive.id))
 
 
 def set_permenant_link(archive):
-    addons = {'onclick': "return Prebooru.linkPost(this)"}
-    return general_link("Unexpire", url_for('archive.set_permenant_html', id=archive.id), **addons)
+    return post_link("Unexpire", url_for('archive.set_permenant_html', id=archive.id))
 
 
 def set_temporary_link(archive):
-    addons = {'onclick': "return Prebooru.linkPost(this)"}
-    return general_link("Expire", url_for('archive.set_temporary_html', id=archive.id), **addons)
+    return post_link("Expire", url_for('archive.set_temporary_html', id=archive.id))
 
 
 def has_relink(archive):

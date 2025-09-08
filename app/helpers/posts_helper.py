@@ -14,7 +14,8 @@ from utility.data import readable_bytes
 # ## LOCAL IMPORTS
 from .. import SERVER_INFO
 from ..logical.utility import search_url_for
-from .base_helper import general_link, external_link, url_for_with_params, render_tag, get_preview_dimensions
+from .base_helper import general_link, external_link, url_for_with_params, render_tag, get_preview_dimensions,\
+    file_link, post_link
 
 
 # ## GLOBAL VARIABLES
@@ -163,52 +164,34 @@ def danbooru_post_bookmarklet_links(post):
 
 
 def regenerate_previews_link(post):
-    url = url_for('post.regenerate_previews_html', id=post.id)
-    addons = {'onclick': "return Posts.regeneratePreviews(this)"}
-    return general_link("Regenerate previews", url, **addons)
+    addons = {'confirm': "Regenerate sample and preview images?"}
+    return post_link("Regenerate previews", url_for('post.regenerate_previews_html', id=post.id), **addons)
 
 
 def regenerate_image_matches_link(post):
-    url = url_for('image_hash.regenerate_html', post_id=post.id)
-    addons =\
-        {
-            'onclick': "return Posts.regenerateImageMatches(this)",
-            'title': "Will regenerate the image signatures used to match against other images.",
-        }
-    return general_link("Regenerate image matches", url, **addons)
+    addons = {
+        'confirm': "Regenerate image matches?",
+        'title': "Will regenerate the image signatures used to match against other images.",
+    }
+    return post_link("Regenerate image matches", url_for('image_hash.regenerate_html', post_id=post.id), **addons)
 
 
 def redownload_post_link(post):
-    return general_link("Redownload post", url_for('post.redownload_html', id=post.id), method='POST')
+    return post_link("Redownload post", url_for('post.redownload_html', id=post.id))
 
 
 def redownload_frames_link(post):
-    return general_link("Redownload frames", url_for('post.redownload_frames_html', id=post.id), method='POST')
-
-
-def add_notation_link(post):
-    return general_link("Add notation", url_for('notation.new_html', post_id=post.id, redirect='true'))
-
-
-def add_tag_link(post):
-    url = url_for('tag.append_item_index_json', preview='true')
-    addons = {'onclick': "return Prebooru.addTag(this, 'post')", 'data-post-id': post.id}
-    return general_link("Add tag", url, **addons)
-
-
-def add_to_pool_link(post):
-    url = url_for('pool_element.create_json', preview='true')
-    addons = {
-        'onclick': "return Pools.createElement(this, 'post')",
-        'data-post-id': post.id,
-    }
-    return general_link("Add to pool", url, **addons)
+    return post_link("Redownload frames", url_for('post.redownload_frames_html', id=post.id))
 
 
 def danbooru_post_link(post):
     if post.danbooru_id is not None:
         return external_link('#%d' % post.danbooru_id, DANBOORU_HOSTNAME + '/posts/%d' % post.danbooru_id)
     return Markup('<em>N/A</em>')
+
+
+def md5_link(post):
+    return file_link(post.file_path, post.md5)
 
 
 # ###### INDEX

@@ -158,6 +158,21 @@ def general_link(text, url, method=None, **addons):
     return Markup('<a %s href="%s">%s</a>' % (' '.join(attrs), url, text))
 
 
+def post_link(text, url, **addons):
+    addons['class'] = 'action-link'
+    return general_link(text, url, method='POST', **addons)
+
+
+def put_link(text, url, **addons):
+    addons['class'] = 'notice-link'
+    return general_link(text, url, method='PUT', **addons)
+
+
+def delete_link(text, url, **addons):
+    addons['class'] = 'warning-link'
+    return general_link(text, url, method='DELETE', **addons)
+
+
 def show_link(model_type, model_id):
     """Generate show link without having to load a relationship"""
     return general_link("%s #%d" % (model_type, model_id), url_for(model_type + '.show_html', id=model_id))

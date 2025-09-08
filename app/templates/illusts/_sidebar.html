@@ -7,11 +7,11 @@
 
 <div id="illust-sidebar">
     {{ boorus_section(illust.boorus, 'illust-boorus') }}
-    {{ artists_section(illust.artist, 'illust-artists') }}
-    {{ posts_display(helpers.illust.post_search(illust), illust.post_count, 'illust-posts') }}
-    {{ pools_section(illust.pool_elements, 'illust-pools') }}
+    {{ artists_section(illust.artist, 'illust-artists', illust=illust) }}
     {{ timestamps_section(illust, 'illust-timestamps') }}
-    {{ notations_section(illust.notations, 'illust-notations') }}
+    {{ posts_display(helpers.illust.post_search(illust), illust.post_count, 'illust-posts') }}
+    {{ pools_section(illust.pool_elements, 'illust-pools', illust) }}
+    {{ notations_section(illust.notations, 'illust-notations', 'illust_id', illust.id) }}
     <section id="illust-upload">
         <h4>Upload</h4>
         <ul>
@@ -22,11 +22,6 @@
         <h4>Options</h4>
         <ul>
             <li>{{ helpers.illust.update_from_source_link(illust) }}</li>
-            <li>{{ helpers.illust.update_artist_link(illust) }}</li>
-            <li>{{ helpers.illust.add_media_url_link(illust) }}</li>
-            <li>{{ helpers.illust.add_pool_link(illust) }}</li>
-            <li>{{ helpers.illust.add_notation_link(illust) }}</li>
-            <li>{{ helpers.illust.add_commentary_link(illust) }}</li>
         </ul>
     </section>
     <section id="illust-history">

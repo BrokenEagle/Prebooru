@@ -7,7 +7,7 @@ from flask import url_for
 from config import PREVIEW_DIMENSIONS
 
 # ## LOCAL IMPORTS
-from .base_helper import general_link, render_tag, get_preview_dimensions
+from .base_helper import general_link, render_tag, get_preview_dimensions, post_link
 
 
 # ## FUNCTIONS
@@ -21,7 +21,7 @@ def upload_media_link(illust_url):
 
 
 def download_media_link(illust_url):
-    return general_link(illust_url.type, url_for('illust_url.download_html', id=illust_url.id), method='POST')
+    return post_link(illust_url.type, url_for('illust_url.download_html', id=illust_url.id))
 
 
 def preview_link(illust_url, lazyload=False):

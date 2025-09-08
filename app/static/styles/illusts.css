@@ -63,6 +63,14 @@ div#illust-sidebar > section {
     margin-bottom: 1em;
 }
 
+li.illust-update-artist {
+    font-weight: bold;
+}
+
+li.illust-update-artist a {
+    color: green;
+}
+
 section#illust-posts {
     font-size: 1.25em;
     font-weight: bold;

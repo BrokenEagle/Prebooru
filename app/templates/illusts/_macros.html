@@ -1,9 +1,13 @@
 {% from "layouts/_macros.html" import render_block %}
 {% from "tags/_macros.html" import tag_list %}
 
-{% macro illusts_display(illust_search_url, illust_count, section_id, section=True) -%}
+{% macro illusts_display(illust_search_url, illust_count, section_id, section=True, artist=None) -%}
     {% call render_block('section' if section else 'div', id=section_id) %}
-        <span class="heading">Illusts</span> (&thinsp;{{ illust_count }}&thinsp;) {{ helpers.base.general_link('»', illust_search_url) }}
+        <span class="heading">Illusts</span> (&thinsp;{{ illust_count }}&thinsp;)
+        {% if artist is not none %}
+            [&thinsp;<span class="illust-add">{{ helpers.artist.add_illust_link(artist) }}</span>&thinsp;]
+        {% endif %}
+        <span class="illust-search">{{ helpers.base.general_link('»', illust_search_url) }}</span>
     {% endcall %}
 {%- endmacro %}
 

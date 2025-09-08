@@ -1,9 +1,11 @@
-{% macro tags_section(tags, section_id, item_type, item_id) -%}
+{% macro tags_section(tags, section_id, item) -%}
     <section id="{{ section_id }}" class="tag-section">
+        <div class="heading medium-2">
+            User tags [&thinsp;<span class="pool-add">{{ helpers.tag.add_tag_link(item) }}</span>&thinsp;]
+        </div>
         {% if tags | length > 0 %}
-            <h4>User tags</h4>
-            <div class="tags-container">{{ tag_list(tags, item_type=item_type, item_id=item_id) }}</div>
-            {% endif %}
+            <div class="tags-container">{{ tag_list(tags, item_type=item.model_name, item_id=item.id) }}</div>
+        {% endif %}
     </section>
 {%- endmacro %}
 

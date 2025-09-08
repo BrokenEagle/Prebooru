@@ -7,7 +7,7 @@ from flask import Blueprint, request, render_template, flash, redirect
 from utility.data import eval_bool_string, int_or_array
 
 # ## LOCAL IMPORTS
-from ..models import Tag, UserTag, PostTags
+from ..models import Tag, UserTag, PostTags, Post
 from ..logical.utility import set_error
 from ..logical.database.tag_db import create_tag_from_parameters
 from ..logical.records.tag_rec import append_tag_to_item, remove_tag_from_item
@@ -180,9 +180,9 @@ def append_item_index_json():
         return result
     is_preview = request.values.get('preview', type=eval_bool_string, default=False)
     if is_preview:
+        post = Post.find(result['append']['id'])
         tags = _get_user_tags_by_post_id(result['append']['id'])
-        result['html'] = render_template_ws("tags/_section.html", tags=tags, section_id='tag-list', item_type='post',
-                                            item_id=result['append']['id'])
+        result['html'] = render_template_ws("tags/_section.html", tags=tags, section_id='tag-list', item=post)
     return result
 
 
@@ -207,9 +207,9 @@ def remove_item_show_json(id):
         return result
     is_preview = request.values.get('preview', type=eval_bool_string, default=False)
     if is_preview:
+        post = Post.find(result['remove']['id'])
         tags = _get_user_tags_by_post_id(result['remove']['id'])
-        result['html'] = render_template_ws("tags/_section.html", tags=tags, section_id='tag-list', item_type='post',
-                                            item_id=result['remove']['id'])
+        result['html'] = render_template_ws("tags/_section.html", tags=tags, section_id='tag-list', item=post)
     return result
 
 

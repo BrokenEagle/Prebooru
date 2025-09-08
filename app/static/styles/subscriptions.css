@@ -72,6 +72,11 @@ div#subscription-site-content-1 span.heading {
     font-size: 1.33em;
 }
 
+span.subscription-auto a,
+span.subscription-retire a {
+    color: green;
+}
+
 section#subscription-settings {
     width: 25%;
 }
@@ -95,6 +100,7 @@ div#subscription-site-content-2 {
     margin-top: 2em;
     margin-left: 0.8em;
     padding: 5px;
+    min-height: 20em;
 }
 
 section#subscription-intervals {

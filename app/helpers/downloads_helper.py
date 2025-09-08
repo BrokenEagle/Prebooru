@@ -5,7 +5,7 @@ from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from .base_helper import general_link, add_container
+from .base_helper import general_link, add_container, post_link
 
 
 # ## FUNCTIONS
@@ -28,11 +28,11 @@ def post_search(download):
 # ###### Link functions
 
 def check_pending_link(download):
-    return general_link('pending', url_for('download.download_check_html', id=download.id), method="POST")
+    return post_link('pending', url_for('download.download_check_html', id=download.id))
 
 
 def resubmit_link(download):
-    return general_link('error', url_for('download.resubmit_html', id=download.id), method="POST")
+    return post_link('error', url_for('download.resubmit_html', id=download.id))
 
 
 def post_search_link(download):
@@ -44,7 +44,7 @@ def element_search_link(download):
 
 
 def redownload_link(element):
-    return general_link('redownload', url_for('download_element.redownload_html', id=element.id), method="POST")
+    return post_link('redownload', url_for('download_element.redownload_html', id=element.id))
 
 
 # #### Download elements

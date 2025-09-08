@@ -5,7 +5,7 @@ from flask import Markup, url_for
 
 # ## LOCAL IMPORTS
 from ..logical.utility import search_url_for
-from .base_helper import general_link
+from .base_helper import general_link, post_link
 
 
 # ## FUNCTIONS
@@ -22,11 +22,11 @@ def form_title_apellation(illust_url):
 # #### Link functions
 
 def check_pending_link(upload):
-    return general_link('pending', url_for('upload.upload_check_html', id=upload.id), method="POST")
+    return post_link('pending', url_for('upload.upload_check_html', id=upload.id))
 
 
 def resubmit_link(upload):
-    return general_link('error', url_for('upload.resubmit_html', id=upload.id), method="POST")
+    return post_link('error', url_for('upload.resubmit_html', id=upload.id))
 
 
 def post_search_link(upload):

@@ -40,6 +40,14 @@ div#artist-sidebar > section {
     margin-bottom: 1em;
 }
 
+li.artist-query-booru {
+    font-weight: bold;
+}
+
+li.artist-query-booru a {
+    color: green;
+}
+
 section#artist-illusts {
     font-size: 1.25em;
     font-weight: bold;

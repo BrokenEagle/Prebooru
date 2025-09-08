@@ -6,7 +6,7 @@ from flask import Markup, url_for
 # ## LOCAL IMPORTS
 from ..models.model_enums import SiteDescriptor
 from ..logical.utility import search_url_for
-from .base_helper import general_link, external_link
+from .base_helper import general_link, external_link, post_link, put_link, delete_link
 
 
 # ## FUNCTIONS
@@ -26,57 +26,56 @@ def illust_search(artist):
 # ###### SHOW
 
 def query_update_link(artist):
-    return general_link("Update from source", url_for('artist.query_update_html', id=artist.id), method="POST")
+    return post_link("Update from source", url_for('artist.query_update_html', id=artist.id))
 
 
 def query_booru_link(artist):
-    return general_link("Query for booru", url_for('artist.query_booru_html', id=artist.id), method="POST")
+    return post_link("query Danbooru", url_for('artist.query_booru_html', id=artist.id))
+
+
+def add_booru_link(artist):
+    addons = {'prompt': "Enter booru ID to add:", 'prompt-arg': 'booru_id'}
+    return post_link("+", url_for('artist.add_booru_html', id=artist.id), **addons)
+
+
+def remove_booru_link(artist, booru):
+    return delete_link('remove', url_for('artist.remove_booru_html', id=artist.id, booru_id=booru.id))
 
 
 def add_illust_link(artist):
-    return general_link("Add illust", url_for('illust.new_html', artist_id=artist.id))
+    return general_link("+", url_for('illust.new_html', artist_id=artist.id))
 
 
 def add_subscription_link(artist):
     return general_link("Add subscription", url_for('subscription.new_html', artist_id=artist.id))
 
 
-def add_notation_link(artist):
-    return general_link("Add notation", url_for('notation.new_html', artist_id=artist.id, redirect='true'))
-
-
 def check_posts_link(artist):
-    return general_link("Check posts", url_for('artist.check_posts_html', id=artist.id), method="POST")
+    return post_link("Check posts for Danbooru", url_for('artist.check_posts_html', id=artist.id))
 
 
 def delete_account_link(artist, site_account):
-    return general_link("remove", url_for('artist.delete_account_html', id=artist.id, label_id=site_account.id),
-                        method="DELETE", **{'class': 'warning-link'})
+    return delete_link("remove", url_for('artist.delete_account_html', id=artist.id, label_id=site_account.id))
 
 
 def swap_account_link(artist, site_account):
-    url = url_for('artist.swap_account_html', id=artist.id, label_id=site_account.id)
-    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+    return put_link("swap", url_for('artist.swap_account_html', id=artist.id, label_id=site_account.id))
 
 
 def delete_name_link(artist, name):
-    return general_link("remove", url_for('artist.delete_name_html', id=artist.id, label_id=name.id),
-                        method="DELETE", **{'class': 'warning-link'})
+    return delete_link("remove", url_for('artist.delete_name_html', id=artist.id, label_id=name.id))
 
 
 def swap_name_link(artist, name):
-    url = url_for('artist.swap_name_html', id=artist.id, label_id=name.id)
-    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+    return put_link("swap", url_for('artist.swap_name_html', id=artist.id, label_id=name.id))
 
 
 def delete_profile_link(artist, profile):
-    return general_link("remove", url_for('artist.delete_profile_html', id=artist.id, description_id=profile.id),
-                        method="DELETE", **{'class': 'warning-link'})
+    return delete_link("remove", url_for('artist.delete_profile_html', id=artist.id, description_id=profile.id))
 
 
 def swap_profile_link(artist, profile):
-    url = url_for('artist.swap_profile_html', id=artist.id, description_id=profile.id)
-    return general_link("swap", url, method="PUT", **{'class': 'notice-link'})
+    return put_link("swap", url_for('artist.swap_profile_html', id=artist.id, description_id=profile.id))
 
 
 def accounts_link(artist):
