@@ -39,7 +39,7 @@ def show_json(id):
 @bp.route('/api_data/<int:id>', methods=['GET'])
 def show_html(id):
     api_data = get_or_abort(ApiData, id)
-    return render_template("api_data/show.html", api_datum=api_data)
+    return render_template("api_data/show.html", api_data=api_data)
 
 
 # ###### INDEX

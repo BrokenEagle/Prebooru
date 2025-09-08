@@ -1,29 +1,29 @@
 {% extends "api_data/_base.html" %}
 
 {% block title %}
-    {{ api_datum.header }}
+    {{ api_data.header }}
 {% endblock title %}
 
 {% block content %}
-    <div id="api-data-heading" class="heading">{{ api_datum.header }}</div>
+    <div id="api-data-heading" class="heading">{{ api_data.header }}</div>
     <div id="api-data-content">
         <ul>
             <li>
-                <strong>Type:</strong> {{ api_datum.type_name | title }}
+                <strong>Type:</strong> {{ api_data.type_name | title }}
             </li>
             <li>
-                <strong>Site:</strong> {{ api_datum.site_name | title }}
+                <strong>Site:</strong> {{ api_data.site_name | title }}
             </li>
             <li>
-                <strong>Data ID:</strong> {{ api_datum.data_id }}
+                <strong>Data ID:</strong> {{ api_data.data_id }}
             </li>
             <li>
-                <strong>Expires:</strong> {{ helpers.base.format_timestamp(api_datum.expires) }}
+                <strong>Expires:</strong> {{ helpers.base.format_timestamp(api_data.expires) }}
             </li>
             <li>
                 <strong>Data:</strong>
                 <br>
-                <div class="json-data">{{ api_datum.data | tojson(indent=4) }}</div>
+                <div class="json-data">{{ api_data.data | tojson(indent=4) }}</div>
             </li>
         </ul>
     </div>
