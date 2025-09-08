@@ -167,7 +167,6 @@ class SequentialPaginate():
             return self.below
         return None
 
-
     def _get_min_id(self):
         model = _query_model(self.query)
         return self.query.with_entities(model.id).order_by(model.id.asc()).limit(1).scalar()
