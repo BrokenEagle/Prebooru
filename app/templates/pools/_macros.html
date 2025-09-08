@@ -54,11 +54,7 @@
         {% if item.model_name == "post" %}
             {{ post_preview(item, True) }}
         {% elif item.model_name == "illust" %}
-            {% if item.type == "image" %}
-                {{ multi_post_preview(item, "illust", True) }}
-            {% elif item.type == "video" %}
-                {{ post_preview(item.video_illust_url.post, True) }}
-            {% endif %}
+            {{ multi_post_preview(item, "illust", True) }}
         {% elif item.model_name == "notation" %}
             <div class="pool-display-notation">{{ helpers.base.convert_to_html(item.body) }}</div>
         {% endif %}
