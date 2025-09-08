@@ -202,10 +202,13 @@ def convert_create_params(dataparams):
     set_default(createparams, 'score', 0)
     set_default(createparams, 'tags', [])
     if 'illust_urls' in dataparams:
-        # Arrays of hashes are sent as a hash where each index is a key
-        createparams['illust_urls'] = [v for v in dataparams['illust_urls'].values()]
-        for url_data in createparams['illust_urls']:
-            url_data['active'] = parse_bool_parameter(url_data, 'active')
+        if not isinstance(dataparams['illust_urls'], list):
+            # Arrays of hashes are sent as a hash where each index is a key
+            createparams['illust_urls'] = [v for v in dataparams['illust_urls'].values()]
+            for url_data in createparams['illust_urls']:
+                url_data['active'] = parse_bool_parameter(url_data, 'active')
+        else:
+            createparams['illust_urls'] = dataparams['illust_urls']
     return createparams
 
 

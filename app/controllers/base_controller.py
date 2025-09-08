@@ -236,7 +236,7 @@ def get_params_value(params, key, is_hash=False):
 
 
 def get_data_params(request, key):
-    params = process_request_values(request.values)
+    params = process_request_values(request.values) if not request.is_json else request.json
     return get_params_value(params, key, True)
 
 
@@ -248,7 +248,13 @@ def parse_array_parameter(dataparams, array_key, string_key, separator):
 
 
 def parse_bool_parameter(dataparams, bool_key):
-    return eval_bool_string(dataparams[bool_key]) if bool_key in dataparams else None
+    if bool_key in dataparams:
+        if isinstance(dataparams[bool_key], str):
+            return eval_bool_string(dataparams[bool_key])
+        if isinstance(dataparams[bool_key], bool):
+            return dataparams[bool_key]
+        raise Exception("Invalid parameter type for bool parameter.")
+    return None
 
 
 def parse_string_list(params, key, separator):
