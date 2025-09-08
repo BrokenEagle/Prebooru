@@ -14,7 +14,7 @@
                     {{ upload.status_name }}
                 {% endif %}
             </li>
-            <li><strong>MD5:</strong>{{ upload.md5 }}</li>
+            <li><strong>MD5:</strong> {{ helpers.base.val_or_none(upload.md5) }}</li>
         </ul>
     </section>
     <section id="upload-sources">
