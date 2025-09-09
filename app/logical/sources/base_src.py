@@ -19,8 +19,12 @@ class NoSource():
     IMAGE_HEADERS = {}
 
     @staticmethod
+    def get_full_url(illust_url):
+        return illust_url.url
+
+    @staticmethod
     def get_primary_url(illust):
-        return None
+        return illust.site_url
 
     @staticmethod
     def is_video_url(url):

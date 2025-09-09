@@ -18,7 +18,7 @@ from .artist_url_db import create_artist_url_from_parameters, update_artist_url_
 VERSION_RELATIONSHIPS = [('site_account_value', 'site_account_values'), ('name_value', 'name_values'),
                          ('profile_body', 'profile_bodies')]
 
-ANY_WRITABLE_ATTRIBUTES = ['site_name', 'site_artist_id', 'site_created', 'active', 'primary']
+ANY_WRITABLE_ATTRIBUTES = ['site_name', 'site_artist_id', 'site_url', 'site_created', 'active', 'primary']
 NULL_WRITABLE_ATTRIBUTES = ['created', 'updated']
 CREATE_ONLY_ATTRIBUTES = ['site_account_value', 'name_value', 'profile_body']
 

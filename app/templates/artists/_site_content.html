@@ -6,18 +6,27 @@
         <section id="artist-site-info">
             <h4>Site</h4>
             <ul>
-                <li>
-                    <strong>{{ helpers.artist.site_artist_link(artist) }}</strong>
-                </li>
-                <li>
-                    <strong>Domain:</strong> {{ helpers.base.val_or_none(artist.site_domain) }}
-                </li>
-                <li>
-                    <strong>Site ID:</strong> {{ artist.site_artist_id }}
-                </li>
-                <li>
-                    <strong>Links:</strong> {{ helpers.artist.artist_links(artist) | safe }}
-                </li>
+                {% if artist.site_name != 'custom' %}
+                    <li>
+                        <strong>{{ helpers.artist.site_artist_link(artist) }}</strong>
+                    </li>
+                    <li>
+                        <strong>Domain:</strong> {{ helpers.base.val_or_none(artist.site_domain) }}
+                    </li>
+                    <li>
+                        <strong>Site ID:</strong> {{ artist.site_artist_id }}
+                    </li>
+                    <li>
+                        <strong>Links:</strong> {{ helpers.artist.artist_links(artist) | safe }}
+                    </li>
+                {% else %}
+                    <li>
+                        <strong>Domain:</strong> {{ artist.site_name }}
+                    </li>
+                    <li>
+                        <strong>{{ helpers.base.url_link(artist.site_url, max_len=40) }}</strong>
+                    </li>
+                {% endif %}
             </ul>
         </section>
         <section id="artist-values">

@@ -32,10 +32,10 @@
         <thead>
             <tr>
                 <th width="1%">Preview</th>
-                <th width="15%">Info</th>
+                <th width="20%">Info</th>
                 <th width="25%">Tags</th>
                 <th width="25%">Illust urls</th>
-                <th width="15%">Created</th>
+                <th width="10%">Created</th>
             </tr>
         </thead>
         <tbody>
@@ -70,9 +70,15 @@
                         <span><strong>{{ illust.artist_show_link }}</strong></span>
                         <br>
                         <br>
+                        {% if illust.site_name != 'custom' %}
                         <span><strong>Domain:</strong> {{ illust.site_domain }}</span>
                         <br>
                         <span><strong>Site ID:</strong> {{ illust.site_illust_id }}</span>
+                        {% else %}
+                            <span><strong>Domain:</strong> {{ illust.site_name }}</span>
+                            <br>
+                            <span><strong>{{ helpers.base.url_link(illust.site_url, max_len=40) }}</strong></span>
+                        {% endif %}
                     </td>
                     <td>
                         <div class="simple-tags-container">{{ simple_tag_list(illust.tags, 'illust') }}</div>

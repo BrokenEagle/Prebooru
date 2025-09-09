@@ -20,8 +20,8 @@ from .subscription import Subscription
 from .post import Post
 from .illust_url import IllustUrl
 from .notation import Notation
-from .base import JsonModel, integer_column, enum_column, boolean_column, timestamp_column, secondarytable,\
-    register_enum_column, relationship, backref, relation_association_proxy
+from .base import JsonModel, integer_column, enum_column, boolean_column, timestamp_column, text_column,\
+    secondarytable, register_enum_column, relationship, backref, relation_association_proxy
 
 
 # ## GLOBAL VARIABLES
@@ -37,7 +37,8 @@ class Artist(JsonModel):
     # ## Columns
     id = integer_column(primary_key=True)
     site_id = enum_column(foreign_key='site_descriptor.id', nullable=False)
-    site_artist_id = integer_column(nullable=False)
+    site_artist_id = integer_column(nullable=True)
+    site_url = text_column(nullable=True)
     site_account_id = integer_column(foreign_key='label.id', nullable=False)
     name_id = integer_column(foreign_key='label.id', nullable=True)
     profile_id = integer_column(foreign_key='description.id', nullable=True)
@@ -187,4 +188,7 @@ class Artist(JsonModel):
 # ## Initialize
 
 def initialize():
+    DB.Index(None, Artist.site_artist_id, Artist.site_id, unique=True, sqlite_where=Artist.site_artist_id.is_not(None))
+    DB.Index(None, Artist.site_url, unique=True, sqlite_where=Artist.site_url.is_not(None))
+
     register_enum_column(Artist, SiteDescriptor, 'site')
