@@ -27,15 +27,24 @@
                         <li>
                             <span class="item-heading">{{ illust.show_link }}</span>
                             <ul>
-                                <li>
-                                    <strong>{{ helpers.illust.site_illust_link(illust) }} {{ helpers.illust.alt_site_illust_link(illust) }}</strong>
-                                </li>
-                                <li>
-                                    <strong>Site ID:</strong> {{ illust.site_illust_id }}
-                                </li>
-                                <li>
-                                    <strong>Domain:</strong> {{ illust.site_domain }}
-                                </li>
+                                {% if illust.site_name != 'custom' %}
+                                    <li>
+                                        <strong>{{ helpers.illust.site_illust_link(illust) }} {{ helpers.illust.alt_site_illust_link(illust) }}</strong>
+                                    </li>
+                                    <li>
+                                        <strong>Site ID:</strong> {{ illust.site_illust_id }}
+                                    </li>
+                                    <li>
+                                        <strong>Domain:</strong> {{ illust.site_domain }}
+                                    </li>
+                                {% else %}
+                                    <li>
+                                        <strong>Domain:</strong> {{ illust.site_name }}
+                                    </li>
+                                    <li>
+                                        <strong>{{ helpers.base.url_link(illust.site_url, max_len=40) }}</strong>
+                                    </li>
+                                {% endif %}
                                 <li>
                                     <strong>Tags:</strong> {{ tag_list(illust.tags, item_type='illust', item_id=illust.id) }}
                                 </li>

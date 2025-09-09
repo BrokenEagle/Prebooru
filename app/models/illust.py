@@ -20,8 +20,8 @@ from .illust_url import IllustUrl
 from .description import Description, description_creator
 from .notation import Notation
 from .pool_element import PoolElement
-from .base import JsonModel, integer_column, enum_column, boolean_column, timestamp_column, secondarytable,\
-    register_enum_column, relationship, backref, relation_association_proxy
+from .base import JsonModel, integer_column, enum_column, boolean_column, timestamp_column, text_column,\
+    secondarytable, register_enum_column, relationship, backref, relation_association_proxy
 
 
 # ## GLOBAL VARIABLES
@@ -48,7 +48,8 @@ class Illust(JsonModel):
     # ## Columns
     id = integer_column(primary_key=True)
     site_id = enum_column(foreign_key='site_descriptor.id', nullable=False)
-    site_illust_id = integer_column(nullable=False)
+    site_illust_id = integer_column(nullable=True)
+    site_url = text_column(nullable=True)
     site_created = timestamp_column(nullable=True)
     artist_id = integer_column(foreign_key='artist.id', nullable=False, index=True)
     title_id = integer_column(foreign_key='description.id', nullable=True)
@@ -83,6 +84,12 @@ class Illust(JsonModel):
     additional_commentary_bodies = association_proxy('additional_commentaries', 'body', creator=description_creator)
 
     # ## Instance properties
+
+    @property
+    def key(self):
+        return '%s-%s' % (self.site_name, self.site_url)\
+            if self.site_illust_id is None\
+            else '%s-%d' % (self.site_name, self.site_illust_id)
 
     @memoized_property
     def source(self):
@@ -208,6 +215,9 @@ class Illust(JsonModel):
 
 def initialize():
     from .artist import Artist
+    DB.Index(None, Illust.site_illust_id, Illust.site_id, unique=True, sqlite_where=Illust.site_illust_id.is_not(None))
+    DB.Index(None, Illust.site_url, unique=True, sqlite_where=Illust.site_url.is_not(None))
+
     # Access the opposite side of the relationship to force the back reference to be generated
     Artist.illusts.property._configure_started
     Illust.set_relation_properties()

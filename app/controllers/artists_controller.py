@@ -2,6 +2,7 @@
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, StringField
 from wtforms.validators import DataRequired
@@ -33,7 +34,7 @@ from .base_controller import show_json_response, index_json_response, search_fil
 
 bp = Blueprint("artist", __name__)
 
-CREATE_REQUIRED_PARAMS = ['site_name', 'site_artist_id', 'site_account']
+CREATE_REQUIRED_PARAMS = ['site_name', 'site_account']
 VALUES_MAP = {
     'site_name': 'site_name',
     'site_account': 'site_account',
@@ -90,9 +91,10 @@ FORM_CONFIG = {
     'site_artist_id': {
         'name': 'Site Artist ID',
         'field': IntegerField,
-        'kwargs': {
-            'validators': [DataRequired()],
-        },
+    },
+    'site_url': {
+        'name': 'Site URL',
+        'field': StringField,
     },
     'site_created': {
         'field': StringField,
@@ -148,10 +150,29 @@ def get_artist_form(**kwargs):
 def uniqueness_check(dataparams, artist):
     site_name = dataparams.get('site_name', artist.site_name)
     site_artist_id = dataparams.get('site_artist_id', artist.site_artist_id)
-    if site_name != artist.site_name or site_artist_id != artist.site_artist_id:
+    site_url = dataparams.get('site_url', artist.site_url)
+    if site_name != artist.site_name or site_artist_id != artist.site_artist_id or site_url != artist.site_url:
         return Artist.query.filter(Artist.site_value == site_name,
-                                   Artist.site_artist_id == site_artist_id)\
+                                   or_(and_(Artist.site_artist_id.is_not(None), Artist.site_artist_id == site_artist_id),
+                                       and_(Artist.site_url.is_not(None), Artist.site_url == site_url)))\
                            .one_or_none()
+
+
+def custom_check(dataparams, artist):
+    site_name = dataparams.get('site_name', artist.site_name)
+    site_artist_id = dataparams.get('site_artist_id', artist.site_artist_id)
+    site_url = dataparams.get('site_url', artist.site_url)
+    if site_name == 'custom':
+        if site_url is None:
+            return "Site URL must be set for custom sites."
+        if site_artist_id is not None:
+            return "Cannot set site artist ID for custom sites."
+    else:
+        if site_artist_id is None:
+            return "Site artist ID must be set for non-custom sites."
+        if site_artist_id is not None:
+            return "Cannot set site URL for non-custom sites."
+    return None
 
 
 def convert_data_params(dataparams):
@@ -195,6 +216,9 @@ def create():
     errors = check_param_requirements(createparams, CREATE_REQUIRED_PARAMS)
     if len(errors) > 0:
         return set_error(retdata, '\n'.join(errors))
+    check_custom = custom_check(createparams, Artist())
+    if check_custom is not None:
+        return set_error(retdata, check_custom)
     check_artist = uniqueness_check(createparams, Artist())
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()
@@ -208,6 +232,9 @@ def update(artist):
     dataparams = get_data_params(request, 'artist')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
+    check_custom = custom_check(updateparams, artist)
+    if check_custom is not None:
+        return set_error(retdata, check_custom)
     check_artist = uniqueness_check(updateparams, artist)
     if check_artist is not None:
         retdata['item'] = check_artist.to_json()

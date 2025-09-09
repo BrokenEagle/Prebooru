@@ -13,7 +13,9 @@
     <section id="artist-options">
         <h4>Options</h4>
         <ul>
-            <li>{{ helpers.artist.query_update_link(artist) }}</li>
+            {% if artist.site_name != 'custom' %}
+                <li>{{ helpers.artist.query_update_link(artist) }}</li>
+            {% endif %}
             <li>{{ helpers.artist.check_posts_link(artist) }}</li>
         </ul>
     </section>

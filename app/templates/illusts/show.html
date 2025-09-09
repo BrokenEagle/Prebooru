@@ -18,7 +18,7 @@
         {% include "illusts/_site_content.html" %}
     </div>
     <div id="illust-posts">
-        {% if illust.urls | length > 0 %}{{ media_urls_section(illust_urls.items, illust_urls.count, illust) }}{% endif %}
+        {{ media_urls_section(illust_urls.items, illust_urls.count, illust) }}
     </div>
 {% endblock content %}
 

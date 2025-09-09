@@ -18,12 +18,14 @@
             <li>{{ helpers.illust.danbooru_upload_link(illust) }}</li>
         </ul>
     </section>
-    <section id="illust-options">
-        <h4>Options</h4>
-        <ul>
-            <li>{{ helpers.illust.update_from_source_link(illust) }}</li>
-        </ul>
-    </section>
+    {% if illust.site_name != 'custom' %}
+        <section id="illust-options">
+            <h4>Options</h4>
+            <ul>
+                <li>{{ helpers.illust.update_from_source_link(illust) }}</li>
+            </ul>
+        </section>
+    {% endif %}
     <section id="illust-history">
         <h4>History</h4>
         <ul>

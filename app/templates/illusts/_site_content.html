@@ -6,15 +6,24 @@
         <section id="illust-site-info">
             <h4>Site</h4>
             <ul>
-                <li>
-                    <strong>{{ helpers.illust.site_illust_link(illust) }} {{ helpers.illust.alt_site_illust_link(illust) }}</strong>
-                </li>
-                <li>
-                    <strong>Domain:</strong> {{ illust.site_domain }}
-                </li>
-                <li>
-                    <strong>Illust ID:</strong> {{ illust.site_illust_id }}
-                </li>
+                {% if illust.site_name != 'custom' %}
+                    <li>
+                        <strong>{{ helpers.illust.site_illust_link(illust) }} {{ helpers.illust.alt_site_illust_link(illust) }}</strong>
+                    </li>
+                    <li>
+                        <strong>Domain:</strong> {{ illust.site_domain }}
+                    </li>
+                    <li>
+                        <strong>Illust ID:</strong> {{ illust.site_illust_id }}
+                    </li>
+                {% else %}
+                    <li>
+                        <strong>Domain:</strong> {{ illust.site_name }}
+                    </li>
+                    <li>
+                        <strong>{{ helpers.base.url_link(illust.site_url, max_len=40) }}</strong>
+                    </li>
+                {% endif %}
             </ul>
         </section>
         <section id="illust-values">

@@ -2,7 +2,7 @@
 
 # ## EXTERNAL IMPORTS
 from flask import Blueprint, request, render_template, redirect, url_for, flash
-from sqlalchemy import not_, or_
+from sqlalchemy import not_, or_, and_
 from sqlalchemy.orm import selectinload
 from wtforms import TextAreaField, IntegerField, BooleanField, SelectField, StringField
 from wtforms.validators import DataRequired
@@ -32,7 +32,7 @@ from .base_controller import get_params_value, process_request_values, show_json
 
 bp = Blueprint("illust", __name__)
 
-CREATE_REQUIRED_PARAMS = ['site_name', 'site_illust_id']
+CREATE_REQUIRED_PARAMS = ['site_name']
 VALUES_MAP = {
     'site_name': 'site_name',
     'illust_urls': 'illust_urls',
@@ -113,9 +113,10 @@ FORM_CONFIG = {
     'site_illust_id': {
         'name': 'Site Illust ID',
         'field': IntegerField,
-        'kwargs': {
-            'validators': [DataRequired()],
-        },
+    },
+    'site_url': {
+        'name': 'Site URL',
+        'field': StringField,
     },
     'site_created': {
         'field': StringField,
@@ -182,10 +183,29 @@ def get_illust_form(**kwargs):
 def uniqueness_check(dataparams, illust):
     site_name = dataparams.get('site_name', illust.site_name)
     site_illust_id = dataparams.get('site_illust_id', illust.site_illust_id)
-    if site_name != illust.site_name or site_illust_id != illust.site_illust_id:
+    site_url = dataparams.get('site_url', illust.site_url)
+    if site_name != illust.site_name or site_illust_id != illust.site_illust_id or site_url != illust.site_url:
         return Illust.query.filter(Illust.site_value == site_name,
-                                   Illust.site_illust_id == site_illust_id)\
+                                   or_(and_(Illust.site_illust_id.is_not(None), Illust.site_illust_id == site_illust_id),
+                                       and_(Illust.site_url.is_not(None), Illust.site_url == site_url)))\
                            .one_or_none()
+
+
+def custom_check(dataparams, illust):
+    site_name = dataparams.get('site_name', illust.site_name)
+    site_illust_id = dataparams.get('site_illust_id', illust.site_illust_id)
+    site_url = dataparams.get('site_url', illust.site_url)
+    if site_name == 'custom':
+        if site_url is None:
+            return "Site URL must be set for custom sites."
+        if site_illust_id is not None:
+            return "Cannot set site illust ID for custom sites."
+    else:
+        if site_illust_id is None:
+            return "Site illust ID must be set for non-custom sites."
+        if site_illust_id is not None:
+            return "Cannot set site URL for non-custom sites."
+    return None
 
 
 def convert_data_params(dataparams):
@@ -247,6 +267,9 @@ def create():
         return set_error(retdata, '\n'.join(errors))
     if createparams['site_name'] != check_artist.site_name:
         return set_error(retdata, "site_name parameter must match artist site_name value")
+    check_custom = custom_check(createparams, Illust())
+    if check_custom is not None:
+        return set_error(retdata, check_custom)
     check_illust = uniqueness_check(createparams, Illust())
     if check_illust is not None:
         retdata['item'] = check_illust.to_json()
@@ -260,6 +283,9 @@ def update(illust):
     dataparams = get_data_params(request, 'illust')
     updateparams = convert_update_params(dataparams)
     retdata = {'error': False, 'data': updateparams, 'params': dataparams}
+    check_custom = custom_check(updateparams, illust)
+    if check_custom is not None:
+        return set_error(retdata, check_custom)
     check_illust = uniqueness_check(updateparams, illust)
     if check_illust is not None:
         retdata['item'] = check_illust.to_json()

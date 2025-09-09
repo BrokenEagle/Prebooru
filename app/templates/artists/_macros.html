@@ -29,18 +29,27 @@
                             {% endif %}
                         </span>
                         <ul>
-                            <li>
-                                <strong>{{ helpers.artist.site_artist_link(artist) }}</strong>
-                            </li>
-                            <li>
-                                <strong>Site ID:</strong> {{ artist.site_artist_id }}
-                            </li>
-                            <li>
-                                <strong>Account:</strong> {{ helpers.base.val_or_none(artist.site_account_value) }}
-                            </li>
-                            <li>
-                                <strong>Links:</strong> {{ helpers.artist.artist_links(artist) }}
-                            </li>
+                            {% if artist.site_name != 'custom' %}
+                                <li>
+                                    <strong>{{ helpers.artist.site_artist_link(artist) }}</strong>
+                                </li>
+                                <li>
+                                    <strong>Site ID:</strong> {{ artist.site_artist_id }}
+                                </li>
+                                <li>
+                                    <strong>Account:</strong> {{ helpers.base.val_or_none(artist.site_account_value) }}
+                                </li>
+                                <li>
+                                    <strong>Links:</strong> {{ helpers.artist.artist_links(artist) }}
+                                </li>
+                            {% else %}
+                                <li>
+                                    <strong>Domain:</strong> {{ artist.site_name }}
+                                </li>
+                                <li>
+                                    <strong>{{ helpers.base.url_link(artist.site_url, max_len=40) }}</strong>
+                                </li>
+                            {% endif %}
                             {% if booru is not none %}
                                 <li>
                                     <strong>( {{ helpers.booru.remove_artist_link(booru, artist) }} )</strong>

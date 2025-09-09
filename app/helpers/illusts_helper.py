@@ -4,13 +4,12 @@
 import urllib.parse
 
 # ## EXTERNAL IMPORTS
-from flask import url_for, Markup, request
+from flask import url_for, request
 
 # ## PACKAGE IMPORTS
 from config import DANBOORU_HOSTNAME
 
 # ## LOCAL IMPORTS
-from ..models.model_enums import SiteDescriptor
 from ..logical.utility import search_url_for
 from .base_helper import external_link, general_link, put_link, delete_link, post_link
 
@@ -18,12 +17,6 @@ from .base_helper import external_link, general_link, put_link, delete_link, pos
 # ## FUNCTIONS
 
 # #### URL functions
-
-def danbooru_batch_url(illust):
-    url = illust.secondary_url or illust.primary_url
-    query_string = urllib.parse.urlencode({'url': url})
-    return DANBOORU_HOSTNAME + '/uploads/batch?' + query_string
-
 
 def post_search(illust):
     return search_url_for('post.index_html', illust_urls={'illust_id': illust.id})
@@ -44,9 +37,12 @@ def illust_url_search_link(illust, text):
 # ###### SHOW
 
 def danbooru_upload_link(illust):
-    if illust.site_id == SiteDescriptor.custom.id:
-        return Markup("N/A")
-    return external_link("Danbooru", danbooru_batch_url(illust))
+    if illust.site_name == 'custom':
+        url = illust.site_url
+    else:
+        url = illust.secondary_url or illust.primary_url
+    query_string = urllib.parse.urlencode({'url': url})
+    return external_link("Danbooru", DANBOORU_HOSTNAME + '/uploads/batch?' + query_string)
 
 
 def update_from_source_link(illust):
@@ -109,14 +105,9 @@ def commentaries_link(illust):
 # ###### GENERAL
 
 def site_illust_link(illust):
-    if illust.site_id == SiteDescriptor.custom.id:
-        # Need to add a post_url for CustomData, a subclass for SiteData
-        return Markup("N/A")
     return external_link(illust.sitelink, illust.primary_url)
 
 
 def alt_site_illust_link(illust):
-    if illust.site_id == SiteDescriptor.custom.id:
-        return ""
     secondary_url = illust.secondary_url
     return external_link('»', secondary_url) if secondary_url is not None else ""

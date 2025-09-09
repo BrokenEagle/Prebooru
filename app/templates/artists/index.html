@@ -23,9 +23,15 @@
                 <tr id="artist-{{ artist.id }}">
                     <td>{{ artist.show_link }} {{ helpers.artist.post_search_link(artist) }}</td>
                     <td>
-                        <span><strong>Domain:</strong> {{ artist.site_domain }}</span>
-                        <br>
-                        <span><strong>Artist ID:</strong> {{ artist.site_artist_id }}</span>
+                        {% if artist.site_name != 'custom' %}
+                            <span><strong>Domain:</strong> {{ artist.site_domain }}</span>
+                            <br>
+                            <span><strong>Artist ID:</strong> {{ artist.site_artist_id }}</span>
+                        {% else %}
+                            <span><strong>Domain:</strong> {{ artist.site_name }}</span>
+                            <br>
+                            <span><strong>{{ helpers.base.url_link(artist.site_url, max_len=40) }}</strong></span>
+                        {% endif %}
                     </td>
                     <td>{{ artist.name_value }}</td>
                     <td>{{ artist.site_account_value }}</td>

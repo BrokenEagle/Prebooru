@@ -17,7 +17,7 @@ from .base_db import set_column_attributes, set_relationship_collections, set_ve
 SCALAR_RELATIONSHIPS = ['tag_names']
 VERSION_RELATIONSHIPS = [('title_body', 'title_bodies'), ('commentary_body', 'commentary_bodies')]
 
-ANY_WRITABLE_ATTRIBUTES = ['site_illust_id', 'site_created', 'pages', 'score', 'active']
+ANY_WRITABLE_ATTRIBUTES = ['site_illust_id', 'site_url', 'site_created', 'pages', 'score', 'active']
 NULL_WRITABLE_ATTRIBUTES = ['artist_id', 'site_name', 'created', 'updated']
 CREATE_ONLY_ATTRIBUTES = ['title_body', 'commentary_body']
 
