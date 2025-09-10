@@ -1,6 +1,7 @@
 # APP/MODELS/ILLUST.PY
 
 # ## EXTERNAL LINKS
+from sqlalchemy import or_
 from sqlalchemy.util import memoized_property
 from sqlalchemy.orm import lazyload
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -101,6 +102,7 @@ class Illust(JsonModel):
         return self.source.get_secondary_url(self)
 
     def urls_paginate(self, page=None, per_page=None, options=None, url_type=None):
+        from .post import Post
         def _get_options(options):
             if options is None:
                 return (lazyload('*'),)
@@ -108,10 +110,11 @@ class Illust(JsonModel):
                 return options
             return (options,)
         query = self._urls_query
+        subquery = Post.query.with_entities(Post.md5)
         if url_type == 'posted':
-            query = query.filter(IllustUrl.post_id.is_not(None))
+            query = query.filter(IllustUrl.md5.is_not(None), IllustUrl.md5.in_(subquery))
         elif url_type == 'unposted':
-            query = query.filter(IllustUrl.post_id.is_(None))
+            query = query.filter(or_(IllustUrl.md5.is_(None), IllustUrl.md5.not_in(subquery)))
         query = query.options(*_get_options(options))
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)
