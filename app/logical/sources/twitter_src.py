@@ -916,8 +916,8 @@ def twitter_request(endpoint, addons, wait=True):
         headers['x-client-transaction-id'] = transaction_id
         try:
             response = httpx.get('https://x.com/i/api/graphql/' + endpoint + '?' + addons, headers=headers, timeout=10)
-        except httpx.ConnectTimeout as e:
-            print_warning("Pausing for network timeout...")
+        except (httpx.ConnectTimeout, httpx.ConnectError) as e:
+            print_warning("Pausing for network error...")
             error = e
             time.sleep(5)
             continue

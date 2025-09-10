@@ -321,11 +321,11 @@ def pixiv_request(url, wait=True):
     for i in range(3):
         try:
             response = httpx.get(url, headers=API_HEADERS, timeout=10)
-        except (httpx.ConnectTimeout) as e:
+        except (httpx.ConnectTimeout, httpx.ConnectError) as e:
             if i == 2:
                 print("Connection errors exceeded!")
                 return {'error': True, 'message': repr(e)}
-            print("Pausing for network timeout...")
+            print("Pausing for network error...")
             time.sleep(5)
             continue
         if response.status_code == 200:

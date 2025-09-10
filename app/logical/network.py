@@ -19,7 +19,7 @@ def get_http_data(serverfilepath, method='get', **args):
     for i in range(4):
         try:
             response = request_method(serverfilepath, **args)
-        except httpx.ConnectTimeout:
+        except (httpx.ConnectTimeout, httpx.ConnectError):
             continue
         except Exception as e:
             return "Unexpected error: %s" % str(e)
@@ -32,7 +32,7 @@ def get_http_data(serverfilepath, method='get', **args):
     if response is not None:
         return "HTTP %d - %s" % (response.status_code, response.reason_phrase)
     else:
-        return "Repeated connection timeouts"
+        return "Repeated connection errors"
 
 
 def send_prebooru_request(path, method, **args):
