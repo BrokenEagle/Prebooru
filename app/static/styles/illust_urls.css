@@ -83,7 +83,8 @@ div#illust-url-content {
 
 /**** INDEX ****/
 
-table#illust-urls-table article.post {
+table#illust-urls-table article.post,
+table#illust-urls-table article.illust-preview-url {
     height: 204px;
     width: 204px;
 }
@@ -92,7 +93,8 @@ table#illust-urls-table article.post.no-post {
     height: 75px;
 }
 
-table#illust-urls-table article.post img {
+table#illust-urls-table article.post img,
+table#illust-urls-table article.illust-preview-url img {
     height: auto;
     max-height: 200px;
     max-width: 200px;
