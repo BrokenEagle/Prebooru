@@ -16,12 +16,12 @@ from .base_helper import general_link, render_tag, get_preview_dimensions, post_
 
 # ###### SHOW
 
-def upload_media_link(illust_url):
-    return general_link(illust_url.type, url_for('upload.new_html', illust_url_id=illust_url.id))
+def upload_media_link(text, illust_url):
+    return general_link(text, url_for('upload.new_html', illust_url_id=illust_url.id))
 
 
-def download_media_link(illust_url):
-    return post_link(illust_url.type, url_for('illust_url.download_html', id=illust_url.id))
+def download_media_link(text, illust_url):
+    return post_link(text, url_for('illust_url.download_html', id=illust_url.id))
 
 
 def preview_link(illust_url, lazyload=False):
