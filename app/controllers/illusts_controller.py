@@ -186,7 +186,8 @@ def uniqueness_check(dataparams, illust):
     site_url = dataparams.get('site_url', illust.site_url)
     if site_name != illust.site_name or site_illust_id != illust.site_illust_id or site_url != illust.site_url:
         return Illust.query.filter(Illust.site_value == site_name,
-                                   or_(and_(Illust.site_illust_id.is_not(None), Illust.site_illust_id == site_illust_id),
+                                   or_(and_(Illust.site_illust_id.is_not(None),
+                                            Illust.site_illust_id == site_illust_id),
                                        and_(Illust.site_url.is_not(None), Illust.site_url == site_url)))\
                            .one_or_none()
 

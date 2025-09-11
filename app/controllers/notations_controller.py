@@ -11,7 +11,7 @@ from wtforms.validators import DataRequired
 from utility.data import eval_bool_string, is_falsey
 
 # ## LOCAL IMPORTS
-from ..models import Notation, Pool, Subscription, Booru, Artist, Illust, Post, PoolElement, TABLES
+from ..models import Notation, Pool, Subscription, Booru, Artist, Illust, Post, PoolElement
 from ..logical.utility import set_error
 from ..logical.database.notation_db import create_notation_from_parameters, update_notation_from_parameters
 from ..logical.records.notation_rec import append_notation_to_item, delete_notation

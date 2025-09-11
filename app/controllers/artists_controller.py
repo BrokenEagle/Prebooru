@@ -153,7 +153,8 @@ def uniqueness_check(dataparams, artist):
     site_url = dataparams.get('site_url', artist.site_url)
     if site_name != artist.site_name or site_artist_id != artist.site_artist_id or site_url != artist.site_url:
         return Artist.query.filter(Artist.site_value == site_name,
-                                   or_(and_(Artist.site_artist_id.is_not(None), Artist.site_artist_id == site_artist_id),
+                                   or_(and_(Artist.site_artist_id.is_not(None),
+                                            Artist.site_artist_id == site_artist_id),
                                        and_(Artist.site_url.is_not(None), Artist.site_url == site_url)))\
                            .one_or_none()
 

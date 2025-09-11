@@ -109,13 +109,14 @@ class Illust(JsonModel):
         return self.source.get_secondary_url(self)
 
     def urls_paginate(self, page=None, per_page=None, options=None, url_type=None):
-        from .post import Post
         def _get_options(options):
             if options is None:
                 return (lazyload('*'),)
             if type(options) is tuple:
                 return options
             return (options,)
+
+        from .post import Post
         query = self._urls_query
         subquery = Post.query.with_entities(Post.md5)
         if url_type == 'posted':

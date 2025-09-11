@@ -56,12 +56,12 @@ class CountPaginate():
     def next(self):
         if self.has_next:
             return CountPaginate(query=self.query, page=self.page + 1, per_page=self.per_page, distinct=self.distinct,
-                                 expunge=expunge)
+                                 expunge=self.expunge)
 
     def prev(self):
         if self.has_prev:
             return CountPaginate(query=self.query, page=self.page - 1, per_page=self.per_page, distinct=self.distinct,
-                                 expunge=expunge)
+                                 expunge=self.expunge)
 
     def _get_items(self):
         if self.distinct:
