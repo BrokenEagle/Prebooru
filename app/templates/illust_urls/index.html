@@ -12,7 +12,7 @@
         <thead>
             <tr>
                 <th width="1%">Post</th>
-                <th width="15%">Info</th>
+                <th width="15%">Illust</th>
                 <th>Url</th>
                 <th width="10%">Dimensions</th>
                 <th width="5%">Order</th>
@@ -23,22 +23,16 @@
         <tbody>
             {% for illust_url in page.items %}
                 <tr id="illust-url-{{ illust_url.id }}">
-                    <td>
+                    <td class="illust-url-post">
+                        <span><strong>{{ illust_url.show_link }}</strong></span>
                         {% if illust_url.post is not none %}
                             {{ post_preview(illust_url.post, True) }}
-                        {% else %}
+                        {% elif illust_url.active and illust_url.illust.active and illust_url.illust.artist.active %}
                             {{ illust_urls_preview([illust_url]) }}
                         {% endif %}
                     </td>
-                    <td>
-                        <span><strong>{{ illust_url.show_link }}</strong></span>
-                        <br>
-                        <span><strong>Domain:</strong> {{ illust_url.site_domain }}</span>
-                        <br>
-                        <br>
+                    <td class="illust-url-illust">
                         <span><strong>{{ illust_url.illust_show_link }}</strong></span>
-                        <br>
-                        <br>
                     </td>
                     <td>{{ helpers.base.url_link(illust_url.full_url, max_len=100) }}</td>
                     <td>({{ illust_url.width }} x {{ illust_url.height }})</td>

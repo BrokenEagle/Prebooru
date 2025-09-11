@@ -3,9 +3,7 @@
 {% macro illust_urls_preview(illust_urls) -%}
     <div class="illust-urls-preview">
         {% if illust_urls | length > 0 %}
-            <span class="explanation">No posts.</span>
-            <br>
-            <br>
+            <span class="explanation">No {{ 'posts' if illust_urls | length > 1 else 'post' }}.</span>
             <div class="illust-urls {{ 'illust-multi-urls' if illust_urls | length > 1 else 'illust-single-url' }}">
                 {% for illust_url in illust_urls %}
                     {% if (loop.index == 4) and ((illust_urls | length) > 4) %}
@@ -18,7 +16,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            <span class="explanation">No URLs.</span>
+            <span class="explanation">No active URLs.</span>
         {% endif %}
     </div>
 {%- endmacro %}
@@ -67,7 +65,7 @@
                                 <strong>Dimensions:</strong> {{ illust_url.width }} x {{ illust_url.height }}
                             </li>
                             <li>
-                                <strong>MD5:</strong> {{ illust_url.md5 }}
+                                <strong>MD5:</strong> {{ helpers.base.val_or_none(illust_url.md5) }}
                             </li>
                             <li>
                                 <strong>Active:</strong> {{ illust_url.active | tojson }}
@@ -76,7 +74,7 @@
                     </div>
                     {% if illust_url.post is not none %}
                         <div class="media-post-preview">{{ post_preview(illust_url.post, True) }}</div>
-                    {% elif illust_url.active and illust.active %}
+                    {% elif illust_url.active and illust.active and illust.artist.active %}
                         <div class="no-post-preview">
                             {{ helpers.illust_url.preview_link(illust_url) }}
                             <div>

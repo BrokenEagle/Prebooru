@@ -63,7 +63,7 @@
                         {% elif illust.selectin_posts | length == 1 %}
                             {{ post_preview(illust.selectin_posts[0], True) }}
                         {% else %}
-                            {{ illust_urls_preview(illust.urls) }}
+                            {{ illust_urls_preview(illust.active_urls) }}
                         {% endif %}
                     </td>
                     <td>

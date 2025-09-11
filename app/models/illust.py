@@ -126,6 +126,10 @@ class Illust(JsonModel):
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)
 
+    @property
+    def active_urls(self):
+        return [url for url in self.urls if url.active]
+
     @memoized_property
     def selectin_posts(self):
         return unique_objects([illust_url.post for illust_url in self.urls if illust_url.post is not None])

@@ -14,12 +14,12 @@ div.illust-urls {
     display: grid;
     grid-template-columns: repeat(2, 0fr);
     text-align: left;
+    margin-top: 0.5em;
 }
 
 div.illust-urls > article {
     padding: 2px;
-    height: 150px;
-    width: 150px;
+    text-align: center;
 }
 
 div.illust-urls > article.overflow {
@@ -41,6 +41,11 @@ div.illust-urls img {
     border: 2px solid white;
 }
 
+div.illust-single-url > article {
+    height: 300px;
+    width: 300px;
+}
+
 div.illust-single-url img {
     max-height: 300px;
     max-width: 300px;
@@ -49,6 +54,11 @@ div.illust-single-url img {
 div.illust-multi-urls img {
     max-height: 150px;
     max-width: 150px;
+}
+
+div.illust-multi-urls > article {
+    height: 150px;
+    width: 150px;
 }
 
 /**** NEW/EDIT ****/
@@ -81,16 +91,22 @@ div#illust-url-content {
     margin-top: 1em;
 }
 
+div#illust-url-content div.no-post img {
+    max-height: 100vh;
+    max-width: 25vw;
+}
+
 /**** INDEX ****/
 
 table#illust-urls-table article.post,
 table#illust-urls-table article.illust-preview-url {
     height: 204px;
     width: 204px;
+    text-align: center;
 }
 
-table#illust-urls-table article.post.no-post {
-    height: 75px;
+table#illust-urls-table article.post {
+    margin-top: 1em;
 }
 
 table#illust-urls-table article.post img,
@@ -99,4 +115,12 @@ table#illust-urls-table article.illust-preview-url img {
     max-height: 200px;
     max-width: 200px;
     width: auto;
+}
+
+td.illust-url-post {
+    text-align: center;
+}
+
+td.illust-url-illust > span {
+    padding-left: 1em;
 }

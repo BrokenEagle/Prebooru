@@ -8,19 +8,34 @@
 {% block content %}
     <div id="illust-url-heading" class="heading">{{ illust_url.header }}</div>
     <div id="illust-url-content">
-        {{ post_preview(illust_url.post) }}
+        {% if illust_url.post is not none %}
+            <div class="post-preview">{{ post_preview(illust_url.post, True) }}</div>
+        {% elif illust_url.active and illust_url.illust.active and illust_url.illust.artist.active %}
+            <div class="no-post">
+                {{ helpers.illust_url.image_link(illust_url) }}
+            </div>
+        {% endif %}
         <ul>
             <li>
                 <strong>{{ illust_url.illust_show_link }}</strong>
             </li>
             <li>
-                <strong>Domain:</strong> {{ illust_url.site_domain }}
+                <strong>Edit( {{ helpers.base.general_link(illust_url.type, illust_url.edit_url + '?redirect=true') }} )</strong>
+                {% if illust_url.post is none %}
+                    ・ <strong>Upload( {{ helpers.illust_url.upload_media_link(illust_url.type, illust_url) }} )</strong>
+                {% endif %}
+                {% if illust_url.post is none and illust_url.illust.active and illust_url.illust.artist.active and illust_url.active %}
+                    ・ <strong>Download( {{ helpers.illust_url.download_media_link(illust_url.type, illust_url) }} )</strong>
+                {% endif %}
             </li>
             <li>
                 <strong>URL:</strong> {{ helpers.base.url_link(illust_url.full_url) }}
             </li>
             <li>
                 <strong>Dimensions:</strong> ({{ illust_url.width }} x {{ illust_url.height }})
+            </li>
+            <li>
+                <strong>MD5:</strong> {{ helpers.base.val_or_none(illust_url.md5) }}
             </li>
             <li>
                 <strong>Active:</strong> {{ illust_url.active | tojson }}
