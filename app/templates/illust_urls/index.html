@@ -8,7 +8,7 @@
 {% endblock title %}
 
 {% block content %}
-    <table id="illust-urls-table" class="striped" width="80%">
+    <table id="illust-urls-table" class="striped" width="100%">
         <thead>
             <tr>
                 <th width="1%">Post</th>
@@ -17,6 +17,7 @@
                 <th width="10%">Dimensions</th>
                 <th width="5%">Order</th>
                 <th width="5%">Active</th>
+                <th width="10%">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -39,10 +40,18 @@
                         <br>
                         <br>
                     </td>
-                    <td>{{ helpers.base.url_link(illust_url.full_url) }}</td>
+                    <td>{{ helpers.base.url_link(illust_url.full_url, max_len=100) }}</td>
                     <td>({{ illust_url.width }} x {{ illust_url.height }})</td>
                     <td>{{ illust_url.order }}</td>
                     <td>{{ illust_url.active | tojson }}</td>
+                    <td>
+                        {{ helpers.base.general_link('edit', illust_url.edit_url + '?redirect=true') }}
+                        {% if illust_url.post is none %}
+                            | {{ helpers.illust_url.upload_media_link('upload', illust_url) }}
+                        {% endif %}
+                        {% if illust_url.post is none and illust_url.illust.active and illust_url.illust.artist.active and illust_url.active %}
+                            | {{ helpers.illust_url.download_media_link('download', illust_url) }}
+                        {% endif %}
                 </tr>
             {% endfor %}
         </tbody>
