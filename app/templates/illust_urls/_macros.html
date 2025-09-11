@@ -44,7 +44,7 @@
                     <div class="media-post-info">
                         <ul>
                             <li>
-                                <strong>Edit( {{ helpers.base.general_link(illust_url.type, illust_url.edit_url) }} )</strong>
+                                <strong>Edit( {{ helpers.base.general_link(illust_url.type, illust_url.edit_url + '?redirect=true') }} )</strong>
                                 {% if illust_url.post is none %}
                                     ・ <strong>Upload( {{ helpers.illust_url.upload_media_link(illust_url.type, illust_url) }} )</strong>
                                 {% endif %}

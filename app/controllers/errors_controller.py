@@ -67,8 +67,7 @@ def index_html():
 def delete_html(id):
     error = get_or_abort(Error, id)
     delete_error(error)
-    flash("Notation deleted.")
-    redirect_arg = request.args.get('redirect')
-    if redirect_arg and eval_bool_string(redirect_arg):
+    flash("Error deleted.")
+    if request.args.get('redirect', type=eval_bool_string, default=False):
         return redirect(request.referrer)
     return redirect(url_for('error.index_html'))

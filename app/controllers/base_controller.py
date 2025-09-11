@@ -44,6 +44,24 @@ def referrer_check(endpoint, request):
     return urllib.parse.urlparse(request.referrer).path == url_for(endpoint)
 
 
+def redirect_url():
+    is_redirect = request.args.get('redirect', type=eval_bool_string, default=False)
+    if is_redirect:
+        parse = urllib.parse.urlparse(request.referrer)
+        return '?'.join((parse.path, parse.query)) if len(parse.query) else parse.path
+    return None
+
+
+def redirect_html_response(model_name, endpoint, results):
+    if results['error']:
+        flash(results['message'], 'error')
+        return redirect(url_for(f'{model_name}.{endpoint}', **results['data']))
+    redirect_url = request.args.get('redirect_url')
+    if redirect_url is not None:
+        return redirect(redirect_url)
+    return redirect(url_for(f'{model_name}.show_html', id=results['data']['id']))
+
+
 def show_json_response(model, id, options=None):
     results = get_or_error(model, id, options=options)
     return results.to_json() if type(results) is not dict else results

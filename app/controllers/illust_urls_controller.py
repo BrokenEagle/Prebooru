@@ -6,6 +6,9 @@ from sqlalchemy.orm import selectinload
 from wtforms import IntegerField, BooleanField, StringField
 from wtforms.validators import DataRequired
 
+# ## PACKAGE IMPORTS
+from utility.data import eval_bool_string
+
 # ## LOCAL IMPORTS
 from ..models import Illust, IllustUrl
 from ..logical.utility import set_error
@@ -15,7 +18,8 @@ from ..logical.records.download_rec import create_download_from_illust_url
 from ..logical.database.illust_url_db import create_illust_url_from_parameters, update_illust_url_from_parameters
 from .base_controller import get_params_value, process_request_values, show_json_response, index_json_response,\
     search_filter, default_order, paginate, get_data_params, get_form, get_or_abort, get_or_error,\
-    nullify_blanks, check_param_requirements, hide_input, set_default, parse_bool_parameter, index_html_response
+    nullify_blanks, check_param_requirements, hide_input, set_default, parse_bool_parameter, index_html_response,\
+    redirect_url, redirect_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -218,16 +222,14 @@ def new_html():
             form.illust_id.data = None
         else:
             hide_input(form, 'illust_id', illust.id)
-    return render_template("illust_urls/new.html", form=form, illust_url=IllustUrl(), illust=illust)
+    return render_template("illust_urls/new.html", form=form, illust_url=IllustUrl(), illust=illust,
+                           redirect_url=redirect_url())
 
 
 @bp.route('/illust_urls', methods=['POST'])
 def create_html():
     results = create()
-    if results['error']:
-        flash(results['message'], 'error')
-        return redirect(url_for('illust_url.new_html', **results['data']))
-    return redirect(url_for('illust.show_html', id=results['data']['illust_id']))
+    return redirect_html_response('illust_url', 'new_html', results)
 
 
 # ###### UPDATE
@@ -240,17 +242,14 @@ def edit_html(id):
     editparams['url'] = illust_url.full_url
     form = get_illust_url_form(**editparams)
     hide_input(form, 'illust_id', illust_url.illust_id)
-    return render_template("illust_urls/edit.html", form=form, illust_url=illust_url)
+    return render_template("illust_urls/edit.html", form=form, illust_url=illust_url, redirect_url=redirect_url())
 
 
 @bp.route('/illust_urls/<int:id>', methods=['PUT'])
 def update_html(id):
     illust_url = get_or_abort(IllustUrl, id)
     results = update(illust_url)
-    if results['error']:
-        flash(results['message'], 'error')
-        return redirect(url_for('illust_url.edit_html', id=illust_url.id))
-    return redirect(url_for('illust.show_html', id=illust_url.illust_id))
+    return redirect_html_response('illust_url', 'edit_html', results)
 
 
 @bp.route('/illust_urls/<int:id>.json', methods=['PUT'])

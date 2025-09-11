@@ -8,8 +8,8 @@
 {% block content %}
     <div id="notation-form-heading" class="heading">Edit {{ notation.header }}</div>
     {% if notation.append_item is not none %}<div id="notation-form-info">{{ helpers.notation.edit_append_info(notation) }}</div>{% endif %}
-    {% if redirect_val %}
-        {{ render_form(form, "PUT", notation.update_url + '?redirect=true') }}
+    {% if redirect_url is not none %}
+        {{ render_form(form, "PUT", notation.update_url + '?redirect_url=' + redirect_url) }}
     {% else %}
         {{ render_form(form, "PUT", notation.update_url) }}
     {% endif %}
