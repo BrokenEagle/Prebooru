@@ -8,7 +8,7 @@ from functools import reduce
 from types import SimpleNamespace
 
 # ## EXTERNAL IMPORTS
-from flask import jsonify, abort, url_for, render_template, request, redirect
+from flask import jsonify, abort, url_for, render_template, request, redirect, flash
 from sqlalchemy import not_
 from wtforms import Form
 from wtforms.meta import DefaultMeta
@@ -42,6 +42,24 @@ class CustomNameForm(Form):
 
 def referrer_check(endpoint, request):
     return urllib.parse.urlparse(request.referrer).path == url_for(endpoint)
+
+
+def redirect_url():
+    is_redirect = request.args.get('redirect', type=eval_bool_string, default=False)
+    if is_redirect:
+        parse = urllib.parse.urlparse(request.referrer)
+        return '?'.join((parse.path, parse.query)) if len(parse.query) else parse.path
+    return None
+
+
+def redirect_html_response(model_name, endpoint, results):
+    if results['error']:
+        flash(results['message'], 'error')
+        return redirect(url_for(f'{model_name}.{endpoint}', **results['data']))
+    redirect_url = request.args.get('redirect_url')
+    if redirect_url is not None:
+        return redirect(redirect_url)
+    return redirect(url_for(f'{model_name}.show_html', id=results['data']['id']))
 
 
 def show_json_response(model, id, options=None):

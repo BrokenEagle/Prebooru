@@ -4,7 +4,7 @@
         (
         {{ helpers.base.general_link('edit', notation.edit_url + '?redirect=true') }}
         |
-        {{ helpers.base.general_link('delete', notation.delete_url + '?redirect=true', method="DELETE", **{'class': 'warning-link'}) }}
+        {{ helpers.base.delete_link('delete', notation.delete_url + '?redirect=true') }}
         )
     </div>
     <div class="notation-block">

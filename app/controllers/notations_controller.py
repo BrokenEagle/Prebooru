@@ -17,7 +17,7 @@ from ..logical.database.notation_db import create_notation_from_parameters, upda
 from ..logical.records.notation_rec import append_notation_to_item, delete_notation
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
     get_params_value, paginate, default_order, get_data_params, get_form, get_or_abort, hide_input,\
-    nullify_blanks, check_param_requirements, index_html_response
+    nullify_blanks, check_param_requirements, index_html_response, redirect_url, redirect_html_response
 
 
 # ## GLOBAL VARIABLES
@@ -235,28 +235,14 @@ def new_html():
         item = None
     if item is not None:
         hide_nongeneral_inputs(form, item)
-    redirect_arg = request.args.get('redirect')
-    redirect_val = eval_bool_string if redirect_arg is not None else False
-    return render_template("notations/new.html", form=form, item=item, notation=Notation(), redirect_val=redirect_val)
+    return render_template("notations/new.html", form=form, item=item, notation=Notation(),
+                           redirect_url=redirect_url())
 
 
 @bp.route('/notations', methods=['POST'])
 def create_html():
     results = create()
-    redirect_arg = request.args.get('redirect')
-    if results['error']:
-        flash(results['message'], 'error')
-        return redirect(url_for('notation.new_html', **results['data']))
-    elif redirect_arg and eval_bool_string(redirect_arg):
-        model_name = results['append_type']
-        model_id = results['append_item']['id']
-        model = TABLES[model_name]
-        item = model.find(model_id)
-        if item.table_name == 'pool_element':
-            return redirect(item.page_url)
-        else:
-            return redirect(item.show_url)
-    return redirect(url_for('notation.show_html', id=results['item']['id']))
+    return redirect_html_response('notation', 'new_html', results)
 
 
 @bp.route('/notations.json', methods=['POST'])
@@ -278,24 +264,14 @@ def edit_html(id):
     form = get_notation_form(**editparams)
     if append_type is not None:
         hide_nongeneral_inputs(form, append_item)
-    redirect_arg = request.args.get('redirect')
-    redirect_val = eval_bool_string if redirect_arg is not None else False
-    return render_template("notations/edit.html", form=form, notation=notation, redirect_val=redirect_val)
+    return render_template("notations/edit.html", form=form, notation=notation, redirect_url=redirect_url())
 
 
 @bp.route('/notations/<int:id>', methods=['PUT'])
 def update_html(id):
     notation = get_or_abort(Notation, id)
     results = update(notation)
-    redirect_arg = request.args.get('redirect')
-    if results['error']:
-        flash(results['message'], 'error')
-    elif redirect_arg and eval_bool_string(redirect_arg):
-        if notation.append_type == 'pool_element':
-            redirect(notation.append_item.page_url)
-        else:
-            return redirect(notation.append_item.show_url)
-    return redirect(url_for('notation.show_html', id=notation.id))
+    return redirect_html_response('notation', 'edit_html', results)
 
 
 # #### DELETE
@@ -303,13 +279,8 @@ def update_html(id):
 @bp.route('/notations/<int:id>', methods=['DELETE'])
 def delete_html(id):
     notation = get_or_abort(Notation, id)
-    append_item = notation.append_item
     delete_notation(notation)
     flash("Notation deleted.")
-    redirect_arg = request.args.get('redirect')
-    if redirect_arg and eval_bool_string(redirect_arg) and append_item is not None:
-        if append_item.table_name == 'pool_element':
-            return redirect(append_item.page_url)
-        else:
-            return redirect(append_item.show_url)
+    if request.args.get('redirect', type=eval_bool_string, default=False):
+        return redirect(request.referrer)
     return redirect(url_for('notation.index_html'))

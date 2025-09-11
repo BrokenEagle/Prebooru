@@ -8,8 +8,8 @@
 {% block content %}
     <div id="notation-form-heading" class="heading">New notation</div>
     {% if item is not none %}<div id="notation-form-info">For {{ item.show_link }}:</div>{% endif %}
-    {% if redirect_val %}
-        {{ render_form(form, "POST", notation.create_url + '?redirect=true') }}
+    {% if redirect_url is not none %}
+        {{ render_form(form, "POST", notation.create_url + '?redirect_url=' + redirect_url) }}
     {% else %}
         {{ render_form(form, "POST", notation.create_url) }}
     {% endif %}

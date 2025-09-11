@@ -6,7 +6,7 @@
                 <div class="error-block-header">
                     <strong>{{ error.show_link }}</strong>
                     (
-                        {{ helpers.base.general_link('delete', error.delete_url + '?redirect=true', method="DELETE", **{'class': 'warning-link'}) }}
+                        {{ helpers.base.delete_link('delete', error.delete_url + '?redirect=true') }}
                     )
                 </div>
                 <div class="error-block-content">

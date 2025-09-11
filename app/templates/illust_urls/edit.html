@@ -8,5 +8,9 @@
 {% block content %}
     <div id="illust-url-form-heading" class="heading">Edit {{ illust_url.header }}</div>
     <div id="illust-url-form-info">For {{ illust_url.illust_show_link }}:</div>
-    {{ render_form(form, 'PUT', illust_url.update_url) }}
+    {% if redirect_url is not none %}
+        {{ render_form(form, 'PUT', illust_url.update_url + '?redirect_url=' + redirect_url) }}
+    {% else %}
+        {{ render_form(form, 'PUT', illust_url.update_url) }}
+    {% endif %}
 {% endblock content %}
