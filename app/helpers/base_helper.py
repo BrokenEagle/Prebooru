@@ -179,6 +179,8 @@ def show_link(model_type, model_id):
 
 
 def url_link(url, max_len=None, breakslash=False):
+    if url is None:
+        return Markup('<em>N/A</em>')
     text = url[:max_len] + '...' if max_len is not None and max_len < len(url) else url
     text = break_forwardslash(text) if breakslash else text
     return external_link(text, url)
