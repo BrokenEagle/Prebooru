@@ -2,6 +2,10 @@
 
 /**** NEW/EDIT ****/
 
+input#artist-site-url {
+    width: 40em;
+}
+
 textarea#artist-site-account-string,
 textarea#artist-name-string {
     height: 5em;

@@ -13,6 +13,10 @@ div#illust-form-info {
     margin-top: 1em;
 }
 
+input#illust-site-url {
+    width: 40em;
+}
+
 textarea#illust-tag-string {
     height: 5em;
     width: 20em;
