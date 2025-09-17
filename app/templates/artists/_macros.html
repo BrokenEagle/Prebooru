@@ -49,6 +49,9 @@
                                 <li>
                                     <strong>{{ helpers.base.url_link(artist.site_url, max_len=35) }}</strong>
                                 </li>
+                                <li>
+                                    <strong>Account:</strong> {{ helpers.base.val_or_none(artist.site_account_value) }}
+                                </li>
                             {% endif %}
                             {% if booru is not none %}
                                 <li>
