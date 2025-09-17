@@ -10,7 +10,7 @@ from utility.data import swap_key_value
 # ## LOCAL IMPORTS
 from ...models import Artist, Booru
 from .base_db import set_column_attributes, set_version_relations, set_timesvalue,\
-    save_record, commit_session, flush_session
+    delete_record, save_record, commit_session, flush_session
 from .artist_url_db import create_artist_url_from_parameters, update_artist_url_from_parameters
 
 # ## GLOBAL VARIABLES
@@ -52,7 +52,10 @@ def update_artist_from_parameters_standard(artist, updateparams):
     if updateparams['active']:
         # These are only removable through the HTML/JSON UPDATE routes
         if 'webpages' in updateparams:
-            updateparams['webpages'] += ['-' + w.url for w in artist.webpages if w.url not in updateparams['webpages']]
+            for webpage in artist.webpages:
+                negative_url = '-' + webpage.url
+                if webpage.url not in updateparams['webpages'] and negative_url not in updateparams['webpages']:
+                    updateparams['webpages'].append(negative_url)
     else:
         # When deactivating automatically, don't allow any other parameters to be set
         updateparams = {'active': False}
@@ -151,7 +154,7 @@ def _set_artist_webpages(artist, params, update):
     for url in removed_webpages:
         # These will only be removable via the artist urls controller
         artist_url = next(filter(lambda x: x.url == url, artist.webpages))
-        update_artist_url_from_parameters(artist_url, {'active': False})
+        delete_record(artist_url)
         update_results = True
     if update_results:
         if update:
