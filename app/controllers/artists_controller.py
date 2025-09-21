@@ -171,7 +171,7 @@ def custom_check(dataparams, artist):
     else:
         if site_artist_id is None:
             return "Site artist ID must be set for non-custom sites."
-        if site_artist_id is not None:
+        if site_url is not None:
             return "Cannot set site URL for non-custom sites."
     return None
 
