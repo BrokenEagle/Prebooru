@@ -114,6 +114,11 @@ section#illust-tags {
     width: 40%;
 }
 
+section#illust-tags ul {
+    max-height: 20em;
+    overflow-y: auto;
+}
+
 div#illust-site-content-2 {
     margin-top: 2em;
 }

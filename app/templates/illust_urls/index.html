@@ -27,7 +27,7 @@
                         <span><strong>{{ illust_url.show_link }}</strong></span>
                         {% if illust_url.post is not none %}
                             {{ post_preview(illust_url.post, True) }}
-                        {% elif illust_url.active and illust_url.illust.active and illust_url.illust.artist.active %}
+                        {% elif illust_url.linkable%}
                             {{ illust_urls_preview([illust_url]) }}
                         {% endif %}
                     </td>
@@ -43,7 +43,7 @@
                         {% if illust_url.post is none %}
                             | {{ helpers.illust_url.upload_media_link('upload', illust_url) }}
                         {% endif %}
-                        {% if illust_url.post is none and illust_url.illust.active and illust_url.illust.artist.active and illust_url.active %}
+                        {% if illust_url.post is none and illust_url.illust.downloadable %}
                             | {{ helpers.illust_url.download_media_link('download', illust_url) }}
                         {% endif %}
                 </tr>

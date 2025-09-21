@@ -38,6 +38,11 @@ aside#upload-sidebar > section {
     margin-bottom: 1em;
 }
 
+section#upload-illust > ul > li > ul > li:nth-child(3) > ul {
+    max-height: 15em;
+    overflow-y: auto;
+}
+
 div#upload-heading {
     font-size: 32px;
 }

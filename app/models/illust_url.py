@@ -1,5 +1,8 @@
 # APP/MODELS/ILLUST_URL.PY
 
+# ## PYTHON IMPORTS
+import urllib.parse
+
 # ## EXTERNAL IMPORTS
 from sqlalchemy.util import memoized_property
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -7,6 +10,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 # ## PACKAGE IMPORTS
 from utility.obj import memoized_classproperty
 from utility.data import list_difference, swap_list_values
+from config import LINKABLE_SITES, DOWNLOADABLE_SITES
 
 # ## LOCAL IMPORTS
 from ..logical.sites import domain_by_site_name
@@ -71,6 +75,14 @@ class IllustUrl(JsonModel):
 
     def frame(self, num):
         return self.source.get_frame_url(self, num)
+
+    @property
+    def linkable(self):
+        return self._linkable_or_expandable(LINKABLE_SITES)
+
+    @property
+    def downloadable(self):
+        return self._linkable_or_expandable(DOWNLOADABLE_SITES)
 
     @memoized_property
     def source(self):
@@ -159,6 +171,14 @@ class IllustUrl(JsonModel):
         attributes = list_difference(super().json_attributes, ['site_id', 'sample_site_id'])
         return swap_list_values(attributes, mapping)
 
+    # ## Private functions
+
+    def _linkable_or_expandable(self, site_list):
+        if self.active and self.illust.active and self.illust.artist.active:
+            if self.site_name != 'custom':
+                return True
+            return urllib.parse.urlparse(self.url).netloc in site_list
+        return False
 
 # ## INITIALIZATION
 
