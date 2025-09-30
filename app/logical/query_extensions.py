@@ -30,7 +30,7 @@ class CountPaginate():
         self.page = max(page, 1)
         self.offset = (page - 1) * per_page
         if count:
-            self.count = self._get_count()
+            self.count = self._get_count() or 0
             self.pages = ((self.count - 1) // per_page) + 1
             self.total = self.pages
             self.first = ((page - 1) * per_page) + 1
