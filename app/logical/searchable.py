@@ -347,10 +347,10 @@ def relationship_count_filters(model, attribute, params, relation_property, quer
     primaryjoin = relation_property.primaryjoin
     if relation_property.secondaryjoin is None:
         rightside = primaryjoin.left
-        query = query.join(primaryjoin.right.table, primaryjoin)
+        query = query.join(primaryjoin.right.table, primaryjoin, isouter=True)
     else:
         rightside = primaryjoin.right
-        query = query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)
+        query = query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right, isouter=True)
     value = params['count_' + attribute]
     count_clause = relationship_count(model, rightside, value)
     if count_clause is not None:

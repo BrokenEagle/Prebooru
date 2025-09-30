@@ -35,7 +35,7 @@ BOORU_SUBCLAUSE = Artist.id.in_(BOORU_SUBQUERY)
 
 def create_artist_from_parameters(createparams, commit=True):
     createparams.setdefault('active', True)
-    createparams.setdefault('primary', True)
+    createparams.setdefault('primary', False)
     set_timesvalue(createparams, 'created')
     set_timesvalue(createparams, 'updated')
     return set_artist_from_parameters(Artist(), createparams, 'created', commit, True)
