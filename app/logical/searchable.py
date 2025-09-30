@@ -245,6 +245,8 @@ def enum_filters(model, columnname, params):
     filters = numeric_filters(model, columnname, params)
     if columnparam in params:
         filters += (columnenum == params[columnparam],)
+    if (columnparam + '_comma') in params:
+        filters += (columnenum.in_(params[columnparam + '_comma'].split(',')),)
     if (columnparam + '_not') in params:
         filters += (columnenum != params[columnparam + '_not'],)
     if (columnparam + '_exists') in params:
