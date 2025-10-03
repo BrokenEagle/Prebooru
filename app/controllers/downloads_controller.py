@@ -180,7 +180,7 @@ def download_select():
     dataparams = get_data_params(request, 'download')
     selectparams = convert_data_params(dataparams)
     retdata = {'error': False, 'data': selectparams, 'params': dataparams}
-    if 'request_url' not in selectparams:
+    if selectparams.get('request_url') is None:
         return set_error(retdata, "Request URL not specified.")
     selectparams['request_url'] = selectparams['request_url'].split('#')[0]
     check_download = uniqueness_check(selectparams)
