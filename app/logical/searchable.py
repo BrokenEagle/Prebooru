@@ -176,7 +176,7 @@ def relationship_attribute_filters(query, model, attribute, params):
     if ('has_' + attribute) in params:
         filters += relationship_has_filters(model, attribute, params, relation_model, relation_property)
     elif ('count_' + attribute) in params:
-        query = relationship_count_filters(model, attribute, params, relation_property, query)
+        filters += relationship_count_filters(model, attribute, params, relation_property, query)
     if attribute in params:
         if isinstance(params[attribute], str) and hasattr(model, attribute + '_enum'):
             params[attribute] = {'name': params[attribute]}
@@ -343,16 +343,18 @@ def relationship_has_secondary_filters(model, attribute, params, relation_proper
 
 def relationship_count_filters(model, attribute, params, relation_property, query):
     primaryjoin = relation_property.primaryjoin
+    subquery = model.query
     if relation_property.secondaryjoin is None:
         rightside = primaryjoin.left
-        query = query.join(primaryjoin.right.table, primaryjoin)
+        subquery = subquery.join(primaryjoin.right.table, primaryjoin)
     else:
         rightside = primaryjoin.right
-        query = query.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)
+        subquery = subquery.join(primaryjoin.right.table, primaryjoin.left == primaryjoin.right)
     value = params['count_' + attribute]
     count_clause = relationship_count(model, rightside, value)
+    subquery = subquery.group_by(model.id).having(count_clause).with_entities(model.id)
     if count_clause is not None:
-        return query.group_by(model).having(count_clause)
+        return (model.id.in_(subquery),)
     else:
         raise Exception("%s - invalid value: %s" % ('count_' + attribute, value))
 
