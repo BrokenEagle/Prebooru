@@ -16,7 +16,7 @@ from .default import *
 
 # ## GLOBAL VARIABLES
 
-VERSION = '2.39.2'
+VERSION = '2.39.3'
 
 # ## INTITIALIZATION
 
