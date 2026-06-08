@@ -46,6 +46,14 @@ def decode_json(string):
     return data
 
 
+def is_json_serializable(obj):
+    try:
+        json.dumps(obj)
+        return True
+    except (TypeError, OverflowError):
+        return False
+
+
 def readable_bytes(bytes):
     i = math.floor(math.log(bytes) / math.log(1024))
     sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
@@ -213,3 +221,9 @@ def dict_prune(indict, prune_keys):
 
 def dict_filter(indict, filter_keys):
     return {k: v for (k, v) in indict.items() if k in filter_keys}
+
+
+# #### Other
+
+def blank_function(*args, **kwargs):
+    pass

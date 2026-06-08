@@ -42,7 +42,7 @@ def create_illust_from_source(site_illust_id, source):
     createparams = source.get_illust_data(site_illust_id)
     if not createparams['active']:
         return
-    artist = get_or_create_artist_from_source(createparams['site_artist_id'], source)
+    artist = get_or_create_artist_from_source(createparams['site_artist_id'], createparams['site_account'], source)
     if artist is None:
         return
     createparams['artist_id'] = artist.id
@@ -54,7 +54,7 @@ def update_illust_from_source(illust):
     updateparams = source.get_illust_data(illust.site_illust_id)
     update_illust_from_parameters_standard(illust, updateparams)
     if 'site_artist_id' in updateparams and illust.artist.site_artist_id != updateparams['site_artist_id']:
-        artist = get_or_create_artist_from_source(updateparams['site_artist_id'], source)
+        artist = get_or_create_artist_from_source(updateparams['site_artist_id'], updateparams['site_account'], source)
         if artist is None:
             artist = get_blank_artist()
         print_warning(f"[{illust.shortlink}] Switching artist from {illust.artist.shortlink} to {artist.shortlink}")

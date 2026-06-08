@@ -3,11 +3,10 @@
 # ## PYTHON IMPORTS
 import os
 import time
-import json
 import pathlib
 
 # ## LOCAL IMPORTS
-from .data import decode_unicode, decode_json, get_buffer_checksum, encode_json
+from .data import decode_unicode, decode_json, get_buffer_checksum, encode_json, blank_function
 
 
 # ## FUNCTIONS
@@ -59,32 +58,42 @@ def get_subdirectory_listing(directory):
         raise
 
 
-def create_directory(filepath, isdir=False):
+def create_directory(filepath, isdir=False, printer=blank_function):
     """Create the directory path if it doesn't already exist"""
     directory = get_directory_path(filepath) if not isdir else filepath
     if not os.path.exists(directory):
+        printer("Creating directory:", directory)
         os.makedirs(directory)
+    else:
+        printer("Directory already exists:", directory)
 
 
-def delete_directory(filepath):
-    if os.path.exists(filepath):
-        os.rmdir(filepath)
+def delete_directory(path, printer=blank_function):
+    if os.path.exists(path):
+        printer("Deleting directory:", path)
+        os.rmdir(path)
         # Time to let the OS remove the directory to prevent OS errors
         time.sleep(0.01)
+    else:
+        printer("Unable to delete directory:", path)
 
 
-def clear_directory(filepath, recursive=False):
-    listing = get_directory_listing(filepath)
+def clear_directory(path, printer=blank_function):
+    printer("Clearing directory:", path)
+    listing = get_directory_listing(path)
     for name in listing:
-        delete_file(os.path.join(filepath, name))
-    delete_directory(filepath)
+        delete_file(os.path.join(path, name), printer=printer)
+    delete_directory(path, printer=printer)
 
 
-def copy_directory(from_filepath, to_filepath, safe=False):
-    create_directory(to_filepath, isdir=True)
-    listing = get_directory_listing(from_filepath)
+def copy_directory(from_path, to_path, safe=False, printer=blank_function):
+    printer("Copying directory:", from_path, '->', to_path)
+    create_directory(to_path, isdir=True, printer=printer)
+    listing = get_directory_listing(from_path)
     for name in listing:
-        copy_file(os.path.join(from_filepath, name), os.path.join(to_filepath, name), safe=safe)
+        from_filepath = os.path.join(from_path, name)
+        to_filepath = os.path.join(to_path, name)
+        copy_file(from_filepath, to_filepath, safe=safe, printer=printer)
 
 
 def put_get_raw(filepath, optype, data=None, ascii=False):
@@ -134,11 +143,13 @@ def load_default(filepath, defaultvalue, binary=False, ascii=False):
     return defaultvalue if data is None else data
 
 
-def copy_file(old_filepath, new_filepath, safe=False):
+def copy_file(old_filepath, new_filepath, safe=False, printer=blank_function):
     if os.path.exists(old_filepath):
+        printer("Copying file:", old_filepath, '->', new_filepath)
         buffer = put_get_raw(old_filepath, 'rb')
         put_get_raw(new_filepath, 'wb', buffer)
         if safe:
+            printer("Checking integrity:", new_filepath)
             checksum = get_buffer_checksum(buffer)
             buffer2 = put_get_raw(new_filepath, 'rb')
             checksum2 = get_buffer_checksum(buffer2)
@@ -146,15 +157,21 @@ def copy_file(old_filepath, new_filepath, safe=False):
                 raise Exception(f"Error moving file from {old_filepath} to {new_filepath}")
         # Time to let the OS copy the file to prevent OS errors
         time.sleep(0.1)
+    else:
+        printer("Unable to copy file:", old_filepath)
 
 
-def delete_file(filepath):
+def delete_file(filepath, printer=blank_function):
     if os.path.exists(filepath):
+        printer("Deleting file:", filepath)
         os.remove(filepath)
         # Time to let the OS remove the file to prevent OS errors
         time.sleep(0.01)
+    else:
+        printer("Unable to delete file:", filepath)
 
 
-def move_file(old_filepath, new_filepath, safe=False):
-    copy_file(old_filepath, new_filepath, safe)
-    delete_file(old_filepath)
+def move_file(old_filepath, new_filepath, safe=False, printer=blank_function):
+    printer("Moving file:", old_filepath, '->', new_filepath)
+    copy_file(old_filepath, new_filepath, safe=safe, printer=printer)
+    delete_file(old_filepath, printer=printer)

@@ -13,7 +13,7 @@
                     [&thinsp;<span class="booru-add">{{ helpers.artist.add_booru_link(artist) }}</span>&thinsp;]
                 {% endif %}
             </div>
-            {% if boorus | length > 0 %}
+            {% if boorus | length > 0 or artist is not none %}
                 <ul>
                     {% for booru in boorus %}
                         {% if booru.deleted %}
@@ -48,7 +48,7 @@
                         <li class="artist-query-booru">({{ helpers.artist.query_booru_link(artist) }})</li>
                     {% endif %}
                 </ul>
-            {% elif artist is none %}
+            {% else %}
                 <ul><li><em>none</em></li></ul>
             {% endif %}
         </section>

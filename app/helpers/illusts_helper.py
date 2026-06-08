@@ -1,6 +1,7 @@
 # APP/HELPERS/ILLUSTS_HELPERS.PY
 
 # ## PYTHON IMPORTS
+import json
 import urllib.parse
 
 # ## EXTERNAL IMPORTS
@@ -51,6 +52,10 @@ def update_from_source_link(illust):
 
 def add_media_url_link(illust):
     return general_link("+", url_for('illust_url.new_html', illust_id=illust.id, redirect='true'))
+
+
+def update_active_link(illust):
+    return put_link(json.dumps(illust.active), url_for('illust.update_html', id=illust.id, **{'illust[active]': not illust.active}))
 
 
 def add_commentary_link(illust):

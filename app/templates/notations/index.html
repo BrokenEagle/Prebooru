@@ -10,6 +10,7 @@
         <thead>
             <tr>
                 <th width="10%">ID</th>
+                <th width="10%">Append</th>
                 <th>Excerpt</th>
                 <th width="10%">Created</th>
                 <th width="10%">Updated</th>
@@ -19,6 +20,13 @@
             {% for notation in page.items %}
                 <tr id="notation-{{ notation.id }}">
                     <td>{{ notation.show_link }}</td>
+                    <td>
+                        {% if notation.append_type is not none %}
+                            {{ notation.append_show_link }}
+                        {% else %}
+                            <i>N/A</i>
+                        {% endif %}
+                    </td>
                     <td>{{ helpers.notation.body_excerpt(notation) }}</td>
                     <td>{{ helpers.base.format_timestamp(notation.created) }}</td>
                     <td>{{ helpers.base.format_timestamp(notation.updated) }}</td>

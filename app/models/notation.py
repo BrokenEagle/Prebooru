@@ -2,6 +2,7 @@
 
 # ## EXTERNAL IMPORTS
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.util import memoized_property
 
 # ## PACKAGE IMPORTS
 from utility.data import is_string
@@ -38,6 +39,13 @@ def notations_json(self, values):
     else:
         self.notations = validate_attachment_json(values, NOTATIONS_JSON_DATATYPES)
 
+def check_append(func):
+    def wrapper(*args):
+        if args[0].append_type is None:
+            return None
+        return func(*args)
+    return wrapper
+
 
 # ## CLASSES
 
@@ -69,13 +77,39 @@ class Notation(JsonModel):
     # ## Instance properties
 
     @property
+    def append_type(self):
+        if self.subscription_id is not None:
+            return 'subscription'
+        if self.booru_id is not None:
+            return 'booru'
+        if self.artist_id is not None:
+            return 'artist'
+        if self.illust_id is not None:
+            return 'illust'
+        if self.post_id is not None:
+            return 'post'
+        if self.no_pool:
+            return 'pool_element'
+
+    @memoized_property
+    @check_append
     def append_item(self):
-        return self.subscription or self.booru or self.artist or self.illust or self.post or\
-            (self.pool_element if not self.no_pool else None)
+        return getattr(self, self.append_type)
 
     @property
-    def append_type(self):
-        return self.append_item.table_name if self.append_item is not None else None
+    @check_append
+    def append_shortlink(self):
+        return getattr(self, self.append_type + '_shortlink')
+
+    @property
+    @check_append
+    def append_show_url(self):
+        return getattr(self, self.append_type + '_show_url')
+
+    @property
+    @check_append
+    def append_show_link(self):
+        return getattr(self, self.append_type + '_show_link')
 
     # ## Private
 
@@ -100,3 +134,17 @@ def initialize():
     DB.Index(None, Notation.illust_id, unique=False, sqlite_where=Notation.illust_id.is_not(None))
     DB.Index(None, Notation.post_id, unique=False, sqlite_where=Notation.post_id.is_not(None))
     DB.Index(None, Notation.subscription_id, unique=False, sqlite_where=Notation.subscription_id.is_not(None))
+
+    from .subscription import Subscription
+    from .booru import Booru
+    from .artist import Artist
+    from .illust import Illust
+    from .post import Post
+    # Access the opposite side of the relationship to force the back reference to be generated
+    Subscription.notations.property._configure_started
+    Booru.notations.property._configure_started
+    Artist.notations.property._configure_started
+    Illust.notations.property._configure_started
+    Post.notations.property._configure_started
+    PoolElement.notation.property._configure_started
+    Notation.set_relation_properties()

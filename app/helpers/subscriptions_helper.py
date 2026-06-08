@@ -172,7 +172,7 @@ def expires_iterator():
     for key in ['unlink', 'delete', 'archive']:
         hours = _hours_from_config(JOB_CONFIG[f'{key}_expired_subscription_elements']['config'])
         per_batch = ELEMENTS_PER_BATCH[key]
-        pending = expired_subscription_elements(key).get_count()
+        pending = expired_subscription_elements(key, False).get_count()
         completion = (pending / per_batch) * hours
         yield key, hours, per_batch, pending, completion
 

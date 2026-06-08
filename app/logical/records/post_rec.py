@@ -314,7 +314,7 @@ def create_video_post_sample_preview_images(post):
 
 
 def unlink_post_subscription_element(post):
-    selectinload_batch_primary(post.illust_urls, 'subscription_element', reverse=True)
+    selectinload_batch_primary(post.illust_urls, 'subscription_element')
     for illust_url in post.illust_urls:
         element = illust_url.subscription_element
         if element is not None and element.status_name not in ['duplicate', 'unlinked']:
@@ -410,31 +410,31 @@ def move_post_media_to_alternate(post, reverse=False):
         return
     temppost.alternate = alternate
     if post.is_ugoira:
-        copy_directory(post.frame_directory, temppost.frame_directory, True)
+        copy_directory(post.frame_directory, temppost.frame_directory, printer=print)
     else:
-        copy_file(post.file_path, temppost.file_path, True)
+        copy_file(post.file_path, temppost.file_path, safe=True, printer=print)
     if post.has_sample:
-        copy_file(post.sample_path, temppost.sample_path)
+        copy_file(post.sample_path, temppost.sample_path, printer=print)
     if post.has_preview:
-        copy_file(post.preview_path, temppost.preview_path)
+        copy_file(post.preview_path, temppost.preview_path, printer=print)
     if post.is_video:
-        copy_file(post.video_sample_path, temppost.video_sample_path)
-        copy_file(post.video_preview_path, temppost.video_preview_path)
+        copy_file(post.video_sample_path, temppost.video_sample_path, printer=print)
+        copy_file(post.video_preview_path, temppost.video_preview_path, printer=print)
     # Commit post as alternate location at this point since the files have been safely copied over
     update_post_from_parameters(post, {'alternate': alternate})
     # Any errors after this point will just leave orphan images, which can always be cleaned up later
     temppost.alternate = reverse
     if post.is_ugoira:
-        clear_directory(post.frame_directory)
+        clear_directory(temppost.frame_directory, printer=print)
     else:
-        delete_file(temppost.file_path)
+        delete_file(temppost.file_path, printer=print)
     if post.has_sample:
-        delete_file(temppost.sample_path)
+        delete_file(temppost.sample_path, printer=print)
     if post.has_preview:
-        delete_file(temppost.preview_path)
+        delete_file(temppost.preview_path, printer=print)
     if post.is_video:
-        delete_file(temppost.video_sample_path)
-        delete_file(temppost.video_preview_path)
+        delete_file(temppost.video_sample_path, printer=print)
+        delete_file(temppost.video_preview_path, printer=print)
 
 
 def delete_post(post, retdata=None):

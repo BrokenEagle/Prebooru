@@ -257,7 +257,7 @@ def query_create():
         retdata['item'] = check_artist.to_json()
         return set_error(retdata, "Artist already exists: artist #%d" % check_artist.id)
     source = source_by_site_name(retdata['site_name'])
-    createparams = retdata['data'] = source.get_artist_data(retdata['site_artist_id'])
+    createparams = retdata['data'] = source.get_artist_data(retdata['site_artist_id'], retdata['site_account_value']) ##NEED TO FIX!!
     if not createparams['active']:
         return set_error(retdata, "Artist account does not exist!")
     artist = create_artist_from_parameters(createparams)
@@ -362,8 +362,7 @@ def show_html(id):
 @bp.route('/artists.json', methods=['GET'])
 def index_json():
     q = index()
-    q = q.options(JSON_OPTIONS)
-    return index_json_response(q, request)
+    return index_json_response(q, request, options=JSON_OPTIONS)
 
 
 @bp.route('/artists', methods=['GET'])

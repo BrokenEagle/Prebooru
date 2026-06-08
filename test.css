@@ -1,0 +1,233 @@
+/**GENERAL**/
+.cu-link {
+    cursor: pointer;
+}
+.cu-switch-control {
+    &.cu-active-control {
+        text-shadow: 1px 0 0;
+    }
+    a {
+        color: grey;
+        &:hover {
+            filter: brightness(1.5);
+        }
+    }
+}
+/**MAIN**/
+#upload-counts {
+    border-style: dotted;
+    border-width: 2px;
+    max-width: 70em;
+    margin-left: 2em;
+    &.opened {
+        border-style: dashed;
+        border-width: 5px;
+        #count-module {
+            display: block;
+        }
+        #upload-counts-toggle {
+            margin: 0.5em;
+        }
+    }
+    &.stashed {
+        display: none;
+    }
+}
+#count-module {
+    display: none;
+    padding-bottom: 1em;
+    border-bottom: 1px solid;
+}
+/**TABLE**/
+#count-table {
+    margin-left: 1em;
+    td, th {
+        width: 10em;
+        text-align: center;
+        &:first-of-type {
+            width: 12em;
+            text-align: left;
+        }
+        &:not(:first-of-type) {
+            border-left: 1px solid;
+        }
+    }
+}
+#count-header a {
+    padding: 2px;
+    border-radius: 5px;
+}
+#count-body {
+    .overflowed {
+        max-height: 20em;
+        overflow-x: hidden;
+        overflow-y: auto;
+        tr:nth-child(1) .cu-tooltiptext {
+            top: -5px;
+        }
+        tr:nth-child(2) .cu-tooltiptext {
+            top: -25px;
+        }
+        tr:nth-child(3) .cu-tooltiptext {
+            top: -40px;
+        }
+        tr:nth-last-child(2) .cu-tooltiptext {
+            top: -60px;
+        }
+        tr:nth-last-child(1) .cu-tooltiptext {
+            top: -75px;
+        }
+    }
+    .cu-uploads {
+        background-color: var(--body-background-color);
+        padding: 0 5px;
+    }
+    a.with-style:hover {
+        filter: brightness(1.5);
+    }
+}
+#count-order {
+    color: var(--muted-text-color);
+    font-style: italic;
+    margin-right: 4em;
+    font-size: 70%;
+    text-align: right;
+}
+#count-chart {
+    height: 400px;
+    width: 100%;
+}
+#count-controls {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.cu-tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+    min-width: 2em;
+    text-align: center;
+    .cu-tooltiptext {
+        visibility: hidden;
+        width: 90px;
+        background-color: black;
+        color: #fff;
+        text-align: left;
+        border-radius: 6px;
+        padding: 5px;
+        /* Position the tooltip */
+        position: absolute;
+        z-index: 1;
+        top: -50px;
+        right: -100px;
+    }
+    &:hover .cu-tooltiptext.cu-activetooltip {
+        visibility: visible;
+    }
+}
+.cu-period-header {
+    border-left: 1px solid;
+    margin-left: -1px;
+}
+#empty-uploads {
+    margin: 1em;
+    font-size: 200%;
+    font-weight: bold;
+    font-family: monospace;
+}
+/**COPYRIGHTS**/
+#count-copyrights {
+    margin: 1em;
+}
+#count-copyrights-header {
+    font-size: 1.25em;
+    font-weight: bold;
+    display: flex;
+    .cu-triangle {
+        position: relative;
+        width: 1em;
+    }
+    .cu-svg-caret {
+        position: absolute;
+    }
+    .cu-triangle-right .cu-svg-caret-down {
+        display: none;
+    }
+    .cu-triangle-down .cu-svg-caret-right {
+        display: none;
+    }
+    .cu-svg-caret-right {
+        top: -2px;
+    }
+    .cu-svg-caret-down {
+        top: -4px;
+    }
+}
+#count-copyrights-section {
+    margin: 0.5em;
+}
+#count-copyrights-controls {
+    display: flex;
+    gap: 20px;
+}
+#count-copyrights-list {
+    line-height: 150%;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    .cu-active-copyright a {
+        text-shadow: 1px 0 0;
+    }
+}
+#count-copyrights-manual {
+    margin: 1em;
+}
+#empty-statistics {
+    margin: 1em;
+    font-weight: bold;
+    font-size: 16px;
+}
+/**USER**/
+#count-query-user {
+    margin: 0.5em;
+    display: flex;
+    gap: 0.5em;
+    & > label {
+        padding: 5px 10px;
+        border-radius: 25px;
+        border: 1px solid;
+        cursor: pointer;
+        position: relative;
+        width: 10em;
+        text-align: right;
+        padding-right: 3em;
+        & > input {
+            position: absolute;
+            right: 1.75em;
+            top: 0.55em;
+        }
+    }
+}
+/**STASH**/
+#stash-count-notice {
+    color: #F44;
+    font-weight: bold;
+    font-size: 80%;
+    &:hover {
+        color: #F88;
+    }
+}
+/**FOOTER**/
+#upload-counts-restore {
+    display: none;
+    &.stashed {
+        display: inline-block;
+    }
+}
+#restore-count-notice {
+    color: mediumseagreen;
+    &:hover {
+        filter: brightness(1.1);
+    }
+}

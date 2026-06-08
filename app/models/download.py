@@ -191,7 +191,7 @@ class Download(JsonModel):
 
     def _populate_posts(self):
         if len(self.illust_urls):
-            selectinload_batch_primary(self.illust_urls, 'post', True)
+            selectinload_batch_primary(self.illust_urls, 'post')
         self._posts = [illust_url.post for illust_url in self.illust_urls
                        if illust_url.post is not None]
         self._complete_posts = [illust_url.post for illust_url in self.complete_illust_urls

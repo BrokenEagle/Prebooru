@@ -29,20 +29,22 @@ Posts.submitForm = function (type, url) {
                 }
             } else if (type === 'tag') {
                 let tag_name = prompt("Enter tag name to add:");
-                let data = new FormData();
-                data.append('tag[name]', tag_name);
-                post_ids.forEach((post_id) => {
-                    data.append('tag[post_id][]', Number(post_id));
-                });
-                fetch(url, {method: 'POST', body: data})
-                    .then((resp) => resp.json())
-                    .then((data) => {
-                        if (data.error) {
-                            Prebooru.error(data.message);
-                        } else {
-                            Prebooru.message(`Added tag ${tag_name} to posts.`);
-                        }
+                if (tag_name) {
+                    let data = new FormData();
+                    data.append('tag[name]', tag_name);
+                    post_ids.forEach((post_id) => {
+                        data.append('tag[post_id][]', Number(post_id));
                     });
+                    fetch(url, {method: 'POST', body: data})
+                        .then((resp) => resp.json())
+                        .then((data) => {
+                            if (data.error) {
+                                Prebooru.error(data.message);
+                            } else {
+                                Prebooru.message(`Added tag ${tag_name} to posts.`);
+                            }
+                        });
+                }
             }
         } else {
             Prebooru.message("No posts selected.");

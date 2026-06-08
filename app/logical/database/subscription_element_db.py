@@ -66,11 +66,11 @@ def get_subscription_elements_by_md5(md5):
                               .all()
 
 
-def expired_subscription_elements(expire_type):
+def expired_subscription_elements(expire_type, is_manual):
     switcher = {
-        'unlink': lambda q: q.filter(_expired_clause('yes', 'unlink')),
-        'delete': lambda q: q.filter(_expired_clause('no', 'delete')),
-        'archive': lambda q: q.filter(_expired_clause('archive', 'archive')),
+        'unlink': lambda q: q.filter(_expired_clause('yes', 'unlink', is_manual)),
+        'delete': lambda q: q.filter(_expired_clause('no', 'delete', is_manual)),
+        'archive': lambda q: q.filter(_expired_clause('archive', 'archive', is_manual)),
     }
     return switcher[expire_type](SubscriptionElement.query)
 
@@ -88,11 +88,12 @@ def subscription_pending_elements_query(subscription_id):
 
 # #### Private
 
-def _expired_clause(keep, action):
+def _expired_clause(keep, action, is_manual):
     if (action == EXPIRED_SUBSCRIPTION_ACTION):
         keep_clause = or_(SubscriptionElement.keep_value == keep, SubscriptionElement.keep_value.is_(None))
     else:
         keep_clause = SubscriptionElement.keep_value == keep
-    return and_(SubscriptionElement.expires < get_current_time(),
-                SubscriptionElement.status_value == 'active',
-                keep_clause)
+    clauses = [SubscriptionElement.status_value == 'active', keep_clause]
+    if not is_manual:
+        clauses.append(SubscriptionElement.expires < get_current_time())
+    return and_(*clauses)

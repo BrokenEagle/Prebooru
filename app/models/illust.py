@@ -119,10 +119,14 @@ class Illust(JsonModel):
         from .post import Post
         query = self._urls_query
         subquery = Post.query.with_entities(Post.md5)
-        if url_type == 'posted':
-            query = query.filter(IllustUrl.md5.is_not(None), IllustUrl.md5.in_(subquery))
-        elif url_type == 'unposted':
-            query = query.filter(or_(IllustUrl.md5.is_(None), IllustUrl.md5.not_in(subquery)))
+        if url_type == 'inactive':
+            query = query.filter(IllustUrl.active.is_(False))
+        else:
+            if url_type == 'posted':
+                query = query.filter(IllustUrl.md5.is_not(None), IllustUrl.md5.in_(subquery))
+            elif url_type == 'unposted':
+                query = query.filter(or_(IllustUrl.md5.is_(None), IllustUrl.md5.not_in(subquery)))
+            query = query.filter(IllustUrl.active.is_(True))
         query = query.options(*_get_options(options))
         query = query.order_by(IllustUrl.order)
         return query.count_paginate(per_page=per_page, page=page)

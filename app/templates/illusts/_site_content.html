@@ -39,7 +39,7 @@
                     <strong>Created:</strong> {{ helpers.base.format_timestamp(illust.site_created) }}
                 </li>
                 <li>
-                    <strong>Active:</strong> {{ illust.active | tojson }}
+                    <strong>Active:</strong> {{ helpers.illust.update_active_link(illust) }}
                 </li>
             </ul>
         </section>

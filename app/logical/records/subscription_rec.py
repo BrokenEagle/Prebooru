@@ -125,7 +125,7 @@ def sync_missing_subscription_illusts(subscription, job_id=None, params=None):
         update_subscription_from_parameters(subscription, params)
         return
     if artist.updated < days_ago(1):
-        params = source.get_artist_data(artist.site_artist_id)
+        params = source.get_artist_data(artist.site_artist_id, site_account=artist.site_account_value)
         update_artist_from_parameters_standard(artist, params)
     site_illust_ids = sorted(x for x in set(site_illust_ids))
     job_status = get_job_status_data(job_id) or {'illusts': 0}
@@ -199,7 +199,7 @@ def download_missing_elements(manual=False):
 def unlink_expired_subscription_elements(manual):
     unlinked_elements = []
     max_batches = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
-    q = expired_subscription_elements('unlink')
+    q = expired_subscription_elements('unlink', manual)
     page = q.sequential_paginate(per_page=UNLINK_ELEMENTS_PER_PAGE, page='oldest_first')
     for elements in records_paginate('unlink_expired_subscription_elements', page, max_batches):
         for element in elements:
@@ -216,7 +216,7 @@ def unlink_expired_subscription_elements(manual):
 def delete_expired_subscription_elements(manual):
     deleted_elements = []
     max_batches = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
-    q = expired_subscription_elements('delete')
+    q = expired_subscription_elements('delete', manual)
     page = q.sequential_paginate(per_page=DELETE_ELEMENTS_PER_PAGE, page='oldest_first')
     for elements in records_paginate('delete_expired_subscription_elements', page, max_batches):
         for element in elements:
@@ -234,7 +234,7 @@ def delete_expired_subscription_elements(manual):
 def archive_expired_subscription_elements(manual):
     archived_elements = []
     max_batches = EXPIRE_ELEMENTS_PAGE_LIMIT if not manual else float('inf')
-    q = expired_subscription_elements('archive')
+    q = expired_subscription_elements('archive', manual)
     q = q.order_by(SubscriptionElement.id.desc())
     page = q.sequential_paginate(per_page=ARCHIVE_ELEMENTS_PER_PAGE, page='oldest_first')
     for elements in records_paginate('archive_expired_subscription_elements', page, max_batches):
@@ -296,14 +296,14 @@ def create_post_from_subscription_element(element):
         return False
     create_and_extend_errors(element, results['errors'])
     if results['md5'] is None:
-        update_subscription_element_from_parameters(element, {'status_name': 'error'})
+        _update_error_element(element)
         return False
     update_illust_url_from_parameters(illust_url, {'md5': results['md5']})
     if results['duplicate']:
         _update_duplicate_element(element)
         return False
     if results['post'] is None:
-        update_subscription_element_from_parameters(element, {'status_name': 'error'})
+        _update_error_element(element)
         return False
     update_subscription_element_from_parameters(element, {'status_name': 'active'})
     return True
@@ -312,18 +312,20 @@ def create_post_from_subscription_element(element):
 def redownload_element(element):
     def try_func(scope_vars):
         initial_errors = [error.id for error in element.errors]
-        if create_post_from_subscription_element(element):
+        create_post_from_subscription_element(element)
+        if element.status_name == 'active':
             post = element.post
             if post.is_video:
                 thread = SessionThread(target=convert_mp4_to_webp,
                                        args=(post.file_path, post.video_preview_path))
                 thread.start()
+        elif element.status_name == 'duplicate':
             return {'error': False}
-        else:
-            update_subscription_element_from_parameters(element, {'status_name': 'error', 'keep_name': 'unknown'})
+        elif element.status_name == 'error':
             new_errors = [error for error in element.errors if error.id not in initial_errors]
             msg = '; '.join(f"{error.module}: {error.message}" for error in new_errors) or "Unknown error."
             return {'error': True, 'message': msg}
+        return {'error': False}
 
     def msg_func(scope_vars, error):
         return f"Unhandled exception occurred on subscripton #{element.subscription_id}: {repr(error)}"
@@ -479,6 +481,15 @@ def _process_videos(post_ids):
 def _update_duplicate_element(element):
     params = {
         'status_name': 'duplicate',
+        'keep_name': 'unknown',
+        'expires': None,
+    }
+    update_subscription_element_from_parameters(element, params)
+
+
+def _update_error_element(element):
+    params = {
+        'status_name': 'error',
         'keep_name': 'unknown',
         'expires': None,
     }

@@ -84,6 +84,9 @@ def process_download(download_id):
 
 def process_network_download(download):
     illust = _create_download_illust(download)
+    if illust is None:
+        update_download_from_parameters(download, {'status_name': 'error'})
+        return
     source = illust.source
     all_download_urls = [no_file_extension(source.normalize_image_url(download_url.url))
                          for download_url in download.image_urls]
@@ -93,10 +96,11 @@ def process_network_download(download):
         no_file_extension(source.normalize_image_url(download.request_url))\
         if image_download\
         else None
+    elements_processed = 0
     for illust_url in illust.urls:
         if not illust_url.active:
             continue
-        normalized_illust_url = no_file_extension(illust_url.url)
+        normalized_illust_url = no_file_extension(source.normalize_image_url(illust_url.full_sample_url or illust_url.full_url))
         if image_download and normalized_request_url != normalized_illust_url:
             continue
         elif (len(all_download_urls) > 0) and (normalized_illust_url not in all_download_urls):
@@ -109,9 +113,13 @@ def process_network_download(download):
             }
             element = create_download_element_from_parameters(params)
         create_post_from_download_element(element)
+        elements_processed += 1
         if image_download:
             break
-    update_download_from_parameters(download, {'status_name': 'complete'})
+    if elements_processed > 0:
+        update_download_from_parameters(download, {'status_name': 'complete'})
+    else:
+        update_download_from_parameters(download, {'status_name': 'error'})
 
 
 def create_post_from_download_element(element):
@@ -240,9 +248,7 @@ def _create_download_illust(download):
     # Request URL should have already been validated, so no null test needed
     source = get_post_source(download.request_url)
     site_illust_id = source.get_illust_id(download.request_url)
-    error = source.source_prework(site_illust_id)
-    if error is not None:
-        append_error(download, error)
+    source.source_prework(site_illust_id)
     requery_time = days_ago(1)
     illust = get_site_illust(site_illust_id, source.SITE.id)
     if illust is None:
@@ -251,7 +257,7 @@ def _create_download_illust(download):
             update_download_from_parameters(download, {'status_name': 'error'})
             create_and_append_error(download, 'download_rec.process_network_download',
                                     "Unable to create illust: %s" % (source.ILLUST_SHORTLINK % site_illust_id))
-            return
+            return None
     elif illust.updated < requery_time:
         update_illust_from_source(illust)
     # The artist will have already been created in the create illust step if it didn't exist

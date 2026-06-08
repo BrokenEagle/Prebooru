@@ -34,7 +34,7 @@ VIDEO_PICTURE = """
 
 def related_posts_search(post):
     illust_ids_str = ','.join([str(illust.id) for illust in post.selectin_illusts])
-    return search_url_for('post.index_html', illust_urls={'illust_id': illust_ids_str})
+    return search_url_for('post.index_html', illust_urls={'illust_id': illust_ids_str}, order='site')
 
 
 # #### Link functions

@@ -118,6 +118,7 @@ def get_artist_required_params(url):
     if is_error(ret):
         return set_error(retdata, ret.message)
     retdata['site_artist_id'] = int(ret)
+    retdata['site_account_value'] = source.get_artist_site_account(url)
     return retdata
 
 

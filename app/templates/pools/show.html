@@ -59,6 +59,7 @@
 
 {% block pagescript %}
     Prebooru.initializeLazyLoad(".pool-display-block");
+    Prebooru.initializeVideoPreviews('.video-post');
     {% if edit_pool %}
         Prebooru.setAllInputsTimeout('post-element-select');
         Prebooru.initializeEventCallbacks('post-element-select');

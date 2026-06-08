@@ -7,7 +7,7 @@ import time
 import requests
 
 # ## PACKAGE IMPORTS
-from config import DANBOORU_USERNAME, DANBOORU_APIKEY, DANBOORU_HOSTNAME
+from config import DANBOORU_USERNAME, DANBOORU_APIKEY, DANBOORU_HOSTNAME, DOWNBOORU
 from utility.data import add_dict_entry
 
 
@@ -22,10 +22,16 @@ REQUEST_AUTH = (DANBOORU_USERNAME, DANBOORU_APIKEY)\
     if DANBOORU_USERNAME is not None and DANBOORU_APIKEY is not None\
     else None
 
+API_HEADERS = {
+    'Content-Type': 'application/json',
+    'User-Agent': 'BrokenEagle98/1.0',
+}
 
 # ## FUNCTIONS
 
 def danbooru_request(url, params=None, files=None, long=False, method='get'):
+    if DOWNBOORU:
+        return {'error': True, 'message': "DOWNBOORU"}
     method = 'post' if long else method
     data = params if method in DATA_FUNCTIONS else None
     params = params if method not in DATA_FUNCTIONS else None
@@ -35,7 +41,7 @@ def danbooru_request(url, params=None, files=None, long=False, method='get'):
     for i in range(3):
         try:
             response = REQUEST_METHODS[method](DANBOORU_HOSTNAME + url, params=params, data=data, files=files,
-                                               timeout=10, auth=REQUEST_AUTH)
+                                               timeout=10, auth=REQUEST_AUTH, headers=API_HEADERS)
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
             print("Pausing for network timeout...")
             time.sleep(5)

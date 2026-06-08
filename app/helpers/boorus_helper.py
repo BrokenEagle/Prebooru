@@ -48,7 +48,7 @@ def check_artists_link(booru):
 
 def add_artist_link(booru):
     addons = {'prompt': "Enter artist ID to add:", 'prompt-arg': 'artist_id'}
-    return general_link("+", url_for('booru.add_artist_html', id=booru.id), **addons)
+    return post_link("+", url_for('booru.add_artist_html', id=booru.id), **addons)
 
 
 def remove_artist_link(booru, artist):

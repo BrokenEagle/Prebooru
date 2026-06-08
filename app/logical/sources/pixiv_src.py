@@ -70,8 +70,9 @@ IMAGE_PARTIAL_RG = re.compile(r"""
 /(?:img-original|img-master|custom-thumb)   # Path
 /img
 /(\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2})      # Date
-/(\d+)_                                     # ID
-p(\d+)                                      # Order
+/(\d+)                                      # ID
+(?:-[a-f0-9]{32})?                          # Hash (optional)
+_p(\d+)                                     # Order
 (?:_(?:master|square|custom)1200)?          # Size 2
 \.(jpg|png|gif|mp4|zip)                     # Extension
 """, re.X | re.IGNORECASE)
@@ -252,6 +253,10 @@ def get_artist_id(artist_url):
         return match.group(1)
 
 
+def get_artist_site_account(artist_url):
+    return None
+
+
 def is_artist_url(artist_url):
     return is_artist_id_url(artist_url)
 
@@ -294,9 +299,10 @@ def get_artist_id_url_id(artist_url):
 
 
 def normalize_image_url(image_url):
-    image_url = urllib.parse.urlparse(image_url).path.replace('img-master', 'img-original').replace('custom-thumb', 'img-original')
-    image_url = re.sub(r'_(?:master|square|custom)1200', '', image_url)
-    image_url = re.sub(r'(?:/c/\w+)', '', image_url)
+    match = IMAGE_RG.match(image_url)
+    if match:
+        date, id, order, ext = match.groups()
+        return f'{IMAGE_SERVER}/img-original/img/{date}/{id}_p{order}.{ext}'
     return image_url
 
 
@@ -470,6 +476,7 @@ def get_illust_parameters_from_artwork(artwork, page_data, ugoira_data):
         'illust_urls': illust_urls,
         'active': True,
         'site_artist_id': int(artwork['userId']),
+        'site_account': artwork['userAccount'],
     }
 
 
@@ -546,7 +553,7 @@ def get_artist_api_data(site_artist_id):
     return pxuser
 
 
-def get_artist_data(site_artist_id):
+def get_artist_data(site_artist_id, site_account=None):
     pxuser = get_artist_api_data(site_artist_id)
     if pxuser is None:
         return {'active': False}
@@ -604,6 +611,10 @@ def get_artist_id_by_illust_id(site_illust_id):
     artwork = get_illust_api_data(site_illust_id)
     artist_id = safe_get(artwork, 'userId')
     return int(artist_id) if artist_id is not None else None
+
+
+def get_artist_account_by_illust_id(site_illust_id):
+    return None
 
 
 # #### Other

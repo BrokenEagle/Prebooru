@@ -78,15 +78,15 @@ def check_artist_for_danbooru(artist, network_data, booru_dict, status):
         inc_dict_entry(status, 'notfound')
 
 
-def get_or_create_artist_from_source(site_artist_id, source):
+def get_or_create_artist_from_source(site_artist_id, site_account, source):
     artist = get_site_artist(site_artist_id, source.SITE.id)
     if artist is None:
-        artist = create_artist_from_source(site_artist_id, source)
+        artist = create_artist_from_source(site_artist_id, site_account, source)
     return artist
 
 
-def create_artist_from_source(site_artist_id, source):
-    params = source.get_artist_data(site_artist_id)
+def create_artist_from_source(site_artist_id, site_account, source):
+    params = source.get_artist_data(site_artist_id, site_account)
     if not params['active']:
         return
     return create_artist_from_parameters(params)
@@ -94,7 +94,7 @@ def create_artist_from_source(site_artist_id, source):
 
 def update_artist_from_source(artist):
     source = artist.source
-    params = source.get_artist_data(artist.site_artist_id)
+    params = source.get_artist_data(artist.site_artist_id, artist.site_account_value)
     update_artist_from_parameters_standard(artist, params)
 
 

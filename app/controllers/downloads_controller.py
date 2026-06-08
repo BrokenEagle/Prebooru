@@ -235,8 +235,7 @@ def show_html(id):
 @bp.route('/downloads.json', methods=['GET'])
 def index_json():
     q = index()
-    q = q.options(JSON_OPTIONS)
-    return index_json_response(q, request)
+    return index_json_response(q, request, options=JSON_OPTIONS)
 
 
 @bp.route('/downloads', methods=['GET'])

@@ -19,7 +19,7 @@ from sqlalchemy.ext.associationproxy import _AssociationList
 from config import HAS_EXTERNAL_IMAGE_SERVER, IMAGE_PORT
 from utility.time import process_utc_timestring, datetime_from_epoch, datetime_to_epoch, datetime_valid
 from utility.obj import classproperty, memoized_classproperty, staticproperty
-from utility.data import encode_json
+from utility.data import encode_json, is_json_serializable
 
 # ## LOCAL IMPORTS
 from .. import DB, SESSION, SERVER_INFO
@@ -520,8 +520,8 @@ class JsonModel(DB.Model):
     def column_dict(self):
         return {k: getattr(self, k) for k in self.__table__.c.keys() if hasattr(self, k)}
 
-    def basic_json(self):
-        return self._json(self.basic_attributes)
+    def basic_json(self, includes = None):
+        return self._json(self.basic_attributes, includes)
 
     def to_json(self):
         return self._json(self.json_attributes)
@@ -679,7 +679,8 @@ class JsonModel(DB.Model):
         model_name = self.__class__.__name__
         return f"{model_name}({inner_string})"
 
-    def _json(self, attributes):
+    def _json(self, attributes, includes = None):
+        includes = includes or {}
         data = {}
         for attr in attributes:
             if isinstance(attr, tuple):
@@ -699,6 +700,23 @@ class JsonModel(DB.Model):
                 data[key] = value.to_json()
             else:
                 data[key] = value
+        for key in includes:
+            if not hasattr(self, key):
+                continue
+            subitem = getattr(self, key)
+            if key in self.relations:
+                if isinstance(subitem, list):
+                    if len(subitem):
+                        data[key] = [sub.basic_json(includes[key]) for sub in subitem if hasattr(sub, 'basic_json')]
+                    else:
+                        data[key] = []
+                else:
+                    if hasattr(subitem, 'basic_json'):
+                        data[key] = subitem.basic_json(includes[key])
+                    else:
+                        data[key] = None
+            elif is_json_serializable(subitem):
+                data[key] = subitem
         return data
 
     @classmethod

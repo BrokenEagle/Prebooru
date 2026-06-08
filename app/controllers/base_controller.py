@@ -21,7 +21,7 @@ from utility.uprint import print_warning
 
 # ## LOCAL IMPORTS
 from ..logical.searchable import search_attributes, order_attributes, custom_order
-
+from ..logical.batch_loader import selectinload_includes
 
 # ## CLASSES
 
@@ -63,14 +63,30 @@ def redirect_html_response(model_name, endpoint, results):
 
 
 def show_json_response(model, id, options=None):
+    includes = get_includes()
+    options = None if len(includes.keys()) else options
     results = get_or_error(model, id, options=options)
-    return results.to_json() if type(results) is not dict else results
+    if isinstance(results, dict):
+        return results
+    if len(includes.keys()) > 0:
+        selectinload_includes([results], includes)
+        return results.basic_json(includes)
+    return results.to_json()
 
 
-def index_json_response(query, request, **kwargs):
+def index_json_response(query, request, options=None, **kwargs):
     # Don't unncessarily calculate the count when doing a JSON response since it doesn't get used
     kwargs['count'] = False
-    return jsonify([x.to_json() for x in paginate(query, request, **kwargs).items])
+    includes = get_includes()
+    if len(includes.keys()) == 0 and options is not None:
+        query = query.options(options)
+    items = paginate(query, request, **kwargs).items
+    if len(items) and len(includes.keys()) > 0:
+        selectinload_includes(items, includes)
+        json_data = [x.basic_json(includes) for x in items]
+    else:
+        json_data = [x.to_json() for x in items]
+    return jsonify(json_data)
 
 
 def index_html_response(page, endpoint, path, **params):
@@ -207,6 +223,25 @@ def get_limit(request, max_limit=None):
     return min(int(request.args['limit']), max_limit) if 'limit' in request.args else default_limit
 
 
+def get_includes(retdata = None, subrelations = None):
+    if retdata is None or subrelations is None:
+        includes_string = request.args.get('includes')
+        if includes_string is None:
+            return {}
+        include_tokens = _split_includes_string(includes_string)
+        retdata = {}
+    else:
+        include_tokens = _split_includes_string(subrelations)
+    for token in include_tokens:
+        match = re.match(r'^([^[]+)\[(.+?)\]$', token)
+        if match:
+            relation, subrelations = match.groups()
+            retdata[relation] = get_includes({}, subrelations)
+        else:
+            retdata[token] = {}
+    return retdata
+
+
 def process_request_values(values_dict):
     """
     Parse incomming URL parameters into a hash based upon a standard tokenizing scheme.
@@ -335,8 +370,30 @@ def render_template_ws(endpoint, **args):
 def strip_whitespace(html):
     return re.sub(r'\s+', ' ', html).replace('> <', '><').strip()
 
+# #### Load helpers
+
 
 # #### Private functions
 
 def _query_model(query):
     return query.column_descriptions[0]['entity']
+
+
+def _split_includes_string(string):
+    split = []
+    level = 0
+    position = 0
+    for i in range(0, len(string)):
+        char = string[i]
+        if char == ',' and level == 0:
+            split.append(string[position : i])
+            position = i + 1
+        elif char == '[':
+            level += 1
+        elif char == ']':
+            level -= 1
+    else:
+        if level != 0:
+            raise Exception("Invalid nesting in includes string.")
+        split.append(string[position:])
+    return split

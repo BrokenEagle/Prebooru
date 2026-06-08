@@ -59,6 +59,7 @@ DANBOORU_HOSTNAME = 'https://danbooru.donmai.us'
 
 DANBOORU_USERNAME = None
 DANBOORU_APIKEY = None
+DOWNBOORU = False
 
 # Log into Pixiv and get these values
 PIXIV_PHPSESSID = None  # PHPSESSID

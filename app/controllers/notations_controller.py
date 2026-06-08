@@ -48,6 +48,14 @@ SHOW_HTML_OPTIONS = (
     selectinload(Notation.post),
 )
 
+INDEX_HTML_OPTIONS = (
+    selectinload(Notation.pool_element),
+    selectinload(Notation.booru),
+    selectinload(Notation.artist),
+    selectinload(Notation.illust),
+    selectinload(Notation.post),
+)
+
 
 # #### Form
 
@@ -210,6 +218,7 @@ def index_json():
 @bp.route('/notations', methods=['GET'])
 def index_html():
     q = index()
+    q = q.options(INDEX_HTML_OPTIONS)
     page = paginate(q, request)
     return index_html_response(page, 'notation', 'notations')
 

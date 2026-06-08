@@ -10,19 +10,21 @@ import urllib.parse
 import datetime
 
 # ## EXTERNAL IMPORTS
+import bs4
 import httpx
 from wtforms import RadioField, BooleanField, IntegerField, TextField
-from x_client_transaction.utils import handle_x_migration
+from x_client_transaction.utils import generate_headers, get_ondemand_file_url
 from x_client_transaction import ClientTransaction
 
 # ## PACKAGE IMPORTS
 from config import DATA_DIRECTORY, DEBUG_MODE, TWITTER_USER_TOKEN, TWITTER_CSRF_TOKEN, TWITTER_MINIMUM_QUERY_INTERVAL
 from utility.data import safe_get, decode_json, fixup_crlf, safe_check, encode_json
 from utility.time import get_current_time, datetime_from_epoch
-from utility.file import get_file_extension, get_http_filename, put_get_json
+from utility.file import get_file_extension, get_http_filename, put_get_json, put_get_raw, delete_file
 from utility.uprint import print_info, print_warning, print_error
 
 # ## LOCAL IMPORTS
+from ... import MAIN_PROCESS
 from ...models.model_enums import SiteDescriptor, ApiDataType
 from ..sites import site_name_by_domain
 from ..logger import log_network_error
@@ -224,9 +226,18 @@ TWITTER_AUTH = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xn" +\
                "Zz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
 
 TWITTER_USER_HEADERS = {
+    "Accept": "*/*",
+    "Referer": "https://x.com/i/api/",
+    "content-type": "application/json",
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',  # noqa: E501
     'authorization': 'Bearer ' + TWITTER_AUTH,
+    "x-twitter-auth-type": "OAuth2Session",
     'x-csrf-token': TWITTER_CSRF_TOKEN,
+    "x-twitter-client-language": "en",
+    "x-twitter-active-user": "yes",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
     'cookie': f'auth_token={TWITTER_USER_TOKEN}; ct0={TWITTER_CSRF_TOKEN}'
 }
 
@@ -475,6 +486,8 @@ TWITTER_SIZES = [':orig', ':large', ':medium', ':small']
 
 TOKEN_FILE = os.path.join(DATA_DIRECTORY, 'twittertoken.txt')
 ERROR_TWEET_FILE = os.path.join(DATA_DIRECTORY, 'twittererror.json')
+HOMEPAGE_FILE = os.path.join(DATA_DIRECTORY, 'homepage.html')
+ONDEMAND_FILE = os.path.join(DATA_DIRECTORY, 'ondemand.html')
 
 LAST_QUERY = None
 
@@ -583,6 +596,12 @@ def get_artist_id(artist_url):
         return get_twitter_user_id(screen_name)
 
 
+def get_artist_site_account(artist_url):
+    match = USERS1_RG.match(artist_url)
+    if match:
+        return match.group(1)
+
+
 def get_full_url(illust_url):
     media_url = get_media_url(illust_url)
     if IMAGE1_RG.match(media_url):
@@ -662,14 +681,14 @@ def has_artist_urls(artist):
 
 
 def artist_profile_urls(artist):
-    profile_urls = ['https://twitter.com/intent/user?user_id=%d' % artist.site_artist_id]
+    profile_urls = ['https://twitter.com/i/user/%d' % artist.site_artist_id]
     for site_account in artist.site_accounts:
         profile_urls += ['https://twitter.com/%s' % site_account]
     return profile_urls
 
 
 def artist_booru_search_url(artist):
-    return 'https://twitter.com/intent/user?user_id=%d' % artist.site_artist_id
+    return 'https://x.com/i/user/%d' % artist.site_artist_id
 
 
 def illust_commentaries_dtext(illust):
@@ -761,25 +780,9 @@ def source_prework(site_illust_id):
     twitter_data = get_twitter_illust_timeline(site_illust_id)
     if is_error(twitter_data):
         return twitter_data
-    tweets = []
-    tweet_ids = set()
-    for i in range(len(twitter_data)):
-        tweet = safe_get(twitter_data[i], 'result', 'legacy')
-        if tweet is None or tweet['id_str'] in tweet_ids:
-            continue
-        tweets.append(tweet)
-        tweet_ids.add(tweet['id_str'])
+    tweets = [tweet for tweet in twitter_data['tweets'].values()]
     save_api_data(tweets, 'id_str', SITE.id, ApiDataType.illust.id)
-    twusers = []
-    user_ids = set()
-    for i in range(len(twitter_data)):
-        id_str = safe_get(twitter_data[i], 'result', 'core', 'user_results', 'result', 'rest_id')
-        user = safe_get(twitter_data[i], 'result', 'core', 'user_results', 'result', 'legacy')
-        if user is None or id_str in user_ids:
-            continue
-        user['id_str'] = id_str
-        twusers.append(user)
-        user_ids.add(id_str)
+    twusers = [twuser for twuser in twitter_data['users'].values()]
     save_api_data(twusers, 'id_str', SITE.id, ApiDataType.artist.id)
 
 
@@ -857,11 +860,32 @@ def get_timeline(page_func, job_id=None, job_status={}, **kwargs):
 def get_client_transaction_id(endpoint, reinitialize):
     global CLIENT_TRANSACTION
     if CLIENT_TRANSACTION is None or reinitialize:
+        if reinitialize:
+            delete_file(HOMEPAGE_FILE)
+            delete_file(ONDEMAND_FILE)
         print("Getting new client transaction")
         session = httpx.Client()
-        session.headers = CLIENT_TRANSACTION_HEADERS
-        response = handle_x_migration(session)
-        CLIENT_TRANSACTION = ClientTransaction(response)
+        session.headers = generate_headers()
+        home_page_content = put_get_raw(HOMEPAGE_FILE, 'rb')
+        if home_page_content is not None:
+            print("HOMEPAGE FILE FOUND!")
+            home_page_response = bs4.BeautifulSoup(home_page_content, 'html.parser')
+        else:
+            print("HOMEPAGE FILE NOT FOUND!")
+            home_page = session.get(url="https://x.com")
+            home_page_response = bs4.BeautifulSoup(home_page.content, 'html.parser')
+            put_get_raw(HOMEPAGE_FILE, 'wb', home_page.content)
+        ondemand_file_content = put_get_raw(ONDEMAND_FILE, 'rb')
+        if ondemand_file_content is not None:
+            print("ONDEMAND FILE FOUND!")
+            ondemand_file_response = bs4.BeautifulSoup(ondemand_file_content, 'html.parser')
+        else:
+            print("ONDEMAND FILE NOT FOUND!")
+            ondemand_file_url = get_ondemand_file_url(response=home_page_response)
+            ondemand_file = session.get(url=ondemand_file_url)
+            ondemand_file_response = bs4.BeautifulSoup(ondemand_file.content, 'html.parser')
+            put_get_raw(ONDEMAND_FILE, 'wb', ondemand_file.content)
+        CLIENT_TRANSACTION = ClientTransaction(home_page_response=home_page_response, ondemand_file_response=ondemand_file_response)
         # Sleeping after a new client transaction is started seems to be needed for it to reliably work.
         time.sleep(5)
     return CLIENT_TRANSACTION.generate_transaction_id('GET', endpoint)
@@ -953,17 +977,34 @@ def twitter_request(endpoint, addons, wait=True):
     return {'error': False, 'body': data, 'response': response}
 
 
-def get_graphql_tweetdetail_entries(data, found_tweets):
+def get_graphql_tweetdetail_entries(data, retdata=None):
+    retdata = retdata or {'tweets': {}, 'users': {}}
     for key in data:
         if key == 'tweet_results':
-            found_tweets.append(data[key])
+            tweet = data[key]['result']['legacy']
+            tweet_id = tweet['id_str']
+            retdata['tweets'][tweet_id] = tweet
+            if 'retweeted_status_result' in tweet:
+                retweet_results = get_graphql_timeline_entries(tweet['retweeted_status_result'])
+                retweet_id = tweet['retweet_id'] = next(key for key in retweet_results['tweets'])
+                retdata['tweets'][retweet_id] = retweet_results['tweets'][retweet_id]
+                retwuser_id = next(key for key in retweet_results['users'])
+                retdata['users'][retwuser_id] = retweet_results['users'][retwuser_id]
+            user_results = get_graphql_tweetdetail_entries(data[key])
+            for twuser_id in user_results['users']:
+                retdata['users'][twuser_id] = user_results['users'][twuser_id]
+        elif key == 'user_results':
+            twuser = data[key]['result']['legacy']
+            twuser_id = data[key]['result']['rest_id']
+            twuser['id_str'] = twuser_id
+            retdata['users'][twuser_id] = twuser
         elif type(data[key]) is list:
             for i in range(len(data[key])):
                 if type(data[key][i]) is dict:
-                    found_tweets = get_graphql_tweetdetail_entries(data[key][i], found_tweets)
+                    retdata = get_graphql_tweetdetail_entries(data[key][i], retdata)
         elif type(data[key]) is dict:
-            found_tweets = get_graphql_tweetdetail_entries(data[key], found_tweets)
-    return found_tweets
+            retdata = get_graphql_tweetdetail_entries(data[key], retdata)
+    return retdata
 
 
 def get_graphql_timeline_entries(data, retdata=None):
@@ -991,6 +1032,7 @@ def get_graphql_timeline_entries(data, retdata=None):
                 retweet = get_graphql_timeline_entries(node_data['legacy']['retweeted_status_result'])
                 retweet_id = node_data['legacy']['retweet_id'] = next(key for key in retweet['tweets'])
                 retdata['retweeted_ids'].append(retweet_id)
+                retdata['tweets'][retweet_id] = retweet['tweets'][retweet_id]
             item = node_data['legacy']
             id_str = item['id_str'] = node_data['rest_id']
             if id_str in retdata['retweeted_ids']:
@@ -1020,23 +1062,17 @@ def get_twitter_illust_timeline(illust_id):
     try:
         if data['error']:
             return _create_module_error('get_twitter_illust_timeline', data['message'])
-        found_tweets = get_graphql_tweetdetail_entries(data['body'], [])
+        results = get_graphql_tweetdetail_entries(data['body'], [])
     except Exception as e:
         msg = "Error parsing Twitter data: %s" % str(e)
         return _create_module_error('get_twitter_illust_timeline', msg)
-    if len(found_tweets) == 0:
+    if len(results['tweets']) == 0:
         put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], ascii=True)
         return _create_module_error('get_twitter_illust_timeline', "No tweets found in data.")
-    # Normalize the hierarchical position of tweet info
-    for tweet in found_tweets:
-        if safe_get(tweet, 'result', 'tweet') is not None:
-            for k in tweet['result']['tweet']:
-                tweet['result'][k] = tweet['result']['tweet'][k]
-    tweet_ids = [safe_get(tweet_entry, 'result', 'rest_id') for tweet_entry in found_tweets]
-    if illust_id_str not in tweet_ids:
+    if illust_id_str not in results['tweets']:
         put_get_json(ERROR_TWEET_FILE, 'wb', data['body'], ascii=True)
         return _create_module_error('get_twitter_illust_timeline', "Tweet not found: %d" % illust_id)
-    return found_tweets
+    return results
 
 
 def get_tweet_by_rest_id(tweet_id):
@@ -1056,10 +1092,19 @@ def get_tweet_by_rest_id(tweet_id):
     except Exception as e:
         msg = "Error parsing Twitter data: %s" % str(e)
         return _create_module_error('get_tweet_by_rest_id', msg)
-    tweet = safe_get(results, 'tweets', tweet_id_str)
-    return tweet\
-        if tweet is not None\
-        else _create_module_error('get_tweet_by_rest_id', "Tweet not found: %d" % tweet_id)
+    retweet = safe_get(results, 'retweets', tweet_id_str)
+    if retweet is not None:
+        tweet = safe_get(results, 'tweets', retweet['retweet_id'])
+    else:
+        tweet = safe_get(results, 'tweets', tweet_id_str)
+    if tweet is None:
+        return _create_module_error('get_tweet_by_rest_id', "Tweet not found: %d" % tweet_id)
+    user_id_str = safe_get(tweet, 'user_id_str')
+    twuser = safe_get(results, 'users', user_id_str)
+    if twuser is not None:
+        save_api_data([twuser], 'id_str', SITE.id, ApiDataType.artist.id)
+        tweet['screen_name'] = twuser['screen_name']
+    return tweet
 
 
 def get_tweet_by_tweet_detail(tweet_id):
@@ -1067,11 +1112,7 @@ def get_tweet_by_tweet_detail(tweet_id):
     twitter_data = get_twitter_illust_timeline(tweet_id)
     if is_error(twitter_data):
         return twitter_data
-    for i in range(len(twitter_data)):
-        tweet = safe_get(twitter_data[i], 'result', 'legacy')
-        if tweet is not None and tweet['id_str'] == tweet_id_str:
-            return tweet
-    return _create_module_error('get_tweet_by_tweet_detail', "Tweet not found: %d" % tweet_id)
+    return twitter_data['tweets'][tweet_id_str]
 
 
 def get_media_page(user_id, count, cursor=None):
@@ -1148,8 +1189,8 @@ def populate_twitter_search_timeline(account, since_date, until_date, filter_lin
         if isinstance(tweet_ids, str) else tweet_ids
 
 
-def get_twitter_user_id(account):
-    print("Getting user ID: %s" % account)
+def get_user_by_screen_name(account):
+    print("User by screen name: %s" % account)
     jsondata = {
         'screen_name': account,
         'withHighlightedLabel': False
@@ -1158,27 +1199,56 @@ def get_twitter_user_id(account):
     data = twitter_request('Vf8si2dfZ1zmah8ePYPjDQ/UserByScreenNameWithoutResults', urladdons, wait=False)
     if data['error']:
         return _create_module_error('get_user_id', data['message'])
-    return safe_get(data, 'body', 'data', 'user', 'rest_id')
+    return safe_get(data, 'body', 'data', 'user')
 
 
-def get_twitter_artist(artist_id):
+def get_twitter_user_id(account):
+    user_data = get_user_by_screen_name(account)
+    if is_error(user_data):
+        return user_data
+    return user_data['rest_id']
+
+
+def get_twitter_artist_by_account(account):
+    user_data = get_user_by_screen_name(account)
+    if is_error(user_data):
+        return user_data
+    retdata = user_data['legacy']
+    retdata['id_str'] = user_data['rest_id']
+    return retdata
+
+
+def get_twitter_artist_by_id(artist_id):
     print("Getting user #%d" % artist_id)
-    jsondata = {
-        'userId': str(artist_id),
-        'withHighlightedLabel': False,
+    features = {
+        "hidden_profile_subscriptions_enabled": True,
+        "profile_label_improvements_pcf_label_in_post_enabled": True,
+        "responsive_web_profile_redirect_enabled": False,
+        "rweb_tipjar_consumption_enabled": True,
+        "verified_phone_label_enabled": False,
+        "highlights_tweets_tab_ui_enabled": True,
+        "responsive_web_twitter_article_notes_tab_enabled": True,
+        "subscriptions_feature_can_gift_premium": True,
+        "creator_subscriptions_tweet_preview_api_enabled": True,
+        "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+        "responsive_web_graphql_timeline_navigation_enabled": True,
     }
-    urladdons = _encode_graphql_data({'variables': jsondata})
-    data = twitter_request('WN6Hck-Pwm-YP0uxVj1oMQ/UserByRestIdWithoutResults', urladdons)
+    variables = {
+        'userId': str(artist_id),
+    }
+    urladdons = _encode_graphql_data({'variables': variables, 'features': features})
+    data = twitter_request('Bbaot8ySMtJD7K2t01gW7A/UserByRestId', urladdons)
+    return data
     if data['error']:
-        return _create_module_error('get_twitter_artist', data['message'])
+        return _create_module_error('get_twitter_artist_by_id', data['message'])
     twitterdata = data['body']
     if 'errors' in twitterdata and len(twitterdata['errors']):
         msg = 'Twitter error: ' + '; '.join([error['message'] for error in twitterdata['errors']])
-        return _create_module_error('get_twitter_artist', msg)
+        return _create_module_error('get_twitter_artist_by_id', msg)
     userdata = safe_get(twitterdata, 'data', 'user')
     if userdata is None or 'rest_id' not in userdata or 'legacy' not in userdata:
         msg = "Error parsing data: %s" % encode_json(twitterdata)
-        return _create_module_error('get_twitter_artist', msg)
+        return _create_module_error('get_twitter_artist_by_id', msg)
     retdata = userdata['legacy']
     retdata['id_str'] = userdata['rest_id']
     return retdata
@@ -1296,6 +1366,7 @@ def get_tweet_video_urls(tweet):
 
 def get_illust_parameters_from_tweet(tweet):
     site_artist_id = safe_get(tweet, 'user', 'id_str') or safe_get(tweet, 'user_id_str')
+    site_account = safe_get(tweet, 'screen_name')
     return {
         'site_name': SITE.name,
         'site_illust_id': int(tweet['id_str']),
@@ -1307,6 +1378,7 @@ def get_illust_parameters_from_tweet(tweet):
         'illust_urls': get_tweet_illust_urls(tweet),
         'active': True,
         'site_artist_id': int(site_artist_id) if site_artist_id is not None else None,
+        'site_account': site_account,
     }
 
 
@@ -1348,18 +1420,21 @@ def get_artist_parameters_from_twuser(twuser):
 
 # #### Data lookup functions
 
-def get_artist_api_data(site_artist_id, reterror=False):
+def get_artist_api_data(site_artist_id, site_account=None, reterror=False):
     twuser = get_api_artist(site_artist_id, SITE.id)
     if twuser is None:
-        twuser = get_twitter_artist(site_artist_id)
+        #twuser = get_twitter_artist_by_id(site_artist_id)
+        #if is_error(twuser) and site_account is None:
+        #    return twuser if reterror else None
+        twuser = get_twitter_artist_by_account(site_account)
         if is_error(twuser):
             return twuser if reterror else None
         save_api_data([twuser], 'id_str', SITE.id, ApiDataType.artist.id)
     return twuser
 
 
-def get_artist_data(site_artist_id):
-    twuser = get_artist_api_data(site_artist_id)
+def get_artist_data(site_artist_id, site_account=None):
+    twuser = get_artist_api_data(site_artist_id, site_account)
     if twuser is None:
         return {'active': False}
     return get_artist_parameters_from_twuser(twuser)
@@ -1396,6 +1471,12 @@ def get_artist_id_by_illust_id(site_illust_id):
     return int(site_artist_id) if site_artist_id is not None else None
 
 
+def get_artist_account_by_illust_id(site_illust_id):
+    tweet = get_illust_api_data(site_illust_id)
+    screen_name = safe_get(tweet, 'user', 'screen_name') or safe_get(tweet, 'screen_name')
+    return screen_name
+
+
 # #### Other
 
 def print_auth():
@@ -1408,7 +1489,7 @@ def snowflake_to_epoch(snowflake):
 
 
 def populate_artist_recheck_active(artist):
-    twuser = get_artist_api_data(artist.site_artist_id, reterror=True)
+    twuser = get_artist_api_data(artist.site_artist_id, artist.site_account_value, reterror=True)
     if is_error(twuser):
         update_artist_from_parameters_standard(artist, {'active': False})
         return twuser
@@ -1429,8 +1510,8 @@ def populate_artist_illusts_from_media_timeline(artist, job_id, last_id):
 
 def populate_artist_illusts_from_search_timeline(artist, job_id, since_date, until_date, filter_links):
     # Get the lastest screenname for the search timeline
-    params = get_artist_data(artist.site_artist_id)
-    update_artist_from_parameters_standard(artist, params)
+    #params = get_artist_data(artist.site_artist_id)
+    #update_artist_from_parameters_standard(artist, params)
     job_status = get_job_status_data(job_id) or {}
     if job_status.get('timeline') != 'search':
         job_status.pop('ids', None)
@@ -1476,3 +1557,10 @@ def _create_module_error(function, message):
 
 def _encode_graphql_data(data):
     return urllib.parse.urlencode({key: encode_json(value) for (key, value) in data.items()})
+
+
+# #### Initialization
+
+if MAIN_PROCESS:
+    delete_file(HOMEPAGE_FILE)
+    delete_file(ONDEMAND_FILE)

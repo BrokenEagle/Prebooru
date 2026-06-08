@@ -32,6 +32,9 @@
                 {% if field_name in ['search_since', 'search_until', 'filter_links'] %}
                     {% do classlist.append('search-timeline') %}
                 {% endif %}
+                {% if field_name in ['starting_id'] %}
+                    {% do classlist.append('queries-queries') %}
+                {% endif %}
                 {{ field_input(classlist=classlist) }}
             {% endif %}
         {% endcall %}

@@ -202,10 +202,10 @@ def custom_check(dataparams, illust):
         if site_illust_id is not None:
             return "Cannot set site illust ID for custom sites."
     else:
+        if site_url is not None:
+            return "Cannot set site URL for non-custom sites."
         if site_illust_id is None:
             return "Site illust ID must be set for non-custom sites."
-        if site_illust_id is not None:
-            return "Cannot set site URL for non-custom sites."
     return None
 
 
@@ -319,7 +319,8 @@ def query_create():
     site_artist_id = source.get_artist_id_by_illust_id(createparams['site_illust_id'])
     if site_artist_id is None:
         return set_error(retdata, "Unable to find site artist ID with URL.")
-    artist = get_or_create_artist_from_source(site_artist_id, source)
+    site_account = source.get_artist_account_by_illust_id(createparams['site_illust_id'])
+    artist = get_or_create_artist_from_source(site_artist_id, site_account, source) ##NEED TO FIX!!
     if artist is None:
         return set_error(retdata, "Unable to create artist with URL.")
     createparams['artist_id'] = artist.id
@@ -404,8 +405,7 @@ def show_html(id):
 @bp.route('/illusts.json', methods=['GET'])
 def index_json():
     q = index()
-    q = q.options(JSON_OPTIONS)
-    return index_json_response(q, request, distinct=True)
+    return index_json_response(q, request, options=JSON_OPTIONS, distinct=True)
 
 
 @bp.route('/illusts', methods=['GET'])

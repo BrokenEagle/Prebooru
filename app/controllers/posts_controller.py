@@ -110,7 +110,9 @@ def index():
     if search.get('order') == 'site':
         q = q.unique_join(IllustUrl, Post.illust_urls)\
              .unique_join(Illust, IllustUrl.illust)\
-             .order_by(Illust.site_created.desc())
+             .order_by(Illust.site_created.desc().nulls_last(),
+                       IllustUrl.order.asc(),
+                       IllustUrl.active.desc())
     else:
         q = default_order(q, search)
     return q

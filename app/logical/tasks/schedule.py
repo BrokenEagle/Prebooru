@@ -245,7 +245,7 @@ def check_pending_downloads_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['unlink_expired_subscription_elements']['config'])
 def unlink_expired_subscription_elements_task():
     def _task(printer, is_manual):
-        total = expired_subscription_elements('unlink').get_count()
+        total = expired_subscription_elements('unlink', is_manual).get_count()
         if total > 0:
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('unlink_expired_subscription_elements', 'tasks.schedule', printer=printer,
@@ -261,7 +261,7 @@ def unlink_expired_subscription_elements_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['delete_expired_subscription_elements']['config'])
 def delete_expired_subscription_elements_task():
     def _task(printer, is_manual):
-        total = expired_subscription_elements('delete').get_count()
+        total = expired_subscription_elements('delete', is_manual).get_count()
         if total > 0:
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('delete_expired_subscription_elements', 'tasks.schedule', printer=printer,
@@ -277,7 +277,7 @@ def delete_expired_subscription_elements_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['archive_expired_subscription_elements']['config'])
 def archive_expired_subscription_elements_task():
     def _task(printer, is_manual):
-        total = expired_subscription_elements('archive').get_count()
+        total = expired_subscription_elements('archive', is_manual).get_count()
         if total > 0:
             printer("Expired subscriptions elements:", total)
             data = safe_db_execute('archive_expired_subscription_elements', 'tasks.schedule', printer=printer,
@@ -350,8 +350,9 @@ def delete_orphan_images_task():
 @SCHEDULER.task('interval', **JOB_CONFIG['vacuum_analyze_database']['config'])
 def vacuum_analyze_database_task():
     def _task(*args):
+        SESSION.close()
         with DB.engine.begin() as connection:
-            connection.execute("VACUUM")
+            # connection.execute("VACUUM")
             connection.execute("ANALYZE")
 
     _execute_scheduled_task(_task, 'vacuum_analyze_database', busy_check=True)

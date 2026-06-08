@@ -180,14 +180,18 @@ def initialize_migrate():
 def start_server(args):
     global SERVER_PID, SERVER_PID_FILE, DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER,\
         load_default, put_get_json, PREBOORU_RUNNING
+    import psutil
     from config import DATA_DIRECTORY, PREBOORU_PORT, DEBUG_MODE, VERSION, HAS_EXTERNAL_IMAGE_SERVER, RELOAD_INTERVAL,\
         EXCLUDE_PATTERNS
-    from utility.file import load_default, put_get_json
+    from utility.file import load_default, put_get_json, delete_file
     SERVER_PID_FILE = os.path.join(DATA_DIRECTORY, 'prebooru-server-pid.json')
     SERVER_PID = next(iter(load_default(SERVER_PID_FILE, [])), None)
     if SERVER_PID is not None:
-        print("Server process already running: %d" % SERVER_PID)
-        exit(-1)
+        if psutil.pid_exists(SERVER_PID):
+            print("Server process already running: %d" % SERVER_PID)
+            exit(-1)
+        else:
+            delete_file(SERVER_PID_FILE)
     if not DEBUG_MODE or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         import app
         app.MAIN_PROCESS = True
@@ -244,11 +248,11 @@ def init_db(args):
             return
 
     from config import DB_PATH
-    from utility.file import create_directory
+    from utility.file import create_directory, delete_file
     if args.new:
         if os.path.exists(DB_PATH):
             print("Deleting prebooru database!")
-            os.remove(DB_PATH)
+            delete_file(DB_PATH)
 
     print("Creating tables")
     from app import DB, PREBOORU_APP
