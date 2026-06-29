@@ -39,7 +39,15 @@
                         {% endfor %}
                     </td>
                     <td>{{ errors_block(download.errors) }}</td>
-                    <td>{{ download.status_name }}</td>
+                    <td>
+                        {% if download.status_name == 'pending' %}
+                            {{ helpers.download.check_pending_link(download) }}
+                        {% elif download.status_name == 'error' %}
+                            {{ helpers.download.resubmit_link(download) }}
+                        {% else %}
+                            {{ download.status_name }}
+                        {% endif %}
+                    </td>
                     <td>{{ helpers.base.format_timestamp(download.created) }}</td>
                 </tr>
             {% endfor %}

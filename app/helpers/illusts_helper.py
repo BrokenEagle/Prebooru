@@ -46,8 +46,8 @@ def danbooru_upload_link(illust):
     return external_link("Danbooru", DANBOORU_HOSTNAME + '/uploads/batch?' + query_string)
 
 
-def update_from_source_link(illust):
-    return post_link("Update from source", url_for('illust.query_update_html', id=illust.id))
+def update_from_source_link(illust, text):
+    return post_link(text, url_for('illust.query_update_html', id=illust.id))
 
 
 def add_media_url_link(illust):

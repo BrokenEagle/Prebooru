@@ -46,7 +46,10 @@ def create_illust_from_source(site_illust_id, source):
     if artist is None:
         return
     createparams['artist_id'] = artist.id
-    return create_illust_from_parameters(createparams)
+    illust = create_illust_from_parameters(createparams)
+    if illust is not None and createparams.get('additional_commentary') is not None:
+        illust_add_additional_commentary(illust, createparams['additional_commentary'])
+    return illust
 
 
 def update_illust_from_source(illust):
@@ -60,6 +63,8 @@ def update_illust_from_source(illust):
         print_warning(f"[{illust.shortlink}] Switching artist from {illust.artist.shortlink} to {artist.shortlink}")
         illust.artist = artist
         SESSION.commit()
+    if updateparams.get('additional_commentary') is not None:
+        illust_add_additional_commentary(illust, updateparams['additional_commentary'])
 
 
 def delete_illust(illust, retdata=None):

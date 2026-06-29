@@ -7,14 +7,16 @@ from sqlalchemy import not_, or_
 from sqlalchemy.orm import lazyload, selectinload
 
 # ## PACKAGE IMPORTS
-from utility.data import eval_bool_string, is_falsey
+from utility.data import eval_bool_string, is_falsey, int_or_array
 
 # ## LOCAL IMPORTS
 from ..models import Post, Illust, IllustUrl, Artist, Booru, PoolElement, PostType
+from ..logical.database.post_db import get_posts_by_id
 from ..logical.records.post_rec import create_sample_preview_files, create_video_sample_preview_files,\
-    archive_post_for_deletion, redownload_post, delete_post, save_post_to_archive, download_post_frames
+    archive_post_for_deletion, redownload_post, delete_post, save_post_to_archive, download_post_frames,\
+    archive_posts_for_deletion
 from .base_controller import show_json_response, index_json_response, search_filter, process_request_values,\
-    get_params_value, paginate, default_order, get_or_abort, index_html_response
+    get_params_value, paginate, default_order, get_or_abort, index_html_response, get_data_params, parse_type
 
 
 # ## GLOBAL VARIABLES
@@ -177,6 +179,23 @@ def soft_delete_html(id):
     if results['is_deleted']:
         flash("Post deleted.")
     return redirect(url_for('archive.show_html', id=results['item']['id']))
+
+
+@bp.route('/posts/batch_archive', methods=['POST'])
+def batch_soft_delete_html():
+    dataparams = get_data_params(request, 'post')
+    post_ids = parse_type(dataparams, 'id', int_or_array)
+    posts = get_posts_by_id(post_ids)
+    if len(posts) > 0:
+        expires = request.values.get('expires', DEFAULT_DELETE_EXPIRES, type=int)
+        results = archive_posts_for_deletion(posts, expires)
+        if results['error']:
+            flash(results['message'], 'error')
+        else:
+            flash("Posts deleted.")
+    else:
+        flash(f"No posts with IDs %s found!" % ', '.join(post_ids), 'error')
+    return redirect(request.referrer)
 
 
 @bp.route('/posts/<int:id>', methods=['DELETE'])

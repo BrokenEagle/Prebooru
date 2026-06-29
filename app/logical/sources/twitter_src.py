@@ -26,7 +26,7 @@ from utility.uprint import print_info, print_warning, print_error
 # ## LOCAL IMPORTS
 from ... import MAIN_PROCESS
 from ...models.model_enums import SiteDescriptor, ApiDataType
-from ..sites import site_name_by_domain
+from ..sites import site_name_by_domain, domain_by_site_name
 from ..logger import log_network_error
 from ..database.error_db import create_error, is_error
 from ..database.api_data_db import get_api_artist, get_api_illust, save_api_data
@@ -455,7 +455,7 @@ PROCESS_FORM_CONFIG = {
         'field': RadioField,
         'kwargs': {
             'default': 'media',
-            'choices': ['media', 'search', 'recover'],
+            'choices': ['media', 'search', 'queries', 'recover'],
         },
     },
     'last_id': {
@@ -475,6 +475,13 @@ PROCESS_FORM_CONFIG = {
         'field': BooleanField,
         'kwargs': {
             'default': True,
+        },
+    },
+    'starting_id': {
+        'name': "Starting ID",
+        'field': IntegerField,
+        'kwargs': {
+            'description': "Set as a starting point for the search timeline.",
         },
     },
 }
@@ -780,9 +787,23 @@ def source_prework(site_illust_id):
     twitter_data = get_twitter_illust_timeline(site_illust_id)
     if is_error(twitter_data):
         return twitter_data
-    tweets = [tweet for tweet in twitter_data['tweets'].values()]
+    tweets = []
+    tweet_ids = set()
+    for tweet_id in twitter_data['tweets']:
+        tweet = twitter_data['tweets'][tweet_id]
+        if tweet_id in tweet_ids:
+            continue
+        tweets.append(tweet)
+        tweet_ids.add(tweet_id)
     save_api_data(tweets, 'id_str', SITE.id, ApiDataType.illust.id)
-    twusers = [twuser for twuser in twitter_data['users'].values()]
+    twusers = []
+    twuser_ids = set()
+    for twuser_id in twitter_data['users']:
+        twuser = twitter_data['users'][twuser_id]
+        if twuser_id in twuser_ids:
+            continue
+        twusers.append(twuser)
+        twuser_ids.add(twuser_id)
     save_api_data(twusers, 'id_str', SITE.id, ApiDataType.artist.id)
 
 
@@ -990,6 +1011,12 @@ def get_graphql_tweetdetail_entries(data, retdata=None):
                 retdata['tweets'][retweet_id] = retweet_results['tweets'][retweet_id]
                 retwuser_id = next(key for key in retweet_results['users'])
                 retdata['users'][retwuser_id] = retweet_results['users'][retwuser_id]
+            if 'quoted_status_result' in data[key]['result']:
+                quoted_results = get_graphql_timeline_entries(data[key]['result']['quoted_status_result'])
+                tweet = next(quoted_results['tweets'][tweet_id] for tweet_id in quoted_results['tweets'])
+                twuser = next(quoted_results['users'][twuser_id] for twuser_id in quoted_results['users'])
+                retdata['tweets'][tweet['id_str']] = tweet
+                retdata['users'][twuser['id_str']] = twuser
             user_results = get_graphql_tweetdetail_entries(data[key])
             for twuser_id in user_results['users']:
                 retdata['users'][twuser_id] = user_results['users'][twuser_id]
@@ -1062,7 +1089,7 @@ def get_twitter_illust_timeline(illust_id):
     try:
         if data['error']:
             return _create_module_error('get_twitter_illust_timeline', data['message'])
-        results = get_graphql_tweetdetail_entries(data['body'], [])
+        results = get_graphql_tweetdetail_entries(data['body'])
     except Exception as e:
         msg = "Error parsing Twitter data: %s" % str(e)
         return _create_module_error('get_twitter_illust_timeline', msg)
@@ -1075,7 +1102,18 @@ def get_twitter_illust_timeline(illust_id):
     return results
 
 
+#MOVE#
+def save_twitter_data(twitter_data):
+    tweets = [twitter_data['tweets'][tweet_id] for tweet_id in twitter_data['tweets']]
+    if len(tweets):
+        save_api_data(tweets, 'id_str', SITE.id, ApiDataType.illust.id)
+    twusers = [twitter_data['users'][twuser_id] for twuser_id in twitter_data['users']]
+    if len(twusers):
+        save_api_data(twusers, 'id_str', SITE.id, ApiDataType.artist.id)
+
+
 def get_tweet_by_rest_id(tweet_id):
+    print_info('get_tweet_by_rest_id:', tweet_id)
     tweet_id_str = str(tweet_id)
     variables = TWEET_REST_ID_VARIABLES.copy()
     variables['tweetId'] = tweet_id
@@ -1092,6 +1130,7 @@ def get_tweet_by_rest_id(tweet_id):
     except Exception as e:
         msg = "Error parsing Twitter data: %s" % str(e)
         return _create_module_error('get_tweet_by_rest_id', msg)
+    save_twitter_data(results)
     retweet = safe_get(results, 'retweets', tweet_id_str)
     if retweet is not None:
         tweet = safe_get(results, 'tweets', retweet['retweet_id'])
@@ -1102,7 +1141,6 @@ def get_tweet_by_rest_id(tweet_id):
     user_id_str = safe_get(tweet, 'user_id_str')
     twuser = safe_get(results, 'users', user_id_str)
     if twuser is not None:
-        save_api_data([twuser], 'id_str', SITE.id, ApiDataType.artist.id)
         tweet['screen_name'] = twuser['screen_name']
     return tweet
 
@@ -1187,6 +1225,46 @@ def populate_twitter_search_timeline(account, since_date, until_date, filter_lin
     tweet_ids = get_timeline(page_func, job_id=job_id, job_status=job_status, **kwargs)
     return _create_module_error('populate_twitter_search_timeline', tweet_ids)\
         if isinstance(tweet_ids, str) else tweet_ids
+
+
+def populate_twitter_search_queries(artist, job_id, max_id):
+    job_status = get_job_status_data(job_id) or {}
+    if job_status.get('timeline') != 'media':
+        job_status.pop('ids', None)
+        job_status.pop('temp_ids', None)
+        job_status['timeline'] = 'media'
+    job_status['stage'] = 'querying'
+    account = artist.site_account_value
+    user_id = artist.site_artist_id
+    tweet_ids = []
+    for page in range(0, 20):
+        job_status['range'] = 'search:' + str(page + 1)
+        update_job_status(job_id, job_status)
+        query = f"from:{account} filter:media max_id:{max_id}"
+        data = get_search_page(query, 20)
+        if data['error']:
+            return _create_module_error('populate_twitter_search_queries', data['message'])
+        timestamp = snowflake_to_epoch(max_id)
+        timeval = datetime_from_epoch(timestamp)
+        print(f"Gettime search queries [{page + 1}]: twitter #{max_id} @ {timeval}")
+        results = get_graphql_timeline_entries(data['body'])
+        if page == 0:
+            twuser = next(x for x in results['users'].values())
+            save_api_data([twuser], 'id_str', SITE.id, ApiDataType.artist.id)
+        tweets = [tweet for tweet in results['tweets'].values()]
+        if len(tweets) == 0:
+            break
+        media_tweets = [tweet for tweet in tweets if safe_get(tweet, 'entities', 'media')]
+        save_api_data(media_tweets, 'id_str', SITE.id, ApiDataType.illust.id)
+        user_tweets = [tweet for tweet in media_tweets if tweet['user_id_str'] == str(user_id)]
+        tweet_ids.extend(int(tweet['id_str']) for tweet in user_tweets)
+        if job_id is not None:
+            job_status['temp_ids'] = tweet_ids
+            print_info("Saving temp ids:", job_status['temp_ids'])
+            update_job_status(job_id, job_status)
+            count = len(tweet_ids)
+        max_id = min(tweet_ids) - 1
+    return sorted(tweet_ids, key=int, reverse=True)
 
 
 def get_user_by_screen_name(account):
@@ -1283,6 +1361,30 @@ def get_tweet_commentary(twitter_data):
     return text.strip()
 
 
+def get_additional_commentary(tweet):
+    retdata = {'commentary': None, 'media': []}
+    if 'quoted_status_id_str' in tweet:
+        tweet_id = int(tweet['quoted_status_id_str'])
+        quoted_tweet = get_api_illust(tweet_id, SITE.id)
+        if quoted_tweet is not None:
+            commentary = get_tweet_commentary(quoted_tweet)
+            media_urls = get_tweet_illust_urls(quoted_tweet)
+            if commentary or len(media_urls):
+                tweet_link = ILLUST_SHORTLINK % tweet_id
+                twuser_id = safe_get(quoted_tweet, 'user', 'id_str', type=int) or safe_get(quoted_tweet, 'user_id_str', type=int)
+                if twuser_id is not None:
+                    twuser_link = ARTIST_SHORTLINK % twuser_id
+                    additional_commentary = f"From {tweet_link} ({twuser_link}):\n\n" + commentary
+                else:
+                    additional_commentary = f"From {tweet_link}:\n\n" + commentary
+                retdata['media'] = media_urls
+                if len(media_urls):
+                    full_urls = ['https://' + domain_by_site_name(url_data['site_name']) + url_data['url'] for url_data in media_urls]
+                    additional_commentary += '\n\n' + '\n'.join(full_urls)
+                retdata['commentary'] = additional_commentary
+    return retdata
+
+
 def get_illust_tags(tweet):
     tag_data = safe_get(tweet, 'entities', 'hashtags') or []
     return list(set(entry['text'].lower() for entry in tag_data))
@@ -1328,7 +1430,7 @@ def get_tweet_illust_urls(tweet):
 
 def get_tweet_image_urls(tweet):
     illust_urls = []
-    url_data = safe_get(tweet, 'entities', 'media') or []
+    url_data = safe_get(tweet, 'entities', 'media', default=[]) or []
     for i in range(len(url_data)):
         url, site_name, dimensions = get_illust_url_info(url_data[i], 'image')
         if url is None:
@@ -1365,19 +1467,23 @@ def get_tweet_video_urls(tweet):
 
 
 def get_illust_parameters_from_tweet(tweet):
-    site_artist_id = safe_get(tweet, 'user', 'id_str') or safe_get(tweet, 'user_id_str')
+    site_illust_id = int(tweet['id_str'])
+    site_artist_id = safe_get(tweet, 'user', 'id_str', type=int) or safe_get(tweet, 'user_id_str', type=int)
     site_account = safe_get(tweet, 'screen_name')
+    additional_commentary = get_additional_commentary(tweet)
     return {
         'site_name': SITE.name,
-        'site_illust_id': int(tweet['id_str']),
+        'site_illust_id': site_illust_id,
         'site_created': process_twitter_timestring(tweet['created_at']),
         'pages': len(tweet['extended_entities']['media']),
         'score': tweet['favorite_count'],
         'tags': get_illust_tags(tweet),
         'commentary': get_tweet_commentary(tweet) or None,
+        'additional_commentary': additional_commentary['commentary'],
+        'additional_media': additional_commentary['media'],
         'illust_urls': get_tweet_illust_urls(tweet),
         'active': True,
-        'site_artist_id': int(site_artist_id) if site_artist_id is not None else None,
+        'site_artist_id': site_artist_id if site_artist_id is not None else None,
         'site_account': site_account,
     }
 
@@ -1543,6 +1649,8 @@ def populate_all_artist_illusts(artist, job_id=None, params=None):
     if params['type'] == 'search':
         return populate_artist_illusts_from_search_timeline(artist, job_id, params['search_since'],
                                                             params['search_until'], params['filter_links'])
+    if params['type'] == 'queries':
+        return populate_twitter_search_queries(artist, job_id, params['starting_id'])
     if params['type'] == 'recover':
         job_status = get_job_status_data(job_id) or {}
         return job_status.pop('temp_ids', [])
@@ -1562,5 +1670,6 @@ def _encode_graphql_data(data):
 # #### Initialization
 
 if MAIN_PROCESS:
-    delete_file(HOMEPAGE_FILE)
-    delete_file(ONDEMAND_FILE)
+    #delete_file(HOMEPAGE_FILE)
+    #delete_file(ONDEMAND_FILE)
+    pass

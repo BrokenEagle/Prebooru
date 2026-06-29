@@ -24,6 +24,12 @@
                         <a class="tag-link" href="#" onclick="return Posts.submitForm('tag', '{{ url_for('tag.append_item_index_json') }}')">TAG</a>
                         ]
                     </strong>
+                    &emsp;
+                    <strong>
+                        [
+                            <a class="warning-link" href="#" onclick="return Posts.submitForm('delete', '{{ url_for('post.batch_soft_delete_html') }}')">DELETE</a>
+                        ]
+                    </strong>
                 {% endcall %}
             </div>
         {% endif %}

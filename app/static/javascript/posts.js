@@ -5,7 +5,7 @@
 const Posts = {};
 
 Posts.submitForm = function (type, url) {
-    if (['pool', 'tag'].includes(type)) {
+    if (['pool', 'tag', 'delete'].includes(type)) {
         let post_inputs = document.querySelectorAll('.post-select input[type=checkbox]');
         let post_ids = [...post_inputs].filter((input) => input.checked && input.value.match(/^\d+$/)).map((input) => input.value);
         if (post_ids.length > 0) {
@@ -44,6 +44,21 @@ Posts.submitForm = function (type, url) {
                                 Prebooru.message(`Added tag ${tag_name} to posts.`);
                             }
                         });
+                }
+            } else if (type === 'delete') {
+                if (confirm("Delete these posts?")) {
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+                    post_ids.forEach((post_id) => {
+                        let input = document.createElement('input');
+                        input.name = 'post[id][]';
+                        input.value = post_id;
+                        input.type = "hidden";
+                        form.appendChild(input);
+                    });
+                    document.body.appendChild(form);
+                    form.submit();
                 }
             }
         } else {

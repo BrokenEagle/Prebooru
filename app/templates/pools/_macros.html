@@ -1,4 +1,5 @@
 {% from "posts/_macros.html" import post_preview, multi_post_preview %}
+{% from "illusts/_macros.html" import illust_preview %}
 {% from "notations/_macros.html" import notations_list %}
 
 {% macro pool_item_list(items, link_key) -%}
@@ -54,7 +55,7 @@
         {% if item.model_name == "post" %}
             {{ post_preview(item, True) }}
         {% elif item.model_name == "illust" %}
-            {{ multi_post_preview(item, "illust", True) }}
+            {{ illust_preview(item, True) }}
         {% elif item.model_name == "notation" %}
             <div class="pool-display-notation">{{ helpers.base.convert_to_html(item.body) }}</div>
         {% endif %}

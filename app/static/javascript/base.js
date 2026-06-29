@@ -67,6 +67,25 @@ Prebooru.deleteConfirm = function(obj) {
     return false;
 };
 
+Prebooru.deleteTableRow = function(obj) {
+    if (confirm("Delete this row?")) {
+        fetch(obj.href, {method: 'DELETE'})
+            .then((resp) => resp.json())
+            .then((data) => {
+                if (data.error) {
+                    Prebooru.error(data.message);
+                } else {
+                    let row = Prebooru.closest(obj, 'tr');
+                    let [, model, id] = row.id.match(/(.*)-(\d+)/);
+                    model = model.replaceAll('-', ' ');
+                    Prebooru.message(`Deleted ${model} #${id}`);
+                    row.remove();
+                }
+            });
+    }
+    return false;
+};
+
 Prebooru.createPool = function (obj, type) {
     let item_id = obj.dataset[type + 'Id'];
     let pool_id = prompt("Enter pool # to add to:");

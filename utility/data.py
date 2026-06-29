@@ -177,17 +177,19 @@ def swap_list_values(list1, mapping):
 
 # #### Dict functions
 
-def safe_get(input_dict, *keys):
+def safe_get(input_dict, *keys, type=None, default=None, **kwargs):
     for key in keys:
         try:
             input_dict = input_dict[key]
         except (KeyError, TypeError):
             return None
-    return input_dict
+    if input_dict is not None and type is not None:
+        return type(input_dict, **kwargs)
+    return input_dict if input_dict is not None else default
 
 
-def safe_check(input_dict, valtype, *keys):
-    value = safe_get(input_dict, *keys)
+def safe_check(input_dict, valtype, *keys, **kwargs):
+    value = safe_get(input_dict, *keys, **kwargs)
     return isinstance(value, valtype)
 
 

@@ -20,7 +20,7 @@ from ..logical.sources.danbooru_src import get_artists_by_url
 from ..logical.records.artist_rec import update_artist_from_source, archive_artist_for_deletion,\
     artist_delete_site_account, artist_swap_site_account, artist_delete_name, artist_swap_name,\
     artist_delete_profile, artist_swap_profile, delete_artist, save_artist_to_archive
-from ..logical.records.post_rec import check_artist_posts_for_danbooru_id
+from ..logical.records.post_rec import check_artist_posts_for_danbooru_id, relocate_artist_posts_to_alternate
 from ..logical.database.artist_db import create_artist_from_parameters, update_artist_from_parameters,\
     artist_append_booru
 from ..logical.database.booru_db import create_booru_from_parameters, booru_append_artist, booru_remove_artist
@@ -615,6 +615,14 @@ def swap_profile_html(id):
 def check_posts_html(id):
     get_or_abort(Artist, id)
     SCHEDULER.add_job("check_artist_posts_for_danbooru_id-%d" % id, check_artist_posts_for_danbooru_id, args=(id,))
+    flash('Job started.')
+    return redirect(url_for('artist.show_html', id=id))
+
+
+@bp.route('/artists/<int:id>/relocate_posts', methods=['POST'])
+def relocate_posts_html(id):
+    get_or_abort(Artist, id)
+    SCHEDULER.add_job("relocate_artist_posts_to_alternate-%d" % id, relocate_artist_posts_to_alternate, args=(id,))
     flash('Job started.')
     return redirect(url_for('artist.show_html', id=id))
 

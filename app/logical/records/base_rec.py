@@ -47,8 +47,10 @@ def swap_version_relation(item, attach_model, m2m_model, attach_id, item_col, at
 
 def records_paginate(func_name, page, max_batches=None):
     batch_num = 1
+    per_page = page.per_page
+    total = page.count
     while True:
-        print_info(f"\n{func_name}[{batch_num}]: {page.range} / Total({page.count})\n")
+        print_info(f"\n{func_name}[{batch_num}]: {1 + (batch_num - 1) * per_page} - {min(batch_num * per_page, total)} / Total({total})\n")
         if len(page.items) > 0:
             yield page.items
         if not page.has_next:

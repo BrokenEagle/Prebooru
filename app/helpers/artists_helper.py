@@ -54,6 +54,10 @@ def check_posts_link(artist):
     return post_link("Check posts for Danbooru", url_for('artist.check_posts_html', id=artist.id))
 
 
+def relocate_posts_link(artist):
+    return post_link("Relocate posts to alternate", url_for('artist.relocate_posts_html', id=artist.id))
+
+
 def delete_account_link(artist, site_account):
     return delete_link("remove", url_for('artist.delete_account_html', id=artist.id, label_id=site_account.id))
 

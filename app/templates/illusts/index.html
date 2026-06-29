@@ -1,7 +1,6 @@
 {% extends "illusts/_base.html" %}
 {% from "layouts/_macros.html" import page_navigation, image_select_controls %}
-{% from "posts/_macros.html" import multi_post_preview, post_preview %}
-{% from "illust_urls/_macros.html" import illust_urls_preview %}
+{% from "illusts/_macros.html" import illust_preview %}
 {% from "tags/_macros.html" import simple_tag_list %}
 
 {% block css %}
@@ -32,10 +31,11 @@
         <thead>
             <tr>
                 <th width="1%">Preview</th>
-                <th width="20%">Info</th>
+                <th width="15%">Info</th>
                 <th width="25%">Tags</th>
                 <th width="25%">Illust urls</th>
                 <th width="10%">Created</th>
+                <th width="5%">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -58,13 +58,7 @@
                             </div>
                         {% endif %}
                         <div class="preview-header">{{ illust.show_link }} {{ helpers.illust.post_search_link(illust) }}</div>
-                        {% if illust.selectin_posts | length > 1 %}
-                            {{ multi_post_preview(illust, 'illust', True) }}
-                        {% elif illust.selectin_posts | length == 1 %}
-                            {{ post_preview(illust.selectin_posts[0], True) }}
-                        {% else %}
-                            {{ illust_urls_preview(illust.active_urls) }}
-                        {% endif %}
+                        {{ illust_preview(illust) }}
                     </td>
                     <td>
                         <span><strong>{{ illust.artist_show_link }}</strong></span>
@@ -101,6 +95,13 @@
                         {% endfor %}
                     </td>
                     <td>{{ helpers.base.humanized_timestamp_difference(illust) }}</td>
+                    <td>
+                        {{ helpers.illust.update_from_source_link(illust, "Update") }}
+                        {% if illust.selectin_posts | length == 0 %}
+                            <br>
+                            {{ helpers.base.general_link("Delete", helpers.base.url_for('illust.soft_delete_json', id=illust.id), **{'class': 'warning-link', 'onclick': "return Prebooru.deleteTableRow(this)"}) }}
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

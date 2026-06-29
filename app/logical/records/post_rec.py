@@ -3,12 +3,13 @@
 # ### PYTHON IMPORTS
 import os
 import uuid
+from functools import reduce
 
 # ### EXTERNAL IMPORTS
 from sqlalchemy.orm import selectinload
 
 # ### PACKAGE IMPORTS
-from config import TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
+from config import ALTERNATE_MEDIA_DIRECTORY, TEMP_DIRECTORY, ALTERNATE_MOVE_DAYS
 from utility.data import get_buffer_checksum, merge_dicts, inc_dict_entry, encode_json
 from utility.file import create_directory, put_get_raw, copy_file, delete_file, filename_join, put_get_json,\
     clear_directory, copy_directory
@@ -469,6 +470,20 @@ def archive_post_for_deletion(post, days_to_expire):
     return delete_post(post, retdata)
 
 
+def archive_posts_for_deletion(posts, days_to_expire):
+    """Soft delete. Preserve data at all costs."""
+    results = []
+    for post in posts:
+        result = save_post_to_archive(post, days_to_expire)
+        if not result['error']:
+            delete_post(post, result)
+        results.append(result)
+    return {
+        'error': reduce(lambda acc, x: acc or x, [result['error'] for result in results]),
+        'message': '; '.join([result['message'] for result in results if result['error']]) or None,
+    }
+
+
 def save_post_to_archive(post, days_to_expire):
     retdata = {'error': False}
     archive = get_archive_by_post_md5(post.md5)
@@ -608,6 +623,22 @@ def relocate_old_posts_to_alternate(manual):
             move_post_media_to_alternate(post)
             moved += 1
     return moved
+
+
+def relocate_artist_posts_to_alternate(artist_id):
+    if ALTERNATE_MEDIA_DIRECTORY is None:
+        print_warning("Alternate media directory not configured.")
+        return
+    if not os.path.exists(ALTERNATE_MEDIA_DIRECTORY):
+        print_warning("Alternate media directory not found.")
+        return
+    artist = Artist.find(artist_id)
+    query = artist._post_query.filter(Post.alternate.is_(False))
+    page = query.sequential_paginate(per_page=50, page='newest_first')
+    for posts in records_paginate('relocate_artist_posts_to_alternate', page):
+        for post in posts:
+            print(f"Moving {post.shortlink}")
+            move_post_media_to_alternate(post)
 
 
 def process_image_matches(post_ids):

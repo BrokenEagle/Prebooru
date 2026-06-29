@@ -1,4 +1,6 @@
 {% from "layouts/_macros.html" import render_block %}
+{% from "posts/_macros.html" import multi_post_preview, post_preview %}
+{% from "illust_urls/_macros.html" import illust_urls_preview %}
 {% from "tags/_macros.html" import tag_list %}
 
 {% macro illusts_display(illust_search_url, illust_count, section_id, section=True, artist=None) -%}
@@ -54,5 +56,15 @@
                 </ul>
             </section>
         {% endif %}
+    {% endif %}
+{%- endmacro %}
+
+{% macro illust_preview(illust, lazyload=False) -%}
+    {% if illust.selectin_posts | length > 1 %}
+        {{ multi_post_preview(illust, 'illust', True) }}
+    {% elif illust.selectin_posts | length == 1 %}
+        {{ post_preview(illust.selectin_posts[0], True) }}
+    {% else %}
+        {{ illust_urls_preview(illust.active_urls) }}
     {% endif %}
 {%- endmacro %}

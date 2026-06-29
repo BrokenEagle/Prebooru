@@ -341,6 +341,11 @@ def update_artist(illust):
     return retdata
 
 
+def soft_delete(illust):
+    expires = request.values.get('expires', DEFAULT_DELETE_EXPIRES, type=int)
+    return archive_illust_for_deletion(illust, expires)
+
+
 def delete_title(illust):
     description_id = request.values.get('description_id', type=int)
     retdata = {'error': False, 'params': {'description_id': description_id}}
@@ -489,8 +494,7 @@ def update_json(id):
 @bp.route('/illusts/<int:id>/archive', methods=['DELETE'])
 def soft_delete_html(id):
     illust = get_or_abort(Illust, id)
-    expires = request.values.get('expires', DEFAULT_DELETE_EXPIRES, type=int)
-    results = archive_illust_for_deletion(illust, expires)
+    results = soft_delete(illust)
     if results['error']:
         flash(results['message'], 'error')
         if not results['is_deleted']:
@@ -498,6 +502,12 @@ def soft_delete_html(id):
     if results['is_deleted']:
         flash("Illust deleted.")
     return redirect(url_for('archive.show_html', id=results['item']['id']))
+
+
+@bp.route('/illusts/<int:id>/archive.json', methods=['DELETE'])
+def soft_delete_json(id):
+    illust = get_or_error(Illust, id)
+    return soft_delete(illust)
 
 
 @bp.route('/illusts/<int:id>', methods=['DELETE'])
@@ -542,7 +552,7 @@ def query_update_html(id):
     illust = get_or_abort(Illust, id)
     update_illust_from_source(illust)
     flash("Illust updated.")
-    return redirect(url_for('illust.show_html', id=id))
+    return redirect(request.referrer)
 
 
 @bp.route('/illusts/<int:id>/update_artist', methods=['POST'])
@@ -612,11 +622,16 @@ def create_commentary_from_source(id):
         flash("Not a valid source.", 'error')
         return redirect(request.referrer)
     site_illust_id = source.get_illust_id(source_url)
-    commentary = source.get_illust_commentary(site_illust_id)
-    if commentary is None:
+    params = source.get_illust_data(site_illust_id)
+    if params['commentary'] is None:
         flash("No commentaries found at source.", 'error')
         return redirect(request.referrer)
-    commentary = "From " + (source.ILLUST_SHORTLINK % site_illust_id) + ":\n\n" + commentary
+    tweet_link = source.ILLUST_SHORTLINK % site_illust_id
+    if params['site_artist_id'] is not None:
+        twuser_link = source.ARTIST_SHORTLINK % params['site_artist_id']
+        commentary = f"From {tweet_link} ({twuser_link}):\n\n" + params['commentary']
+    else:
+        commentary = f"From {tweet_link}:\n\n" + params['commentary']
     results = illust_add_additional_commentary(illust, commentary)
     if results['error']:
         flash(results['message'], 'error')
